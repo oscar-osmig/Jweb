@@ -20,19 +20,33 @@ public final class Theme {
 
     public static final CSSValue PRIMARY = hex("#667eea");
     public static final CSSValue PRIMARY_DARK = hex("#5a67d8");
+    public static final CSSValue PRIMARY_LIGHT = hex("#818cf8");
     public static final CSSValue SECONDARY = hex("#764ba2");
+    public static final CSSValue ACCENT = hex("#f093fb");
 
-    public static final CSSValue TEXT = hex("#333");
-    public static final CSSValue TEXT_LIGHT = hex("#666");
-    public static final CSSValue TEXT_MUTED = hex("#999");
+    // Status colors
+    public static final CSSValue SUCCESS = hex("#10b981");
+    public static final CSSValue SUCCESS_LIGHT = hex("#d1fae5");
+    public static final CSSValue WARNING = hex("#f59e0b");
+    public static final CSSValue WARNING_LIGHT = hex("#fef3c7");
+    public static final CSSValue ERROR = hex("#ef4444");
+    public static final CSSValue ERROR_LIGHT = hex("#fee2e2");
+    public static final CSSValue INFO = hex("#3b82f6");
+    public static final CSSValue INFO_LIGHT = hex("#dbeafe");
+
+    public static final CSSValue TEXT = hex("#1f2937");
+    public static final CSSValue TEXT_LIGHT = hex("#4b5563");
+    public static final CSSValue TEXT_MUTED = hex("#9ca3af");
 
     public static final CSSValue BG = white;
-    public static final CSSValue BG_LIGHT = hex("#f7f8fc");
-    public static final CSSValue BG_DARK = hex("#2d3748");
+    public static final CSSValue BG_LIGHT = hex("#f9fafb");
+    public static final CSSValue BG_DARK = hex("#111827");
 
-    public static final CSSValue BORDER = hex("#e2e8f0");
-    public static final CSSValue SHADOW = rgba(0, 0, 0, 0.1);
-    public static final CSSValue SHADOW_HOVER = rgba(0, 0, 0, 0.15);
+    public static final CSSValue BORDER = hex("#e5e7eb");
+    public static final CSSValue BORDER_LIGHT = hex("#f3f4f6");
+    public static final CSSValue SHADOW = rgba(0, 0, 0, 0.08);
+    public static final CSSValue SHADOW_HOVER = rgba(0, 0, 0, 0.12);
+    public static final CSSValue SHADOW_LG = rgba(0, 0, 0, 0.15);
 
     // ==================== Spacing ====================
 
@@ -111,5 +125,57 @@ public final class Theme {
     public static Style cardShadowHover() {
         return style()
             .boxShadow(px(0), px(4), px(12), SHADOW_HOVER);
+    }
+
+    /** Primary button style */
+    public static Style btnPrimary() {
+        return style()
+            .backgroundColor(PRIMARY)
+            .color(white)
+            .border(none)
+            .padding(SPACE_SM, SPACE_LG)
+            .fontSize(FONT_SM)
+            .fontWeight(600)
+            .borderRadius(RADIUS_SM)
+            .cursor(pointer)
+            .transition("all", TRANSITION_FAST, ease);
+    }
+
+    /** Secondary button style */
+    public static Style btnSecondary() {
+        return style()
+            .backgroundColor(transparent)
+            .color(PRIMARY)
+            .border(px(2), solid, PRIMARY)
+            .padding(SPACE_SM, SPACE_LG)
+            .fontSize(FONT_SM)
+            .fontWeight(600)
+            .borderRadius(RADIUS_SM)
+            .cursor(pointer)
+            .transition("all", TRANSITION_FAST, ease);
+    }
+
+    /** Badge/tag style */
+    public static Style badge() {
+        return style()
+            .display(inlineBlock)
+            .padding(SPACE_XS, SPACE_SM)
+            .fontSize(FONT_SM)
+            .fontWeight(500)
+            .borderRadius(RADIUS_FULL)
+            .backgroundColor(PRIMARY_LIGHT)
+            .color(white);
+    }
+
+    /** Input field style */
+    public static Style inputStyle() {
+        return style()
+            .width(percent(100))
+            .padding(SPACE_SM, SPACE_MD)
+            .fontSize(FONT_BASE)
+            .border(px(1), solid, BORDER)
+            .borderRadius(RADIUS_SM)
+            .backgroundColor(white)
+            .transition("border-color", TRANSITION_FAST, ease);
     }
 }

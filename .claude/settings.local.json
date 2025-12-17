@@ -6,7 +6,8 @@
       "Bash(cmd /c \"mvn compile\")",
       "Bash(cmd /c \"mvn compile 2>&1\")",
       "Bash(cmd /c \"netstat -ano | findstr :8080\")",
-      "Bash(cmd /c \"netstat -ano\")"
+      "Bash(cmd /c \"netstat -ano\")",
+      "Bash(cmd /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile -q 2>&1\")"
     ]
   }
 }

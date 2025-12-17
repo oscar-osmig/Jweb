@@ -130,17 +130,29 @@ public final class Elements {
     public static Tag div(Object... children) { return tag("div", children); }
     public static Tag div(Attributes attrs, Object... children) { return tag("div", attrs, children); }
     public static Tag strong(Object... children) { return tag("strong", children); }
+    public static Tag strong(Attributes attrs, Object... children) { return tag("strong", attrs, children); }
     public static Tag em(Object... children) { return tag("em", children); }
+    public static Tag em(Attributes attrs, Object... children) { return tag("em", attrs, children); }
     public static Tag b(Object... children) { return tag("b", children); }
+    public static Tag b(Attributes attrs, Object... children) { return tag("b", attrs, children); }
     public static Tag i(Object... children) { return tag("i", children); }
+    public static Tag i(Attributes attrs, Object... children) { return tag("i", attrs, children); }
     public static Tag u(Object... children) { return tag("u", children); }
+    public static Tag u(Attributes attrs, Object... children) { return tag("u", attrs, children); }
     public static Tag small(Object... children) { return tag("small", children); }
+    public static Tag small(Attributes attrs, Object... children) { return tag("small", attrs, children); }
     public static Tag mark(Object... children) { return tag("mark", children); }
+    public static Tag mark(Attributes attrs, Object... children) { return tag("mark", attrs, children); }
     public static Tag del(Object... children) { return tag("del", children); }
+    public static Tag del(Attributes attrs, Object... children) { return tag("del", attrs, children); }
     public static Tag ins(Object... children) { return tag("ins", children); }
+    public static Tag ins(Attributes attrs, Object... children) { return tag("ins", attrs, children); }
     public static Tag sub(Object... children) { return tag("sub", children); }
+    public static Tag sub(Attributes attrs, Object... children) { return tag("sub", attrs, children); }
     public static Tag sup(Object... children) { return tag("sup", children); }
+    public static Tag sup(Attributes attrs, Object... children) { return tag("sup", attrs, children); }
     public static Tag code(Object... children) { return tag("code", children); }
+    public static Tag code(Attributes attrs, Object... children) { return tag("code", attrs, children); }
     public static Tag pre(Object... children) { return tag("pre", children); }
     public static Tag pre(Attributes attrs, Object... children) { return tag("pre", attrs, children); }
     public static Tag blockquote(Object... children) { return tag("blockquote", children); }

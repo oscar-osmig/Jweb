@@ -253,6 +253,189 @@ public final class CSS {
         return () -> "radial-gradient(" + joinCss(stops) + ")";
     }
 
+    public static CSSValue radialGradient(String shape, CSSValue... stops) {
+        return () -> "radial-gradient(" + shape + ", " + joinCss(stops) + ")";
+    }
+
+    public static CSSValue conicGradient(CSSValue... stops) {
+        return () -> "conic-gradient(" + joinCss(stops) + ")";
+    }
+
+    public static CSSValue conicGradient(String from, CSSValue... stops) {
+        return () -> "conic-gradient(" + from + ", " + joinCss(stops) + ")";
+    }
+
+    // ==================== Filter Functions ====================
+
+    /**
+     * Applies a Gaussian blur.
+     * Example: blur(px(5)) -> blur(5px)
+     */
+    public static CSSValue blur(CSSValue radius) {
+        return () -> "blur(" + radius.css() + ")";
+    }
+
+    /**
+     * Adjusts brightness.
+     * Values: 0 = black, 1 = normal, >1 = brighter
+     * Example: brightness(1.5) -> brightness(1.5)
+     */
+    public static CSSValue brightness(double value) {
+        return () -> "brightness(" + formatNumber(value) + ")";
+    }
+
+    /**
+     * Adjusts contrast.
+     * Values: 0 = gray, 1 = normal, >1 = more contrast
+     * Example: contrast(1.2) -> contrast(1.2)
+     */
+    public static CSSValue contrast(double value) {
+        return () -> "contrast(" + formatNumber(value) + ")";
+    }
+
+    /**
+     * Applies a drop shadow.
+     * Example: dropShadow(px(2), px(2), px(4), rgba(0,0,0,0.5))
+     */
+    public static CSSValue dropShadow(CSSValue offsetX, CSSValue offsetY, CSSValue blur, CSSValue color) {
+        return () -> "drop-shadow(" + offsetX.css() + " " + offsetY.css() + " " + blur.css() + " " + color.css() + ")";
+    }
+
+    /**
+     * Applies a drop shadow without blur.
+     */
+    public static CSSValue dropShadow(CSSValue offsetX, CSSValue offsetY, CSSValue color) {
+        return () -> "drop-shadow(" + offsetX.css() + " " + offsetY.css() + " " + color.css() + ")";
+    }
+
+    /**
+     * Converts to grayscale.
+     * Values: 0 = normal, 1 = fully grayscale
+     * Example: grayscale(1) -> grayscale(1)
+     */
+    public static CSSValue grayscale(double value) {
+        return () -> "grayscale(" + formatNumber(value) + ")";
+    }
+
+    /**
+     * Rotates the hue.
+     * Example: hueRotate(deg(90)) -> hue-rotate(90deg)
+     */
+    public static CSSValue hueRotate(CSSValue angle) {
+        return () -> "hue-rotate(" + angle.css() + ")";
+    }
+
+    /**
+     * Inverts colors.
+     * Values: 0 = normal, 1 = fully inverted
+     * Example: invert(1) -> invert(1)
+     */
+    public static CSSValue invert(double value) {
+        return () -> "invert(" + formatNumber(value) + ")";
+    }
+
+    /**
+     * Adjusts opacity via filter.
+     * Values: 0 = transparent, 1 = opaque
+     * Example: opacity(0.5) -> opacity(0.5)
+     */
+    public static CSSValue filterOpacity(double value) {
+        return () -> "opacity(" + formatNumber(value) + ")";
+    }
+
+    /**
+     * Adjusts saturation.
+     * Values: 0 = desaturated, 1 = normal, >1 = super-saturated
+     * Example: saturate(2) -> saturate(2)
+     */
+    public static CSSValue saturate(double value) {
+        return () -> "saturate(" + formatNumber(value) + ")";
+    }
+
+    /**
+     * Applies sepia tone.
+     * Values: 0 = normal, 1 = fully sepia
+     * Example: sepia(0.8) -> sepia(0.8)
+     */
+    public static CSSValue sepia(double value) {
+        return () -> "sepia(" + formatNumber(value) + ")";
+    }
+
+    // ==================== Clip Path Functions ====================
+
+    /**
+     * Creates a circle clip-path.
+     * Example: circleClip(percent(50)) -> circle(50%)
+     */
+    public static CSSValue circleClip(CSSValue radius) {
+        return () -> "circle(" + radius.css() + ")";
+    }
+
+    /**
+     * Creates a circle clip-path at a position.
+     * Example: circleClip(percent(50), "center") -> circle(50% at center)
+     */
+    public static CSSValue circleClip(CSSValue radius, String position) {
+        return () -> "circle(" + radius.css() + " at " + position + ")";
+    }
+
+    /**
+     * Creates an ellipse clip-path.
+     * Example: ellipseClip(percent(50), percent(30)) -> ellipse(50% 30%)
+     */
+    public static CSSValue ellipseClip(CSSValue radiusX, CSSValue radiusY) {
+        return () -> "ellipse(" + radiusX.css() + " " + radiusY.css() + ")";
+    }
+
+    /**
+     * Creates a polygon clip-path.
+     * Example: polygon("0 0", "100% 0", "100% 100%", "0 100%")
+     */
+    public static CSSValue polygon(String... points) {
+        return () -> "polygon(" + String.join(", ", points) + ")";
+    }
+
+    /**
+     * Creates an inset clip-path.
+     * Example: insetClip(px(10)) -> inset(10px)
+     */
+    public static CSSValue insetClip(CSSValue all) {
+        return () -> "inset(" + all.css() + ")";
+    }
+
+    /**
+     * Creates an inset clip-path with rounded corners.
+     */
+    public static CSSValue insetClip(CSSValue all, CSSValue borderRadius) {
+        return () -> "inset(" + all.css() + " round " + borderRadius.css() + ")";
+    }
+
+    // ==================== Content Functions ====================
+
+    /**
+     * Creates an attr() function for CSS content property.
+     * Example: attrContent("data-label") -> attr(data-label)
+     */
+    public static CSSValue attrContent(String attributeName) {
+        return () -> "attr(" + attributeName + ")";
+    }
+
+    /**
+     * Creates a counter() function.
+     * Example: counter("section") -> counter(section)
+     */
+    public static CSSValue counter(String name) {
+        return () -> "counter(" + name + ")";
+    }
+
+    /**
+     * Creates a counter() function with style.
+     * Example: counter("section", "decimal") -> counter(section, decimal)
+     */
+    public static CSSValue counter(String name, String style) {
+        return () -> "counter(" + name + ", " + style + ")";
+    }
+
     // Helper method
     private static String joinCss(CSSValue[] values) {
         StringBuilder sb = new StringBuilder();
@@ -261,5 +444,12 @@ public final class CSS {
             sb.append(values[i].css());
         }
         return sb.toString();
+    }
+
+    private static String formatNumber(double value) {
+        if (value == (int) value) {
+            return String.valueOf((int) value);
+        }
+        return String.valueOf(value);
     }
 }

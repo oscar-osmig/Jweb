@@ -14,7 +14,7 @@ import com.osmig.Jweb.framework.styles.Style;
 import com.osmig.Jweb.app.layouts.MainLayout;
 
 /**
- * Contact page template with styled form.
+ * Contact page template with styled form and contact info.
  */
 public class ContactPage implements Template {
 
@@ -27,36 +27,61 @@ public class ContactPage implements Template {
     @Override
     public Element render() {
         return new MainLayout("Contact - JWeb",
-            // Center the form horizontally and vertically
-            div(attrs().style(
+            div(attrs().class_("fade-in").style(
                     style()
                         .display(flex)
                         .justifyContent(center)
                         .alignItems(flexStart)
-                        .gap(SPACE_XL)
+                        .gap(SPACE_2XL)
+                        .flexWrap(wrap)
                 ),
                 // Left side - Info
                 div(attrs().style(
                         style()
                             .flex(1, 1, px(300))
-                            .maxWidth(px(350))
+                            .maxWidth(px(380))
                     ),
-                    h1(attrs().style(
+                    // Header
+                    span(attrs().style(
                         style()
-                            .fontSize(FONT_2XL)
-                            .color(TEXT)
+                            .display(inlineBlock)
+                            .padding(SPACE_XS, SPACE_MD)
+                            .fontSize(FONT_SM)
+                            .fontWeight(500)
+                            .borderRadius(RADIUS_FULL)
+                            .backgroundColor(rgba(102, 126, 234, 0.1))
+                            .color(PRIMARY)
+                            .marginBottom(SPACE_MD)
+                    ), text("Get in Touch")),
+                    h1(attrs().class_("gradient-text").style(
+                        style()
+                            .fontSize(rem(2))
+                            .fontWeight(700)
                             .marginBottom(SPACE_SM)
                     ), text("Contact Us")),
                     p(attrs().style(
                         style()
                             .color(TEXT_LIGHT)
-                            .fontSize(FONT_SM)
-                            .marginBottom(SPACE_MD)
-                    ), text("Have a question or feedback? We'd love to hear from you.")),
+                            .fontSize(FONT_BASE)
+                            .marginBottom(SPACE_XL)
+                            .lineHeight(1.7)
+                    ), text("Have a question, suggestion, or just want to say hello? We'd love to hear from you!")),
+
+                    // Contact info cards
+                    div(attrs().style(style().display(flex).flexDirection(column).gap(SPACE_MD)),
+                        contactInfo("\uD83D\uDCE7", "Email", "hello@jweb.dev"),
+                        contactInfo("\uD83D\uDCCD", "Location", "San Francisco, CA"),
+                        contactInfo("\u23F0", "Response Time", "Within 24 hours")
+                    ),
+
+                    // Back link
                     a(attrs().href("/").style(
                         style()
+                            .display(inlineBlock)
+                            .marginTop(SPACE_XL)
                             .color(PRIMARY)
                             .fontSize(FONT_SM)
+                            .fontWeight(500)
                     ), text("\u2190 Back to Home"))
                 ),
 
@@ -64,13 +89,24 @@ public class ContactPage implements Template {
                 form(attrs()
                         .action("/contact")
                         .method("post")
+                        .class_("scale-in")
                         .style(style()
                             .flex(1, 1, px(400))
-                            .maxWidth(px(450))
-                            .backgroundColor(BG_LIGHT)
-                            .padding(SPACE_LG)
-                            .borderRadius(RADIUS_MD)
+                            .maxWidth(px(480))
+                            .backgroundColor(white)
+                            .padding(SPACE_XL)
+                            .borderRadius(RADIUS_LG)
+                            .boxShadow(px(0), px(4), px(20), rgba(0, 0, 0, 0.08))
+                            .border(px(1), solid, BORDER_LIGHT)
                         ),
+
+                    // Form header
+                    h2(attrs().style(
+                        style()
+                            .fontSize(FONT_XL)
+                            .color(TEXT)
+                            .marginBottom(SPACE_LG)
+                    ), text("Send us a message")),
 
                     // Name and Email in a row
                     div(attrs().style(
@@ -79,12 +115,27 @@ public class ContactPage implements Template {
                                 .gap(SPACE_MD)
                                 .marginBottom(SPACE_MD)
                         ),
-                        formField("name", "text", "Name", "Your name"),
-                        formField("email", "email", "Email", "you@email.com")
+                        formField("name", "text", "Name", "John Doe"),
+                        formField("email", "email", "Email", "john@example.com")
+                    ),
+
+                    // Subject field
+                    div(attrs().style(style().marginBottom(SPACE_MD)),
+                        label(attrs()
+                            .for_("subject")
+                            .style(labelStyle()),
+                            text("Subject")),
+                        input(attrs()
+                            .type("text")
+                            .name("subject")
+                            .id("subject")
+                            .placeholder("What's this about?")
+                            .required()
+                            .style(inputStyle()))
                     ),
 
                     // Message textarea
-                    div(attrs().style(style().marginBottom(SPACE_MD)),
+                    div(attrs().style(style().marginBottom(SPACE_LG)),
                         label(attrs()
                             .for_("message")
                             .style(labelStyle()),
@@ -92,27 +143,76 @@ public class ContactPage implements Template {
                         textarea(attrs()
                             .name("message")
                             .id("message")
-                            .attr("rows", "3")
-                            .placeholder("Your message...")
+                            .attr("rows", "4")
+                            .placeholder("Tell us what you need help with...")
                             .required()
-                            .style(inputStyle().resize(vertical)))
+                            .style(inputStyle().resize(vertical).minHeight(px(100))))
                     ),
 
-                    // Submit button
+                    // Submit button - full width
                     button(attrs()
                         .type("submit")
+                        .class_("btn")
                         .style(style()
+                            .width(percent(100))
                             .backgroundColor(PRIMARY)
                             .color(white)
                             .border(none)
-                            .padding(SPACE_SM, SPACE_LG)
-                            .fontSize(FONT_SM)
+                            .padding(SPACE_MD, SPACE_LG)
+                            .fontSize(FONT_BASE)
                             .fontWeight(600)
-                            .borderRadius(RADIUS_SM)
+                            .borderRadius(RADIUS_MD)
                             .cursor(pointer)
-                            .transition("background", TRANSITION_FAST, ease)
-                        ), text("Send Message"))
+                            .transition("all", TRANSITION_FAST, ease)
+                            .display(flex)
+                            .alignItems(center)
+                            .justifyContent(center)
+                            .gap(SPACE_SM)
+                        ),
+                        text("Send Message"),
+                        span(text(" \u2192"))
+                    ),
+
+                    // Privacy note
+                    p(attrs().style(
+                        style()
+                            .marginTop(SPACE_MD)
+                            .fontSize(FONT_SM)
+                            .color(TEXT_MUTED)
+                            .textAlign(center)
+                    ), text("We respect your privacy. Your data is never shared."))
                 )
+            )
+        );
+    }
+
+    private Element contactInfo(String icon, String label, String value) {
+        return div(attrs().style(
+                style()
+                    .display(flex)
+                    .alignItems(center)
+                    .gap(SPACE_MD)
+                    .padding(SPACE_MD)
+                    .backgroundColor(BG_LIGHT)
+                    .borderRadius(RADIUS_MD)
+            ),
+            span(attrs().style(
+                style()
+                    .fontSize(rem(1.25))
+            ), text(icon)),
+            div(
+                span(attrs().style(
+                    style()
+                        .display(block)
+                        .fontSize(FONT_SM)
+                        .color(TEXT_MUTED)
+                ), text(label)),
+                span(attrs().style(
+                    style()
+                        .display(block)
+                        .fontWeight(500)
+                        .color(TEXT)
+                ), text(value))
             )
         );
     }
@@ -145,11 +245,11 @@ public class ContactPage implements Template {
     private Style inputStyle() {
         return style()
             .width(percent(100))
-            .padding(SPACE_SM)
-            .fontSize(FONT_SM)
+            .padding(SPACE_SM, SPACE_MD)
+            .fontSize(FONT_BASE)
             .border(px(1), solid, BORDER)
-            .borderRadius(RADIUS_SM)
+            .borderRadius(RADIUS_MD)
             .backgroundColor(white)
-            .transition("border-color", TRANSITION_FAST, ease);
+            .transition("all", TRANSITION_FAST, ease);
     }
 }

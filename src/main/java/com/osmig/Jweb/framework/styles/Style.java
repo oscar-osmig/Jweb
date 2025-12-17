@@ -344,6 +344,116 @@ public class Style implements CSSValue {
     public Style tableLayout(CSSValue value) { return prop("table-layout", value); }
     public Style verticalAlign(CSSValue value) { return prop("vertical-align", value); }
 
+    // ==================== Logical Properties ====================
+    // These work with writing modes (LTR/RTL, horizontal/vertical)
+
+    // Margin logical properties
+    public Style marginInline(CSSValue value) { return prop("margin-inline", value); }
+    public Style marginInline(CSSValue start, CSSValue end) {
+        return prop("margin-inline", start.css() + " " + end.css());
+    }
+    public Style marginInlineStart(CSSValue value) { return prop("margin-inline-start", value); }
+    public Style marginInlineEnd(CSSValue value) { return prop("margin-inline-end", value); }
+    public Style marginBlock(CSSValue value) { return prop("margin-block", value); }
+    public Style marginBlock(CSSValue start, CSSValue end) {
+        return prop("margin-block", start.css() + " " + end.css());
+    }
+    public Style marginBlockStart(CSSValue value) { return prop("margin-block-start", value); }
+    public Style marginBlockEnd(CSSValue value) { return prop("margin-block-end", value); }
+
+    // Padding logical properties
+    public Style paddingInline(CSSValue value) { return prop("padding-inline", value); }
+    public Style paddingInline(CSSValue start, CSSValue end) {
+        return prop("padding-inline", start.css() + " " + end.css());
+    }
+    public Style paddingInlineStart(CSSValue value) { return prop("padding-inline-start", value); }
+    public Style paddingInlineEnd(CSSValue value) { return prop("padding-inline-end", value); }
+    public Style paddingBlock(CSSValue value) { return prop("padding-block", value); }
+    public Style paddingBlock(CSSValue start, CSSValue end) {
+        return prop("padding-block", start.css() + " " + end.css());
+    }
+    public Style paddingBlockStart(CSSValue value) { return prop("padding-block-start", value); }
+    public Style paddingBlockEnd(CSSValue value) { return prop("padding-block-end", value); }
+
+    // Size logical properties
+    public Style inlineSize(CSSValue value) { return prop("inline-size", value); }
+    public Style blockSize(CSSValue value) { return prop("block-size", value); }
+    public Style minInlineSize(CSSValue value) { return prop("min-inline-size", value); }
+    public Style maxInlineSize(CSSValue value) { return prop("max-inline-size", value); }
+    public Style minBlockSize(CSSValue value) { return prop("min-block-size", value); }
+    public Style maxBlockSize(CSSValue value) { return prop("max-block-size", value); }
+
+    // Position logical properties
+    public Style insetInline(CSSValue value) { return prop("inset-inline", value); }
+    public Style insetInline(CSSValue start, CSSValue end) {
+        return prop("inset-inline", start.css() + " " + end.css());
+    }
+    public Style insetInlineStart(CSSValue value) { return prop("inset-inline-start", value); }
+    public Style insetInlineEnd(CSSValue value) { return prop("inset-inline-end", value); }
+    public Style insetBlock(CSSValue value) { return prop("inset-block", value); }
+    public Style insetBlock(CSSValue start, CSSValue end) {
+        return prop("inset-block", start.css() + " " + end.css());
+    }
+    public Style insetBlockStart(CSSValue value) { return prop("inset-block-start", value); }
+    public Style insetBlockEnd(CSSValue value) { return prop("inset-block-end", value); }
+
+    // Border logical properties
+    public Style borderInline(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("border-inline", width.css() + " " + style.css() + " " + color.css());
+    }
+    public Style borderInlineStart(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("border-inline-start", width.css() + " " + style.css() + " " + color.css());
+    }
+    public Style borderInlineEnd(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("border-inline-end", width.css() + " " + style.css() + " " + color.css());
+    }
+    public Style borderBlock(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("border-block", width.css() + " " + style.css() + " " + color.css());
+    }
+    public Style borderBlockStart(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("border-block-start", width.css() + " " + style.css() + " " + color.css());
+    }
+    public Style borderBlockEnd(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("border-block-end", width.css() + " " + style.css() + " " + color.css());
+    }
+
+    // Border radius logical properties
+    public Style borderStartStartRadius(CSSValue value) { return prop("border-start-start-radius", value); }
+    public Style borderStartEndRadius(CSSValue value) { return prop("border-start-end-radius", value); }
+    public Style borderEndStartRadius(CSSValue value) { return prop("border-end-start-radius", value); }
+    public Style borderEndEndRadius(CSSValue value) { return prop("border-end-end-radius", value); }
+
+    // Text alignment logical
+    public Style textAlignLast(CSSValue value) { return prop("text-align-last", value); }
+
+    // ==================== Container Queries ====================
+
+    public Style containerType(CSSValue value) { return prop("container-type", value); }
+    public Style containerName(String name) { return prop("container-name", name); }
+    public Style container(String name, CSSValue type) {
+        return prop("container", name + " / " + type.css());
+    }
+
+    // ==================== Filter (using CSSValue builders) ====================
+
+    public Style filter(CSSValue... filters) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filters.length; i++) {
+            if (i > 0) sb.append(" ");
+            sb.append(filters[i].css());
+        }
+        return prop("filter", sb.toString());
+    }
+
+    public Style backdropFilter(CSSValue... filters) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < filters.length; i++) {
+            if (i > 0) sb.append(" ");
+            sb.append(filters[i].css());
+        }
+        return prop("backdrop-filter", sb.toString());
+    }
+
     // ==================== Raw property ====================
 
     public Style prop(String name, CSSValue value) {
