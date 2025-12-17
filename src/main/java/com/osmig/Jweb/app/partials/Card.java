@@ -4,7 +4,6 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
-import static com.osmig.Jweb.framework.styles.Styles.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.app.Theme.*;
@@ -50,48 +49,43 @@ public class Card implements Template {
     public Element render() {
         String classes = "card" + (animationClass != null ? " " + animationClass : "");
 
-        return div(attrs().class_(classes).style(
-                style()
-                    .backgroundColor(BG)
-                    .borderRadius(RADIUS_LG)
-                    .padding(SPACE_LG)
-                    .border(px(1), solid, BORDER_LIGHT)
-                    .boxShadow(px(0), px(4), px(6), px(-1), SHADOW)
-                    .position(relative)
-                    .overflow(hidden)
-            ),
+        return div(attrs().class_(classes).style()
+                .backgroundColor(BG)
+                .borderRadius(RADIUS_LG)
+                .padding(SPACE_LG)
+                .border(px(1), solid, BORDER_LIGHT)
+                .boxShadow(px(0), px(4), px(6), SHADOW)
+                .position(relative)
+                .overflow(hidden)
+            .done(),
             // Gradient accent at top
-            div(attrs().style(
-                style()
-                    .position(absolute)
-                    .top(zero)
-                    .left(zero)
-                    .right(zero)
-                    .height(px(3))
-                    .background(linearGradient("90deg", PRIMARY, SECONDARY))
-            )),
+            div(attrs().style()
+                .position(absolute)
+                .top(zero)
+                .left(zero)
+                .right(zero)
+                .height(px(3))
+                .background(linearGradient("90deg", PRIMARY, SECONDARY))
+            .done()),
             // Icon if provided
-            icon != null ? div(attrs().class_("feature-icon").style(
-                style()
-                    .fontSize(rem(2))
-                    .marginBottom(SPACE_MD)
-                    .display(inlineBlock)
-            ), text(icon)) : null,
+            icon != null ? div(attrs().class_("feature-icon").style()
+                .fontSize(rem(2))
+                .marginBottom(SPACE_MD)
+                .display(inlineBlock)
+            .done(), text(icon)) : null,
             // Title
-            h3(attrs().style(
-                style()
-                    .color(TEXT)
-                    .marginBottom(SPACE_SM)
-                    .fontSize(FONT_XL)
-                    .fontWeight(600)
-            ), text(title)),
+            h3(attrs().style()
+                .color(TEXT)
+                .marginBottom(SPACE_SM)
+                .fontSize(FONT_XL)
+                .fontWeight(600)
+            .done(), text(title)),
             // Description
-            p(attrs().style(
-                style()
-                    .color(TEXT_LIGHT)
-                    .lineHeight(1.7)
-                    .fontSize(FONT_SM)
-            ), text(description))
+            p(attrs().style()
+                .color(TEXT_LIGHT)
+                .lineHeight(1.7)
+                .fontSize(FONT_SM)
+            .done(), text(description))
         );
     }
 }

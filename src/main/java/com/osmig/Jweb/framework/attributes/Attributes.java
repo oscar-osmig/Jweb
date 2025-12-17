@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.attributes;
 
+import com.osmig.Jweb.framework.styles.CSSValue;
 import com.osmig.Jweb.framework.styles.Style;
 
 import java.util.LinkedHashMap;
@@ -8,7 +9,9 @@ import java.util.Map;
 /**
  * Fluent builder for HTML attributes.
  *
- * Usage: attrs().id("myId").class_("btn").style("color: red")
+ * Usage:
+ *   attrs().id("myId").class_("btn").style("color: red")
+ *   attrs().style().display(flex).color(red).done()
  */
 public class Attributes {
 
@@ -33,6 +36,115 @@ public class Attributes {
     }
     public Attributes style(String value) { return attr("style", value); }
     public Attributes style(Style style) { return attr("style", style.build()); }
+
+    /**
+     * Start an inline style builder that chains back to this Attributes.
+     * Usage: attrs().style().display(flex).padding(px(10)).done()
+     */
+    public InlineStyle style() { return new InlineStyle(this); }
+
+    /**
+     * Inline style builder that returns to Attributes when done.
+     */
+    public static class InlineStyle {
+        private final Attributes parent;
+        private final Style style = new Style();
+
+        InlineStyle(Attributes parent) {
+            this.parent = parent;
+        }
+
+        /** Finish styling and return to Attributes builder */
+        public Attributes done() {
+            parent.attr("style", style.build());
+            return parent;
+        }
+
+        // ==================== Layout ====================
+        public InlineStyle display(CSSValue value) { style.display(value); return this; }
+        public InlineStyle position(CSSValue value) { style.position(value); return this; }
+        public InlineStyle top(CSSValue value) { style.top(value); return this; }
+        public InlineStyle right(CSSValue value) { style.right(value); return this; }
+        public InlineStyle bottom(CSSValue value) { style.bottom(value); return this; }
+        public InlineStyle left(CSSValue value) { style.left(value); return this; }
+        public InlineStyle zIndex(int value) { style.zIndex(value); return this; }
+
+        // ==================== Flexbox ====================
+        public InlineStyle flexDirection(CSSValue value) { style.flexDirection(value); return this; }
+        public InlineStyle flexWrap(CSSValue value) { style.flexWrap(value); return this; }
+        public InlineStyle justifyContent(CSSValue value) { style.justifyContent(value); return this; }
+        public InlineStyle alignItems(CSSValue value) { style.alignItems(value); return this; }
+        public InlineStyle alignContent(CSSValue value) { style.alignContent(value); return this; }
+        public InlineStyle gap(CSSValue value) { style.gap(value); return this; }
+        public InlineStyle flex(int grow, int shrink, CSSValue basis) { style.flex(grow, shrink, basis); return this; }
+        public InlineStyle flexGrow(int value) { style.flexGrow(value); return this; }
+        public InlineStyle flexShrink(int value) { style.flexShrink(value); return this; }
+
+        // ==================== Grid ====================
+        public InlineStyle gridTemplateColumns(String value) { style.gridTemplateColumns(value); return this; }
+        public InlineStyle gridTemplateRows(String value) { style.gridTemplateRows(value); return this; }
+        public InlineStyle gridColumn(String value) { style.gridColumn(value); return this; }
+        public InlineStyle gridRow(String value) { style.gridRow(value); return this; }
+
+        // ==================== Sizing ====================
+        public InlineStyle width(CSSValue value) { style.width(value); return this; }
+        public InlineStyle height(CSSValue value) { style.height(value); return this; }
+        public InlineStyle minWidth(CSSValue value) { style.minWidth(value); return this; }
+        public InlineStyle maxWidth(CSSValue value) { style.maxWidth(value); return this; }
+        public InlineStyle minHeight(CSSValue value) { style.minHeight(value); return this; }
+        public InlineStyle maxHeight(CSSValue value) { style.maxHeight(value); return this; }
+
+        // ==================== Spacing ====================
+        public InlineStyle margin(CSSValue value) { style.margin(value); return this; }
+        public InlineStyle margin(CSSValue vertical, CSSValue horizontal) { style.margin(vertical, horizontal); return this; }
+        public InlineStyle marginTop(CSSValue value) { style.marginTop(value); return this; }
+        public InlineStyle marginRight(CSSValue value) { style.marginRight(value); return this; }
+        public InlineStyle marginBottom(CSSValue value) { style.marginBottom(value); return this; }
+        public InlineStyle marginLeft(CSSValue value) { style.marginLeft(value); return this; }
+        public InlineStyle padding(CSSValue value) { style.padding(value); return this; }
+        public InlineStyle padding(CSSValue vertical, CSSValue horizontal) { style.padding(vertical, horizontal); return this; }
+        public InlineStyle paddingTop(CSSValue value) { style.paddingTop(value); return this; }
+        public InlineStyle paddingRight(CSSValue value) { style.paddingRight(value); return this; }
+        public InlineStyle paddingBottom(CSSValue value) { style.paddingBottom(value); return this; }
+        public InlineStyle paddingLeft(CSSValue value) { style.paddingLeft(value); return this; }
+
+        // ==================== Typography ====================
+        public InlineStyle color(CSSValue value) { style.color(value); return this; }
+        public InlineStyle fontSize(CSSValue value) { style.fontSize(value); return this; }
+        public InlineStyle fontWeight(int value) { style.fontWeight(value); return this; }
+        public InlineStyle fontFamily(String value) { style.fontFamily(value); return this; }
+        public InlineStyle lineHeight(double value) { style.lineHeight(value); return this; }
+        public InlineStyle textAlign(CSSValue value) { style.textAlign(value); return this; }
+        public InlineStyle textDecoration(CSSValue value) { style.textDecoration(value); return this; }
+        public InlineStyle textTransform(CSSValue value) { style.textTransform(value); return this; }
+        public InlineStyle letterSpacing(CSSValue value) { style.letterSpacing(value); return this; }
+
+        // ==================== Background ====================
+        public InlineStyle backgroundColor(CSSValue value) { style.backgroundColor(value); return this; }
+        public InlineStyle background(CSSValue value) { style.background(value); return this; }
+        public InlineStyle backgroundImage(CSSValue value) { style.backgroundImage(value); return this; }
+        public InlineStyle backgroundSize(CSSValue value) { style.backgroundSize(value); return this; }
+        public InlineStyle backgroundPosition(CSSValue value) { style.backgroundPosition(value); return this; }
+
+        // ==================== Border ====================
+        public InlineStyle border(CSSValue width, CSSValue borderStyle, CSSValue color) { style.border(width, borderStyle, color); return this; }
+        public InlineStyle borderTop(CSSValue width, CSSValue borderStyle, CSSValue color) { style.borderTop(width, borderStyle, color); return this; }
+        public InlineStyle borderBottom(CSSValue width, CSSValue borderStyle, CSSValue color) { style.borderBottom(width, borderStyle, color); return this; }
+        public InlineStyle borderRadius(CSSValue value) { style.borderRadius(value); return this; }
+        public InlineStyle borderColor(CSSValue value) { style.borderColor(value); return this; }
+
+        // ==================== Effects ====================
+        public InlineStyle boxShadow(CSSValue x, CSSValue y, CSSValue blur, CSSValue color) { style.boxShadow(x, y, blur, color); return this; }
+        public InlineStyle opacity(double value) { style.opacity(value); return this; }
+        public InlineStyle overflow(CSSValue value) { style.overflow(value); return this; }
+        public InlineStyle cursor(CSSValue value) { style.cursor(value); return this; }
+        public InlineStyle transition(String property, CSSValue duration, CSSValue timing) { style.transition(property, duration, timing); return this; }
+        public InlineStyle transform(CSSValue value) { style.transform(value); return this; }
+
+        // ==================== Generic ====================
+        public InlineStyle prop(String property, String value) { style.prop(property, value); return this; }
+        public InlineStyle prop(String property, CSSValue value) { style.prop(property, value); return this; }
+    }
     public Attributes title(String value) { return attr("title", value); }
     public Attributes href(String value) { return attr("href", value); }
     public Attributes target(String value) { return attr("target", value); }

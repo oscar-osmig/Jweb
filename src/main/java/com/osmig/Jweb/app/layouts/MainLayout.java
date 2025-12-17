@@ -4,7 +4,6 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
-import static com.osmig.Jweb.framework.styles.Styles.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.app.Theme.*;
 
@@ -35,13 +34,12 @@ public class MainLayout implements Template {
             new Head(pageTitle),
             body(
                 new Nav(),
-                main(attrs().class_("container").style(
-                    style()
-                        .maxWidth(px(1200))
-                        .margin(zero, auto)
-                        .padding(SPACE_MD, SPACE_XL)
-                        .flexGrow(1)
-                ), content),
+                main(attrs().class_("container").style()
+                    .maxWidth(px(1200))
+                    .margin(zero, auto)
+                    .padding(SPACE_MD, SPACE_XL)
+                    .flexGrow(1)
+                .done(), content),
                 new Footer()
             )
         );

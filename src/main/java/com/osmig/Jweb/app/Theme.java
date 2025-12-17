@@ -34,7 +34,7 @@ public final class Theme {
     public static final CSSValue INFO = hex("#3b82f6");
     public static final CSSValue INFO_LIGHT = hex("#dbeafe");
 
-    public static final CSSValue TEXT = hex("#1f2937");
+    public static final CSSValue TEXT = hex("#3b5c8a");
     public static final CSSValue TEXT_LIGHT = hex("#4b5563");
     public static final CSSValue TEXT_MUTED = hex("#9ca3af");
 

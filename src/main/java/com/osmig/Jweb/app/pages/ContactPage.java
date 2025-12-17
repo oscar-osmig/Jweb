@@ -27,62 +27,56 @@ public class ContactPage implements Template {
     @Override
     public Element render() {
         return new MainLayout("Contact - JWeb",
-            div(attrs().class_("fade-in").style(
-                    style()
-                        .display(flex)
-                        .justifyContent(center)
-                        .alignItems(flexStart)
-                        .gap(SPACE_2XL)
-                        .flexWrap(wrap)
-                ),
+            div(attrs().class_("fade-in").style()
+                    .display(flex)
+                    .justifyContent(center)
+                    .alignItems(flexStart)
+                    .gap(SPACE_2XL)
+                    .flexWrap(wrap)
+                .done(),
                 // Left side - Info
-                div(attrs().style(
-                        style()
-                            .flex(1, 1, px(300))
-                            .maxWidth(px(380))
-                    ),
+                div(attrs().style()
+                        .flex(1, 1, px(300))
+                        .maxWidth(px(380))
+                    .done(),
                     // Header
-                    span(attrs().style(
-                        style()
-                            .display(inlineBlock)
-                            .padding(SPACE_XS, SPACE_MD)
-                            .fontSize(FONT_SM)
-                            .fontWeight(500)
-                            .borderRadius(RADIUS_FULL)
-                            .backgroundColor(rgba(102, 126, 234, 0.1))
-                            .color(PRIMARY)
-                            .marginBottom(SPACE_MD)
-                    ), text("Get in Touch")),
-                    h1(attrs().class_("gradient-text").style(
-                        style()
-                            .fontSize(rem(2))
-                            .fontWeight(700)
-                            .marginBottom(SPACE_SM)
-                    ), text("Contact Us")),
-                    p(attrs().style(
-                        style()
-                            .color(TEXT_LIGHT)
-                            .fontSize(FONT_BASE)
-                            .marginBottom(SPACE_XL)
-                            .lineHeight(1.7)
-                    ), text("Have a question, suggestion, or just want to say hello? We'd love to hear from you!")),
+                    span(attrs().style()
+                        .display(inlineBlock)
+                        .padding(SPACE_XS, SPACE_MD)
+                        .fontSize(FONT_SM)
+                        .fontWeight(500)
+                        .borderRadius(RADIUS_FULL)
+                        .backgroundColor(rgba(102, 126, 234, 0.1))
+                        .color(PRIMARY)
+                        .marginBottom(SPACE_MD)
+                    .done(), text("Get in Touch")),
+                    h1(attrs().class_("gradient-text").style()
+                        .fontSize(rem(2))
+                        .fontWeight(700)
+                        .marginBottom(SPACE_SM)
+                    .done(), text("Contact Us")),
+                    p(attrs().style()
+                        .color(TEXT_LIGHT)
+                        .fontSize(FONT_BASE)
+                        .marginBottom(SPACE_XL)
+                        .lineHeight(1.7)
+                    .done(), text("Have a question, suggestion, or just want to say hello? We'd love to hear from you!")),
 
                     // Contact info cards
-                    div(attrs().style(style().display(flex).flexDirection(column).gap(SPACE_MD)),
+                    div(attrs().style().display(flex).flexDirection(column).gap(SPACE_MD).done(),
                         contactInfo("\uD83D\uDCE7", "Email", "hello@jweb.dev"),
                         contactInfo("\uD83D\uDCCD", "Location", "San Francisco, CA"),
                         contactInfo("\u23F0", "Response Time", "Within 24 hours")
                     ),
 
                     // Back link
-                    a(attrs().href("/").style(
-                        style()
-                            .display(inlineBlock)
-                            .marginTop(SPACE_XL)
-                            .color(PRIMARY)
-                            .fontSize(FONT_SM)
-                            .fontWeight(500)
-                    ), text("\u2190 Back to Home"))
+                    a(attrs().href("/").style()
+                        .display(inlineBlock)
+                        .marginTop(SPACE_XL)
+                        .color(PRIMARY)
+                        .fontSize(FONT_SM)
+                        .fontWeight(500)
+                    .done(), text("\u2190 Back to Home"))
                 ),
 
                 // Right side - Form
@@ -90,7 +84,7 @@ public class ContactPage implements Template {
                         .action("/contact")
                         .method("post")
                         .class_("scale-in")
-                        .style(style()
+                        .style()
                             .flex(1, 1, px(400))
                             .maxWidth(px(480))
                             .backgroundColor(white)
@@ -98,29 +92,27 @@ public class ContactPage implements Template {
                             .borderRadius(RADIUS_LG)
                             .boxShadow(px(0), px(4), px(20), rgba(0, 0, 0, 0.08))
                             .border(px(1), solid, BORDER_LIGHT)
-                        ),
+                        .done(),
 
                     // Form header
-                    h2(attrs().style(
-                        style()
-                            .fontSize(FONT_XL)
-                            .color(TEXT)
-                            .marginBottom(SPACE_LG)
-                    ), text("Send us a message")),
+                    h2(attrs().style()
+                        .fontSize(FONT_XL)
+                        .color(TEXT)
+                        .marginBottom(SPACE_LG)
+                    .done(), text("Send us a message")),
 
                     // Name and Email in a row
-                    div(attrs().style(
-                            style()
-                                .display(flex)
-                                .gap(SPACE_MD)
-                                .marginBottom(SPACE_MD)
-                        ),
+                    div(attrs().style()
+                            .display(flex)
+                            .gap(SPACE_MD)
+                            .marginBottom(SPACE_MD)
+                        .done(),
                         formField("name", "text", "Name", "John Doe"),
                         formField("email", "email", "Email", "john@example.com")
                     ),
 
                     // Subject field
-                    div(attrs().style(style().marginBottom(SPACE_MD)),
+                    div(attrs().style().marginBottom(SPACE_MD).done(),
                         label(attrs()
                             .for_("subject")
                             .style(labelStyle()),
@@ -135,7 +127,7 @@ public class ContactPage implements Template {
                     ),
 
                     // Message textarea
-                    div(attrs().style(style().marginBottom(SPACE_LG)),
+                    div(attrs().style().marginBottom(SPACE_LG).done(),
                         label(attrs()
                             .for_("message")
                             .style(labelStyle()),
@@ -153,11 +145,11 @@ public class ContactPage implements Template {
                     button(attrs()
                         .type("submit")
                         .class_("btn")
-                        .style(style()
+                        .style()
                             .width(percent(100))
                             .backgroundColor(PRIMARY)
                             .color(white)
-                            .border(none)
+                            .border(px(0), solid, transparent)
                             .padding(SPACE_MD, SPACE_LG)
                             .fontSize(FONT_BASE)
                             .fontWeight(600)
@@ -168,57 +160,52 @@ public class ContactPage implements Template {
                             .alignItems(center)
                             .justifyContent(center)
                             .gap(SPACE_SM)
-                        ),
+                        .done(),
                         text("Send Message"),
                         span(text(" \u2192"))
                     ),
 
                     // Privacy note
-                    p(attrs().style(
-                        style()
-                            .marginTop(SPACE_MD)
-                            .fontSize(FONT_SM)
-                            .color(TEXT_MUTED)
-                            .textAlign(center)
-                    ), text("We respect your privacy. Your data is never shared."))
+                    p(attrs().style()
+                        .marginTop(SPACE_MD)
+                        .fontSize(FONT_SM)
+                        .color(TEXT_MUTED)
+                        .textAlign(center)
+                    .done(), text("We respect your privacy. Your data is never shared."))
                 )
             )
         );
     }
 
     private Element contactInfo(String icon, String label, String value) {
-        return div(attrs().style(
-                style()
-                    .display(flex)
-                    .alignItems(center)
-                    .gap(SPACE_MD)
-                    .padding(SPACE_MD)
-                    .backgroundColor(BG_LIGHT)
-                    .borderRadius(RADIUS_MD)
-            ),
-            span(attrs().style(
-                style()
-                    .fontSize(rem(1.25))
-            ), text(icon)),
+        return div(attrs().style()
+                .display(flex)
+                .alignItems(center)
+                .gap(SPACE_MD)
+                .padding(SPACE_MD)
+                .backgroundColor(BG_LIGHT)
+                .borderRadius(RADIUS_MD)
+            .done(),
+            span(attrs().style()
+                .fontSize(rem(1.25))
+            .done(), text(icon)),
             div(
-                span(attrs().style(
-                    style()
-                        .display(block)
-                        .fontSize(FONT_SM)
-                        .color(TEXT_MUTED)
-                ), text(label)),
-                span(attrs().style(
-                    style()
-                        .display(block)
-                        .fontWeight(500)
-                        .color(TEXT)
-                ), text(value))
+                span(attrs().style()
+                    .display(block)
+                    .fontSize(FONT_SM)
+                    .color(TEXT_MUTED)
+                .done(), text(label)),
+                span(attrs().style()
+                    .display(block)
+                    .fontWeight(500)
+                    .color(TEXT)
+                .done(), text(value))
             )
         );
     }
 
     private Element formField(String name, String type, String labelText, String placeholder) {
-        return div(attrs().style(style().flex(1, 1, zero)),
+        return div(attrs().style().flex(1, 1, zero).done(),
             label(attrs()
                 .for_(name)
                 .style(labelStyle()),
