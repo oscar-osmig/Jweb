@@ -25,6 +25,14 @@ public final class Elements {
 
     private Elements() {}
 
+    // ==================== Attribute Builder ====================
+
+    /**
+     * Creates a new Attributes builder.
+     * Usage: div(attrs().class_("card").id("main"), ...)
+     */
+    public static Attributes attrs() { return new Attributes(); }
+
     // ==================== Attribute Shortcuts ====================
 
     public static Attr id(String value) { return Attr.id(value); }

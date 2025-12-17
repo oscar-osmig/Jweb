@@ -3,6 +3,8 @@ package com.osmig.Jweb.framework.elements;
 import com.osmig.Jweb.framework.attributes.Attr;
 import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.styles.Style;
+import com.osmig.Jweb.framework.styles.StyledElement;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VNode;
 import com.osmig.Jweb.framework.vdom.VText;
@@ -57,6 +59,30 @@ public class Tag implements Element {
     public Tag id(String id) { return attr("id", id); }
     public Tag class_(String className) { return attr("class", className); }
     public Tag style(String style) { return attr("style", style); }
+    public Tag style(Style style) { return attr("style", style.build()); }
+
+    /**
+     * Creates a StyledElement for pseudo-class styling (hover, focus, etc.)
+     */
+    public StyledElement styled() {
+        return new StyledElement(this.toVNode());
+    }
+
+    public StyledElement styled(Style baseStyle) {
+        return new StyledElement(this.toVNode()).style(baseStyle);
+    }
+
+    public StyledElement hover(Style hoverStyle) {
+        return new StyledElement(this.toVNode()).hover(hoverStyle);
+    }
+
+    public StyledElement focus(Style focusStyle) {
+        return new StyledElement(this.toVNode()).focus(focusStyle);
+    }
+
+    public StyledElement active(Style activeStyle) {
+        return new StyledElement(this.toVNode()).active(activeStyle);
+    }
 
     public String getTagName() { return tagName; }
     public Map<String, String> getAttributes() { return attributes; }

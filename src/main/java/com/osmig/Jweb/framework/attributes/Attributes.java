@@ -1,5 +1,7 @@
 package com.osmig.Jweb.framework.attributes;
 
+import com.osmig.Jweb.framework.styles.Style;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -30,6 +32,7 @@ public class Attributes {
         return attr("class", existing + " " + className);
     }
     public Attributes style(String value) { return attr("style", value); }
+    public Attributes style(Style style) { return attr("style", style.build()); }
     public Attributes title(String value) { return attr("title", value); }
     public Attributes href(String value) { return attr("href", value); }
     public Attributes target(String value) { return attr("target", value); }
