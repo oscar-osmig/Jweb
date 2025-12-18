@@ -45,7 +45,7 @@ public class InputDemo implements Template {
         Func updateName = func("updateName")
             .var_("val", el("name-input").value())
             .set(el("name-display").text(),
-                v("val").eq("").ternary(str("..."), v("val")));
+                variable("val").eq("").ternary(str("..."), variable("val")));
 
         return script()
             .add(updateName)

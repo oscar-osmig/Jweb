@@ -11,11 +11,11 @@ import java.util.List;
  * import static com.osmig.Jweb.framework.js.JS.*;
  *
  * Func formatTime = func("formatTime", "seconds")
- *     .var_("hrs", floor(v("seconds").div(3600)))
- *     .ret(v("hrs").padStart(2, "0"));
+ *     .var_("hrs", floor(variable("seconds").div(3600)))
+ *     .ret(variable("hrs").padStart(2, "0"));
  *
  * Func startTimer = func("startTimer")
- *     .if_(v("running"), ret())
+ *     .if_(variable("running"), ret())
  *     .set("running", true)
  *     .set("interval", setInterval(callback().inc("count").call("update"), 1000));
  *
@@ -47,8 +47,8 @@ public final class JS {
 
     // ==================== Values ====================
 
-    /** Variable reference: v("count") -> count */
-    public static Val v(String name) {
+    /** Variable reference: variable("count") -> count */
+    public static Val variable(String name) {
         return new Val(name);
     }
 

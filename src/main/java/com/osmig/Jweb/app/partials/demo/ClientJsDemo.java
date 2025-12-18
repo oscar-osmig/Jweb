@@ -52,20 +52,20 @@ public class ClientJsDemo implements Template {
     private String timerScript() {
         // Functions defined separately - clean and readable
         Func formatTime = func("formatTime", "seconds")
-            .var_("hrs", floor(v("seconds").div(3600)))
-            .var_("mins", floor(v("seconds").mod(3600).div(60)))
-            .var_("secs", v("seconds").mod(60))
-            .ret(v("hrs").padStart(2, "0")
+            .var_("hrs", floor(variable("seconds").div(3600)))
+            .var_("mins", floor(variable("seconds").mod(3600).div(60)))
+            .var_("secs", variable("seconds").mod(60))
+            .ret(variable("hrs").padStart(2, "0")
                 .plus(":")
-                .plus(v("mins").padStart(2, "0"))
+                .plus(variable("mins").padStart(2, "0"))
                 .plus(":")
-                .plus(v("secs").padStart(2, "0")));
+                .plus(variable("secs").padStart(2, "0")));
 
         Func updateDisplay = func("updateDisplay")
-            .set(el("timer-display").text(), call("formatTime", v("timerSeconds")));
+            .set(el("timer-display").text(), call("formatTime", variable("timerSeconds")));
 
         Func startTimer = func("startTimer")
-            .if_(v("timerRunning"), ret())
+            .if_(variable("timerRunning"), ret())
             .set("timerRunning", true)
             .set("timerInterval", setInterval(
                 callback().inc("timerSeconds").call("updateDisplay"),
@@ -74,8 +74,8 @@ public class ClientJsDemo implements Template {
 
         Func stopTimer = func("stopTimer")
             .set("timerRunning", false)
-            .if_(v("timerInterval"),
-                clearInterval(v("timerInterval")))
+            .if_(variable("timerInterval"),
+                clearInterval(variable("timerInterval")))
             .set("timerInterval", null_());
 
         Func resetTimer = func("resetTimer")

@@ -43,7 +43,7 @@ public class CounterDemo implements Template {
 
     private String counterScript() {
         Func updateDisplay = func("updateCounterDisplay")
-            .set(el("counter-display").text(), v("counterValue"));
+            .set(el("counter-display").text(), variable("counterValue"));
 
         Func increment = func("increment")
             .inc("counterValue")

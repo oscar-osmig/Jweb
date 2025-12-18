@@ -3,17 +3,15 @@ package com.osmig.Jweb.app.partials.demo;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.elements.Elements;
 import com.osmig.Jweb.framework.js.JS.Func;
-import com.osmig.Jweb.framework.styles.Style;
-import com.osmig.Jweb.framework.styles.Styles;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.app.Theme.*;
 import static com.osmig.Jweb.framework.elements.Elements.*;
 import static com.osmig.Jweb.framework.js.JS.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSS2.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.Stylesheet.*;
 
 /**
  * Toggle/switch component - pure client-side JS.
@@ -44,11 +42,11 @@ public class ToggleDemo implements Template {
 
     private String toggleScript() {
         Func toggle = func("toggle")
-            .set("toggleState", v("toggleState").not())
+            .set("toggleState", variable("toggleState").not())
             .call("updateToggle");
 
         Func updateToggle = func("updateToggle")
-            .ifElse(v("toggleState"),
+            .ifElse(variable("toggleState"),
                 new Object[] {
                     el("toggle-btn").dot("classList").dot("add").invoke(str("toggle-on")),
                     el("toggle-status").text() + "='ON'"
@@ -67,8 +65,8 @@ public class ToggleDemo implements Template {
     }
 
     private String toggleCss() {
-        return stylesheet()
-            .rule(".toggle-btn", new Style()
+        return styles(
+            rule(".toggle-btn")
                 .width(px(60))
                 .height(px(32))
                 .borderRadius(px(9999))
@@ -77,10 +75,10 @@ public class ToggleDemo implements Template {
                 .cursor(pointer)
                 .position(relative)
                 .transition("background-color", ms(200), ease)
-                .padding(zero))
-            .rule(".toggle-btn.toggle-on", new Style()
-                .backgroundColor(hex("#10b981")))
-            .rule(".toggle-knob", new Style()
+                .padding(zero),
+            rule(".toggle-btn.toggle-on")
+                .backgroundColor(hex("#10b981")),
+            rule(".toggle-knob")
                 .width(px(26))
                 .height(px(26))
                 .borderRadius(px(9999))
@@ -89,9 +87,9 @@ public class ToggleDemo implements Template {
                 .top(px(3))
                 .left(px(3))
                 .transition("left", ms(200), ease)
-                .boxShadow(px(0), px(2), px(4), rgba(0, 0, 0, 0.2)))
-            .rule(".toggle-btn.toggle-on .toggle-knob", new Style()
-                .left(px(31)))
-            .build();
+                .boxShadow(px(0), px(2), px(4), rgba(0, 0, 0, 0.2)),
+            rule(".toggle-btn.toggle-on .toggle-knob")
+                .left(px(31))
+        );
     }
 }
