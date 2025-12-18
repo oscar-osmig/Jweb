@@ -27,23 +27,17 @@ public class HomePage implements Template {
     public Element render() {
         return new MainLayout("Home - JWeb",
             div(
-                // Hero section with animated entrance
+                // Hero section with animated entrance - centered in viewport
                 div(attrs().class_("slide-up").style()
+                        .display(flex)
+                        .flexDirection(column)
+                        .justifyContent(center)
+                        .alignItems(center)
                         .textAlign(center)
+                        .minHeight(vh(85))
                         .paddingTop(SPACE_XL)
                         .paddingBottom(SPACE_2XL)
                     .done(),
-                    // Badge
-                    span(attrs().style()
-                        .display(inlineBlock)
-                        .padding(SPACE_XS, SPACE_MD)
-                        .fontSize(FONT_SM)
-                        .fontWeight(500)
-                        .borderRadius(RADIUS_FULL)
-                        .backgroundColor(rgba(102, 126, 234, 0.1))
-                        .color(PRIMARY)
-                        .marginBottom(SPACE_MD)
-                    .done(), text("Java Web Framework")),
                     // Main heading with gradient
                     h1(attrs().class_("gradient-text").style()
                         .fontSize(rem(2.5))
@@ -94,6 +88,7 @@ public class HomePage implements Template {
                             .fontSize(FONT_2XL)
                             .color(TEXT)
                             .marginBottom(SPACE_SM)
+                                .marginTop(px(25))
                         .done(), text("Why Choose JWeb?")),
                         p(attrs().style()
                             .color(TEXT_LIGHT)
@@ -126,32 +121,6 @@ public class HomePage implements Template {
                             "\uD83E\uDDE9",
                             "scale-in delay-3"
                         )
-                    )
-                ),
-
-                // Tech stack section
-                div(attrs().style()
-                        .backgroundColor(BG_LIGHT)
-                        .borderRadius(RADIUS_LG)
-                        .padding(SPACE_XL)
-                        .marginTop(SPACE_XL)
-                        .textAlign(center)
-                    .done(),
-                    h3(attrs().style()
-                        .fontSize(FONT_XL)
-                        .color(TEXT)
-                        .marginBottom(SPACE_LG)
-                    .done(), text("Built With Modern Tech")),
-                    div(attrs().style()
-                            .display(flex)
-                            .justifyContent(center)
-                            .gap(SPACE_XL)
-                            .flexWrap(wrap)
-                        .done(),
-                        techBadge("Java 21"),
-                        techBadge("Spring Boot"),
-                        techBadge("Virtual DOM"),
-                        techBadge("CSS-in-Java")
                     )
                 )
             )

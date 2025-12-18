@@ -49,6 +49,7 @@ public class ContactPage implements Template {
                         .backgroundColor(rgba(102, 126, 234, 0.1))
                         .color(PRIMARY)
                         .marginBottom(SPACE_MD)
+                            .marginTop(px(325))
                     .done(), text("Get in Touch")),
                     h1(attrs().class_("gradient-text").style()
                         .fontSize(rem(2))
@@ -61,14 +62,6 @@ public class ContactPage implements Template {
                         .marginBottom(SPACE_XL)
                         .lineHeight(1.7)
                     .done(), text("Have a question, suggestion, or just want to say hello? We'd love to hear from you!")),
-
-                    // Contact info cards
-                    div(attrs().style().display(flex).flexDirection(column).gap(SPACE_MD).done(),
-                        contactInfo("\uD83D\uDCE7", "Email", "hello@jweb.dev"),
-                        contactInfo("\uD83D\uDCCD", "Location", "San Francisco, CA"),
-                        contactInfo("\u23F0", "Response Time", "Within 24 hours")
-                    ),
-
                     // Back link
                     a(attrs().href("/").style()
                         .display(inlineBlock)
@@ -78,7 +71,6 @@ public class ContactPage implements Template {
                         .fontWeight(500)
                     .done(), text("\u2190 Back to Home"))
                 ),
-
                 // Right side - Form
                 form(attrs()
                         .action("/contact")
@@ -87,6 +79,8 @@ public class ContactPage implements Template {
                         .style()
                             .flex(1, 1, px(400))
                             .maxWidth(px(480))
+                            .marginTop(px(60))
+                            .marginLeft(px(70))
                             .backgroundColor(white)
                             .padding(SPACE_XL)
                             .borderRadius(RADIUS_LG)
