@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.partials;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.js.JWebRuntime;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;

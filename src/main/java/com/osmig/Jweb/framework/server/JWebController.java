@@ -2,7 +2,9 @@ package com.osmig.Jweb.framework.server;
 
 import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.hydration.HydrationData;
 import com.osmig.Jweb.framework.routing.Router;
+import com.osmig.Jweb.framework.state.StateManager;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -27,7 +29,7 @@ public class JWebController {
         this.router = router;
     }
 
-    @RequestMapping("/**")
+    @RequestMapping(value = "/**")
     public ResponseEntity<String> handleRequest(
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
@@ -35,28 +37,44 @@ public class JWebController {
         String method = servletRequest.getMethod();
         String path = servletRequest.getRequestURI();
 
+        // Skip WebSocket upgrade requests
+        String upgradeHeader = servletRequest.getHeader("Upgrade");
+        if ("websocket".equalsIgnoreCase(upgradeHeader) || path.equals("/jweb")) {
+            return null; // Let WebSocket handler process it
+        }
+
         Optional<Router.RouteMatch> match = router.match(method, path);
 
         if (match.isEmpty()) {
             return handleNotFound(path);
         }
 
+        // Create state context for this request
+        StateManager.StateContext context = StateManager.createContext();
         try {
             Request request = new Request(servletRequest);
             Object result = match.get().handle(request);
-            return processResult(result);
+            return processResult(result, context);
         } catch (Exception e) {
             return handleError(e);
+        } finally {
+            // Don't clear context - keep it alive for WebSocket interactions
+            // Will be cleaned up on session timeout
         }
     }
 
-    private ResponseEntity<String> processResult(Object result) {
+    private ResponseEntity<String> processResult(Object result, StateManager.StateContext context) {
         if (result == null) {
             return ResponseEntity.ok().body("");
         }
 
         if (result instanceof Element element) {
             String html = element.toHtml();
+
+            // Inject hydration data with state and context info
+            String hydrationScript = buildHydrationScript(context);
+            html = injectHydrationData(html, hydrationScript);
+
             return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
@@ -77,6 +95,29 @@ public class JWebController {
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
             .body(result.toString());
+    }
+
+    private String buildHydrationScript(StateManager.StateContext context) {
+        HydrationData data = HydrationData.builder()
+            .contextId(context.getSessionId())
+            .states(new java.util.ArrayList<>(context.getStates().values()))
+            .build();
+        return data.toScriptTag();
+    }
+
+    private String injectHydrationData(String html, String hydrationScript) {
+        // Inject before </body> if present
+        int bodyEnd = html.lastIndexOf("</body>");
+        if (bodyEnd != -1) {
+            return html.substring(0, bodyEnd) + hydrationScript + html.substring(bodyEnd);
+        }
+        // Inject before </html> if no body
+        int htmlEnd = html.lastIndexOf("</html>");
+        if (htmlEnd != -1) {
+            return html.substring(0, htmlEnd) + hydrationScript + html.substring(htmlEnd);
+        }
+        // Append at end
+        return html + hydrationScript;
     }
 
     private ResponseEntity<String> handleNotFound(String path) {

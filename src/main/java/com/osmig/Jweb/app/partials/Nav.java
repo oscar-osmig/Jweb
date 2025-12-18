@@ -48,6 +48,7 @@ public class Nav implements Template {
                     .gap(SPACE_XS)
                 .done(),
                 navLink("/", "Home"),
+                navLink("/demo", "Demo"),
                 navLink("/about", "About"),
                 navLink("/contact", "Contact")
             )

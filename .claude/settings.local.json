@@ -7,7 +7,14 @@
       "Bash(cmd /c \"mvn compile 2>&1\")",
       "Bash(cmd /c \"netstat -ano | findstr :8080\")",
       "Bash(cmd /c \"netstat -ano\")",
-      "Bash(cmd /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile -q 2>&1\")"
+      "Bash(cmd /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile -q 2>&1\")",
+      "Bash(cmd /c \"mkdir \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\\src\\main\\java\\com\\osmig\\Jweb\\app\\partials\\demo\"\" 2>nul || echo exists\")",
+      "Bash(cmd /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile 2>&1\")",
+      "Bash(cmd /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile\")",
+      "Bash(cmd /c \"dir C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\\target\\classes\\com\\osmig\\Jweb\\framework\\state /b 2>&1\")",
+      "Bash(cmd /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn clean compile 2>&1 | findstr /I error\")",
+      "Bash(cmd /c:*)",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

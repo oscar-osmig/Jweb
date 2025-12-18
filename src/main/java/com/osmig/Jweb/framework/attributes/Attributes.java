@@ -1,10 +1,14 @@
 package com.osmig.Jweb.framework.attributes;
 
+import com.osmig.Jweb.framework.events.Event;
+import com.osmig.Jweb.framework.events.EventHandler;
+import com.osmig.Jweb.framework.events.EventRegistry;
 import com.osmig.Jweb.framework.styles.CSSValue;
 import com.osmig.Jweb.framework.styles.Style;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Fluent builder for HTML attributes.
@@ -176,6 +180,176 @@ public class Attributes {
     public Attributes role(String value) { return attr("role", value); }
     public Attributes colspan(int value) { return attr("colspan", String.valueOf(value)); }
     public Attributes rowspan(int value) { return attr("rowspan", String.valueOf(value)); }
+
+    // ==================== Event Handlers ====================
+
+    /**
+     * Registers a click event handler.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * button(attrs().onClick(e -> count.set(count.get() + 1)), text("Click"))
+     * </pre>
+     *
+     * @param handler the handler to execute on click
+     * @return this for chaining
+     */
+    public Attributes onClick(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("click", handler);
+        return attr("onclick", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a change event handler (for inputs, selects, textareas).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * input(attrs().onChange(e -> name.set(e.value())))
+     * </pre>
+     *
+     * @param handler the handler to execute on change
+     * @return this for chaining
+     */
+    public Attributes onChange(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("change", handler);
+        return attr("onchange", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers an input event handler (fires on every keystroke).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * input(attrs().onInput(e -> searchTerm.set(e.value())))
+     * </pre>
+     *
+     * @param handler the handler to execute on input
+     * @return this for chaining
+     */
+    public Attributes onInput(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("input", handler);
+        return attr("oninput", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a submit event handler for forms.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * form(attrs().onSubmit(e -> {
+     *     e.preventDefault();
+     *     submitForm(e.formData());
+     * }), ...)
+     * </pre>
+     *
+     * @param handler the handler to execute on submit
+     * @return this for chaining
+     */
+    public Attributes onSubmit(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("submit", handler);
+        return attr("onsubmit", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a focus event handler.
+     *
+     * @param handler the handler to execute on focus
+     * @return this for chaining
+     */
+    public Attributes onFocus(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("focus", handler);
+        return attr("onfocus", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a blur event handler (when element loses focus).
+     *
+     * @param handler the handler to execute on blur
+     * @return this for chaining
+     */
+    public Attributes onBlur(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("blur", handler);
+        return attr("onblur", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a keydown event handler.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * input(attrs().onKeyDown(e -> {
+     *     if ("Enter".equals(e.key())) submitSearch();
+     * }))
+     * </pre>
+     *
+     * @param handler the handler to execute on keydown
+     * @return this for chaining
+     */
+    public Attributes onKeyDown(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("keydown", handler);
+        return attr("onkeydown", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a keyup event handler.
+     *
+     * @param handler the handler to execute on keyup
+     * @return this for chaining
+     */
+    public Attributes onKeyUp(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("keyup", handler);
+        return attr("onkeyup", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a mouseenter event handler.
+     *
+     * @param handler the handler to execute on mouseenter
+     * @return this for chaining
+     */
+    public Attributes onMouseEnter(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("mouseenter", handler);
+        return attr("onmouseenter", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a mouseleave event handler.
+     *
+     * @param handler the handler to execute on mouseleave
+     * @return this for chaining
+     */
+    public Attributes onMouseLeave(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("mouseleave", handler);
+        return attr("onmouseleave", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a double-click event handler.
+     *
+     * @param handler the handler to execute on double-click
+     * @return this for chaining
+     */
+    public Attributes onDoubleClick(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("dblclick", handler);
+        return attr("ondblclick", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a generic event handler for any DOM event type.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs().on("scroll", e -> handleScroll(e)))
+     * </pre>
+     *
+     * @param eventType the DOM event type (click, change, scroll, etc.)
+     * @param handler the handler to execute
+     * @return this for chaining
+     */
+    public Attributes on(String eventType, Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register(eventType, handler);
+        return attr("on" + eventType, eh.toJsAttribute());
+    }
 
     public Attributes attr(String name, String value) {
         attributes.put(name, value);
