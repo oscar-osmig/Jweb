@@ -281,6 +281,18 @@ public class Style implements CSSValue {
     public Style animation(CSSValue name, CSSValue duration, CSSValue timing) {
         return prop("animation", name.css() + " " + duration.css() + " " + timing.css());
     }
+    public Style animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay) {
+        return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css());
+    }
+    public Style animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount) {
+        return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css());
+    }
+    public Style animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction) {
+        return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css() + " " + direction.css());
+    }
+    public Style animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction, CSSValue fillMode) {
+        return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css() + " " + direction.css() + " " + fillMode.css());
+    }
     public Style animationName(CSSValue value) { return prop("animation-name", value); }
     public Style animationDuration(CSSValue value) { return prop("animation-duration", value); }
     public Style animationTimingFunction(CSSValue value) { return prop("animation-timing-function", value); }

@@ -809,7 +809,10 @@ public final class CSS {
         public StyleBuilder borderRadius(CSSValue topLeft, CSSValue topRight, CSSValue bottomRight, CSSValue bottomLeft) {
             return prop("border-radius", topLeft.css() + " " + topRight.css() + " " + bottomRight.css() + " " + bottomLeft.css());
         }
-        public StyleBuilder borderCollapse(CSSValue value) { return prop("border-collapse", value); }
+        public StyleBuilder borderTopLeftRadius(CSSValue value) { return prop("border-top-left-radius", value); }
+        public StyleBuilder borderTopRightRadius(CSSValue value) { return prop("border-top-right-radius", value); }
+        public StyleBuilder borderBottomRightRadius(CSSValue value) { return prop("border-bottom-right-radius", value); }
+        public StyleBuilder borderBottomLeftRadius(CSSValue value) { return prop("border-bottom-left-radius", value); }
 
         // ==================== Background ====================
 
@@ -822,6 +825,7 @@ public final class CSS {
         }
         public StyleBuilder backgroundPosition(CSSValue value) { return prop("background-position", value); }
         public StyleBuilder backgroundRepeat(CSSValue value) { return prop("background-repeat", value); }
+        public StyleBuilder backgroundAttachment(CSSValue value) { return prop("background-attachment", value); }
 
         // ==================== Typography ====================
 
@@ -834,12 +838,15 @@ public final class CSS {
         public StyleBuilder lineHeight(CSSValue value) { return prop("line-height", value); }
         public StyleBuilder lineHeight(double value) { return prop("line-height", String.valueOf(value)); }
         public StyleBuilder letterSpacing(CSSValue value) { return prop("letter-spacing", value); }
+        public StyleBuilder wordSpacing(CSSValue value) { return prop("word-spacing", value); }
         public StyleBuilder textAlign(CSSValue value) { return prop("text-align", value); }
         public StyleBuilder textDecoration(CSSValue value) { return prop("text-decoration", value); }
         public StyleBuilder textTransform(CSSValue value) { return prop("text-transform", value); }
         public StyleBuilder whiteSpace(CSSValue value) { return prop("white-space", value); }
         public StyleBuilder wordBreak(CSSValue value) { return prop("word-break", value); }
+        public StyleBuilder overflowWrap(CSSValue value) { return prop("overflow-wrap", value); }
         public StyleBuilder textShadow(String value) { return prop("text-shadow", value); }
+        public StyleBuilder textIndent(CSSValue value) { return prop("text-indent", value); }
 
         // ==================== Flexbox ====================
 
@@ -852,6 +859,9 @@ public final class CSS {
         public StyleBuilder flex(CSSValue value) { return prop("flex", value); }
         public StyleBuilder flex(int grow, int shrink, CSSValue basis) {
             return prop("flex", grow + " " + shrink + " " + basis.css());
+        }
+        public StyleBuilder flexFlow(CSSValue direction, CSSValue wrap) {
+            return prop("flex-flow", direction.css() + " " + wrap.css());
         }
         public StyleBuilder flexGrow(int value) { return prop("flex-grow", String.valueOf(value)); }
         public StyleBuilder flexShrink(int value) { return prop("flex-shrink", String.valueOf(value)); }
@@ -871,6 +881,10 @@ public final class CSS {
         public StyleBuilder gridColumn(String value) { return prop("grid-column", value); }
         public StyleBuilder gridRow(String value) { return prop("grid-row", value); }
         public StyleBuilder gridArea(String value) { return prop("grid-area", value); }
+        public StyleBuilder gridAutoFlow(CSSValue value) { return prop("grid-auto-flow", value); }
+        public StyleBuilder justifyItems(CSSValue value) { return prop("justify-items", value); }
+        public StyleBuilder placeItems(CSSValue value) { return prop("place-items", value); }
+        public StyleBuilder placeContent(CSSValue value) { return prop("place-content", value); }
 
         // ==================== Position ====================
 
@@ -880,6 +894,9 @@ public final class CSS {
         public StyleBuilder bottom(CSSValue value) { return prop("bottom", value); }
         public StyleBuilder left(CSSValue value) { return prop("left", value); }
         public StyleBuilder inset(CSSValue value) { return prop("inset", value); }
+        public StyleBuilder inset(CSSValue vertical, CSSValue horizontal) {
+            return prop("inset", vertical.css() + " " + horizontal.css());
+        }
         public StyleBuilder zIndex(int value) { return prop("z-index", String.valueOf(value)); }
 
         // ==================== Overflow ====================
@@ -971,9 +988,13 @@ public final class CSS {
 
         public StyleBuilder listStyle(CSSValue value) { return prop("list-style", value); }
         public StyleBuilder listStyleType(CSSValue value) { return prop("list-style-type", value); }
+        public StyleBuilder listStylePosition(CSSValue value) { return prop("list-style-position", value); }
 
         // ==================== Table ====================
 
+        public StyleBuilder borderCollapse(CSSValue value) { return prop("border-collapse", value); }
+        public StyleBuilder borderSpacing(CSSValue value) { return prop("border-spacing", value); }
+        public StyleBuilder tableLayout(CSSValue value) { return prop("table-layout", value); }
         public StyleBuilder verticalAlign(CSSValue value) { return prop("vertical-align", value); }
 
         // ==================== Object Fit ====================
@@ -1031,6 +1052,107 @@ public final class CSS {
         // ==================== Clip Path ====================
 
         public StyleBuilder clipPath(CSSValue value) { return prop("clip-path", value); }
+
+        // ==================== Aspect Ratio ====================
+
+        public StyleBuilder aspectRatio(String value) { return prop("aspect-ratio", value); }
+        public StyleBuilder aspectRatio(int width, int height) {
+            return prop("aspect-ratio", width + " / " + height);
+        }
+
+        // ==================== Scroll ====================
+
+        public StyleBuilder scrollMargin(CSSValue value) { return prop("scroll-margin", value); }
+        public StyleBuilder scrollPadding(CSSValue value) { return prop("scroll-padding", value); }
+
+        // ==================== Logical Properties ====================
+
+        // Margin logical properties
+        public StyleBuilder marginInline(CSSValue value) { return prop("margin-inline", value); }
+        public StyleBuilder marginInline(CSSValue start, CSSValue end) {
+            return prop("margin-inline", start.css() + " " + end.css());
+        }
+        public StyleBuilder marginInlineStart(CSSValue value) { return prop("margin-inline-start", value); }
+        public StyleBuilder marginInlineEnd(CSSValue value) { return prop("margin-inline-end", value); }
+        public StyleBuilder marginBlock(CSSValue value) { return prop("margin-block", value); }
+        public StyleBuilder marginBlock(CSSValue start, CSSValue end) {
+            return prop("margin-block", start.css() + " " + end.css());
+        }
+        public StyleBuilder marginBlockStart(CSSValue value) { return prop("margin-block-start", value); }
+        public StyleBuilder marginBlockEnd(CSSValue value) { return prop("margin-block-end", value); }
+
+        // Padding logical properties
+        public StyleBuilder paddingInline(CSSValue value) { return prop("padding-inline", value); }
+        public StyleBuilder paddingInline(CSSValue start, CSSValue end) {
+            return prop("padding-inline", start.css() + " " + end.css());
+        }
+        public StyleBuilder paddingInlineStart(CSSValue value) { return prop("padding-inline-start", value); }
+        public StyleBuilder paddingInlineEnd(CSSValue value) { return prop("padding-inline-end", value); }
+        public StyleBuilder paddingBlock(CSSValue value) { return prop("padding-block", value); }
+        public StyleBuilder paddingBlock(CSSValue start, CSSValue end) {
+            return prop("padding-block", start.css() + " " + end.css());
+        }
+        public StyleBuilder paddingBlockStart(CSSValue value) { return prop("padding-block-start", value); }
+        public StyleBuilder paddingBlockEnd(CSSValue value) { return prop("padding-block-end", value); }
+
+        // Size logical properties
+        public StyleBuilder inlineSize(CSSValue value) { return prop("inline-size", value); }
+        public StyleBuilder blockSize(CSSValue value) { return prop("block-size", value); }
+        public StyleBuilder minInlineSize(CSSValue value) { return prop("min-inline-size", value); }
+        public StyleBuilder maxInlineSize(CSSValue value) { return prop("max-inline-size", value); }
+        public StyleBuilder minBlockSize(CSSValue value) { return prop("min-block-size", value); }
+        public StyleBuilder maxBlockSize(CSSValue value) { return prop("max-block-size", value); }
+
+        // Position logical properties
+        public StyleBuilder insetInline(CSSValue value) { return prop("inset-inline", value); }
+        public StyleBuilder insetInline(CSSValue start, CSSValue end) {
+            return prop("inset-inline", start.css() + " " + end.css());
+        }
+        public StyleBuilder insetInlineStart(CSSValue value) { return prop("inset-inline-start", value); }
+        public StyleBuilder insetInlineEnd(CSSValue value) { return prop("inset-inline-end", value); }
+        public StyleBuilder insetBlock(CSSValue value) { return prop("inset-block", value); }
+        public StyleBuilder insetBlock(CSSValue start, CSSValue end) {
+            return prop("inset-block", start.css() + " " + end.css());
+        }
+        public StyleBuilder insetBlockStart(CSSValue value) { return prop("inset-block-start", value); }
+        public StyleBuilder insetBlockEnd(CSSValue value) { return prop("inset-block-end", value); }
+
+        // Border logical properties
+        public StyleBuilder borderInline(CSSValue width, CSSValue style, CSSValue color) {
+            return prop("border-inline", width.css() + " " + style.css() + " " + color.css());
+        }
+        public StyleBuilder borderInlineStart(CSSValue width, CSSValue style, CSSValue color) {
+            return prop("border-inline-start", width.css() + " " + style.css() + " " + color.css());
+        }
+        public StyleBuilder borderInlineEnd(CSSValue width, CSSValue style, CSSValue color) {
+            return prop("border-inline-end", width.css() + " " + style.css() + " " + color.css());
+        }
+        public StyleBuilder borderBlock(CSSValue width, CSSValue style, CSSValue color) {
+            return prop("border-block", width.css() + " " + style.css() + " " + color.css());
+        }
+        public StyleBuilder borderBlockStart(CSSValue width, CSSValue style, CSSValue color) {
+            return prop("border-block-start", width.css() + " " + style.css() + " " + color.css());
+        }
+        public StyleBuilder borderBlockEnd(CSSValue width, CSSValue style, CSSValue color) {
+            return prop("border-block-end", width.css() + " " + style.css() + " " + color.css());
+        }
+
+        // Border radius logical properties
+        public StyleBuilder borderStartStartRadius(CSSValue value) { return prop("border-start-start-radius", value); }
+        public StyleBuilder borderStartEndRadius(CSSValue value) { return prop("border-start-end-radius", value); }
+        public StyleBuilder borderEndStartRadius(CSSValue value) { return prop("border-end-start-radius", value); }
+        public StyleBuilder borderEndEndRadius(CSSValue value) { return prop("border-end-end-radius", value); }
+
+        // Text alignment logical
+        public StyleBuilder textAlignLast(CSSValue value) { return prop("text-align-last", value); }
+
+        // ==================== Container Queries ====================
+
+        public StyleBuilder containerType(CSSValue value) { return prop("container-type", value); }
+        public StyleBuilder containerName(String name) { return prop("container-name", name); }
+        public StyleBuilder container(String name, CSSValue type) {
+            return prop("container", name + " / " + type.css());
+        }
 
         // ==================== CSS Variables ====================
 
