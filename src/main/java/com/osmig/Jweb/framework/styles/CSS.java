@@ -49,6 +49,13 @@ public final class CSS {
     }
 
     /**
+     * Create a CSS rule using selector builder.
+     */
+    public static StyleBuilder rule(Selector selector) {
+        return new StyleBuilder(selector.build());
+    }
+
+    /**
      * Combine multiple CSS rules into a stylesheet string.
      */
     public static String styles(StyleBuilder... rules) {
@@ -58,6 +65,192 @@ public final class CSS {
             sb.append(rules[i].toRule());
         }
         return sb.toString();
+    }
+
+    // ==================== Selector Builder ====================
+
+    /**
+     * Start building a selector.
+     */
+    public static Selector select() {
+        return new Selector();
+    }
+
+    /**
+     * Universal selector (*).
+     */
+    public static Selector all() {
+        return new Selector().all();
+    }
+
+    /**
+     * Element/tag type selector.
+     */
+    public static Selector tag(String tagName) {
+        return new Selector().tag(tagName);
+    }
+
+    /**
+     * Class selector.
+     */
+    public static Selector cls(String className) {
+        return new Selector().cls(className);
+    }
+
+    /**
+     * ID selector.
+     */
+    public static Selector id(String idName) {
+        return new Selector().id(idName);
+    }
+
+    /**
+     * Selector builder for complex CSS selectors.
+     */
+    public static class Selector {
+        private final StringBuilder sb = new StringBuilder();
+
+        public Selector all() { sb.append("*"); return this; }
+        public Selector tag(String tagName) { sb.append(tagName); return this; }
+        public Selector cls(String className) { sb.append(".").append(className); return this; }
+        public Selector id(String idName) { sb.append("#").append(idName); return this; }
+
+        /** Pseudo-class (e.g., hover, focus, first-child) */
+        public Selector pseudo(String name) { sb.append(":").append(name); return this; }
+        public Selector hover() { return pseudo("hover"); }
+        public Selector focus() { return pseudo("focus"); }
+        public Selector active() { return pseudo("active"); }
+        public Selector visited() { return pseudo("visited"); }
+        public Selector firstChild() { return pseudo("first-child"); }
+        public Selector lastChild() { return pseudo("last-child"); }
+        public Selector nthChild(int n) { sb.append(":nth-child(").append(n).append(")"); return this; }
+        public Selector nthChild(String pattern) { sb.append(":nth-child(").append(pattern).append(")"); return this; }
+        public Selector focusVisible() { return pseudo("focus-visible"); }
+        public Selector focusWithin() { return pseudo("focus-within"); }
+        public Selector disabled() { return pseudo("disabled"); }
+        public Selector enabled() { return pseudo("enabled"); }
+        public Selector checked() { return pseudo("checked"); }
+        public Selector empty() { return pseudo("empty"); }
+        public Selector not(Selector inner) { sb.append(":not(").append(inner.build()).append(")"); return this; }
+
+        /** Pseudo-element (e.g., before, after) */
+        public Selector pseudoEl(String name) { sb.append("::").append(name); return this; }
+        public Selector before() { return pseudoEl("before"); }
+        public Selector after() { return pseudoEl("after"); }
+        public Selector placeholder() { return pseudoEl("placeholder"); }
+        public Selector selection() { return pseudoEl("selection"); }
+        public Selector firstLine() { return pseudoEl("first-line"); }
+        public Selector firstLetter() { return pseudoEl("first-letter"); }
+
+        /** Attribute selectors */
+        public Selector attr(String name) { sb.append("[").append(name).append("]"); return this; }
+        public Selector attr(String name, String value) { sb.append("[").append(name).append("=\"").append(value).append("\"]"); return this; }
+        public Selector attrContains(String name, String value) { sb.append("[").append(name).append("*=\"").append(value).append("\"]"); return this; }
+        public Selector attrStartsWith(String name, String value) { sb.append("[").append(name).append("^=\"").append(value).append("\"]"); return this; }
+        public Selector attrEndsWith(String name, String value) { sb.append("[").append(name).append("$=\"").append(value).append("\"]"); return this; }
+
+        /** Descendant combinator (space) */
+        public Selector descendant(String selector) { sb.append(" ").append(selector); return this; }
+        public Selector descendant(Selector selector) { sb.append(" ").append(selector.build()); return this; }
+
+        /** Child combinator (>) */
+        public Selector child(String selector) { sb.append(" > ").append(selector); return this; }
+        public Selector child(Selector selector) { sb.append(" > ").append(selector.build()); return this; }
+
+        /** Adjacent sibling combinator (+) */
+        public Selector adjacent(String selector) { sb.append(" + ").append(selector); return this; }
+        public Selector adjacent(Selector selector) { sb.append(" + ").append(selector.build()); return this; }
+
+        /** General sibling combinator (~) */
+        public Selector sibling(String selector) { sb.append(" ~ ").append(selector); return this; }
+        public Selector sibling(Selector selector) { sb.append(" ~ ").append(selector.build()); return this; }
+
+        /** Combine with another selector (comma-separated) */
+        public Selector or(String selector) { sb.append(", ").append(selector); return this; }
+        public Selector or(Selector selector) { sb.append(", ").append(selector.build()); return this; }
+
+        /** Raw append for edge cases */
+        public Selector raw(String s) { sb.append(s); return this; }
+
+        public String build() { return sb.toString(); }
+        @Override public String toString() { return build(); }
+    }
+
+    // ==================== Transition Builder ====================
+
+    /**
+     * Build multiple transitions.
+     * Usage: transitions(trans("color", s(0.2), ease), trans("transform", s(0.3), easeOut))
+     */
+    public static CSSValue transitions(Transition... transitions) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < transitions.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(transitions[i].build());
+        }
+        String result = sb.toString();
+        return () -> result;
+    }
+
+    /**
+     * Create a single transition.
+     */
+    public static Transition trans(CSSValue property, CSSValue duration) {
+        return new Transition(property, duration, null, null);
+    }
+
+    public static Transition trans(CSSValue property, CSSValue duration, CSSValue timing) {
+        return new Transition(property, duration, timing, null);
+    }
+
+    public static Transition trans(CSSValue property, CSSValue duration, CSSValue timing, CSSValue delay) {
+        return new Transition(property, duration, timing, delay);
+    }
+
+    /** Common CSS properties as values for transitions */
+    public static final CSSValue propTransform = () -> "transform";
+    public static final CSSValue propColor = () -> "color";
+    public static final CSSValue propBackground = () -> "background";
+    public static final CSSValue propBackgroundColor = () -> "background-color";
+    public static final CSSValue propBorderColor = () -> "border-color";
+    public static final CSSValue propBoxShadow = () -> "box-shadow";
+    public static final CSSValue propOpacity = () -> "opacity";
+    public static final CSSValue propWidth = () -> "width";
+    public static final CSSValue propHeight = () -> "height";
+    public static final CSSValue propTop = () -> "top";
+    public static final CSSValue propLeft = () -> "left";
+    public static final CSSValue propRight = () -> "right";
+    public static final CSSValue propBottom = () -> "bottom";
+
+    public static class Transition {
+        private final CSSValue property;
+        private final CSSValue duration;
+        private final CSSValue timing;
+        private final CSSValue delay;
+
+        Transition(CSSValue property, CSSValue duration, CSSValue timing, CSSValue delay) {
+            this.property = property;
+            this.duration = duration;
+            this.timing = timing;
+            this.delay = delay;
+        }
+
+        public String build() {
+            StringBuilder sb = new StringBuilder(property.css());
+            sb.append(" ").append(duration.css());
+            if (timing != null) sb.append(" ").append(timing.css());
+            if (delay != null) sb.append(" ").append(delay.css());
+            return sb.toString();
+        }
+    }
+
+    // ==================== Animation Name ====================
+
+    /**
+     * Creates an animation name as a CSSValue for use in animation() calls.
+     */
+    public static CSSValue anim(String name) {
+        return () -> name;
     }
 
     // ==================== Common Values ====================
@@ -223,6 +416,30 @@ public final class CSS {
     public static final CSSValue selectNone = () -> "none";
     public static final CSSValue selectText = () -> "text";
     public static final CSSValue selectAll = () -> "all";
+
+    // Scroll behavior
+    public static final CSSValue smooth = () -> "smooth";
+
+    // Animation fill mode
+    public static final CSSValue forwards = () -> "forwards";
+    public static final CSSValue backwards = () -> "backwards";
+    public static final CSSValue animationBoth = () -> "both";
+
+    // Animation iteration
+    public static final CSSValue infinite = () -> "infinite";
+
+    // Animation direction
+    public static final CSSValue alternate = () -> "alternate";
+    public static final CSSValue alternateReverse = () -> "alternate-reverse";
+    public static final CSSValue reverse = () -> "reverse";
+
+    // Font smoothing
+    public static final CSSValue antialiased = () -> "antialiased";
+    public static final CSSValue grayscale_ = () -> "grayscale";  // for -moz-osx-font-smoothing
+
+    // Background clip values
+    public static final CSSValue paddingBox = () -> "padding-box";
+    // text already exists as cursor value, works for background-clip too
 
     // CSS Variable reference
     public static CSSValue var(String name) {
@@ -600,6 +817,9 @@ public final class CSS {
         public StyleBuilder backgroundColor(CSSValue value) { return prop("background-color", value); }
         public StyleBuilder backgroundImage(CSSValue value) { return prop("background-image", value); }
         public StyleBuilder backgroundSize(CSSValue value) { return prop("background-size", value); }
+        public StyleBuilder backgroundSize(CSSValue width, CSSValue height) {
+            return prop("background-size", width.css() + " " + height.css());
+        }
         public StyleBuilder backgroundPosition(CSSValue value) { return prop("background-position", value); }
         public StyleBuilder backgroundRepeat(CSSValue value) { return prop("background-repeat", value); }
 
@@ -693,17 +913,42 @@ public final class CSS {
 
         // ==================== Transition ====================
 
-        public StyleBuilder transition(String property, CSSValue duration, CSSValue timing) {
-            return prop("transition", property + " " + duration.css() + " " + timing.css());
+        public StyleBuilder transition(CSSValue property, CSSValue duration, CSSValue timing) {
+            return prop("transition", property.css() + " " + duration.css() + " " + timing.css());
         }
-        public StyleBuilder transition(String property, CSSValue duration) {
-            return prop("transition", property + " " + duration.css());
+        public StyleBuilder transition(CSSValue property, CSSValue duration) {
+            return prop("transition", property.css() + " " + duration.css());
         }
-        public StyleBuilder transition(String value) { return prop("transition", value); }
+        public StyleBuilder transition(CSSValue value) { return prop("transition", value); }
+        public StyleBuilder transitionDuration(CSSValue value) { return prop("transition-duration", value); }
+        public StyleBuilder transitionProperty(CSSValue value) { return prop("transition-property", value); }
+        public StyleBuilder transitionTimingFunction(CSSValue value) { return prop("transition-timing-function", value); }
+        public StyleBuilder transitionDelay(CSSValue value) { return prop("transition-delay", value); }
 
         // ==================== Animation ====================
 
-        public StyleBuilder animation(String value) { return prop("animation", value); }
+        public StyleBuilder animation(CSSValue name, CSSValue duration, CSSValue timing) {
+            return prop("animation", name.css() + " " + duration.css() + " " + timing.css());
+        }
+        public StyleBuilder animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay) {
+            return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css());
+        }
+        public StyleBuilder animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount) {
+            return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css());
+        }
+        public StyleBuilder animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction) {
+            return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css() + " " + direction.css());
+        }
+        public StyleBuilder animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction, CSSValue fillMode) {
+            return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css() + " " + direction.css() + " " + fillMode.css());
+        }
+        public StyleBuilder animationName(CSSValue value) { return prop("animation-name", value); }
+        public StyleBuilder animationDuration(CSSValue value) { return prop("animation-duration", value); }
+        public StyleBuilder animationTimingFunction(CSSValue value) { return prop("animation-timing-function", value); }
+        public StyleBuilder animationDelay(CSSValue value) { return prop("animation-delay", value); }
+        public StyleBuilder animationIterationCount(CSSValue value) { return prop("animation-iteration-count", value); }
+        public StyleBuilder animationDirection(CSSValue value) { return prop("animation-direction", value); }
+        public StyleBuilder animationFillMode(CSSValue value) { return prop("animation-fill-mode", value); }
 
         // ==================== Box Shadow ====================
 
@@ -734,6 +979,58 @@ public final class CSS {
         // ==================== Object Fit ====================
 
         public StyleBuilder objectFit(CSSValue value) { return prop("object-fit", value); }
+        public StyleBuilder objectPosition(String value) { return prop("object-position", value); }
+
+        // ==================== Resize ====================
+
+        public StyleBuilder resize(CSSValue value) { return prop("resize", value); }
+
+        // ==================== Scroll Behavior ====================
+
+        public StyleBuilder scrollBehavior(CSSValue value) { return prop("scroll-behavior", value); }
+
+        // ==================== Font Smoothing (Webkit) ====================
+
+        public StyleBuilder webkitFontSmoothing(CSSValue value) { return prop("-webkit-font-smoothing", value); }
+        public StyleBuilder mozOsxFontSmoothing(CSSValue value) { return prop("-moz-osx-font-smoothing", value); }
+
+        // ==================== Background Clip ====================
+
+        public StyleBuilder backgroundClip(CSSValue value) { return prop("background-clip", value); }
+        public StyleBuilder webkitBackgroundClip(CSSValue value) { return prop("-webkit-background-clip", value); }
+        public StyleBuilder webkitTextFillColor(CSSValue value) { return prop("-webkit-text-fill-color", value); }
+
+        // ==================== Content ====================
+
+        public StyleBuilder content(String value) { return prop("content", "'" + value + "'"); }
+        public StyleBuilder content(CSSValue value) { return prop("content", value); }
+
+        // ==================== Outline ====================
+
+        public StyleBuilder outlineOffset(CSSValue value) { return prop("outline-offset", value); }
+
+        // ==================== Filter ====================
+
+        public StyleBuilder filter(CSSValue... filters) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < filters.length; i++) {
+                if (i > 0) sb.append(" ");
+                sb.append(filters[i].css());
+            }
+            return prop("filter", sb.toString());
+        }
+        public StyleBuilder backdropFilter(CSSValue... filters) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < filters.length; i++) {
+                if (i > 0) sb.append(" ");
+                sb.append(filters[i].css());
+            }
+            return prop("backdrop-filter", sb.toString());
+        }
+
+        // ==================== Clip Path ====================
+
+        public StyleBuilder clipPath(CSSValue value) { return prop("clip-path", value); }
 
         // ==================== CSS Variables ====================
 

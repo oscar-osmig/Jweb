@@ -262,30 +262,32 @@ public class Style implements CSSValue {
 
     // ==================== Transition ====================
 
-    public Style transition(String property, CSSValue duration, CSSValue timing) {
-        return prop("transition", property + " " + duration.css() + " " + timing.css());
+    public Style transition(CSSValue property, CSSValue duration, CSSValue timing) {
+        return prop("transition", property.css() + " " + duration.css() + " " + timing.css());
     }
 
-    public Style transition(String property, CSSValue duration) {
-        return prop("transition", property + " " + duration.css());
+    public Style transition(CSSValue property, CSSValue duration) {
+        return prop("transition", property.css() + " " + duration.css());
     }
 
-    public Style transition(String value) { return prop("transition", value); }
-    public Style transitionProperty(String value) { return prop("transition-property", value); }
+    public Style transition(CSSValue value) { return prop("transition", value); }
+    public Style transitionProperty(CSSValue value) { return prop("transition-property", value); }
     public Style transitionDuration(CSSValue value) { return prop("transition-duration", value); }
     public Style transitionTimingFunction(CSSValue value) { return prop("transition-timing-function", value); }
     public Style transitionDelay(CSSValue value) { return prop("transition-delay", value); }
 
     // ==================== Animation ====================
 
-    public Style animation(String value) { return prop("animation", value); }
-    public Style animationName(String value) { return prop("animation-name", value); }
+    public Style animation(CSSValue name, CSSValue duration, CSSValue timing) {
+        return prop("animation", name.css() + " " + duration.css() + " " + timing.css());
+    }
+    public Style animationName(CSSValue value) { return prop("animation-name", value); }
     public Style animationDuration(CSSValue value) { return prop("animation-duration", value); }
     public Style animationTimingFunction(CSSValue value) { return prop("animation-timing-function", value); }
     public Style animationDelay(CSSValue value) { return prop("animation-delay", value); }
-    public Style animationIterationCount(String value) { return prop("animation-iteration-count", value); }
-    public Style animationDirection(String value) { return prop("animation-direction", value); }
-    public Style animationFillMode(String value) { return prop("animation-fill-mode", value); }
+    public Style animationIterationCount(CSSValue value) { return prop("animation-iteration-count", value); }
+    public Style animationDirection(CSSValue value) { return prop("animation-direction", value); }
+    public Style animationFillMode(CSSValue value) { return prop("animation-fill-mode", value); }
 
     // ==================== Box Shadow ====================
 

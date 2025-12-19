@@ -137,7 +137,7 @@ public final class Theme {
             .fontWeight(600)
             .borderRadius(RADIUS_SM)
             .cursor(pointer)
-            .transition("all", TRANSITION_FAST, ease);
+            .transition(all, TRANSITION_FAST, ease);
     }
 
     /** Secondary button style */
@@ -151,7 +151,7 @@ public final class Theme {
             .fontWeight(600)
             .borderRadius(RADIUS_SM)
             .cursor(pointer)
-            .transition("all", TRANSITION_FAST, ease);
+            .transition(all, TRANSITION_FAST, ease);
     }
 
     /** Badge/tag style */
@@ -175,6 +175,6 @@ public final class Theme {
             .border(px(1), solid, BORDER)
             .borderRadius(RADIUS_SM)
             .backgroundColor(white)
-            .transition("border-color", TRANSITION_FAST, ease);
+            .transition(propBorderColor, TRANSITION_FAST, ease);
     }
 }

@@ -148,7 +148,7 @@ public class ContactPage implements Template {
                             .fontWeight(600)
                             .borderRadius(RADIUS_MD)
                             .cursor(pointer)
-                            .transition("all", TRANSITION_FAST, ease)
+                            .transition(all, TRANSITION_FAST, ease)
                             .display(flex)
                             .alignItems(center)
                             .justifyContent(center)
@@ -230,6 +230,6 @@ public class ContactPage implements Template {
             .border(px(1), solid, BORDER)
             .borderRadius(RADIUS_MD)
             .backgroundColor(white)
-            .transition("all", TRANSITION_FAST, ease);
+            .transition(all, TRANSITION_FAST, ease);
     }
 }

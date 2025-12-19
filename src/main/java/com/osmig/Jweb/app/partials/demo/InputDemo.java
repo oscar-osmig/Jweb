@@ -42,8 +42,8 @@ public class InputDemo implements Template {
 
     private String inputScript() {
         Func updateName = func("updateName")
-            .var_("val", elem("name-input").value())
-            .set(elem("name-display").text(),
+            .var_("val", getElem("name-input").value())
+            .set(getElem("name-display").text(),
                 variable("val").eq("").ternary(str("..."), variable("val")));
 
         return script()

@@ -40,119 +40,105 @@ public class Head implements Template {
     }
 
     private String globalStyles() {
-        return """
-            *, *::before, *::after {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-            html {
-                font-size: 16px;
-                -webkit-font-smoothing: antialiased;
-                scroll-behavior: smooth;
-            }
-            body {
-                font-family: %s;
-                line-height: 1.6;
-                color: %s;
-                background-color: %s;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-            }
-            a {
-                color: %s;
-                text-decoration: none;
-                transition: color 0.2s ease;
-            }
-            a:hover {
-                color: %s;
-            }
-            img {
-                max-width: 100%%;
-                height: auto;
-            }
-            /* Card hover effects */
-            .card {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
-            }
-            .card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 8px 24px %s;
-            }
-            /* Button hover effects */
-            .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px %s;
-            }
-            /* Nav link hover */
-            .navbar a:hover {
-                background: rgba(255,255,255,0.15);
-                text-decoration: none;
-            }
-            /* Focus styles for accessibility */
-            :focus-visible {
-                outline: 2px solid %s;
-                outline-offset: 2px;
-            }
-            /* Form input focus */
-            input:focus, textarea:focus {
-                border-color: %s !important;
-                box-shadow: 0 0 0 3px %s;
-            }
-            /* Animate elements on page load */
-            .fade-in {
-                animation: fadeIn 0.5s ease-out forwards;
-            }
-            .slide-up {
-                animation: slideUp 0.6s ease-out forwards;
-            }
-            .scale-in {
-                animation: scaleIn 0.4s ease-out forwards;
-            }
-            /* Staggered animation delays */
-            .delay-1 { animation-delay: 0.1s; opacity: 0; }
-            .delay-2 { animation-delay: 0.2s; opacity: 0; }
-            .delay-3 { animation-delay: 0.3s; opacity: 0; }
-            .delay-4 { animation-delay: 0.4s; opacity: 0; }
-            /* Feature icon animation on hover */
-            .feature-icon {
-                transition: transform 0.3s ease;
-            }
-            .feature-icon:hover {
-                transform: scale(1.1);
-            }
-            /* Gradient text */
-            .gradient-text {
-                background: linear-gradient(135deg, %s, %s);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-            /* Animated gradient background */
-            .gradient-bg {
-                background: linear-gradient(-45deg, %s, %s, %s, %s);
-                background-size: 400%% 400%%;
-                animation: gradientShift 15s ease infinite;
-            }
-            """.formatted(
-                FONT_FAMILY,
-                TEXT.css(),
-                BG.css(),
-                PRIMARY.css(),
-                PRIMARY_DARK.css(),
-                SHADOW_HOVER.css(),
-                SHADOW.css(),
-                PRIMARY.css(),
-                PRIMARY.css(),
-                rgba(102, 126, 234, 0.2).css(),
-                PRIMARY.css(),
-                SECONDARY.css(),
-                hex("#667eea").css(),
-                hex("#764ba2").css(),
-                hex("#f093fb").css(),
-                hex("#f5576c").css()
-            );
+        return styles(
+            // Reset
+            rule(all().or(all().before()).or(all().after()))
+                .boxSizing(borderBox)
+                .margin(zero)
+                .padding(zero),
+            rule(tag("html"))
+                .fontSize(px(16))
+                .webkitFontSmoothing(antialiased)
+                .scrollBehavior(smooth),
+            rule(tag("body"))
+                .fontFamily(FONT_FAMILY)
+                .lineHeight(1.6)
+                .color(TEXT)
+                .backgroundColor(BG)
+                .minHeight(vh(100))
+                .display(flex)
+                .flexDirection(column),
+
+            // Links
+            rule(tag("a"))
+                .color(PRIMARY)
+                .textDecoration(none)
+                .transition(propColor, s(0.2), ease),
+            rule(tag("a").hover())
+                .color(PRIMARY_DARK),
+
+            // Images
+            rule(tag("img"))
+                .maxWidth(percent(100))
+                .height(auto),
+
+            // Card hover effects
+            rule(cls("card"))
+                .transition(transitions(
+                    trans(propTransform, s(0.3), ease),
+                    trans(propBoxShadow, s(0.3), ease)
+                )),
+            rule(cls("card").hover())
+                .transform(translateY(px(-4)))
+                .boxShadow(px(0), px(8), px(24), SHADOW_HOVER),
+
+            // Button hover effects
+            rule(cls("btn").hover())
+                .transform(translateY(px(-2)))
+                .boxShadow(px(0), px(4), px(12), SHADOW),
+
+            // Nav link hover
+            rule(cls("navbar").descendant(tag("a").hover()))
+                .background(rgba(255, 255, 255, 0.15))
+                .textDecoration(none),
+
+            // Focus styles for accessibility
+            rule(select().pseudo("focus-visible"))
+                .outline(px(2), solid, PRIMARY)
+                .outlineOffset(px(2)),
+
+            // Form input focus
+            rule(tag("input").focus().or(tag("textarea").focus()))
+                .borderColor(PRIMARY)
+                .boxShadow(px(0), px(0), px(0), px(3), rgba(102, 126, 234, 0.2)),
+
+            // Animate elements on page load
+            rule(cls("fade-in"))
+                .animation(anim("fadeIn"), s(0.5), easeOut)
+                .animationFillMode(forwards),
+            rule(cls("slide-up"))
+                .animation(anim("slideUp"), s(0.6), easeOut)
+                .animationFillMode(forwards),
+            rule(cls("scale-in"))
+                .animation(anim("scaleIn"), s(0.4), easeOut)
+                .animationFillMode(forwards),
+
+            // Staggered animation delays
+            rule(cls("delay-1")).animationDelay(s(0.1)).opacity(0),
+            rule(cls("delay-2")).animationDelay(s(0.2)).opacity(0),
+            rule(cls("delay-3")).animationDelay(s(0.3)).opacity(0),
+            rule(cls("delay-4")).animationDelay(s(0.4)).opacity(0),
+
+            // Feature icon animation on hover
+            rule(cls("feature-icon"))
+                .transition(propTransform, s(0.3), ease),
+            rule(cls("feature-icon").hover())
+                .transform(scale(1.1)),
+
+            // Gradient text
+            rule(cls("gradient-text"))
+                .background(linearGradient("135deg", PRIMARY, SECONDARY))
+                .webkitBackgroundClip(text)
+                .webkitTextFillColor(transparent)
+                .backgroundClip(text),
+
+            // Animated gradient background
+            rule(cls("gradient-bg"))
+                .background(linearGradient("-45deg", hex("#667eea"), hex("#764ba2"), hex("#f093fb"), hex("#f5576c")))
+                .backgroundSize(percent(400), percent(400))
+                .animation(anim("gradientShift"), s(15), ease)
+                .animationIterationCount(infinite)
+        );
     }
 
     private String keyframeAnimations() {
@@ -188,7 +174,7 @@ public class Head implements Template {
     }
 
     private String mediaQueryStyles() {
-        return """
+        return """ 
 
             """ + mobile()
                     .rule(".container", new Style().padding(SPACE_SM, SPACE_MD))

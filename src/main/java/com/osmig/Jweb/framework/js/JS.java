@@ -80,7 +80,7 @@ public final class JS {
     // ==================== DOM ====================
 
     /** document.getElementById('id') */
-    public static El elem(String id) {
+    public static El getElem(String id) {
         return new El("document.getElementById('" + esc(id) + "')");
     }
 

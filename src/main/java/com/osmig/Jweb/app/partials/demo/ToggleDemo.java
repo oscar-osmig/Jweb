@@ -46,11 +46,11 @@ public class ToggleDemo implements Template {
 
         Func updateToggle = func("updateToggle")
             .if_(variable("toggleState")).then_(
-                elem("toggle-btn").dot("classList").dot("add").invoke(str("toggle-on")),
-                elem("toggle-status").text().assign(str("ON"))
+                getElem("toggle-btn").dot("classList").dot("add").invoke(str("toggle-on")),
+                getElem("toggle-status").text().assign(str("ON"))
             ).else_(
-                elem("toggle-btn").dot("classList").dot("remove").invoke(str("toggle-on")),
-                elem("toggle-status").text().assign(str("OFF"))
+                getElem("toggle-btn").dot("classList").dot("remove").invoke(str("toggle-on")),
+                getElem("toggle-status").text().assign(str("OFF"))
             );
 
         return script()
@@ -62,7 +62,7 @@ public class ToggleDemo implements Template {
 
     private String toggleCss() {
         return styles(
-            rule(".toggle-btn")
+            rule(cls("toggle-btn"))
                 .width(px(60))
                 .height(px(32))
                 .borderRadius(px(9999))
@@ -70,11 +70,11 @@ public class ToggleDemo implements Template {
                 .border(none)
                 .cursor(pointer)
                 .position(relative)
-                .transition("background-color", ms(200), ease)
+                .transition(propBackgroundColor, ms(200), ease)
                 .padding(zero),
-            rule(".toggle-btn.toggle-on")
+            rule(cls("toggle-btn").cls("toggle-on"))
                 .backgroundColor(hex("#10b981")),
-            rule(".toggle-knob")
+            rule(cls("toggle-knob"))
                 .width(px(26))
                 .height(px(26))
                 .borderRadius(px(9999))
@@ -82,9 +82,9 @@ public class ToggleDemo implements Template {
                 .position(absolute)
                 .top(px(3))
                 .left(px(3))
-                .transition("left", ms(200), ease)
+                .transition(propLeft, ms(200), ease)
                 .boxShadow(px(0), px(2), px(4), rgba(0, 0, 0, 0.2)),
-            rule(".toggle-btn.toggle-on .toggle-knob")
+            rule(cls("toggle-btn").cls("toggle-on").descendant(cls("toggle-knob")))
                 .left(px(31))
         );
     }

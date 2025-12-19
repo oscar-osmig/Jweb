@@ -143,7 +143,7 @@ public class Attributes {
         public InlineStyle opacity(double value) { style.opacity(value); return this; }
         public InlineStyle overflow(CSSValue value) { style.overflow(value); return this; }
         public InlineStyle cursor(CSSValue value) { style.cursor(value); return this; }
-        public InlineStyle transition(String property, CSSValue duration, CSSValue timing) { style.transition(property, duration, timing); return this; }
+        public InlineStyle transition(CSSValue property, CSSValue duration, CSSValue timing) { style.transition(property, duration, timing); return this; }
         public InlineStyle transform(CSSValue value) { style.transform(value); return this; }
 
         // ==================== Generic ====================

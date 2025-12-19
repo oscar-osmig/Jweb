@@ -61,7 +61,7 @@ public class ClientJsDemo implements Template {
                 .plus(variable("secs").padStart(2, "0")));
 
         Func updateDisplay = func("updateDisplay")
-            .set(elem("timer-display").text(), call("formatTime", variable("timerSeconds")));
+            .set(getElem("timer-display").text(), call("formatTime", variable("timerSeconds")));
 
         Func startTimer = func("startTimer")
             .if_(variable("timerRunning"), ret())
@@ -105,6 +105,6 @@ public class ClientJsDemo implements Template {
             .border(px(0), solid, transparent)
             .borderRadius(RADIUS_MD)
             .cursor(pointer)
-            .transition("transform", ms(150), ease);
+            .transition(propTransform, ms(150), ease);
     }
 }

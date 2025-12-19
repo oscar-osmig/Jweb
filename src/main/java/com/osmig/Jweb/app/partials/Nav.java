@@ -63,7 +63,7 @@ public class Nav implements Template {
                 .fontWeight(500)
                 .padding(SPACE_XS, SPACE_MD)
                 .borderRadius(RADIUS_SM)
-                .transition("all", TRANSITION_FAST, ease)
+                .transition(all, TRANSITION_FAST, ease)
             .done(), text(label));
     }
 }
