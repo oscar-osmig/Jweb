@@ -80,7 +80,7 @@ public final class JS {
     // ==================== DOM ====================
 
     /** document.getElementById('id') */
-    public static El el(String id) {
+    public static El elem(String id) {
         return new El("document.getElementById('" + esc(id) + "')");
     }
 
@@ -245,6 +245,7 @@ public final class JS {
             return this;
         }
 
+        /** Simple if statement: if_(condition, stmt1, stmt2, ...) */
         public Func if_(Val condition, Object... thenStmts) {
             StringBuilder sb = new StringBuilder("if(").append(condition.code).append("){");
             for (Object s : thenStmts) appendStmt(sb, s);
@@ -253,14 +254,9 @@ public final class JS {
             return this;
         }
 
-        public Func ifElse(Val condition, Object[] thenStmts, Object[] elseStmts) {
-            StringBuilder sb = new StringBuilder("if(").append(condition.code).append("){");
-            for (Object s : thenStmts) appendStmt(sb, s);
-            sb.append("}else{");
-            for (Object s : elseStmts) appendStmt(sb, s);
-            sb.append("}");
-            body.add(sb.toString());
-            return this;
+        /** Start an if/elif/else chain: if_(condition).then_(...).elif_(cond2).then_(...).else_(...).end() */
+        public IfBuilder if_(Val condition) {
+            return new IfBuilder(this, condition);
         }
 
         public Func ret() {
@@ -297,6 +293,76 @@ public final class JS {
                 if (!s.endsWith("}")) sb.append(";");
             }
             return sb.append("}").toString();
+        }
+
+        private void appendStmt(StringBuilder sb, Object s) {
+            if (s instanceof Stmt st) sb.append(st.code).append(";");
+            else if (s instanceof Val val) sb.append(val.code).append(";");
+            else if (s instanceof String str) {
+                sb.append(str);
+                if (!str.endsWith(";") && !str.endsWith("}")) sb.append(";");
+            }
+        }
+    }
+
+    // ==================== If/Elif/Else Builder ====================
+
+    /**
+     * Builder for if/elif/else chains.
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * func("example")
+     *     .if_(condition1).then_(stmt1, stmt2)
+     *     .elif_(condition2).then_(stmt3)
+     *     .elif_(condition3).then_(stmt4)
+     *     .else_(stmt5, stmt6)
+     *     .end()
+     * </pre>
+     */
+    public static class IfBuilder {
+        private final Func parent;
+        private final StringBuilder sb = new StringBuilder();
+        private boolean needsThen = true;
+
+        IfBuilder(Func parent, Val condition) {
+            this.parent = parent;
+            sb.append("if(").append(condition.code).append(")");
+        }
+
+        /** Statements to execute if condition is true */
+        public IfBuilder then_(Object... stmts) {
+            if (!needsThen) throw new IllegalStateException("then_() already called");
+            sb.append("{");
+            for (Object s : stmts) appendStmt(sb, s);
+            sb.append("}");
+            needsThen = false;
+            return this;
+        }
+
+        /** Add an else-if branch */
+        public IfBuilder elif_(Val condition) {
+            if (needsThen) throw new IllegalStateException("then_() must be called before elif_()");
+            sb.append("else if(").append(condition.code).append(")");
+            needsThen = true;
+            return this;
+        }
+
+        /** Add an else branch and finish the chain */
+        public Func else_(Object... stmts) {
+            if (needsThen) throw new IllegalStateException("then_() must be called before else_()");
+            sb.append("else{");
+            for (Object s : stmts) appendStmt(sb, s);
+            sb.append("}");
+            parent.body.add(sb.toString());
+            return parent;
+        }
+
+        /** Finish the chain without an else branch */
+        public Func end() {
+            if (needsThen) throw new IllegalStateException("then_() must be called before end()");
+            parent.body.add(sb.toString());
+            return parent;
         }
 
         private void appendStmt(StringBuilder sb, Object s) {
@@ -361,6 +427,9 @@ public final class JS {
         public Val trim() { return new Val(code + ".trim()"); }
         public Val toLowerCase() { return new Val(code + ".toLowerCase()"); }
         public Val toUpperCase() { return new Val(code + ".toUpperCase()"); }
+
+        /** Assignment statement: variable("x").assign(5) -> x=5 */
+        public Stmt assign(Object value) { return new Stmt(code + "=" + toJs(value)); }
 
         @Override
         public String toString() { return code; }

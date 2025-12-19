@@ -25,7 +25,7 @@ public final class StateBinding {
      * @return attributes with data-state-bind attribute
      */
     public static Attributes bind(State<?> state) {
-        return new Attributes().attr("data-state-bind", state.getId());
+        return new Attributes().set("data-state-bind", state.getId());
     }
 
     /**
@@ -37,7 +37,7 @@ public final class StateBinding {
      */
     public static Attributes bindInput(State<?> state) {
         return new Attributes()
-            .attr("data-state-bind", state.getId())
-            .attr("data-state-input", "true");
+            .set("data-state-bind", state.getId())
+            .set("data-state-input", "true");
     }
 }

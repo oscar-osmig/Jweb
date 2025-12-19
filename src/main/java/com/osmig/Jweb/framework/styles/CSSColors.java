@@ -14,7 +14,7 @@ public final class CSSColors {
 
     private CSSColors() {}
 
-    // Named colors - most commonly used
+    // Special color values
     public static final CSSValue transparent = () -> "transparent";
     public static final CSSValue currentColor = () -> "currentColor";
 

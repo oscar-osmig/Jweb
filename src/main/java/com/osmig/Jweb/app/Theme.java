@@ -1,12 +1,11 @@
 package com.osmig.Jweb.app;
 
 import com.osmig.Jweb.framework.styles.CSSValue;
-import com.osmig.Jweb.framework.styles.Style;
+import com.osmig.Jweb.framework.styles.CSS.StyleBuilder;
 
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.Styles.*;
 
 /**
  * Centralized design tokens and reusable styles for the app.
@@ -84,7 +83,7 @@ public final class Theme {
     // ==================== Reusable Styles ====================
 
     /** Container with max-width and centered */
-    public static Style container() {
+    public static StyleBuilder container() {
         return style()
             .maxWidth(px(1200))
             .margin(zero, auto)
@@ -92,7 +91,7 @@ public final class Theme {
     }
 
     /** Flexbox row with gap */
-    public static Style flexRow() {
+    public static StyleBuilder flexRow() {
         return style()
             .display(flex)
             .flexDirection(row)
@@ -100,7 +99,7 @@ public final class Theme {
     }
 
     /** Flexbox column with gap */
-    public static Style flexCol() {
+    public static StyleBuilder flexCol() {
         return style()
             .display(flex)
             .flexDirection(column)
@@ -108,7 +107,7 @@ public final class Theme {
     }
 
     /** Center content with flexbox */
-    public static Style flexCenter() {
+    public static StyleBuilder flexCenter() {
         return style()
             .display(flex)
             .justifyContent(center)
@@ -116,19 +115,19 @@ public final class Theme {
     }
 
     /** Card shadow */
-    public static Style cardShadow() {
+    public static StyleBuilder cardShadow() {
         return style()
             .boxShadow(px(0), px(2), px(8), SHADOW);
     }
 
     /** Hover shadow */
-    public static Style cardShadowHover() {
+    public static StyleBuilder cardShadowHover() {
         return style()
             .boxShadow(px(0), px(4), px(12), SHADOW_HOVER);
     }
 
     /** Primary button style */
-    public static Style btnPrimary() {
+    public static StyleBuilder btnPrimary() {
         return style()
             .backgroundColor(PRIMARY)
             .color(white)
@@ -142,7 +141,7 @@ public final class Theme {
     }
 
     /** Secondary button style */
-    public static Style btnSecondary() {
+    public static StyleBuilder btnSecondary() {
         return style()
             .backgroundColor(transparent)
             .color(PRIMARY)
@@ -156,7 +155,7 @@ public final class Theme {
     }
 
     /** Badge/tag style */
-    public static Style badge() {
+    public static StyleBuilder badge() {
         return style()
             .display(inlineBlock)
             .padding(SPACE_XS, SPACE_SM)
@@ -168,7 +167,7 @@ public final class Theme {
     }
 
     /** Input field style */
-    public static Style inputStyle() {
+    public static StyleBuilder inputStyle() {
         return style()
             .width(percent(100))
             .padding(SPACE_SM, SPACE_MD)

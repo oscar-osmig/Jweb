@@ -10,8 +10,7 @@ import static com.osmig.Jweb.framework.js.JS.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.Styles.style;
-import com.osmig.Jweb.framework.styles.Style;
+import com.osmig.Jweb.framework.styles.CSS.StyleBuilder;
 
 /**
  * Live input binding - pure client-side JS.
@@ -35,7 +34,7 @@ public class InputDemo implements Template {
                 .type("text")
                 .value("World")
                 .placeholder("Enter your name")
-                .attr("oninput", "updateName()")
+                .set("oninput", "updateName()")
                 .style(inputStyle())),
             inlineScript(inputScript())
         );
@@ -43,8 +42,8 @@ public class InputDemo implements Template {
 
     private String inputScript() {
         Func updateName = func("updateName")
-            .var_("val", el("name-input").value())
-            .set(el("name-display").text(),
+            .var_("val", elem("name-input").value())
+            .set(elem("name-display").text(),
                 variable("val").eq("").ternary(str("..."), variable("val")));
 
         return script()
@@ -52,7 +51,7 @@ public class InputDemo implements Template {
             .build();
     }
 
-    private Style inputStyle() {
+    private StyleBuilder inputStyle() {
         return style().width(percent(100)).padding(SPACE_SM, SPACE_MD)
             .fontSize(FONT_BASE).border(px(1), solid, BORDER)
             .borderRadius(RADIUS_MD).backgroundColor(white);

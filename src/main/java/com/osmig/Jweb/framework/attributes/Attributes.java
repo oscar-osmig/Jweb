@@ -29,17 +29,18 @@ public class Attributes {
         }
     }
 
-    public Attributes id(String value) { return attr("id", value); }
-    public Attributes class_(String value) { return attr("class", value); }
+    public Attributes id(String value) { return set("id", value); }
+    public Attributes class_(String value) { return set("class", value); }
     public Attributes addClass(String className) {
         String existing = attributes.get("class");
         if (existing == null || existing.isBlank()) {
-            return attr("class", className);
+            return set("class", className);
         }
-        return attr("class", existing + " " + className);
+        return set("class", existing + " " + className);
     }
-    public Attributes style(String value) { return attr("style", value); }
-    public Attributes style(Style style) { return attr("style", style.build()); }
+    public Attributes style(String value) { return set("style", value); }
+    public Attributes style(Style style) { return set("style", style.build()); }
+    public Attributes style(CSSValue style) { return set("style", style.css()); }
 
     /**
      * Start an inline style builder that chains back to this Attributes.
@@ -60,7 +61,7 @@ public class Attributes {
 
         /** Finish styling and return to Attributes builder */
         public Attributes done() {
-            parent.attr("style", style.build());
+            parent.set("style", style.build());
             return parent;
         }
 
@@ -149,37 +150,37 @@ public class Attributes {
         public InlineStyle prop(String property, String value) { style.prop(property, value); return this; }
         public InlineStyle prop(String property, CSSValue value) { style.prop(property, value); return this; }
     }
-    public Attributes title(String value) { return attr("title", value); }
-    public Attributes href(String value) { return attr("href", value); }
-    public Attributes target(String value) { return attr("target", value); }
+    public Attributes title(String value) { return set("title", value); }
+    public Attributes href(String value) { return set("href", value); }
+    public Attributes target(String value) { return set("target", value); }
     public Attributes targetBlank() {
-        return attr("target", "_blank").attr("rel", "noopener noreferrer");
+        return set("target", "_blank").set("rel", "noopener noreferrer");
     }
-    public Attributes src(String value) { return attr("src", value); }
-    public Attributes alt(String value) { return attr("alt", value); }
-    public Attributes width(String value) { return attr("width", value); }
-    public Attributes height(String value) { return attr("height", value); }
-    public Attributes type(String value) { return attr("type", value); }
-    public Attributes name(String value) { return attr("name", value); }
-    public Attributes value(String value) { return attr("value", value); }
-    public Attributes placeholder(String value) { return attr("placeholder", value); }
-    public Attributes action(String value) { return attr("action", value); }
-    public Attributes method(String value) { return attr("method", value); }
-    public Attributes for_(String value) { return attr("for", value); }
-    public Attributes disabled() { return attr("disabled", null); }
+    public Attributes src(String value) { return set("src", value); }
+    public Attributes alt(String value) { return set("alt", value); }
+    public Attributes width(String value) { return set("width", value); }
+    public Attributes height(String value) { return set("height", value); }
+    public Attributes type(String value) { return set("type", value); }
+    public Attributes name(String value) { return set("name", value); }
+    public Attributes value(String value) { return set("value", value); }
+    public Attributes placeholder(String value) { return set("placeholder", value); }
+    public Attributes action(String value) { return set("action", value); }
+    public Attributes method(String value) { return set("method", value); }
+    public Attributes for_(String value) { return set("for", value); }
+    public Attributes disabled() { return set("disabled", null); }
     public Attributes disabled(boolean isDisabled) { return isDisabled ? disabled() : this; }
-    public Attributes checked() { return attr("checked", null); }
+    public Attributes checked() { return set("checked", null); }
     public Attributes checked(boolean isChecked) { return isChecked ? checked() : this; }
-    public Attributes required() { return attr("required", null); }
-    public Attributes readonly() { return attr("readonly", null); }
-    public Attributes hidden() { return attr("hidden", null); }
+    public Attributes required() { return set("required", null); }
+    public Attributes readonly() { return set("readonly", null); }
+    public Attributes hidden() { return set("hidden", null); }
     public Attributes hidden(boolean isHidden) { return isHidden ? hidden() : this; }
-    public Attributes autofocus() { return attr("autofocus", null); }
-    public Attributes data(String name, String value) { return attr("data-" + name, value); }
-    public Attributes aria(String name, String value) { return attr("aria-" + name, value); }
-    public Attributes role(String value) { return attr("role", value); }
-    public Attributes colspan(int value) { return attr("colspan", String.valueOf(value)); }
-    public Attributes rowspan(int value) { return attr("rowspan", String.valueOf(value)); }
+    public Attributes autofocus() { return set("autofocus", null); }
+    public Attributes data(String name, String value) { return set("data-" + name, value); }
+    public Attributes aria(String name, String value) { return set("aria-" + name, value); }
+    public Attributes role(String value) { return set("role", value); }
+    public Attributes colspan(int value) { return set("colspan", String.valueOf(value)); }
+    public Attributes rowspan(int value) { return set("rowspan", String.valueOf(value)); }
 
     // ==================== Event Handlers ====================
 
@@ -196,7 +197,7 @@ public class Attributes {
      */
     public Attributes onClick(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("click", handler);
-        return attr("onclick", eh.toJsAttribute());
+        return set("onclick", eh.toJsAttribute());
     }
 
     /**
@@ -212,7 +213,7 @@ public class Attributes {
      */
     public Attributes onChange(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("change", handler);
-        return attr("onchange", eh.toJsAttribute());
+        return set("onchange", eh.toJsAttribute());
     }
 
     /**
@@ -228,7 +229,7 @@ public class Attributes {
      */
     public Attributes onInput(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("input", handler);
-        return attr("oninput", eh.toJsAttribute());
+        return set("oninput", eh.toJsAttribute());
     }
 
     /**
@@ -247,7 +248,7 @@ public class Attributes {
      */
     public Attributes onSubmit(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("submit", handler);
-        return attr("onsubmit", eh.toJsAttribute());
+        return set("onsubmit", eh.toJsAttribute());
     }
 
     /**
@@ -258,7 +259,7 @@ public class Attributes {
      */
     public Attributes onFocus(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("focus", handler);
-        return attr("onfocus", eh.toJsAttribute());
+        return set("onfocus", eh.toJsAttribute());
     }
 
     /**
@@ -269,7 +270,7 @@ public class Attributes {
      */
     public Attributes onBlur(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("blur", handler);
-        return attr("onblur", eh.toJsAttribute());
+        return set("onblur", eh.toJsAttribute());
     }
 
     /**
@@ -287,7 +288,7 @@ public class Attributes {
      */
     public Attributes onKeyDown(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("keydown", handler);
-        return attr("onkeydown", eh.toJsAttribute());
+        return set("onkeydown", eh.toJsAttribute());
     }
 
     /**
@@ -298,7 +299,7 @@ public class Attributes {
      */
     public Attributes onKeyUp(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("keyup", handler);
-        return attr("onkeyup", eh.toJsAttribute());
+        return set("onkeyup", eh.toJsAttribute());
     }
 
     /**
@@ -309,7 +310,7 @@ public class Attributes {
      */
     public Attributes onMouseEnter(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("mouseenter", handler);
-        return attr("onmouseenter", eh.toJsAttribute());
+        return set("onmouseenter", eh.toJsAttribute());
     }
 
     /**
@@ -320,7 +321,7 @@ public class Attributes {
      */
     public Attributes onMouseLeave(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("mouseleave", handler);
-        return attr("onmouseleave", eh.toJsAttribute());
+        return set("onmouseleave", eh.toJsAttribute());
     }
 
     /**
@@ -331,7 +332,7 @@ public class Attributes {
      */
     public Attributes onDoubleClick(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("dblclick", handler);
-        return attr("ondblclick", eh.toJsAttribute());
+        return set("ondblclick", eh.toJsAttribute());
     }
 
     /**
@@ -348,15 +349,25 @@ public class Attributes {
      */
     public Attributes on(String eventType, Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register(eventType, handler);
-        return attr("on" + eventType, eh.toJsAttribute());
+        return set("on" + eventType, eh.toJsAttribute());
     }
 
-    public Attributes attr(String name, String value) {
+    /**
+     * Set any HTML attribute by name.
+     * Use this for attributes that don't have a dedicated method.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().set("onclick", "toggle()")
+     * attrs().set("data-custom", "value")
+     * </pre>
+     */
+    public Attributes set(String name, String value) {
         attributes.put(name, value);
         return this;
     }
 
-    public Attributes attrs(Map<String, String> attrs) {
+    public Attributes setAll(Map<String, String> attrs) {
         this.attributes.putAll(attrs);
         return this;
     }

@@ -10,8 +10,7 @@ import static com.osmig.Jweb.framework.js.JS.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.Styles.style;
-import com.osmig.Jweb.framework.styles.Style;
+import com.osmig.Jweb.framework.styles.CSS.StyleBuilder;
 import com.osmig.Jweb.framework.styles.CSSValue;
 
 /**
@@ -31,17 +30,17 @@ public class ClientJsDemo implements Template {
             div(attrs().style().display(flex).gap(SPACE_SM).justifyContent(center).done(),
                 button(attrs()
                     .id("start-btn")
-                    .attr("onclick", "startTimer()")
+                    .set("onclick", "startTimer()")
                     .style(btnStyle(hex("#10b981"))),
                     text("Start")),
                 button(attrs()
                     .id("stop-btn")
-                    .attr("onclick", "stopTimer()")
+                    .set("onclick", "stopTimer()")
                     .style(btnStyle(hex("#ef4444"))),
                     text("Stop")),
                 button(attrs()
                     .id("reset-btn")
-                    .attr("onclick", "resetTimer()")
+                    .set("onclick", "resetTimer()")
                     .style(btnStyle(BG_LIGHT).color(TEXT_LIGHT)),
                     text("Reset"))
             ),
@@ -62,7 +61,7 @@ public class ClientJsDemo implements Template {
                 .plus(variable("secs").padStart(2, "0")));
 
         Func updateDisplay = func("updateDisplay")
-            .set(el("timer-display").text(), call("formatTime", variable("timerSeconds")));
+            .set(elem("timer-display").text(), call("formatTime", variable("timerSeconds")));
 
         Func startTimer = func("startTimer")
             .if_(variable("timerRunning"), ret())
@@ -96,7 +95,7 @@ public class ClientJsDemo implements Template {
             .build();
     }
 
-    private Style btnStyle(CSSValue bgColor) {
+    private StyleBuilder btnStyle(CSSValue bgColor) {
         return style()
             .padding(SPACE_SM, SPACE_LG)
             .fontSize(FONT_SM)

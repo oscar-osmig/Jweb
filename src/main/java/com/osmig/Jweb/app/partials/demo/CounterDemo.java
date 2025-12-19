@@ -10,8 +10,7 @@ import static com.osmig.Jweb.framework.js.JS.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.Styles.style;
-import com.osmig.Jweb.framework.styles.Style;
+import com.osmig.Jweb.framework.styles.CSS.StyleBuilder;
 
 /**
  * Interactive counter component - pure client-side JS.
@@ -28,13 +27,13 @@ public class CounterDemo implements Template {
             ),
             div(attrs().style().display(flex).gap(SPACE_SM).justifyContent(center).done(),
                 button(attrs()
-                    .attr("onclick", "decrement()")
+                    .set("onclick", "decrement()")
                     .style(btnStyle()), text("-")),
                 button(attrs()
-                    .attr("onclick", "resetCounter()")
+                    .set("onclick", "resetCounter()")
                     .style(resetBtnStyle()), text("Reset")),
                 button(attrs()
-                    .attr("onclick", "increment()")
+                    .set("onclick", "increment()")
                     .style(btnStyle()), text("+"))
             ),
             inlineScript(counterScript())
@@ -43,7 +42,7 @@ public class CounterDemo implements Template {
 
     private String counterScript() {
         Func updateDisplay = func("updateCounterDisplay")
-            .set(el("counter-display").text(), variable("counterValue"));
+            .set(elem("counter-display").text(), variable("counterValue"));
 
         Func increment = func("increment")
             .inc("counterValue")
@@ -66,13 +65,13 @@ public class CounterDemo implements Template {
             .build();
     }
 
-    private Style btnStyle() {
+    private StyleBuilder btnStyle() {
         return style().padding(SPACE_SM, SPACE_LG).fontSize(FONT_LG).fontWeight(600)
             .backgroundColor(PRIMARY).color(white).border(px(0), solid, transparent)
             .borderRadius(RADIUS_MD).cursor(pointer);
     }
 
-    private Style resetBtnStyle() {
+    private StyleBuilder resetBtnStyle() {
         return style().padding(SPACE_SM, SPACE_MD).fontSize(FONT_SM)
             .backgroundColor(BG_LIGHT).color(TEXT_LIGHT).border(px(0), solid, transparent)
             .borderRadius(RADIUS_MD).cursor(pointer);

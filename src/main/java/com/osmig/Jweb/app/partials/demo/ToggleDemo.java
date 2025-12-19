@@ -9,7 +9,6 @@ import static com.osmig.Jweb.app.Theme.*;
 import static com.osmig.Jweb.framework.elements.Elements.*;
 import static com.osmig.Jweb.framework.js.JS.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSS2.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 
@@ -32,7 +31,7 @@ public class ToggleDemo implements Template {
                 button(attrs()
                     .id("toggle-btn")
                     .class_("toggle-btn")
-                    .attr("onclick", "toggle()"),
+                    .set("onclick", "toggle()"),
                     div(attrs().class_("toggle-knob"))
                 )
             ),
@@ -46,15 +45,12 @@ public class ToggleDemo implements Template {
             .call("updateToggle");
 
         Func updateToggle = func("updateToggle")
-            .ifElse(variable("toggleState"),
-                new Object[] {
-                    el("toggle-btn").dot("classList").dot("add").invoke(str("toggle-on")),
-                    el("toggle-status").text() + "='ON'"
-                },
-                new Object[] {
-                    el("toggle-btn").dot("classList").dot("remove").invoke(str("toggle-on")),
-                    el("toggle-status").text() + "='OFF'"
-                }
+            .if_(variable("toggleState")).then_(
+                elem("toggle-btn").dot("classList").dot("add").invoke(str("toggle-on")),
+                elem("toggle-status").text().assign(str("ON"))
+            ).else_(
+                elem("toggle-btn").dot("classList").dot("remove").invoke(str("toggle-on")),
+                elem("toggle-status").text().assign(str("OFF"))
             );
 
         return script()

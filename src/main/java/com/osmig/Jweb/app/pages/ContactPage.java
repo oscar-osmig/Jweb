@@ -4,7 +4,6 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
-import static com.osmig.Jweb.framework.styles.Styles.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
@@ -129,7 +128,7 @@ public class ContactPage implements Template {
                         textarea(attrs()
                             .name("message")
                             .id("message")
-                            .attr("rows", "4")
+                            .set("rows", "4")
                             .placeholder("Tell us what you need help with...")
                             .required()
                             .style(inputStyle().resize(vertical).minHeight(px(100))))
@@ -215,7 +214,7 @@ public class ContactPage implements Template {
     }
 
     private Style labelStyle() {
-        return style()
+        return new Style()
             .display(block)
             .marginBottom(SPACE_XS)
             .fontWeight(500)
@@ -224,7 +223,7 @@ public class ContactPage implements Template {
     }
 
     private Style inputStyle() {
-        return style()
+        return new Style()
             .width(percent(100))
             .padding(SPACE_SM, SPACE_MD)
             .fontSize(FONT_BASE)

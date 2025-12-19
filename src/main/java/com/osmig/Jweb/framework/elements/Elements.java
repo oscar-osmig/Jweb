@@ -75,12 +75,12 @@ public final class Elements {
     public static Tag meta(Object... attrs) { return tag("meta", attrs); }
     public static Tag meta(Attributes attrs) { return new Tag("meta", attrs); }
     public static Tag meta(String name, String content) {
-        return tag("meta", new Attributes().name(name).attr("content", content));
+        return tag("meta", new Attributes().name(name).set("content", content));
     }
     public static Tag link(Object... attrs) { return tag("link", attrs); }
     public static Tag link(Attributes attrs) { return new Tag("link", attrs); }
     public static Tag css(String href) {
-        return tag("link", new Attributes().attr("rel", "stylesheet").href(href));
+        return tag("link", new Attributes().set("rel", "stylesheet").href(href));
     }
     public static Tag script(String src) { return tag("script", new Attributes().src(src)); }
     public static Tag inlineScript(String code) { return tag("script", TextElement.raw(code)); }
