@@ -15,7 +15,7 @@ import static com.osmig.Jweb.app.Theme.*;
 import com.osmig.Jweb.framework.styles.Style;
 
 /**
- * HTML head partial with meta tags, animations, and responsive styles.
+ * HTML head partial with meta-tags, animations, and responsive styles.
  */
 public class Head implements Template {
 

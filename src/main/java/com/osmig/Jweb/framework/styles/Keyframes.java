@@ -39,6 +39,20 @@ public class Keyframes {
         this.name = name;
     }
 
+    /**
+     * Creates a new keyframes animation builder.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * keyframes("fadeIn")
+     *     .from(new Style&lt;&gt;().opacity(0))
+     *     .to(new Style&lt;&gt;().opacity(1))
+     *     .build()
+     * </pre>
+     *
+     * @param name the animation name (used with CSS animation-name property)
+     * @return a new Keyframes builder instance
+     */
     public static Keyframes keyframes(String name) {
         return new Keyframes(name);
     }
@@ -46,7 +60,16 @@ public class Keyframes {
     // ==================== Frame Definition ====================
 
     /**
-     * Add styles for the 'from' (0%) keyframe.
+     * Adds styles for the 'from' (0%) keyframe.
+     * Equivalent to {@code at(0, style)}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * keyframes("fadeIn").from(new Style&lt;&gt;().opacity(0))
+     * </pre>
+     *
+     * @param style the Style object with CSS properties for this keyframe
+     * @return this builder for chaining
      */
     public Keyframes from(Style<?> style) {
         frames.put("from", style);
@@ -54,7 +77,16 @@ public class Keyframes {
     }
 
     /**
-     * Add styles for the 'to' (100%) keyframe.
+     * Adds styles for the 'to' (100%) keyframe.
+     * Equivalent to {@code at(100, style)}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * keyframes("fadeIn").to(new Style&lt;&gt;().opacity(1))
+     * </pre>
+     *
+     * @param style the Style object with CSS properties for this keyframe
+     * @return this builder for chaining
      */
     public Keyframes to(Style<?> style) {
         frames.put("to", style);
@@ -62,7 +94,19 @@ public class Keyframes {
     }
 
     /**
-     * Add styles at a specific percentage (0-100).
+     * Adds styles at a specific percentage point.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * keyframes("bounce")
+     *     .at(0, new Style&lt;&gt;().transform(translateY(zero)))
+     *     .at(50, new Style&lt;&gt;().transform(translateY(px(-20))))
+     *     .at(100, new Style&lt;&gt;().transform(translateY(zero)))
+     * </pre>
+     *
+     * @param percentage the keyframe position (0-100)
+     * @param style the Style object with CSS properties for this keyframe
+     * @return this builder for chaining
      */
     public Keyframes at(int percentage, Style<?> style) {
         frames.put(percentage + "%", style);
@@ -70,7 +114,16 @@ public class Keyframes {
     }
 
     /**
-     * Add styles at a specific percentage with decimal precision.
+     * Adds styles at a specific percentage with decimal precision.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * keyframes("precise").at(33.33, new Style&lt;&gt;().opacity(0.5))
+     * </pre>
+     *
+     * @param percentage the keyframe position with decimal precision
+     * @param style the Style object with CSS properties for this keyframe
+     * @return this builder for chaining
      */
     public Keyframes at(double percentage, Style<?> style) {
         frames.put(formatPercent(percentage), style);
@@ -78,7 +131,18 @@ public class Keyframes {
     }
 
     /**
-     * Add styles at multiple percentages.
+     * Adds the same styles at multiple percentage points.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * keyframes("flash")
+     *     .at(new int[]{0, 50, 100}, new Style&lt;&gt;().opacity(1))
+     *     .at(new int[]{25, 75}, new Style&lt;&gt;().opacity(0))
+     * </pre>
+     *
+     * @param percentages array of keyframe positions
+     * @param style the Style object to apply at all specified positions
+     * @return this builder for chaining
      */
     public Keyframes at(int[] percentages, Style<?> style) {
         StringBuilder key = new StringBuilder();
@@ -92,10 +156,28 @@ public class Keyframes {
 
     // ==================== Build ====================
 
+    /**
+     * Returns the animation name.
+     *
+     * @return the animation name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Builds the complete CSS @keyframes rule string.
+     *
+     * <p>Example output:</p>
+     * <pre>
+     * @keyframes fadeIn {
+     *   from { opacity: 0; }
+     *   to { opacity: 1; }
+     * }
+     * </pre>
+     *
+     * @return the formatted CSS @keyframes rule
+     */
     public String build() {
         StringBuilder sb = new StringBuilder();
         sb.append("@keyframes ").append(name).append(" {\n");
@@ -127,7 +209,15 @@ public class Keyframes {
     // ==================== Common Animations ====================
 
     /**
-     * Creates a fade-in animation.
+     * Creates a fade-in animation (opacity 0 to 1).
+     * Animation name: "fadeIn"
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * style().animation(anim("fadeIn"), s(0.5), easeOut)
+     * </pre>
+     *
+     * @return Keyframes for fade-in animation
      */
     public static Keyframes fadeIn() {
         return keyframes("fadeIn")
@@ -136,7 +226,10 @@ public class Keyframes {
     }
 
     /**
-     * Creates a fade-out animation.
+     * Creates a fade-out animation (opacity 1 to 0).
+     * Animation name: "fadeOut"
+     *
+     * @return Keyframes for fade-out animation
      */
     public static Keyframes fadeOut() {
         return keyframes("fadeOut")
@@ -146,6 +239,10 @@ public class Keyframes {
 
     /**
      * Creates a slide-in from left animation.
+     * Slides from -100% X position with fade.
+     * Animation name: "slideInLeft"
+     *
+     * @return Keyframes for slide-in-left animation
      */
     public static Keyframes slideInLeft() {
         return keyframes("slideInLeft")
@@ -155,6 +252,10 @@ public class Keyframes {
 
     /**
      * Creates a slide-in from right animation.
+     * Slides from +100% X position with fade.
+     * Animation name: "slideInRight"
+     *
+     * @return Keyframes for slide-in-right animation
      */
     public static Keyframes slideInRight() {
         return keyframes("slideInRight")
@@ -164,6 +265,10 @@ public class Keyframes {
 
     /**
      * Creates a slide-in from top animation.
+     * Slides from -100% Y position with fade.
+     * Animation name: "slideInTop"
+     *
+     * @return Keyframes for slide-in-top animation
      */
     public static Keyframes slideInTop() {
         return keyframes("slideInTop")
@@ -173,6 +278,10 @@ public class Keyframes {
 
     /**
      * Creates a slide-in from bottom animation.
+     * Slides from +100% Y position with fade.
+     * Animation name: "slideInBottom"
+     *
+     * @return Keyframes for slide-in-bottom animation
      */
     public static Keyframes slideInBottom() {
         return keyframes("slideInBottom")
@@ -181,7 +290,16 @@ public class Keyframes {
     }
 
     /**
-     * Creates a pulse animation.
+     * Creates a pulse animation (subtle scale up/down).
+     * Scales from 1 to 1.05 and back.
+     * Animation name: "pulse"
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * style().animation(anim("pulse"), s(1), ease).animationIterationCount(infinite)
+     * </pre>
+     *
+     * @return Keyframes for pulse animation
      */
     public static Keyframes pulse() {
         return keyframes("pulse")
@@ -191,7 +309,10 @@ public class Keyframes {
     }
 
     /**
-     * Creates a bounce animation.
+     * Creates a bounce animation (vertical bouncing).
+     * Animation name: "bounce"
+     *
+     * @return Keyframes for bounce animation
      */
     public static Keyframes bounce() {
         return keyframes("bounce")
@@ -203,7 +324,10 @@ public class Keyframes {
     }
 
     /**
-     * Creates a shake animation.
+     * Creates a shake animation (horizontal shaking).
+     * Animation name: "shake"
+     *
+     * @return Keyframes for shake animation
      */
     public static Keyframes shake() {
         return keyframes("shake")
@@ -215,7 +339,15 @@ public class Keyframes {
     }
 
     /**
-     * Creates a spin animation.
+     * Creates a spin animation (360 degree rotation).
+     * Animation name: "spin"
+     *
+     * <p>Usage for loading spinner:</p>
+     * <pre>
+     * style().animation(anim("spin"), s(1), linear).animationIterationCount(infinite)
+     * </pre>
+     *
+     * @return Keyframes for spin animation
      */
     public static Keyframes spin() {
         return keyframes("spin")
@@ -224,7 +356,10 @@ public class Keyframes {
     }
 
     /**
-     * Creates a zoom-in animation.
+     * Creates a zoom-in animation (scale 0 to 1 with fade).
+     * Animation name: "zoomIn"
+     *
+     * @return Keyframes for zoom-in animation
      */
     public static Keyframes zoomIn() {
         return keyframes("zoomIn")
@@ -233,7 +368,10 @@ public class Keyframes {
     }
 
     /**
-     * Creates a zoom-out animation.
+     * Creates a zoom-out animation (scale 1 to 0 with fade).
+     * Animation name: "zoomOut"
+     *
+     * @return Keyframes for zoom-out animation
      */
     public static Keyframes zoomOut() {
         return keyframes("zoomOut")

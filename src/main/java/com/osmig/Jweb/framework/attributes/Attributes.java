@@ -11,26 +11,89 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 /**
- * Fluent builder for HTML attributes.
+ * Fluent builder for HTML element attributes.
+ * Provides type-safe methods for all common HTML attributes and event handlers.
  *
- * Usage:
- *   attrs().id("myId").class_("btn").style("color: red")
- *   attrs().style().display(flex).color(red).done()
+ * <p>Usage with Elements:</p>
+ * <pre>
+ * import static com.osmig.Jweb.framework.elements.Elements.*;
+ *
+ * // Basic attributes
+ * div(attrs().id("main").class_("container"))
+ *
+ * // Multiple classes
+ * div(attrs().class_("card").addClass("featured"))
+ *
+ * // With inline styles using the fluent style builder
+ * div(attrs()
+ *     .class_("box")
+ *     .style()
+ *         .display(flex)
+ *         .padding(px(10))
+ *         .backgroundColor(hex("#f5f5f5"))
+ *     .done())
+ *
+ * // Form attributes
+ * form(attrs()
+ *     .action("/submit")
+ *     .method("POST")
+ *     .onSubmit(e -&gt; handleSubmit(e)))
+ *
+ * // Input with validation
+ * input(attrs()
+ *     .type("email")
+ *     .name("email")
+ *     .placeholder("you@example.com")
+ *     .required())
+ *
+ * // Event handlers
+ * button(attrs()
+ *     .class_("btn")
+ *     .onClick(e -&gt; count.set(count.get() + 1)),
+ *     text("Click me"))
+ * </pre>
+ *
+ * @see com.osmig.Jweb.framework.elements.Elements#attrs() for creating Attributes instances
  */
 public class Attributes {
 
+    /** Stores attribute name-value pairs in insertion order. */
     private final Map<String, String> attributes = new LinkedHashMap<>();
 
+    /** Creates a new empty Attributes builder. */
     public Attributes() {}
 
+    /**
+     * Creates an Attributes builder with initial values.
+     *
+     * @param initial initial attribute map (can be null)
+     */
     public Attributes(Map<String, String> initial) {
         if (initial != null) {
             this.attributes.putAll(initial);
         }
     }
 
+    // ==================== Core Attributes ====================
+
+    /** Sets the id attribute. @param value the element ID */
     public Attributes id(String value) { return set("id", value); }
+
+    /** Sets the class attribute. @param value the CSS class(es) */
     public Attributes class_(String value) { return set("class", value); }
+
+    /**
+     * Adds a CSS class to existing classes.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().class_("btn").addClass("primary")
+     * // Output: class="btn primary"
+     * </pre>
+     *
+     * @param className the class to add
+     * @return this for chaining
+     */
     public Attributes addClass(String className) {
         String existing = attributes.get("class");
         if (existing == null || existing.isBlank()) {
@@ -38,18 +101,40 @@ public class Attributes {
         }
         return set("class", existing + " " + className);
     }
+
+    /** Sets inline style from a string. @param value the CSS style string */
     public Attributes style(String value) { return set("style", value); }
+
+    /** Sets inline style from a Style builder. @param style the Style object */
     public Attributes style(Style style) { return set("style", style.build()); }
+
+    /** Sets inline style from a CSSValue. @param style the CSSValue */
     public Attributes style(CSSValue style) { return set("style", style.css()); }
 
     /**
-     * Start an inline style builder that chains back to this Attributes.
-     * Usage: attrs().style().display(flex).padding(px(10)).done()
+     * Starts a fluent inline style builder that chains back to this Attributes.
+     * Call {@link InlineStyle#done()} to finish styling and return to Attributes.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs()
+     *     .class_("card")
+     *     .style()
+     *         .display(flex)
+     *         .padding(px(10))
+     *         .backgroundColor(white)
+     *     .done()
+     *     .id("main")
+     * </pre>
+     *
+     * @return an InlineStyle builder
      */
     public InlineStyle style() { return new InlineStyle(this); }
 
     /**
-     * Inline style builder that returns to Attributes when done.
+     * Fluent inline style builder that integrates with Attributes.
+     * Provides a subset of common CSS properties for inline styling.
+     * Call {@link #done()} to return to the parent Attributes builder.
      */
     public static class InlineStyle {
         private final Attributes parent;
@@ -147,39 +232,93 @@ public class Attributes {
         public InlineStyle transform(CSSValue value) { style.transform(value); return this; }
 
         // ==================== Generic ====================
+
+        /** Sets any CSS property by name. */
         public InlineStyle prop(String property, String value) { style.prop(property, value); return this; }
+        /** Sets any CSS property by name with a CSSValue. */
         public InlineStyle prop(String property, CSSValue value) { style.prop(property, value); return this; }
     }
+
+    // ==================== Common Attributes ====================
+
+    /** Sets the title attribute (tooltip). @param value the title text */
     public Attributes title(String value) { return set("title", value); }
+    /** Sets the href attribute for links. @param value the URL */
     public Attributes href(String value) { return set("href", value); }
+    /** Sets the target attribute for links. @param value the target window/frame */
     public Attributes target(String value) { return set("target", value); }
+
+    /**
+     * Sets target="_blank" with proper security attributes.
+     * Automatically adds rel="noopener noreferrer" to prevent tabnabbing.
+     *
+     * @return this for chaining
+     */
     public Attributes targetBlank() {
         return set("target", "_blank").set("rel", "noopener noreferrer");
     }
+
+    /** Sets the src attribute for images/scripts. @param value the source URL */
     public Attributes src(String value) { return set("src", value); }
+    /** Sets the alt attribute for images. @param value the alt text */
     public Attributes alt(String value) { return set("alt", value); }
+    /** Sets the width attribute. @param value the width (numeric or with unit) */
     public Attributes width(String value) { return set("width", value); }
+    /** Sets the height attribute. @param value the height */
     public Attributes height(String value) { return set("height", value); }
+
+    // ==================== Form Attributes ====================
+
+    /** Sets the type attribute for inputs. @param value the input type */
     public Attributes type(String value) { return set("type", value); }
+    /** Sets the name attribute for form elements. @param value the name */
     public Attributes name(String value) { return set("name", value); }
+    /** Sets the value attribute. @param value the value */
     public Attributes value(String value) { return set("value", value); }
+    /** Sets the placeholder attribute for inputs. @param value the placeholder text */
     public Attributes placeholder(String value) { return set("placeholder", value); }
+    /** Sets the action attribute for forms. @param value the form action URL */
     public Attributes action(String value) { return set("action", value); }
+    /** Sets the method attribute for forms. @param value the HTTP method */
     public Attributes method(String value) { return set("method", value); }
+    /** Sets the for attribute for labels. @param value the target element ID */
     public Attributes for_(String value) { return set("for", value); }
+
+    // ==================== Boolean Attributes ====================
+
+    /** Adds the disabled boolean attribute. */
     public Attributes disabled() { return set("disabled", null); }
+    /** Conditionally adds the disabled attribute. @param isDisabled whether to disable */
     public Attributes disabled(boolean isDisabled) { return isDisabled ? disabled() : this; }
+    /** Adds the checked boolean attribute for checkboxes/radios. */
     public Attributes checked() { return set("checked", null); }
+    /** Conditionally adds the checked attribute. @param isChecked whether to check */
     public Attributes checked(boolean isChecked) { return isChecked ? checked() : this; }
+    /** Adds the required boolean attribute. */
     public Attributes required() { return set("required", null); }
+    /** Adds the readonly boolean attribute. */
     public Attributes readonly() { return set("readonly", null); }
+    /** Adds the hidden boolean attribute. */
     public Attributes hidden() { return set("hidden", null); }
+    /** Conditionally adds the hidden attribute. @param isHidden whether to hide */
     public Attributes hidden(boolean isHidden) { return isHidden ? hidden() : this; }
+    /** Adds the autofocus boolean attribute. */
     public Attributes autofocus() { return set("autofocus", null); }
+
+    // ==================== Data & ARIA Attributes ====================
+
+    /** Sets a data-* attribute. @param name the data name (without "data-") @param value the value */
     public Attributes data(String name, String value) { return set("data-" + name, value); }
+    /** Sets an aria-* attribute. @param name the aria name (without "aria-") @param value the value */
     public Attributes aria(String name, String value) { return set("aria-" + name, value); }
+    /** Sets the role attribute for ARIA. @param value the ARIA role */
     public Attributes role(String value) { return set("role", value); }
+
+    // ==================== Table Attributes ====================
+
+    /** Sets the colspan attribute for table cells. @param value the number of columns to span */
     public Attributes colspan(int value) { return set("colspan", String.valueOf(value)); }
+    /** Sets the rowspan attribute for table cells. @param value the number of rows to span */
     public Attributes rowspan(int value) { return set("rowspan", String.valueOf(value)); }
 
     // ==================== Event Handlers ====================
@@ -352,28 +491,66 @@ public class Attributes {
         return set("on" + eventType, eh.toJsAttribute());
     }
 
+    // ==================== Generic Setters ====================
+
     /**
-     * Set any HTML attribute by name.
+     * Sets any HTML attribute by name.
      * Use this for attributes that don't have a dedicated method.
      *
      * <p>Example:</p>
      * <pre>
-     * attrs().set("onclick", "toggle()")
+     * attrs().set("autocomplete", "off")
      * attrs().set("data-custom", "value")
      * </pre>
+     *
+     * @param name the attribute name
+     * @param value the attribute value (null for boolean attributes)
+     * @return this for chaining
      */
     public Attributes set(String name, String value) {
         attributes.put(name, value);
         return this;
     }
 
+    /**
+     * Sets multiple attributes from a map.
+     *
+     * @param attrs map of attribute name-value pairs
+     * @return this for chaining
+     */
     public Attributes setAll(Map<String, String> attrs) {
         this.attributes.putAll(attrs);
         return this;
     }
 
+    // ==================== Build ====================
+
+    /**
+     * Returns an immutable copy of the attributes map.
+     *
+     * @return immutable map of attribute name-value pairs
+     */
     public Map<String, String> build() { return Map.copyOf(attributes); }
+
+    /**
+     * Returns the mutable attributes map (for internal use).
+     *
+     * @return the internal attributes map
+     */
     public Map<String, String> toMap() { return attributes; }
+
+    /**
+     * Checks if any attributes have been set.
+     *
+     * @return true if no attributes have been set
+     */
     public boolean isEmpty() { return attributes.isEmpty(); }
+
+    /**
+     * Gets an attribute value by name.
+     *
+     * @param name the attribute name
+     * @return the attribute value, or null if not set
+     */
     public String get(String name) { return attributes.get(name); }
 }

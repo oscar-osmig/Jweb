@@ -5,39 +5,95 @@ import java.util.Map;
 
 /**
  * Base fluent builder for CSS styles.
+ * Provides methods for all common CSS properties with type-safe values.
  * Uses a self-referential generic type to enable proper method chaining in subclasses.
  *
- * Usage:
- *   import static com.osmig.Jweb.framework.styles.CSS.*;
- *   import static com.osmig.Jweb.framework.styles.CSSUnits.*;
- *   import static com.osmig.Jweb.framework.styles.CSSColors.*;
+ * <p>Usage with static imports:</p>
+ * <pre>
+ * import static com.osmig.Jweb.framework.styles.CSS.*;
+ * import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+ * import static com.osmig.Jweb.framework.styles.CSSColors.*;
  *
- *   // For inline styles (via StyleBuilder)
- *   style().display(flex).padding(rem(1)).color(red)
+ * // For inline styles (via StyleBuilder)
+ * div().style(style()
+ *     .display(flex)
+ *     .padding(rem(1))
+ *     .color(red)
+ * )
  *
- *   // For CSS rules (via StyleBuilder)
- *   rule(".btn").padding(px(10)).backgroundColor(blue)
+ * // For CSS rules (via StyleBuilder)
+ * rule(".btn")
+ *     .padding(px(10), px(20))
+ *     .backgroundColor(blue)
+ *     .color(white)
+ *     .borderRadius(px(4))
+ *     .cursor(pointer)
+ *     .transition(propAll, s(0.2), ease)
+ * </pre>
+ *
+ * <p>This class provides methods for:</p>
+ * <ul>
+ *   <li><b>Box Model:</b> margin, padding, border, width, height</li>
+ *   <li><b>Flexbox:</b> display(flex), flexDirection, justifyContent, alignItems, gap</li>
+ *   <li><b>Grid:</b> gridTemplateColumns, gridTemplateRows, gridArea</li>
+ *   <li><b>Positioning:</b> position, top/right/bottom/left, inset, zIndex</li>
+ *   <li><b>Typography:</b> color, fontSize, fontWeight, lineHeight, textAlign</li>
+ *   <li><b>Background:</b> background, backgroundColor, backgroundImage</li>
+ *   <li><b>Effects:</b> transform, transition, animation, boxShadow, filter</li>
+ *   <li><b>Logical Properties:</b> marginInline, paddingBlock, insetInline, etc.</li>
+ * </ul>
  *
  * @param <T> The concrete type (for fluent method chaining)
+ * @see CSS#style() for creating inline styles
+ * @see CSS#rule(String) for creating CSS rules
  */
 @SuppressWarnings("unchecked")
 public class Style<T extends Style<T>> implements CSSValue {
 
+    /** Stores CSS property-value pairs in insertion order. */
     protected final Map<String, String> properties = new LinkedHashMap<>();
 
+    /** Creates a new empty Style builder. */
     public Style() {}
 
+    /**
+     * Returns this instance cast to the concrete type T.
+     * Used internally for fluent method chaining.
+     *
+     * @return this instance as type T
+     */
     protected T self() {
         return (T) this;
     }
 
     // ==================== CSS Variables ====================
 
+    /**
+     * Defines a CSS custom property (variable).
+     * Automatically adds "--" prefix if not present.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().var("primary-color", blue)
+     * // Output: --primary-color: blue;
+     * </pre>
+     *
+     * @param name the variable name (with or without "--" prefix)
+     * @param value the CSS value to assign
+     * @return this builder for chaining
+     */
     public T var(String name, CSSValue value) {
         String normalized = name.startsWith("--") ? name : "--" + name;
         return prop(normalized, value.css());
     }
 
+    /**
+     * Defines a CSS custom property (variable) with a string value.
+     *
+     * @param name the variable name
+     * @param value the string value to assign
+     * @return this builder for chaining
+     */
     public T var(String name, String value) {
         String normalized = name.startsWith("--") ? name : "--" + name;
         return prop(normalized, value);
@@ -45,41 +101,78 @@ public class Style<T extends Style<T>> implements CSSValue {
 
     // ==================== Display & Box Model ====================
 
+    /** Sets display property. @param value flex, grid, block, inline, none, etc. */
     public T display(CSSValue value) { return prop("display", value); }
 
+    /** Sets box-sizing property. @param value borderBox or contentBox */
     public T boxSizing(CSSValue value) { return prop("box-sizing", value); }
 
-    // Width & Height
+    // ========== Width & Height ==========
+
+    /** Sets width. @param value use px(), rem(), percent(), etc. */
     public T width(CSSValue value) { return prop("width", value); }
+    /** Sets height. */
     public T height(CSSValue value) { return prop("height", value); }
+    /** Sets minimum width. */
     public T minWidth(CSSValue value) { return prop("min-width", value); }
+    /** Sets maximum width. */
     public T maxWidth(CSSValue value) { return prop("max-width", value); }
+    /** Sets minimum height. */
     public T minHeight(CSSValue value) { return prop("min-height", value); }
+    /** Sets maximum height. */
     public T maxHeight(CSSValue value) { return prop("max-height", value); }
 
     // ==================== Margin ====================
 
+    /**
+     * Sets margin on all sides.
+     * @param all margin value for all sides
+     */
     public T margin(CSSValue all) {
         return prop("margin", all);
     }
 
+    /**
+     * Sets margin with vertical and horizontal values.
+     * @param vertical top and bottom margin
+     * @param horizontal left and right margin
+     */
     public T margin(CSSValue vertical, CSSValue horizontal) {
         return prop("margin", vertical.css() + " " + horizontal.css());
     }
 
+    /**
+     * Sets margin with 3 values (top, horizontal, bottom).
+     * @param top top margin
+     * @param horizontal left and right margin
+     * @param bottom bottom margin
+     */
     public T margin(CSSValue top, CSSValue horizontal, CSSValue bottom) {
         return prop("margin", top.css() + " " + horizontal.css() + " " + bottom.css());
     }
 
+    /**
+     * Sets margin with 4 values (top, right, bottom, left).
+     * @param top top margin
+     * @param right right margin
+     * @param bottom bottom margin
+     * @param left left margin
+     */
     public T margin(CSSValue top, CSSValue right, CSSValue bottom, CSSValue left) {
         return prop("margin", top.css() + " " + right.css() + " " + bottom.css() + " " + left.css());
     }
 
+    /** Sets top margin. */
     public T marginTop(CSSValue value) { return prop("margin-top", value); }
+    /** Sets right margin. */
     public T marginRight(CSSValue value) { return prop("margin-right", value); }
+    /** Sets bottom margin. */
     public T marginBottom(CSSValue value) { return prop("margin-bottom", value); }
+    /** Sets left margin. */
     public T marginLeft(CSSValue value) { return prop("margin-left", value); }
+    /** Sets left and right margin. */
     public T marginX(CSSValue value) { return marginLeft(value).marginRight(value); }
+    /** Sets top and bottom margin. */
     public T marginY(CSSValue value) { return marginTop(value).marginBottom(value); }
 
     // ==================== Padding ====================
@@ -493,13 +586,33 @@ public class Style<T extends Style<T>> implements CSSValue {
         return prop("container", name + " / " + type.css());
     }
 
-    // ==================== Raw property ====================
+    // ==================== Raw Property ====================
 
+    /**
+     * Sets any CSS property by name. Use for properties not covered by other methods.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().prop("appearance", "none")
+     * style().prop("scroll-snap-type", "x mandatory")
+     * </pre>
+     *
+     * @param name the CSS property name (e.g., "display", "margin-top")
+     * @param value the CSS value
+     * @return this builder for chaining
+     */
     public T prop(String name, CSSValue value) {
         properties.put(name, value.css());
         return self();
     }
 
+    /**
+     * Sets any CSS property by name with a string value.
+     *
+     * @param name the CSS property name
+     * @param value the CSS value as a string
+     * @return this builder for chaining
+     */
     public T prop(String name, String value) {
         properties.put(name, value);
         return self();
@@ -507,11 +620,26 @@ public class Style<T extends Style<T>> implements CSSValue {
 
     // ==================== Build ====================
 
+    /**
+     * Returns this style as a CSS string (for use as a CSSValue).
+     *
+     * @return the CSS properties as a formatted string
+     */
     @Override
     public String css() {
         return build();
     }
 
+    /**
+     * Builds the CSS properties string.
+     *
+     * <p>Example output:</p>
+     * <pre>
+     * "display: flex; padding: 10px; color: red;"
+     * </pre>
+     *
+     * @return the CSS properties as a formatted string
+     */
     public String build() {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : properties.entrySet()) {
@@ -521,10 +649,21 @@ public class Style<T extends Style<T>> implements CSSValue {
         return sb.toString();
     }
 
+    /**
+     * Returns the CSS properties as a map.
+     * Useful for iteration or inspection.
+     *
+     * @return an immutable copy of the property map
+     */
     public Map<String, String> toMap() {
         return Map.copyOf(properties);
     }
 
+    /**
+     * Checks if this style has any properties.
+     *
+     * @return true if no properties have been set
+     */
     public boolean isEmpty() {
         return properties.isEmpty();
     }

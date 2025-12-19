@@ -12,14 +12,53 @@ import java.util.function.Function;
 
 /**
  * Static factory methods for creating HTML elements.
+ * This is the primary API for building HTML in Java using a fluent DSL.
  *
- * Usage:
- *   import static com.osmig.Jweb.framework.elements.Elements.*;
+ * <p>Usage with static import:</p>
+ * <pre>
+ * import static com.osmig.Jweb.framework.elements.Elements.*;
  *
- *   div(class_("container"), id("main"),
- *       h1("Hello World"),
- *       p(class_("lead"), "Welcome!")
- *   )
+ * // Simple elements
+ * div(class_("container"), id("main"),
+ *     h1("Hello World"),
+ *     p(class_("lead"), "Welcome!")
+ * )
+ *
+ * // With attributes builder
+ * div(attrs().class_("card").id("main").style(style().padding(px(10))),
+ *     h2("Card Title"),
+ *     p("Card content...")
+ * )
+ *
+ * // Forms
+ * form(attrs().action("/submit").method("POST"),
+ *     label(for_("email"), "Email:"),
+ *     input(attrs().type("email").name("email").placeholder("you@example.com")),
+ *     button(type("submit"), "Subscribe")
+ * )
+ *
+ * // Lists with iteration
+ * ul(each(items, item -&gt; li(item.getName())))
+ *
+ * // Conditional rendering
+ * when(isLoggedIn, () -&gt; span("Welcome, " + user.getName()))
+ * </pre>
+ *
+ * <p>This class provides factory methods for all standard HTML elements organized by category:</p>
+ * <ul>
+ *   <li><b>Document:</b> html, head, body, title, meta, link, script, style</li>
+ *   <li><b>Semantic:</b> header, footer, nav, main, section, article, aside</li>
+ *   <li><b>Headings:</b> h1-h6</li>
+ *   <li><b>Text:</b> p, span, div, strong, em, code, pre, blockquote</li>
+ *   <li><b>Links:</b> a</li>
+ *   <li><b>Lists:</b> ul, ol, li, dl, dt, dd</li>
+ *   <li><b>Tables:</b> table, thead, tbody, tr, th, td</li>
+ *   <li><b>Forms:</b> form, input, textarea, select, option, button, label</li>
+ *   <li><b>Media:</b> img, video, audio, canvas, svg, iframe</li>
+ * </ul>
+ *
+ * @see Attributes for building element attributes
+ * @see Attr for individual attribute shortcuts
  */
 public final class Elements {
 
@@ -28,37 +67,76 @@ public final class Elements {
     // ==================== Attribute Builder ====================
 
     /**
-     * Creates a new Attributes builder.
-     * Usage: div(attrs().class_("card").id("main"), ...)
+     * Creates a new Attributes builder for complex attribute combinations.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs()
+     *     .class_("card")
+     *     .id("main")
+     *     .style(style().padding(px(10)))
+     *     .data("user-id", "123"),
+     *     "Content..."
+     * )
+     * </pre>
+     *
+     * @return a new Attributes builder
      */
     public static Attributes attrs() { return new Attributes(); }
 
     // ==================== Attribute Shortcuts ====================
+    // These provide convenient single-attribute shortcuts.
+    // Use attrs() for combining multiple attributes.
 
+    /** Creates an id attribute. @param value the element ID */
     public static Attr id(String value) { return Attr.id(value); }
+    /** Creates a class attribute. Named class_ to avoid Java keyword conflict. @param value the CSS class(es) */
     public static Attr class_(String value) { return Attr.class_(value); }
+    /** Creates an inline style attribute. @param value the CSS styles */
     public static Attr style_(String value) { return Attr.style(value); }
+    /** Creates an href attribute for links. @param value the URL */
     public static Attr href(String value) { return Attr.href(value); }
+    /** Creates a src attribute for images/scripts. @param value the source URL */
     public static Attr src(String value) { return Attr.src(value); }
+    /** Creates an alt attribute for images. @param value the alt text */
     public static Attr alt(String value) { return Attr.alt(value); }
+    /** Creates a type attribute. @param value the type (e.g., "text", "submit") */
     public static Attr type(String value) { return Attr.type(value); }
+    /** Creates a name attribute for form elements. @param value the name */
     public static Attr name(String value) { return Attr.name(value); }
+    /** Creates a value attribute. @param value the value */
     public static Attr value(String value) { return Attr.value(value); }
+    /** Creates a placeholder attribute for inputs. @param value the placeholder text */
     public static Attr placeholder(String value) { return Attr.placeholder(value); }
+    /** Creates an action attribute for forms. @param value the form action URL */
     public static Attr action(String value) { return Attr.action(value); }
+    /** Creates a method attribute for forms. @param value the HTTP method */
     public static Attr method(String value) { return Attr.method(value); }
+    /** Creates a target attribute for links. @param value the target (e.g., "_blank") */
     public static Attr target(String value) { return Attr.target(value); }
+    /** Creates a title attribute. Named title_ to avoid conflict. @param value the title text */
     public static Attr title_(String value) { return Attr.title(value); }
+    /** Creates a for attribute for labels. Named for_ to avoid Java keyword. @param value the target element ID */
     public static Attr for_(String value) { return Attr.for_(value); }
+    /** Creates a role attribute for ARIA. @param value the ARIA role */
     public static Attr role(String value) { return Attr.role(value); }
+    /** Creates a disabled boolean attribute. */
     public static Attr disabled() { return Attr.disabled(); }
+    /** Creates a checked boolean attribute for checkboxes/radios. */
     public static Attr checked() { return Attr.checked(); }
+    /** Creates a required boolean attribute. */
     public static Attr required() { return Attr.required(); }
+    /** Creates a readonly boolean attribute. */
     public static Attr readonly() { return Attr.readonly(); }
+    /** Creates a hidden boolean attribute. */
     public static Attr hidden() { return Attr.hidden(); }
+    /** Creates an autofocus boolean attribute. */
     public static Attr autofocus() { return Attr.autofocus(); }
+    /** Creates a data-* attribute. @param name the data name (without "data-" prefix) @param value the value */
     public static Attr data(String name, String value) { return Attr.data(name, value); }
+    /** Creates an aria-* attribute. @param name the aria name (without "aria-" prefix) @param value the value */
     public static Attr aria(String name, String value) { return Attr.aria(name, value); }
+    /** Creates any custom attribute. @param name the attribute name @param value the value */
     public static Attr attr(String name, String value) { return Attr.attr(name, value); }
 
     // ==================== Document Structure ====================
