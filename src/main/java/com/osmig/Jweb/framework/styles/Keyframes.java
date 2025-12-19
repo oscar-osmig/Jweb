@@ -33,7 +33,7 @@ import java.util.Map;
 public class Keyframes {
 
     private final String name;
-    private final Map<String, Style> frames = new LinkedHashMap<>();
+    private final Map<String, Style<?>> frames = new LinkedHashMap<>();
 
     private Keyframes(String name) {
         this.name = name;
@@ -48,7 +48,7 @@ public class Keyframes {
     /**
      * Add styles for the 'from' (0%) keyframe.
      */
-    public Keyframes from(Style style) {
+    public Keyframes from(Style<?> style) {
         frames.put("from", style);
         return this;
     }
@@ -56,7 +56,7 @@ public class Keyframes {
     /**
      * Add styles for the 'to' (100%) keyframe.
      */
-    public Keyframes to(Style style) {
+    public Keyframes to(Style<?> style) {
         frames.put("to", style);
         return this;
     }
@@ -64,7 +64,7 @@ public class Keyframes {
     /**
      * Add styles at a specific percentage (0-100).
      */
-    public Keyframes at(int percentage, Style style) {
+    public Keyframes at(int percentage, Style<?> style) {
         frames.put(percentage + "%", style);
         return this;
     }
@@ -72,7 +72,7 @@ public class Keyframes {
     /**
      * Add styles at a specific percentage with decimal precision.
      */
-    public Keyframes at(double percentage, Style style) {
+    public Keyframes at(double percentage, Style<?> style) {
         frames.put(formatPercent(percentage), style);
         return this;
     }
@@ -80,7 +80,7 @@ public class Keyframes {
     /**
      * Add styles at multiple percentages.
      */
-    public Keyframes at(int[] percentages, Style style) {
+    public Keyframes at(int[] percentages, Style<?> style) {
         StringBuilder key = new StringBuilder();
         for (int i = 0; i < percentages.length; i++) {
             if (i > 0) key.append(", ");
@@ -100,7 +100,7 @@ public class Keyframes {
         StringBuilder sb = new StringBuilder();
         sb.append("@keyframes ").append(name).append(" {\n");
 
-        for (Map.Entry<String, Style> entry : frames.entrySet()) {
+        for (Map.Entry<String, Style<?>> entry : frames.entrySet()) {
             sb.append("  ").append(entry.getKey()).append(" {\n");
             for (Map.Entry<String, String> prop : entry.getValue().toMap().entrySet()) {
                 sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(";\n");
@@ -131,8 +131,8 @@ public class Keyframes {
      */
     public static Keyframes fadeIn() {
         return keyframes("fadeIn")
-            .from(new Style().opacity(0))
-            .to(new Style().opacity(1));
+            .from(new Style<>().opacity(0))
+            .to(new Style<>().opacity(1));
     }
 
     /**
@@ -140,8 +140,8 @@ public class Keyframes {
      */
     public static Keyframes fadeOut() {
         return keyframes("fadeOut")
-            .from(new Style().opacity(1))
-            .to(new Style().opacity(0));
+            .from(new Style<>().opacity(1))
+            .to(new Style<>().opacity(0));
     }
 
     /**
@@ -149,8 +149,8 @@ public class Keyframes {
      */
     public static Keyframes slideInLeft() {
         return keyframes("slideInLeft")
-            .from(new Style().transform(CSS.translateX(CSSUnits.percent(-100))).opacity(0))
-            .to(new Style().transform(CSS.translateX(CSSUnits.zero)).opacity(1));
+            .from(new Style<>().transform(CSS.translateX(CSSUnits.percent(-100))).opacity(0))
+            .to(new Style<>().transform(CSS.translateX(CSSUnits.zero)).opacity(1));
     }
 
     /**
@@ -158,8 +158,8 @@ public class Keyframes {
      */
     public static Keyframes slideInRight() {
         return keyframes("slideInRight")
-            .from(new Style().transform(CSS.translateX(CSSUnits.percent(100))).opacity(0))
-            .to(new Style().transform(CSS.translateX(CSSUnits.zero)).opacity(1));
+            .from(new Style<>().transform(CSS.translateX(CSSUnits.percent(100))).opacity(0))
+            .to(new Style<>().transform(CSS.translateX(CSSUnits.zero)).opacity(1));
     }
 
     /**
@@ -167,8 +167,8 @@ public class Keyframes {
      */
     public static Keyframes slideInTop() {
         return keyframes("slideInTop")
-            .from(new Style().transform(CSS.translateY(CSSUnits.percent(-100))).opacity(0))
-            .to(new Style().transform(CSS.translateY(CSSUnits.zero)).opacity(1));
+            .from(new Style<>().transform(CSS.translateY(CSSUnits.percent(-100))).opacity(0))
+            .to(new Style<>().transform(CSS.translateY(CSSUnits.zero)).opacity(1));
     }
 
     /**
@@ -176,8 +176,8 @@ public class Keyframes {
      */
     public static Keyframes slideInBottom() {
         return keyframes("slideInBottom")
-            .from(new Style().transform(CSS.translateY(CSSUnits.percent(100))).opacity(0))
-            .to(new Style().transform(CSS.translateY(CSSUnits.zero)).opacity(1));
+            .from(new Style<>().transform(CSS.translateY(CSSUnits.percent(100))).opacity(0))
+            .to(new Style<>().transform(CSS.translateY(CSSUnits.zero)).opacity(1));
     }
 
     /**
@@ -185,9 +185,9 @@ public class Keyframes {
      */
     public static Keyframes pulse() {
         return keyframes("pulse")
-            .at(0, new Style().transform(CSS.scale(1)))
-            .at(50, new Style().transform(CSS.scale(1.05)))
-            .at(100, new Style().transform(CSS.scale(1)));
+            .at(0, new Style<>().transform(CSS.scale(1)))
+            .at(50, new Style<>().transform(CSS.scale(1.05)))
+            .at(100, new Style<>().transform(CSS.scale(1)));
     }
 
     /**
@@ -195,11 +195,11 @@ public class Keyframes {
      */
     public static Keyframes bounce() {
         return keyframes("bounce")
-            .at(0, new Style().transform(CSS.translateY(CSSUnits.zero)))
-            .at(25, new Style().transform(CSS.translateY(CSSUnits.px(-10))))
-            .at(50, new Style().transform(CSS.translateY(CSSUnits.zero)))
-            .at(75, new Style().transform(CSS.translateY(CSSUnits.px(-5))))
-            .at(100, new Style().transform(CSS.translateY(CSSUnits.zero)));
+            .at(0, new Style<>().transform(CSS.translateY(CSSUnits.zero)))
+            .at(25, new Style<>().transform(CSS.translateY(CSSUnits.px(-10))))
+            .at(50, new Style<>().transform(CSS.translateY(CSSUnits.zero)))
+            .at(75, new Style<>().transform(CSS.translateY(CSSUnits.px(-5))))
+            .at(100, new Style<>().transform(CSS.translateY(CSSUnits.zero)));
     }
 
     /**
@@ -207,11 +207,11 @@ public class Keyframes {
      */
     public static Keyframes shake() {
         return keyframes("shake")
-            .at(0, new Style().transform(CSS.translateX(CSSUnits.zero)))
-            .at(25, new Style().transform(CSS.translateX(CSSUnits.px(-5))))
-            .at(50, new Style().transform(CSS.translateX(CSSUnits.px(5))))
-            .at(75, new Style().transform(CSS.translateX(CSSUnits.px(-5))))
-            .at(100, new Style().transform(CSS.translateX(CSSUnits.zero)));
+            .at(0, new Style<>().transform(CSS.translateX(CSSUnits.zero)))
+            .at(25, new Style<>().transform(CSS.translateX(CSSUnits.px(-5))))
+            .at(50, new Style<>().transform(CSS.translateX(CSSUnits.px(5))))
+            .at(75, new Style<>().transform(CSS.translateX(CSSUnits.px(-5))))
+            .at(100, new Style<>().transform(CSS.translateX(CSSUnits.zero)));
     }
 
     /**
@@ -219,8 +219,8 @@ public class Keyframes {
      */
     public static Keyframes spin() {
         return keyframes("spin")
-            .from(new Style().transform(CSS.rotate(CSSUnits.deg(0))))
-            .to(new Style().transform(CSS.rotate(CSSUnits.deg(360))));
+            .from(new Style<>().transform(CSS.rotate(CSSUnits.deg(0))))
+            .to(new Style<>().transform(CSS.rotate(CSSUnits.deg(360))));
     }
 
     /**
@@ -228,8 +228,8 @@ public class Keyframes {
      */
     public static Keyframes zoomIn() {
         return keyframes("zoomIn")
-            .from(new Style().transform(CSS.scale(0)).opacity(0))
-            .to(new Style().transform(CSS.scale(1)).opacity(1));
+            .from(new Style<>().transform(CSS.scale(0)).opacity(0))
+            .to(new Style<>().transform(CSS.scale(1)).opacity(1));
     }
 
     /**
@@ -237,7 +237,7 @@ public class Keyframes {
      */
     public static Keyframes zoomOut() {
         return keyframes("zoomOut")
-            .from(new Style().transform(CSS.scale(1)).opacity(1))
-            .to(new Style().transform(CSS.scale(0)).opacity(0));
+            .from(new Style<>().transform(CSS.scale(1)).opacity(1))
+            .to(new Style<>().transform(CSS.scale(0)).opacity(0));
     }
 }

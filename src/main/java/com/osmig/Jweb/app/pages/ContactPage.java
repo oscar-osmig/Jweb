@@ -213,8 +213,8 @@ public class ContactPage implements Template {
         );
     }
 
-    private Style labelStyle() {
-        return new Style()
+    private Style<?> labelStyle() {
+        return new Style<>()
             .display(block)
             .marginBottom(SPACE_XS)
             .fontWeight(500)
@@ -222,8 +222,8 @@ public class ContactPage implements Template {
             .color(TEXT);
     }
 
-    private Style inputStyle() {
-        return new Style()
+    private Style<?> inputStyle() {
+        return new Style<>()
             .width(percent(100))
             .padding(SPACE_SM, SPACE_MD)
             .fontSize(FONT_BASE)

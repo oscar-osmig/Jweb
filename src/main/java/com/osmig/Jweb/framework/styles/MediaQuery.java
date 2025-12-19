@@ -29,7 +29,7 @@ import java.util.Map;
 public class MediaQuery {
 
     private final List<String> conditions = new ArrayList<>();
-    private final Map<String, Style> rules = new LinkedHashMap<>();
+    private final Map<String, Style<?>> rules = new LinkedHashMap<>();
 
     private MediaQuery() {}
 
@@ -218,7 +218,7 @@ public class MediaQuery {
 
     // ==================== Rules ====================
 
-    public MediaQuery rule(String selector, Style style) {
+    public MediaQuery rule(String selector, Style<?> style) {
         rules.put(selector, style);
         return this;
     }
@@ -244,7 +244,7 @@ public class MediaQuery {
 
         sb.append(" {\n");
 
-        for (Map.Entry<String, Style> entry : rules.entrySet()) {
+        for (Map.Entry<String, Style<?>> entry : rules.entrySet()) {
             sb.append("  ").append(entry.getKey()).append(" {\n");
             for (Map.Entry<String, String> prop : entry.getValue().toMap().entrySet()) {
                 sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(";\n");
@@ -262,7 +262,7 @@ public class MediaQuery {
     }
 
     // Record for holding selector-style pairs
-    public record Rule(String selector, Style style) {}
+    public record Rule(String selector, Style<?> style) {}
 
     // ==================== Common Breakpoints ====================
 

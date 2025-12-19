@@ -142,71 +142,58 @@ public class Head implements Template {
     }
 
     private String keyframeAnimations() {
-        return """
-
-            """ + fadeIn().build() + """
-
-            """ + keyframes("slideUp")
-                    .from(new Style().opacity(0).transform(translateY(px(20))))
-                    .to(new Style().opacity(1).transform(translateY(zero)))
-                    .build() + """
-
-            """ + keyframes("scaleIn")
-                    .from(new Style().opacity(0).transform(scale(0.95)))
-                    .to(new Style().opacity(1).transform(scale(1)))
-                    .build() + """
-
-            """ + pulse().build() + """
-
-            """ + keyframes("gradientShift")
-                    .at(0, new Style().prop("background-position", "0% 50%"))
-                    .at(50, new Style().prop("background-position", "100% 50%"))
-                    .at(100, new Style().prop("background-position", "0% 50%"))
-                    .build() + """
-
-            """ + keyframes("float")
-                    .at(0, new Style().transform(translateY(zero)))
-                    .at(50, new Style().transform(translateY(px(-10))))
-                    .at(100, new Style().transform(translateY(zero)))
-                    .build() + """
-
-            """;
+        return String.join("\n",
+            fadeIn().build(),
+            keyframes("slideUp")
+                .from(new Style<>().opacity(0).transform(translateY(px(20))))
+                .to(new Style<>().opacity(1).transform(translateY(zero)))
+                .build(),
+            keyframes("scaleIn")
+                .from(new Style<>().opacity(0).transform(scale(0.95)))
+                .to(new Style<>().opacity(1).transform(scale(1)))
+                .build(),
+            pulse().build(),
+            keyframes("gradientShift")
+                .at(0, new Style<>().prop("background-position", "0% 50%"))
+                .at(50, new Style<>().prop("background-position", "100% 50%"))
+                .at(100, new Style<>().prop("background-position", "0% 50%"))
+                .build(),
+            keyframes("float")
+                .at(0, new Style<>().transform(translateY(zero)))
+                .at(50, new Style<>().transform(translateY(px(-10))))
+                .at(100, new Style<>().transform(translateY(zero)))
+                .build()
+        );
     }
 
     private String mediaQueryStyles() {
-        return """ 
-
-            """ + mobile()
-                    .rule(".container", new Style().padding(SPACE_SM, SPACE_MD))
-                    .rule(".navbar", new Style().padding(SPACE_SM, SPACE_MD).gap(SPACE_SM))
-                    .rule("h1", new Style().fontSize(FONT_2XL))
-                    .rule("h2", new Style().fontSize(FONT_XL))
-                    .build() + """
-
-            """ + md()
-                    .rule(".container", new Style().padding(SPACE_MD, SPACE_LG))
-                    .build() + """
-
-            """ + lg()
-                    .rule(".container", new Style().padding(SPACE_MD, SPACE_XL))
-                    .build() + """
-
-            """ + media().prefersReducedMotion()
-                    .rule("*, *::before, *::after", new Style()
-                        .animationDuration(ms(0))
-                        .transitionDuration(ms(0)))
-                    .build() + """
-
-            """ + media().prefersDark()
-                    .rule("body", new Style().backgroundColor(BG_DARK).color(hex("#e2e8f0")))
-                    .rule(".card", new Style().backgroundColor(hex("#374151")))
-                    .rule(".footer", new Style().backgroundColor(hex("#1f2937")))
-                    .rule("input, textarea", new Style()
-                        .backgroundColor(hex("#374151"))
-                        .borderColor(hex("#4b5563"))
-                        .color(hex("#e2e8f0")))
-                    .build() + """
-
-            """;
+        return String.join("\n",
+            mobile()
+                .rule(".container", new Style<>().padding(SPACE_SM, SPACE_MD))
+                .rule(".navbar", new Style<>().padding(SPACE_SM, SPACE_MD).gap(SPACE_SM))
+                .rule("h1", new Style<>().fontSize(FONT_2XL))
+                .rule("h2", new Style<>().fontSize(FONT_XL))
+                .build(),
+            md()
+                .rule(".container", new Style<>().padding(SPACE_MD, SPACE_LG))
+                .build(),
+            lg()
+                .rule(".container", new Style<>().padding(SPACE_MD, SPACE_XL))
+                .build(),
+            media().prefersReducedMotion()
+                .rule("*, *::before, *::after", new Style<>()
+                    .animationDuration(ms(0))
+                    .transitionDuration(ms(0)))
+                .build(),
+            media().prefersDark()
+                .rule("body", new Style<>().backgroundColor(BG_DARK).color(hex("#e2e8f0")))
+                .rule(".card", new Style<>().backgroundColor(hex("#374151")))
+                .rule(".footer", new Style<>().backgroundColor(hex("#1f2937")))
+                .rule("input, textarea", new Style<>()
+                    .backgroundColor(hex("#374151"))
+                    .borderColor(hex("#4b5563"))
+                    .color(hex("#e2e8f0")))
+                .build()
+        );
     }
 }

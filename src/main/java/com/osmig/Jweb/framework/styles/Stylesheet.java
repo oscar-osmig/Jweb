@@ -37,7 +37,7 @@ public class Stylesheet {
     /**
      * Creates a CSS rule (selector + style).
      */
-    public static Rule cssRule(String selector, Style style) {
+    public static Rule cssRule(String selector, Style<?> style) {
         return new Rule(selector, style);
     }
 
@@ -48,7 +48,7 @@ public class Stylesheet {
      * @param style the styles to apply
      * @return this for chaining
      */
-    public Stylesheet rule(String selector, Style style) {
+    public Stylesheet rule(String selector, Style<?> style) {
         rules.add(selector + " { " + style.build() + " }");
         return this;
     }
@@ -196,9 +196,9 @@ public class Stylesheet {
      */
     public static class Rule {
         private final String selector;
-        private final Style style;
+        private final Style<?> style;
 
-        public Rule(String selector, Style style) {
+        public Rule(String selector, Style<?> style) {
             this.selector = selector;
             this.style = style;
         }

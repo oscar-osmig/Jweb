@@ -32,7 +32,7 @@ public class ContainerQuery {
 
     private String containerName;
     private final List<String> conditions = new ArrayList<>();
-    private final Map<String, Style> rules = new LinkedHashMap<>();
+    private final Map<String, Style<?>> rules = new LinkedHashMap<>();
 
     private ContainerQuery() {}
 
@@ -140,7 +140,7 @@ public class ContainerQuery {
 
     // ==================== Rules ====================
 
-    public ContainerQuery rule(String selector, Style style) {
+    public ContainerQuery rule(String selector, Style<?> style) {
         rules.put(selector, style);
         return this;
     }
@@ -171,7 +171,7 @@ public class ContainerQuery {
 
         sb.append(" {\n");
 
-        for (Map.Entry<String, Style> entry : rules.entrySet()) {
+        for (Map.Entry<String, Style<?>> entry : rules.entrySet()) {
             sb.append("  ").append(entry.getKey()).append(" {\n");
             for (Map.Entry<String, String> prop : entry.getValue().toMap().entrySet()) {
                 sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(";\n");

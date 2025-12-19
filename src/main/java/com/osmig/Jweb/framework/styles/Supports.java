@@ -157,7 +157,7 @@ public class Supports {
     /**
      * Adds a CSS rule to apply when conditions are met.
      */
-    public Supports rule(String selector, Style style) {
+    public Supports rule(String selector, Style<?> style) {
         rules.add(new MediaQuery.Rule(selector, style));
         return this;
     }

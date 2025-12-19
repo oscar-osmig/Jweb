@@ -28,90 +28,90 @@ public class StyledElement implements Element {
 
     private final VNode baseElement;
     private final String generatedClass;
-    private Style baseStyle;
-    private final Map<String, Style> pseudoStyles = new LinkedHashMap<>();
+    private Style<?> baseStyle;
+    private final Map<String, Style<?>> pseudoStyles = new LinkedHashMap<>();
 
     public StyledElement(VNode baseElement) {
         this.baseElement = baseElement;
         this.generatedClass = "jweb-" + ID_COUNTER.incrementAndGet();
     }
 
-    public StyledElement style(Style style) {
+    public StyledElement style(Style<?> style) {
         this.baseStyle = style;
         return this;
     }
 
-    public StyledElement hover(Style style) {
+    public StyledElement hover(Style<?> style) {
         pseudoStyles.put("hover", style);
         return this;
     }
 
-    public StyledElement focus(Style style) {
+    public StyledElement focus(Style<?> style) {
         pseudoStyles.put("focus", style);
         return this;
     }
 
-    public StyledElement active(Style style) {
+    public StyledElement active(Style<?> style) {
         pseudoStyles.put("active", style);
         return this;
     }
 
-    public StyledElement visited(Style style) {
+    public StyledElement visited(Style<?> style) {
         pseudoStyles.put("visited", style);
         return this;
     }
 
-    public StyledElement focusVisible(Style style) {
+    public StyledElement focusVisible(Style<?> style) {
         pseudoStyles.put("focus-visible", style);
         return this;
     }
 
-    public StyledElement focusWithin(Style style) {
+    public StyledElement focusWithin(Style<?> style) {
         pseudoStyles.put("focus-within", style);
         return this;
     }
 
-    public StyledElement disabled(Style style) {
+    public StyledElement disabled(Style<?> style) {
         pseudoStyles.put("disabled", style);
         return this;
     }
 
-    public StyledElement enabled(Style style) {
+    public StyledElement enabled(Style<?> style) {
         pseudoStyles.put("enabled", style);
         return this;
     }
 
-    public StyledElement checked(Style style) {
+    public StyledElement checked(Style<?> style) {
         pseudoStyles.put("checked", style);
         return this;
     }
 
-    public StyledElement firstChild(Style style) {
+    public StyledElement firstChild(Style<?> style) {
         pseudoStyles.put("first-child", style);
         return this;
     }
 
-    public StyledElement lastChild(Style style) {
+    public StyledElement lastChild(Style<?> style) {
         pseudoStyles.put("last-child", style);
         return this;
     }
 
-    public StyledElement nthChild(String expression, Style style) {
+    public StyledElement nthChild(String expression, Style<?> style) {
         pseudoStyles.put("nth-child(" + expression + ")", style);
         return this;
     }
 
-    public StyledElement before(Style style) {
+    public StyledElement before(Style<?> style) {
         pseudoStyles.put(":before", style);
         return this;
     }
 
-    public StyledElement after(Style style) {
+    public StyledElement after(Style<?> style) {
         pseudoStyles.put(":after", style);
         return this;
     }
 
-    public StyledElement placeholder(Style style) {
+    public StyledElement placeholder(Style<?> style) {
         pseudoStyles.put(":placeholder", style);
         return this;
     }
@@ -134,9 +134,9 @@ public class StyledElement implements Element {
         }
 
         // Pseudo-class rules
-        for (Map.Entry<String, Style> entry : pseudoStyles.entrySet()) {
+        for (Map.Entry<String, Style<?>> entry : pseudoStyles.entrySet()) {
             String pseudo = entry.getKey();
-            Style style = entry.getValue();
+            Style<?> style = entry.getValue();
 
             if (pseudo.startsWith(":")) {
                 // Pseudo-element (::before, ::after, ::placeholder)

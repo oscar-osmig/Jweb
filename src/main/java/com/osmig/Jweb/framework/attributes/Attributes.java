@@ -53,7 +53,7 @@ public class Attributes {
      */
     public static class InlineStyle {
         private final Attributes parent;
-        private final Style style = new Style();
+        private final Style<?> style = new Style<>();
 
         InlineStyle(Attributes parent) {
             this.parent = parent;

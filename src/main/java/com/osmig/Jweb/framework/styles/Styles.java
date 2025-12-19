@@ -25,7 +25,7 @@ public final class Styles {
     /**
      * Creates a new Style builder.
      */
-    public static Style style() {
-        return new Style();
+    public static Style<?> style() {
+        return new Style<>();
     }
 }
