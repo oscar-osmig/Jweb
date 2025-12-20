@@ -4,15 +4,21 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.styles.Stylesheet.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static com.osmig.Jweb.framework.styles.Keyframes.*;
+import static com.osmig.Jweb.app.layout.Theme.*;
 
 /**
- * HTML head with meta tags and global styles.
+ * Document head with meta tags and global styles.
  */
 public class Head implements Template {
-    private final String title;
+    private final String pageTitle;
 
-    public Head(String title) {
-        this.title = title;
+    public Head(String pageTitle) {
+        this.pageTitle = pageTitle;
     }
 
     @Override
@@ -20,26 +26,37 @@ public class Head implements Template {
         return head(
             meta(attr("charset", "UTF-8")),
             meta(name("viewport"), attr("content", "width=device-width, initial-scale=1")),
-            title(title),
-            style(css())
+            title(pageTitle),
+            style(globalStyles())
         );
     }
 
-    private String css() {
-        return """
-            *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-            html { font-size: 16px; scroll-behavior: smooth; }
-            body {
-                font-family: system-ui, -apple-system, sans-serif;
-                line-height: 1.6;
-                color: #1e293b;
-                background: #fff;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-            }
-            a { color: #6366f1; text-decoration: none; }
-            a:hover { color: #4f46e5; }
-            """;
+    private String globalStyles() {
+        return stylesheet()
+            .rule("*, *::before, *::after", style()
+                .boxSizing(borderBox)
+                .margin(zero)
+                .padding(zero))
+            .rule("html", style()
+                .fontSize(px(16))
+                .prop("scroll-behavior", "smooth"))
+            .rule("body", style()
+                .fontFamily("system-ui, -apple-system, sans-serif")
+                .lineHeight(1.6)
+                .color(TEXT)
+                .backgroundColor(BG)
+                .minHeight(vh(100))
+                .display(flex)
+                .flexDirection(column))
+            .rule("a", style()
+                .color(PRIMARY)
+                .textDecoration(none))
+            .rule("a:hover", style()
+                .color(PRIMARY_DARK))
+            .keyframes(keyframes("gradientShift")
+                .at(0, style().prop("background-position", "0% 50%"))
+                .at(50, style().prop("background-position", "100% 50%"))
+                .at(100, style().prop("background-position", "0% 50%")))
+            .build();
     }
 }

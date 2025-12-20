@@ -19,17 +19,17 @@ public class AboutPage implements Template {
             h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).done(),
                 text("About JWeb")),
             p(attrs().style().marginTop(SP_6).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("JWeb was born from a simple idea: what if building web apps in Java didn't require switching between languages? No more context-switching between Java, HTML, CSS, and JavaScript.")),
+                text("JWeb is a Java web framework that lets you build complete web applications using only Java. Components, layouts, routing, styling, state management, and server logic all live in one language, one codebase.")),
             p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("With JWeb, your entire frontend is Java. Elements are methods. Styles are builders. Routes are lambdas. Everything compiles, everything has autocomplete, and your IDE catches errors before runtime.")),
+                text("Everything is a Java method. Components are classes. Styles are fluent builders. Routes are lambdas. Your IDE provides full autocomplete, refactoring, and compile-time verification across your entire application.")),
             h2(attrs().style().fontSize(TEXT_2XL).fontWeight(600).color(TEXT).marginTop(SP_8).done(),
-                text("Why Pure Java?")),
+                text("Why JWeb?")),
             p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("Modern web development often means managing multiple toolchains: npm, webpack, transpilers, and more. JWeb eliminates that complexity. Just Maven and Java. Your frontend code lives alongside your backend, sharing types and logic.")),
+                text("Traditional web development requires multiple languages and toolchains. JWeb takes a different approach: everything is Java. No npm, no webpack, no transpilers. Just Maven and your IDE. Your entire stack shares types, logic, and tooling.")),
             h2(attrs().style().fontSize(TEXT_2XL).fontWeight(600).color(TEXT).marginTop(SP_8).done(),
-                text("Built for Developers")),
+                text("Built for Java Developers")),
             p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("JWeb provides type-safe DSLs for HTML and CSS, a fluent routing API, middleware support, state management, and more. All with the tooling Java developers already know and love."))
+                text("JWeb provides fluent APIs for building components, defining routes, managing state, handling forms, and more. Built on Spring Boot, it integrates seamlessly with the Java ecosystem you already know."))
         );
     }
 }

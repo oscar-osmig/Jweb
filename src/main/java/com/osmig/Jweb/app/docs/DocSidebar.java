@@ -22,18 +22,29 @@ public class DocSidebar implements Template {
     @Override
     public Element render() {
         return aside(attrs().style()
-                .width(px(200)).padding(SP_6)
+                .width(px(240)).padding(SP_6)
                 .prop("border-right", "1px solid #e2e8f0")
+                .backgroundColor(hex("#fafafa"))
+                .minHeight(vh(80))
             .done(),
-            nav(attrs().style().display(flex).flexDirection(column).gap(SP_2).done(),
-                link("intro", "Introduction"),
-                link("setup", "Getting Started"),
-                link("routing", "Routing"),
-                link("templates", "Templates"),
-                link("styling", "Styling"),
-                link("state", "State Management"),
-                link("forms", "Forms"),
-                link("api", "API Reference")
+            div(attrs().style()
+                    .position(sticky).top(SP_6)
+                .done(),
+                h3(attrs().style()
+                        .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
+                        .marginBottom(SP_4).textTransform(uppercase)
+                        .prop("letter-spacing", "0.05em")
+                    .done(), text("Documentation")),
+                nav(attrs().style().display(flex).flexDirection(column).gap(SP_1).done(),
+                    link("intro", "Introduction"),
+                    link("setup", "Getting Started"),
+                    link("routing", "Routing"),
+                    link("templates", "Templates"),
+                    link("styling", "Styling"),
+                    link("state", "State Management"),
+                    link("forms", "Forms"),
+                    link("api", "API Reference")
+                )
             )
         );
     }
@@ -43,8 +54,9 @@ public class DocSidebar implements Template {
         return a(attrs().href("/docs?section=" + id).style()
             .padding(SP_2, SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
             .color(isActive ? PRIMARY : TEXT_LIGHT).fontWeight(isActive ? 600 : 400)
-            .backgroundColor(isActive ? hex("#f1f5f9") : hex("#ffffff"))
+            .backgroundColor(isActive ? hex("#eef2ff") : transparent)
             .textDecoration(none)
+            .prop("transition", "all 0.15s ease")
         .done(), text(label));
     }
 }

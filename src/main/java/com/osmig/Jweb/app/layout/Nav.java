@@ -16,7 +16,15 @@ public class Nav implements Template {
     @Override
     public Element render() {
         return nav(attrs().style()
-                .prop("background", "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)")
+                .background(linearGradient("90deg",
+                    hex("#6366f1"),
+                    hex("#8b5cf6"),
+                    hex("#a855f7"),
+                    hex("#ec4899"),
+                    hex("#8b5cf6"),
+                    hex("#6366f1")))
+                .prop("background-size", "300% 100%")
+                .prop("animation", "gradientShift 8s ease infinite")
                 .padding(rem(0.75), rem(2))
                 .display(flex).alignItems(center).justifyContent(spaceBetween)
             .done(),
