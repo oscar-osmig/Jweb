@@ -20,7 +20,7 @@ public class Footer implements Template {
                 .textAlign(center).marginTop(auto)
             .done(),
             p(attrs().style().color(TEXT_LIGHT).fontSize(TEXT_SM).done(),
-                text("© 2025 JWeb Framework"))
+                text("© 2025 - Built with JWeb Framework"))
         );
     }
 }

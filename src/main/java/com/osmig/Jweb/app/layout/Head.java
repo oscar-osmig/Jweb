@@ -39,7 +39,7 @@ public class Head implements Template {
                 .padding(zero))
             .rule("html", style()
                 .fontSize(px(16))
-                .prop("scroll-behavior", "smooth"))
+                .scrollBehavior(smooth))
             .rule("body", style()
                 .fontFamily("system-ui, -apple-system, sans-serif")
                 .lineHeight(1.6)
@@ -54,9 +54,9 @@ public class Head implements Template {
             .rule("a:hover", style()
                 .color(PRIMARY_DARK))
             .keyframes(keyframes("gradientShift")
-                .at(0, style().prop("background-position", "0% 50%"))
-                .at(50, style().prop("background-position", "100% 50%"))
-                .at(100, style().prop("background-position", "0% 50%")))
+                .at(0, style().backgroundPosition(() -> "0% 50%"))
+                .at(50, style().backgroundPosition(() -> "100% 50%"))
+                .at(100, style().backgroundPosition(() -> "0% 50%")))
             .build();
     }
 }

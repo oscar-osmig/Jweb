@@ -23,9 +23,9 @@ public class DocsPage implements Template {
         return div(attrs().style().display(flex).minHeight(vh(80)).done(),
             new DocSidebar(section).render(),
             main(attrs().style()
-                .prop("flex", "1").padding(SP_8, SP_12)
+                .flex(num(1)).padding(SP_8, SP_12)
                 .maxWidth(px(900))
-                .prop("overflow-y", "auto")
+                .overflowY(auto)
             .done(),
                 DocContent.get(section)
             )

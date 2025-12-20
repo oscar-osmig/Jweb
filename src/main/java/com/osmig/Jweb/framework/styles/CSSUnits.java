@@ -34,6 +34,31 @@ public final class CSSUnits {
     /** None value - typically disables a feature. */
     public static final CSSValue none = () -> "none";
 
+    // ==================== Raw String Value ====================
+
+    /**
+     * Wraps a raw string as a CSSValue.
+     * Use this when the DSL doesn't provide a type-safe method for a CSS value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * // For animation names
+     * style().animation(raw("fadeIn"), s(0.3), ease)
+     *
+     * // For complex background-size
+     * style().backgroundSize(raw("300% 100%"))
+     *
+     * // For any custom value
+     * style().prop("grid-template-columns", raw("1fr auto 1fr"))
+     * </pre>
+     *
+     * @param value the raw CSS value string
+     * @return CSSValue wrapping the string
+     */
+    public static CSSValue raw(String value) {
+        return () -> value;
+    }
+
     // ==================== Pixel Units ====================
 
     /**

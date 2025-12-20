@@ -21,6 +21,9 @@ public class DocContent {
             case "styling" -> styling();
             case "state" -> state();
             case "forms" -> forms();
+            case "form-builder" -> formBuilder();
+            case "layouts" -> layouts();
+            case "ui" -> uiComponents();
             case "api" -> api();
             default -> intro();
         };
@@ -48,16 +51,16 @@ public class DocContent {
             paragraph("JWeb follows a simple principle: your entire web application is Java. This means:"),
 
             codeBlock("""
-// A component in JWeb:
-div(class_("card"),
-    h1("Hello")
-)
-
-// Styling in JWeb:
-attrs().style()
-    .padding(rem(2))
-    .backgroundColor(hex("#f5f5f5"))
-.done()"""),
+                // A component in JWeb:
+                div(class_("card"),
+                    h1("Hello")
+                )
+                
+                // Styling in JWeb:
+                attrs().style()
+                    .padding(rem(2))
+                    .backgroundColor(hex("#f5f5f5"))
+                .done()"""),
 
             paragraph("Components are Java classes. Styles are fluent builders. Routes are lambdas. Everything compiles together."),
 
@@ -923,12 +926,561 @@ input(attrs()
         );
     }
 
-    // ==================== API Reference Section ====================
+    // ==================== Form Builder Section ====================
+
+    private static Element formBuilder() {
+        return section(
+            sectionTitle("Form Builder"),
+            paragraph("The Form Builder provides a fluent DSL for creating forms with minimal boilerplate. Build complete forms with labels, validation, and proper structure in a readable, chainable API."),
+
+            subheading("Basic Usage"),
+            paragraph("Import the Form class and use Form.create() to start building:"),
+
+            codeBlock("""
+import static com.osmig.Jweb.framework.forms.Form.*;
+
+Form.create()
+    .action("/contact")
+    .method("POST")
+    .text("name", f -> f.label("Full Name").placeholder("John Doe").required())
+    .email("email", f -> f.label("Email").required())
+    .submit("Send Message")
+    .build()"""),
+
+            subheading("Field Types"),
+            paragraph("The Form Builder supports all common input types:"),
+
+            codeBlock("""
+Form.create()
+    // Text inputs
+    .text("username", f -> f.label("Username").required())
+    .email("email", f -> f.label("Email"))
+    .password("password", f -> f.label("Password").minLength(8))
+    .url("website", f -> f.label("Website"))
+    .tel("phone", f -> f.label("Phone"))
+    .number("age", f -> f.label("Age").min(0).max(120))
+
+    // Date/time inputs
+    .date("birthdate", f -> f.label("Birth Date"))
+    .time("meeting", f -> f.label("Meeting Time"))
+    .datetime("event", f -> f.label("Event Date/Time"))
+
+    // Other inputs
+    .textarea("bio", f -> f.label("Bio").rows(4))
+    .checkbox("terms", f -> f.label("I agree to the terms"))
+    .hidden("csrf", csrfToken)
+    .build()"""),
+
+            subheading("Field Configuration"),
+            paragraph("Each field can be configured with validation and display options:"),
+
+            codeBlock("""
+.text("username", f -> f
+    .label("Username")           // Form label
+    .placeholder("johndoe")      // Placeholder text
+    .required()                  // Required field
+    .minLength(3)                // Minimum length
+    .maxLength(20)               // Maximum length
+    .pattern("[a-z0-9]+")        // Regex pattern
+    .autocomplete("username")    // Autocomplete hint
+    .autofocus()                 // Auto focus on load
+    .disabled()                  // Disabled field
+    .readonly()                  // Read-only field
+    .value("default")            // Default value
+    .helpText("3-20 characters") // Help text below field
+)"""),
+
+            subheading("Select Dropdowns"),
+            paragraph("Create select dropdowns with options:"),
+
+            codeBlock("""
+.select("country", s -> s
+    .label("Country")
+    .placeholder("Select a country")
+    .required()
+    .option("us", "United States")
+    .option("uk", "United Kingdom")
+    .option("ca", "Canada")
+    .option("de", "Germany")
+    .selected("us")  // Pre-selected value
+)"""),
+
+            subheading("Radio Groups"),
+            paragraph("Create radio button groups for single selection:"),
+
+            codeBlock("""
+.radio("plan", r -> r
+    .label("Subscription Plan")
+    .required()
+    .option("basic", "Basic - $9/month")
+    .option("pro", "Professional - $29/month")
+    .option("enterprise", "Enterprise - $99/month")
+    .selected("pro")
+)"""),
+
+            subheading("Form Buttons"),
+            paragraph("Add submit and reset buttons:"),
+
+            codeBlock("""
+.submit("Create Account")     // Submit button text
+.reset("Clear Form")          // Optional reset button
+
+// Or with custom styling:
+.submitButton(b -> b
+    .text("Sign Up")
+    .class_("btn-primary")
+    .disabled()
+)"""),
+
+            subheading("Complete Example"),
+            paragraph("Here's a complete registration form:"),
+
+            codeBlock("""
+Form.create()
+    .class_("registration-form")
+    .action("/register")
+    .method("POST")
+
+    // Personal Info
+    .text("firstName", f -> f.label("First Name").required())
+    .text("lastName", f -> f.label("Last Name").required())
+    .email("email", f -> f.label("Email Address").required())
+
+    // Account
+    .password("password", f -> f
+        .label("Password")
+        .required()
+        .minLength(8)
+        .helpText("At least 8 characters"))
+    .password("confirmPassword", f -> f
+        .label("Confirm Password")
+        .required())
+
+    // Preferences
+    .select("country", s -> s
+        .label("Country")
+        .option("us", "United States")
+        .option("uk", "United Kingdom")
+        .required())
+
+    .radio("plan", r -> r
+        .label("Plan")
+        .option("free", "Free")
+        .option("pro", "Pro - $10/mo")
+        .selected("free"))
+
+    .checkbox("newsletter", f -> f
+        .label("Subscribe to newsletter"))
+    .checkbox("terms", f -> f
+        .label("I agree to the Terms of Service")
+        .required())
+
+    .submit("Create Account")
+    .build()""")
+        );
+    }
+
+    // ==================== Layouts Section ====================
+
+    private static Element layouts() {
+        return section(
+            sectionTitle("Layout Helper"),
+            paragraph("The Layout module provides pre-built layout patterns for common UI structures. Stop writing repetitive flexbox and grid CSS - use semantic layout components instead."),
+
+            subheading("Import"),
+            paragraph("Import the Layout class to use layout helpers:"),
+
+            codeBlock("""
+import static com.osmig.Jweb.framework.layout.Layout.*;"""),
+
+            subheading("Page Structure"),
+            paragraph("Create standard page layouts with header, main, and footer:"),
+
+            codeBlock("""
+// Full page with header, main, footer
+Layout.page(
+    Layout.header(
+        a(attrs().href("/"), text("Logo")),
+        nav(
+            a(attrs().href("/about"), text("About")),
+            a(attrs().href("/contact"), text("Contact"))
+        )
+    ),
+    Layout.main(
+        Layout.container(
+            h1("Welcome"),
+            p("Page content here...")
+        )
+    ),
+    Layout.footer(
+        text("© 2024 My Company")
+    )
+)"""),
+
+            subheading("Containers"),
+            paragraph("Center content with max-width containers:"),
+
+            codeBlock("""
+// Default container (max-width: 1200px)
+Layout.container(
+    h1("Centered Content"),
+    p("This content has a maximum width and is centered.")
+)
+
+// Narrow container (max-width: 800px) - good for reading
+Layout.narrow(
+    article(
+        h1("Blog Post Title"),
+        p("Article content that's easy to read...")
+    )
+)
+
+// Wide container (max-width: 1400px)
+Layout.wide(content)
+
+// Custom max-width
+Layout.container(px(960), content)"""),
+
+            subheading("Flexbox Layouts"),
+            paragraph("Quick flexbox layouts for common patterns:"),
+
+            codeBlock("""
+// Horizontal row
+Layout.row(child1, child2, child3)
+Layout.row(rem(2), child1, child2)  // with gap
+
+// Vertical column
+Layout.column(child1, child2, child3)
+Layout.column(rem(1), child1, child2)  // with gap
+
+// Centered content
+Layout.center(
+    h1("Perfectly Centered")
+)
+
+// Space between items
+Layout.spaceBetween(
+    div(text("Left")),
+    div(text("Right"))
+)
+
+// Wrapping items with gap
+Layout.wrap(rem(1),
+    badge("Tag 1"),
+    badge("Tag 2"),
+    badge("Tag 3")
+)"""),
+
+            subheading("Grid Layouts"),
+            paragraph("CSS Grid layouts made simple:"),
+
+            codeBlock("""
+// Equal columns
+Layout.grid(3,  // 3 columns
+    card1, card2, card3,
+    card4, card5, card6
+)
+
+// Grid with gap
+Layout.grid(3, rem(2),
+    card1, card2, card3
+)
+
+// Auto-fit grid (responsive)
+Layout.autoGrid(px(300), rem(1.5),
+    card1, card2, card3, card4
+)  // Cards are at least 300px, columns adjust automatically"""),
+
+            subheading("Multi-Column Layouts"),
+            paragraph("Create column layouts with custom ratios:"),
+
+            codeBlock("""
+// Equal width columns
+Layout.columns(2, child1, child2)
+Layout.columns(3, rem(2), child1, child2, child3)
+
+// Custom column ratios
+Layout.columns("1fr", "2fr", rem(2),
+    sidebar,  // 1/3 width
+    content   // 2/3 width
+)"""),
+
+            subheading("Sidebar Layouts"),
+            paragraph("Common sidebar patterns:"),
+
+            codeBlock("""
+// Left sidebar
+Layout.sidebar(px(250),      // sidebar width
+    div(text("Sidebar")),    // sidebar content
+    div(text("Main content")) // main content
+)
+
+// Right sidebar
+Layout.sidebarRight(px(300),
+    div(text("Main content")),
+    div(text("Sidebar"))
+)"""),
+
+            subheading("Stack and Cluster"),
+            paragraph("Vertical stacking and horizontal clustering:"),
+
+            codeBlock("""
+// Vertical stack with consistent spacing
+Layout.stack(rem(1),
+    h1("Title"),
+    p("Paragraph 1"),
+    p("Paragraph 2"),
+    p("Paragraph 3")
+)
+
+// Horizontal cluster (good for tags, buttons)
+Layout.cluster(rem(0.5),
+    button("Save"),
+    button("Cancel"),
+    button("Delete")
+)"""),
+
+            subheading("Special Layouts"),
+            paragraph("Other useful layout patterns:"),
+
+            codeBlock("""
+// Split layout (left/right)
+Layout.split(
+    div(text("Left side")),
+    div(text("Right side"))
+)
+
+// Aspect ratio container
+Layout.aspectRatio("16/9",
+    img(attrs().src("/video-thumbnail.jpg"))
+)
+
+// Full-height centered cover
+Layout.fullCover(
+    div(
+        h1("Hero Section"),
+        p("Full viewport height, centered content")
+    )
+)
+
+// Sticky header
+Layout.stickyHeader(
+    nav(text("This sticks to top when scrolling"))
+)
+
+// Scrollable container
+Layout.scrollable(px(400),
+    longContent
+)
+
+// Card with padding and shadow
+Layout.card(
+    h3("Card Title"),
+    p("Card content...")
+)
+
+// Dividers and spacers
+Layout.divider()           // horizontal rule
+Layout.verticalDivider(px(24))
+Layout.spacer()            // flexible space
+Layout.space(rem(2))       // fixed space""")
+        );
+    }
+
+    // ==================== UI Components Section ====================
+
+    private static Element uiComponents() {
+        return section(
+            sectionTitle("UI Components"),
+            paragraph("The UI module provides pre-styled, reusable UI components. These components follow common design patterns and are ready to use out of the box."),
+
+            subheading("Import"),
+            paragraph("Import the UI class to use components:"),
+
+            codeBlock("""
+import static com.osmig.Jweb.framework.ui.UI.*;"""),
+
+            subheading("Buttons"),
+            paragraph("Pre-styled button variants:"),
+
+            codeBlock("""
+// Button variants
+UI.primaryButton("Submit", e -> handleSubmit())
+UI.secondaryButton("Cancel", e -> handleCancel())
+UI.dangerButton("Delete", e -> handleDelete())
+UI.ghostButton("Learn More", e -> navigate())
+UI.linkButton("View Details", e -> showDetails())
+
+// Icon button (for icons)
+UI.iconButton(iconElement, e -> handleClick())"""),
+
+            subheading("Badges and Tags"),
+            paragraph("Small labels for status and categories:"),
+
+            codeBlock("""
+import static com.osmig.Jweb.framework.ui.UI.Badge.*;
+
+// Colored badges
+UI.badge("New", SUCCESS)    // green
+UI.badge("Pending", WARNING) // yellow
+UI.badge("Error", DANGER)    // red
+UI.badge("Info", INFO)       // blue
+UI.badge("Default", DEFAULT) // gray
+
+// Tags (similar to badges, for categories)
+import static com.osmig.Jweb.framework.ui.UI.Tag.*;
+
+UI.tag("JavaScript", PRIMARY)
+UI.tag("Tutorial", SECONDARY)"""),
+
+            subheading("Alerts"),
+            paragraph("Alert messages for notifications:"),
+
+            codeBlock("""
+import static com.osmig.Jweb.framework.ui.UI.Alert.*;
+
+// Alert with icon
+UI.alert("Operation completed successfully!", SUCCESS)
+UI.alert("Please review your input.", WARNING)
+UI.alert("Something went wrong.", DANGER)
+UI.alert("Here's some useful information.", INFO)
+
+// Shorthand methods
+UI.successAlert("Saved successfully!")
+UI.warningAlert("Check your connection")
+UI.errorAlert("Failed to save")
+UI.infoAlert("New features available")"""),
+
+            subheading("Cards"),
+            paragraph("Card containers for grouped content:"),
+
+            codeBlock("""
+// Basic card
+UI.card(
+    h3("Card Title"),
+    p("Card content goes here..."),
+    UI.primaryButton("Action", e -> {})
+)
+
+// Card is a styled container
+// Includes padding, border-radius, and subtle shadow"""),
+
+            subheading("Avatars"),
+            paragraph("User avatars with initials or images:"),
+
+            codeBlock("""
+// Text avatar (shows initials)
+UI.avatar("John Doe")    // Shows "JD"
+UI.avatar("Alice")       // Shows "A"
+
+// Image avatar
+UI.avatarImage("/images/user.jpg", "John Doe")"""),
+
+            subheading("Loading States"),
+            paragraph("Components for loading and progress:"),
+
+            codeBlock("""
+// Progress bar (0-100)
+UI.progressBar(75)  // 75% complete
+
+// Spinning loader
+UI.spinner()
+
+// Skeleton loaders (content placeholders)
+UI.skeleton(px(200), px(20))     // rectangle
+UI.skeletonText()                 // text line
+UI.skeletonCircle(px(48))        // circle (for avatar)"""),
+
+            subheading("Typography Helpers"),
+            paragraph("Styled code and keyboard elements:"),
+
+            codeBlock("""
+// Inline code
+p(text("Use the "), UI.inlineCode("npm install"), text(" command"))
+
+// Keyboard shortcut
+p(text("Press "), UI.kbd("Ctrl"), text(" + "), UI.kbd("S"), text(" to save"))
+
+// Code block with syntax highlighting colors
+UI.codeBlock(\"""
+function hello() {
+    console.log("Hello, World!");
+}
+\""")"""),
+
+            subheading("Navigation"),
+            paragraph("Breadcrumb navigation:"),
+
+            codeBlock("""
+UI.breadcrumb(
+    a(attrs().href("/"), text("Home")),
+    a(attrs().href("/docs"), text("Documentation")),
+    span(text("Current Page"))
+)"""),
+
+            subheading("Empty States"),
+            paragraph("Placeholder for empty content:"),
+
+            codeBlock("""
+UI.emptyState(
+    "No Results Found",
+    "Try adjusting your search or filters"
+)"""),
+
+            subheading("Dividers"),
+            paragraph("Visual separators:"),
+
+            codeBlock("""
+// Horizontal divider
+UI.divider()
+
+// With custom margin
+div(
+    content1,
+    UI.divider(),
+    content2
+)"""),
+
+            subheading("Complete Example"),
+            paragraph("Here's a dashboard card using multiple UI components:"),
+
+            codeBlock("""
+import static com.osmig.Jweb.framework.ui.UI.*;
+import static com.osmig.Jweb.framework.layout.Layout.*;
+
+card(
+    // Header with badge
+    row(rem(1),
+        h3("User Statistics"),
+        badge("Live", Badge.SUCCESS)
+    ),
+
+    divider(),
+
+    // Progress section
+    stack(rem(0.5),
+        p("Storage Used"),
+        progressBar(65),
+        p("65% of 100GB")
+    ),
+
+    divider(),
+
+    // Actions
+    cluster(rem(0.5),
+        primaryButton("Upgrade", e -> {}),
+        ghostButton("View Details", e -> {})
+    )
+)""")
+        );
+    }
+
+    // ==================== DSL Reference Section ====================
 
     private static Element api() {
         return section(
-            sectionTitle("API Reference"),
-            paragraph("Quick reference for the core JWeb APIs."),
+            sectionTitle("DSL Reference"),
+            paragraph("Quick reference for the core JWeb DSL."),
 
             subheading("Elements"),
             paragraph("All element types are available as static methods:"),

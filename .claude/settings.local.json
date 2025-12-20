@@ -20,7 +20,10 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nAdd comprehensive Javadoc documentation to CSS DSL framework\n\nDocument all public APIs for IDE hover support including CSS.java,\nCSSUnits.java, CSSColors.java, MediaQuery.java, Keyframes.java,\nStyle.java, Elements.java, and Attributes.java.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvnw.cmd compile -q\")",
       "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvnw.cmd compile -q 2>&1\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cmd.exe /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile 2>&1\")",
+      "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile -q 2>&1\")",
+      "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile 2>&1 | findstr /I \"\"error\"\"\")"
     ]
   }
 }

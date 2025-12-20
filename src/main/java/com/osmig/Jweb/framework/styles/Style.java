@@ -307,15 +307,197 @@ public class Style<T extends Style<T>> implements CSSValue {
 
     // ==================== Grid ====================
 
+    /**
+     * Sets grid-template-columns with a raw string value.
+     * Prefer the type-safe overload with CSSValue... for better IDE support.
+     *
+     * @param value the grid template columns value
+     * @deprecated Use {@link #gridTemplateColumns(CSSValue...)} for type-safe grid templates
+     */
+    @Deprecated
     public T gridTemplateColumns(String value) { return prop("grid-template-columns", value); }
+
+    /**
+     * Sets grid-template-columns with type-safe CSSValues.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * import static com.osmig.Jweb.framework.styles.CSSGrid.*;
+     * import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+     *
+     * // Fixed columns
+     * style().gridTemplateColumns(px(200), fr(1), px(200))
+     *
+     * // Responsive grid
+     * style().gridTemplateColumns(repeat(autoFill(), minmax(px(250), fr(1))))
+     *
+     * // Equal columns
+     * style().gridTemplateColumns(repeat(3, fr(1)))
+     * </pre>
+     *
+     * @param columns the column track sizes
+     * @return this builder for chaining
+     * @see CSSGrid#repeat(int, CSSValue)
+     * @see CSSGrid#minmax(CSSValue, CSSValue)
+     */
+    public T gridTemplateColumns(CSSValue... columns) {
+        return prop("grid-template-columns", joinCssValues(columns));
+    }
+
+    /**
+     * Sets grid-template-rows with a raw string value.
+     * Prefer the type-safe overload with CSSValue... for better IDE support.
+     *
+     * @param value the grid template rows value
+     * @deprecated Use {@link #gridTemplateRows(CSSValue...)} for type-safe grid templates
+     */
+    @Deprecated
     public T gridTemplateRows(String value) { return prop("grid-template-rows", value); }
+
+    /**
+     * Sets grid-template-rows with type-safe CSSValues.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridTemplateRows(auto, fr(1), auto)
+     * style().gridTemplateRows(px(60), fr(1), px(40))
+     * </pre>
+     *
+     * @param rows the row track sizes
+     * @return this builder for chaining
+     */
+    public T gridTemplateRows(CSSValue... rows) {
+        return prop("grid-template-rows", joinCssValues(rows));
+    }
+
+    /**
+     * Sets grid-column with a string value.
+     * @deprecated Use {@link #gridColumn(CSSValue)} for type-safe positioning
+     */
+    @Deprecated
     public T gridColumn(String value) { return prop("grid-column", value); }
+
+    /**
+     * Sets grid-column with a type-safe value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridColumn(span(2))  // span 2 columns
+     * </pre>
+     *
+     * @param value the grid-column value
+     * @return this builder for chaining
+     */
+    public T gridColumn(CSSValue value) { return prop("grid-column", value); }
+
+    /**
+     * Sets grid-column with start and end positions.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridColumn(1, 3)  // from line 1 to line 3
+     * </pre>
+     *
+     * @param start the start line
+     * @param end the end line
+     * @return this builder for chaining
+     */
+    public T gridColumn(int start, int end) {
+        return prop("grid-column", start + " / " + end);
+    }
+
+    /**
+     * Sets grid-row with a string value.
+     * @deprecated Use {@link #gridRow(CSSValue)} for type-safe positioning
+     */
+    @Deprecated
     public T gridRow(String value) { return prop("grid-row", value); }
+
+    /**
+     * Sets grid-row with a type-safe value.
+     *
+     * @param value the grid-row value
+     * @return this builder for chaining
+     */
+    public T gridRow(CSSValue value) { return prop("grid-row", value); }
+
+    /**
+     * Sets grid-row with start and end positions.
+     *
+     * @param start the start line
+     * @param end the end line
+     * @return this builder for chaining
+     */
+    public T gridRow(int start, int end) {
+        return prop("grid-row", start + " / " + end);
+    }
+
+    /**
+     * Sets grid-area with a string value.
+     * @deprecated Use {@link #gridArea(CSSValue)} for type-safe areas
+     */
+    @Deprecated
     public T gridArea(String value) { return prop("grid-area", value); }
+
+    /**
+     * Sets grid-area with a type-safe value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridArea(area(1, 1, 3, 2))  // row-start / col-start / row-end / col-end
+     * </pre>
+     *
+     * @param value the grid-area value
+     * @return this builder for chaining
+     * @see CSSGrid#area(int, int, int, int)
+     */
+    public T gridArea(CSSValue value) { return prop("grid-area", value); }
+
+    /**
+     * Sets grid-template-areas for named grid areas.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridTemplateAreas(
+     *     "header header header",
+     *     "sidebar main aside",
+     *     "footer footer footer"
+     * )
+     * </pre>
+     *
+     * @param rows the area strings for each row
+     * @return this builder for chaining
+     */
+    public T gridTemplateAreas(String... rows) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rows.length; i++) {
+            if (i > 0) sb.append(" ");
+            sb.append("\"").append(rows[i]).append("\"");
+        }
+        return prop("grid-template-areas", sb.toString());
+    }
+
+    /**
+     * Sets grid-auto-columns for implicit column sizing.
+     *
+     * @param value the auto column size
+     * @return this builder for chaining
+     */
+    public T gridAutoColumns(CSSValue value) { return prop("grid-auto-columns", value); }
+
+    /**
+     * Sets grid-auto-rows for implicit row sizing.
+     *
+     * @param value the auto row size
+     * @return this builder for chaining
+     */
+    public T gridAutoRows(CSSValue value) { return prop("grid-auto-rows", value); }
+
     public T gridAutoFlow(CSSValue value) { return prop("grid-auto-flow", value); }
     public T justifyItems(CSSValue value) { return prop("justify-items", value); }
     public T placeItems(CSSValue value) { return prop("place-items", value); }
     public T placeContent(CSSValue value) { return prop("place-content", value); }
+    public T placeSelf(CSSValue value) { return prop("place-self", value); }
 
     // ==================== Position ====================
 
@@ -586,6 +768,200 @@ public class Style<T extends Style<T>> implements CSSValue {
         return prop("container", name + " / " + type.css());
     }
 
+    // ==================== Convenience Presets ====================
+
+    /**
+     * Preset: display: flex
+     * Shorthand for .display(flex)
+     *
+     * @return this builder for chaining
+     */
+    public T flex() { return display(() -> "flex"); }
+
+    /**
+     * Preset: display: flex; flex-direction: column
+     * Common pattern for vertical layouts.
+     *
+     * @return this builder for chaining
+     */
+    public T flexCol() { return display(() -> "flex").flexDirection(() -> "column"); }
+
+    /**
+     * Preset: display: flex; flex-direction: row
+     * Common pattern for horizontal layouts.
+     *
+     * @return this builder for chaining
+     */
+    public T flexRow() { return display(() -> "flex").flexDirection(() -> "row"); }
+
+    /**
+     * Preset: display: flex; justify-content: center; align-items: center
+     * Centers children both horizontally and vertically.
+     *
+     * @return this builder for chaining
+     */
+    public T flexCenter() {
+        return display(() -> "flex")
+            .justifyContent(() -> "center")
+            .alignItems(() -> "center");
+    }
+
+    /**
+     * Preset: display: flex; justify-content: space-between; align-items: center
+     * Common pattern for navbars and headers.
+     *
+     * @return this builder for chaining
+     */
+    public T flexBetween() {
+        return display(() -> "flex")
+            .justifyContent(() -> "space-between")
+            .alignItems(() -> "center");
+    }
+
+    /**
+     * Preset: display: grid with equal columns.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().grid(3)  // 3 equal columns: grid-template-columns: repeat(3, 1fr)
+     * </pre>
+     *
+     * @param columns number of equal-width columns
+     * @return this builder for chaining
+     */
+    public T grid(int columns) {
+        return display(() -> "grid")
+            .prop("grid-template-columns", "repeat(" + columns + ", 1fr)");
+    }
+
+    /**
+     * Preset: display: grid with equal columns and gap.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().grid(3, rem(1))  // 3 columns with 1rem gap
+     * </pre>
+     *
+     * @param columns number of equal-width columns
+     * @param gapValue the gap between grid items
+     * @return this builder for chaining
+     */
+    public T grid(int columns, CSSValue gapValue) {
+        return display(() -> "grid")
+            .prop("grid-template-columns", "repeat(" + columns + ", 1fr)")
+            .gap(gapValue);
+    }
+
+    /**
+     * Preset: width: 100%; height: 100%
+     * Makes element fill its container.
+     *
+     * @return this builder for chaining
+     */
+    public T full() {
+        return width(() -> "100%").height(() -> "100%");
+    }
+
+    /**
+     * Preset: width: 100%
+     *
+     * @return this builder for chaining
+     */
+    public T fullWidth() { return width(() -> "100%"); }
+
+    /**
+     * Preset: height: 100%
+     *
+     * @return this builder for chaining
+     */
+    public T fullHeight() { return height(() -> "100%"); }
+
+    /**
+     * Preset: position: absolute; inset: 0
+     * Positions element to fill its positioned parent.
+     *
+     * @return this builder for chaining
+     */
+    public T absolute() {
+        return position(() -> "absolute").inset(() -> "0");
+    }
+
+    /**
+     * Preset: position: relative
+     *
+     * @return this builder for chaining
+     */
+    public T relative() { return position(() -> "relative"); }
+
+    /**
+     * Preset: position: fixed
+     *
+     * @return this builder for chaining
+     */
+    public T fixed() { return position(() -> "fixed"); }
+
+    /**
+     * Preset: position: sticky
+     *
+     * @return this builder for chaining
+     */
+    public T sticky() { return position(() -> "sticky"); }
+
+    /**
+     * Preset: text-align: center
+     *
+     * @return this builder for chaining
+     */
+    public T textCenter() { return textAlign(() -> "center"); }
+
+    /**
+     * Preset: font-weight: bold (700)
+     *
+     * @return this builder for chaining
+     */
+    public T bold() { return fontWeight(700); }
+
+    /**
+     * Preset: cursor: pointer
+     *
+     * @return this builder for chaining
+     */
+    public T clickable() { return cursor(() -> "pointer"); }
+
+    /**
+     * Preset: overflow: hidden
+     *
+     * @return this builder for chaining
+     */
+    public T truncate() {
+        return overflow(() -> "hidden")
+            .prop("text-overflow", "ellipsis")
+            .whiteSpace(() -> "nowrap");
+    }
+
+    /**
+     * Preset: user-select: none
+     * Prevents text selection.
+     *
+     * @return this builder for chaining
+     */
+    public T noSelect() { return userSelect(() -> "none"); }
+
+    /**
+     * Preset: border-radius with rounded corners.
+     *
+     * @param value the border-radius value
+     * @return this builder for chaining
+     */
+    public T rounded(CSSValue value) { return borderRadius(value); }
+
+    /**
+     * Preset: margin: 0 auto (centers block element horizontally)
+     *
+     * @return this builder for chaining
+     */
+    public T centerX() { return margin(() -> "0", () -> "auto"); }
+
     // ==================== Raw Property ====================
 
     /**
@@ -608,12 +984,34 @@ public class Style<T extends Style<T>> implements CSSValue {
 
     /**
      * Sets any CSS property by name with a string value.
+     * Prefer using the type-safe overload with CSSValue when possible.
+     *
+     * @param name the CSS property name
+     * @param value the CSS value as a string
+     * @return this builder for chaining
+     * @deprecated Use type-safe methods or {@link #unsafeProp(String, String)} to make the escape explicit
+     */
+    @Deprecated
+    public T prop(String name, String value) {
+        properties.put(name, value);
+        return self();
+    }
+
+    /**
+     * Sets any CSS property by name with an unvalidated string value.
+     * Use this when the DSL doesn't provide a type-safe method for a CSS property.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().unsafeProp("scroll-snap-type", "x mandatory")
+     * style().unsafeProp("container-type", "inline-size")
+     * </pre>
      *
      * @param name the CSS property name
      * @param value the CSS value as a string
      * @return this builder for chaining
      */
-    public T prop(String name, String value) {
+    public T unsafeProp(String name, String value) {
         properties.put(name, value);
         return self();
     }
@@ -671,5 +1069,20 @@ public class Style<T extends Style<T>> implements CSSValue {
     @Override
     public String toString() {
         return build();
+    }
+
+    // ==================== Helper Methods ====================
+
+    /**
+     * Joins multiple CSSValue objects with spaces.
+     * Used for properties that accept multiple values like grid-template-columns.
+     */
+    private static String joinCssValues(CSSValue[] values) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < values.length; i++) {
+            if (i > 0) sb.append(" ");
+            sb.append(values[i].css());
+        }
+        return sb.toString();
     }
 }

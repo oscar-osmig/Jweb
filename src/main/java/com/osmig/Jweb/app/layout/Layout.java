@@ -25,7 +25,7 @@ public class Layout implements Template {
             new Head(title).render(),
             body(attrs().style().display(flex).flexDirection(column).minHeight(vh(100)).done(),
                 new Nav().render(),
-                main(attrs().style().prop("flex", "1").done(), content),
+                main(attrs().style().flex(num(1)).done(), content),
                 new Footer().render()
             )
         );

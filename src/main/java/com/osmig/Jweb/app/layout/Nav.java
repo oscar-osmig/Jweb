@@ -23,7 +23,7 @@ public class Nav implements Template {
                     hex("#ec4899"),
                     hex("#8b5cf6"),
                     hex("#6366f1")))
-                .prop("background-size", "300% 100%")
+                .backgroundSize(() -> "300% 100%")
                 .prop("animation", "gradientShift 8s ease infinite")
                 .padding(rem(0.75), rem(2))
                 .display(flex).alignItems(center).justifyContent(spaceBetween)

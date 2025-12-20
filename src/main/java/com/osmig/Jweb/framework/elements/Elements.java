@@ -2,6 +2,7 @@ package com.osmig.Jweb.framework.elements;
 
 import com.osmig.Jweb.framework.attributes.Attr;
 import com.osmig.Jweb.framework.attributes.Attributes;
+import com.osmig.Jweb.framework.attributes.Attributes.InlineStyle;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.vdom.VFragment;
 import com.osmig.Jweb.framework.vdom.VNode;
@@ -435,4 +436,66 @@ public final class Elements {
     public static Tag tag(String name, Attributes attrs, Object... children) {
         return new Tag(name, attrs, Tag.toVNodes(children));
     }
+
+    /**
+     * Creates an element with InlineStyle (auto-finalizes to Attributes).
+     * This enables fluent styling without .done():
+     *
+     * <pre>
+     * div(attrs().style()
+     *         .display(flex)
+     *         .padding(px(10)),
+     *     p("Hello"))
+     * </pre>
+     */
+    public static Tag tag(String name, InlineStyle style, Object... children) {
+        return new Tag(name, style.toAttrs(), Tag.toVNodes(children));
+    }
+
+    // ==================== InlineStyle Overloads ====================
+    // These allow using attrs().style()... directly without .done()
+
+    public static Tag div(InlineStyle style, Object... children) { return tag("div", style, children); }
+    public static Tag span(InlineStyle style, Object... children) { return tag("span", style, children); }
+    public static Tag p(InlineStyle style, Object... children) { return tag("p", style, children); }
+    public static Tag a(InlineStyle style, Object... children) { return tag("a", style, children); }
+    public static Tag button(InlineStyle style, Object... children) { return tag("button", style, children); }
+    public static Tag section(InlineStyle style, Object... children) { return tag("section", style, children); }
+    public static Tag article(InlineStyle style, Object... children) { return tag("article", style, children); }
+    public static Tag header(InlineStyle style, Object... children) { return tag("header", style, children); }
+    public static Tag footer(InlineStyle style, Object... children) { return tag("footer", style, children); }
+    public static Tag nav(InlineStyle style, Object... children) { return tag("nav", style, children); }
+    public static Tag main(InlineStyle style, Object... children) { return tag("main", style, children); }
+    public static Tag aside(InlineStyle style, Object... children) { return tag("aside", style, children); }
+    public static Tag h1(InlineStyle style, Object... children) { return tag("h1", style, children); }
+    public static Tag h2(InlineStyle style, Object... children) { return tag("h2", style, children); }
+    public static Tag h3(InlineStyle style, Object... children) { return tag("h3", style, children); }
+    public static Tag h4(InlineStyle style, Object... children) { return tag("h4", style, children); }
+    public static Tag h5(InlineStyle style, Object... children) { return tag("h5", style, children); }
+    public static Tag h6(InlineStyle style, Object... children) { return tag("h6", style, children); }
+    public static Tag ul(InlineStyle style, Object... children) { return tag("ul", style, children); }
+    public static Tag ol(InlineStyle style, Object... children) { return tag("ol", style, children); }
+    public static Tag li(InlineStyle style, Object... children) { return tag("li", style, children); }
+    public static Tag form(InlineStyle style, Object... children) { return tag("form", style, children); }
+    public static Tag input(InlineStyle style) { return new Tag("input", style.toAttrs()); }
+    public static Tag textarea(InlineStyle style, Object... children) { return tag("textarea", style, children); }
+    public static Tag select(InlineStyle style, Object... children) { return tag("select", style, children); }
+    public static Tag label(InlineStyle style, Object... children) { return tag("label", style, children); }
+    public static Tag table(InlineStyle style, Object... children) { return tag("table", style, children); }
+    public static Tag tr(InlineStyle style, Object... children) { return tag("tr", style, children); }
+    public static Tag th(InlineStyle style, Object... children) { return tag("th", style, children); }
+    public static Tag td(InlineStyle style, Object... children) { return tag("td", style, children); }
+    public static Tag img(InlineStyle style) { return new Tag("img", style.toAttrs()); }
+    public static Tag video(InlineStyle style, Object... children) { return tag("video", style, children); }
+    public static Tag audio(InlineStyle style, Object... children) { return tag("audio", style, children); }
+    public static Tag canvas(InlineStyle style) { return new Tag("canvas", style.toAttrs()); }
+    public static Tag svg(InlineStyle style, Object... children) { return tag("svg", style, children); }
+    public static Tag iframe(InlineStyle style, Object... children) { return tag("iframe", style, children); }
+    public static Tag pre(InlineStyle style, Object... children) { return tag("pre", style, children); }
+    public static Tag code(InlineStyle style, Object... children) { return tag("code", style, children); }
+    public static Tag blockquote(InlineStyle style, Object... children) { return tag("blockquote", style, children); }
+    public static Tag figure(InlineStyle style, Object... children) { return tag("figure", style, children); }
+    public static Tag figcaption(InlineStyle style, Object... children) { return tag("figcaption", style, children); }
+    public static Tag strong(InlineStyle style, Object... children) { return tag("strong", style, children); }
+    public static Tag em(InlineStyle style, Object... children) { return tag("em", style, children); }
 }

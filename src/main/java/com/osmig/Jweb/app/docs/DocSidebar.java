@@ -23,7 +23,7 @@ public class DocSidebar implements Template {
     public Element render() {
         return aside(attrs().style()
                 .width(px(240)).padding(SP_6)
-                .prop("border-right", "1px solid #e2e8f0")
+                .borderRight(px(1), solid, hex("#e2e8f0"))
                 .backgroundColor(hex("#fafafa"))
                 .minHeight(vh(80))
             .done(),
@@ -33,7 +33,7 @@ public class DocSidebar implements Template {
                 h3(attrs().style()
                         .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                         .marginBottom(SP_4).textTransform(uppercase)
-                        .prop("letter-spacing", "0.05em")
+                        .letterSpacing(em(0.05))
                     .done(), text("Documentation")),
                 nav(attrs().style().display(flex).flexDirection(column).gap(SP_1).done(),
                     link("intro", "Introduction"),
@@ -43,7 +43,10 @@ public class DocSidebar implements Template {
                     link("styling", "Styling"),
                     link("state", "State Management"),
                     link("forms", "Forms"),
-                    link("api", "API Reference")
+                    link("form-builder", "Form Builder"),
+                    link("layouts", "Layout Helper"),
+                    link("ui", "UI Components"),
+                    link("api", "DSL Reference")
                 )
             )
         );
@@ -56,7 +59,7 @@ public class DocSidebar implements Template {
             .color(isActive ? PRIMARY : TEXT_LIGHT).fontWeight(isActive ? 600 : 400)
             .backgroundColor(isActive ? hex("#eef2ff") : transparent)
             .textDecoration(none)
-            .prop("transition", "all 0.15s ease")
+            .transition(all, s(0.15), ease)
         .done(), text(label));
     }
 }

@@ -3,11 +3,16 @@ package com.osmig.Jweb.framework.elements;
 import com.osmig.Jweb.framework.attributes.Attr;
 import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.events.Event;
+import com.osmig.Jweb.framework.events.EventHandler;
+import com.osmig.Jweb.framework.events.EventRegistry;
 import com.osmig.Jweb.framework.styles.Style;
 import com.osmig.Jweb.framework.styles.StyledElement;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VNode;
 import com.osmig.Jweb.framework.vdom.VText;
+
+import java.util.function.Consumer;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -112,18 +117,125 @@ public class Tag implements Element {
     public Tag data(String name, String value) { return attr("data-" + name, value); }
     public Tag aria(String name, String value) { return attr("aria-" + name, value); }
 
-    // Events
-    public Tag onclick(String handler) { return attr("onclick", handler); }
-    public Tag onchange(String handler) { return attr("onchange", handler); }
-    public Tag oninput(String handler) { return attr("oninput", handler); }
-    public Tag onsubmit(String handler) { return attr("onsubmit", handler); }
-    public Tag onkeydown(String handler) { return attr("onkeydown", handler); }
-    public Tag onkeyup(String handler) { return attr("onkeyup", handler); }
-    public Tag onfocus(String handler) { return attr("onfocus", handler); }
-    public Tag onblur(String handler) { return attr("onblur", handler); }
-    public Tag onmouseover(String handler) { return attr("onmouseover", handler); }
-    public Tag onmouseout(String handler) { return attr("onmouseout", handler); }
-    public Tag onload(String handler) { return attr("onload", handler); }
+    // ==================== Event Handlers (Type-Safe) ====================
+
+    /**
+     * Registers a click event handler.
+     * @param handler the handler to execute on click
+     */
+    public Tag onClick(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("click", handler);
+        return attr("onclick", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a change event handler (for inputs, selects, textareas).
+     * @param handler the handler to execute on change
+     */
+    public Tag onChange(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("change", handler);
+        return attr("onchange", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers an input event handler (fires on every keystroke).
+     * @param handler the handler to execute on input
+     */
+    public Tag onInput(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("input", handler);
+        return attr("oninput", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a submit event handler for forms.
+     * @param handler the handler to execute on submit
+     */
+    public Tag onSubmit(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("submit", handler);
+        return attr("onsubmit", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a keydown event handler.
+     * @param handler the handler to execute on keydown
+     */
+    public Tag onKeyDown(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("keydown", handler);
+        return attr("onkeydown", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a keyup event handler.
+     * @param handler the handler to execute on keyup
+     */
+    public Tag onKeyUp(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("keyup", handler);
+        return attr("onkeyup", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a focus event handler.
+     * @param handler the handler to execute on focus
+     */
+    public Tag onFocus(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("focus", handler);
+        return attr("onfocus", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a blur event handler (when element loses focus).
+     * @param handler the handler to execute on blur
+     */
+    public Tag onBlur(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("blur", handler);
+        return attr("onblur", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a mouseenter event handler.
+     * @param handler the handler to execute on mouseenter
+     */
+    public Tag onMouseEnter(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("mouseenter", handler);
+        return attr("onmouseenter", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a mouseleave event handler.
+     * @param handler the handler to execute on mouseleave
+     */
+    public Tag onMouseLeave(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("mouseleave", handler);
+        return attr("onmouseleave", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a load event handler.
+     * @param handler the handler to execute on load
+     */
+    public Tag onLoad(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("load", handler);
+        return attr("onload", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a double-click event handler.
+     * @param handler the handler to execute on double-click
+     */
+    public Tag onDoubleClick(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("dblclick", handler);
+        return attr("ondblclick", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a generic event handler for any DOM event type.
+     * @param eventType the DOM event type (click, change, scroll, etc.)
+     * @param handler the handler to execute
+     */
+    public Tag on(String eventType, Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register(eventType, handler);
+        return attr("on" + eventType, eh.toJsAttribute());
+    }
 
     // ==================== Content Methods (Fluent) ====================
 
@@ -138,8 +250,24 @@ public class Tag implements Element {
 
     /**
      * Add raw HTML content (not escaped).
+     * @deprecated Use {@link #unsafeHtml(String)} to make the escape explicit
      */
+    @Deprecated
     public Tag raw(String html) {
+        children.add(TextElement.raw(html).toVNode());
+        return this;
+    }
+
+    /**
+     * Add raw HTML content (unsafe - not escaped or validated).
+     * Use this for trusted HTML content like SVG or pre-rendered HTML.
+     *
+     * <p>WARNING: Never use with user input - risk of XSS attacks.</p>
+     *
+     * @param html the raw HTML content
+     * @return this tag for chaining
+     */
+    public Tag unsafeHtml(String html) {
         children.add(TextElement.raw(html).toVNode());
         return this;
     }
