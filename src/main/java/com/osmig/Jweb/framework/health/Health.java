@@ -5,6 +5,7 @@ import com.osmig.Jweb.framework.server.Response;
 import com.osmig.Jweb.framework.util.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import java.time.Instant;
 import java.util.*;
@@ -140,11 +141,11 @@ public final class Health {
 
         try {
             HealthStatus status = check.check();
-            int httpStatus = status.isUp() ? 200 : 503;
-            return Response.json(status.toMap(), httpStatus);
+            HttpStatus httpStatus = status.isUp() ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
+            return Response.json(httpStatus, status.toMap());
         } catch (Exception e) {
             log.error("Health check '{}' threw exception", name, e);
-            return Response.json(HealthStatus.down("Check failed", e).toMap(), 503);
+            return Response.json(HttpStatus.SERVICE_UNAVAILABLE, HealthStatus.down("Check failed", e).toMap());
         }
     }
 
@@ -189,8 +190,8 @@ public final class Health {
             result.put("components", components);
         }
 
-        int httpStatus = allUp ? 200 : 503;
-        return Response.json(result, httpStatus);
+        HttpStatus httpStatus = allUp ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
+        return Response.json(httpStatus, result);
     }
 
     /**

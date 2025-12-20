@@ -18,6 +18,11 @@ public class JWebConfiguration implements WebMvcConfigurer {
         return jweb.getRouter();
     }
 
+    @Bean
+    public com.osmig.Jweb.framework.middleware.MiddlewareStack jwebMiddlewareStack(JWeb jweb) {
+        return jweb.getMiddlewareStack();
+    }
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         // Serve static files from root path (e.g., /jweb.js)

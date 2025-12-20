@@ -345,7 +345,7 @@ public final class Metrics {
         app.get("/metrics", req -> {
             String accept = req.header("Accept");
             if (accept != null && accept.contains("text/plain")) {
-                return Response.ok(getPrometheus(), "text/plain; charset=utf-8");
+                return Response.text(getPrometheus());
             }
             return Response.json(getAll());
         });

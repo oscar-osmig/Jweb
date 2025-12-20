@@ -1,5 +1,7 @@
 package com.osmig.Jweb.framework.state;
 
+import com.osmig.Jweb.framework.util.Json;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -140,29 +142,18 @@ public class State<T> {
 
     /**
      * Returns a JSON-serializable representation of this state.
+     * Uses Jackson for proper serialization of complex objects.
      *
      * @return JSON string of the state
      */
     public String toJson() {
-        if (value == null) {
-            return "{\"id\":\"" + id + "\",\"value\":null}";
-        } else if (value instanceof String) {
-            return "{\"id\":\"" + id + "\",\"value\":\"" + escapeJson((String) value) + "\"}";
-        } else if (value instanceof Number || value instanceof Boolean) {
-            return "{\"id\":\"" + id + "\",\"value\":" + value + "}";
-        } else {
-            // For complex objects, use toString() - can be enhanced with Jackson later
-            return "{\"id\":\"" + id + "\",\"value\":\"" + escapeJson(value.toString()) + "\"}";
-        }
+        return Json.stringify(new StateJson(id, value));
     }
 
-    private String escapeJson(String s) {
-        return s.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
-    }
+    /**
+     * Internal record for JSON serialization.
+     */
+    private record StateJson(String id, Object value) {}
 
     @Override
     public String toString() {

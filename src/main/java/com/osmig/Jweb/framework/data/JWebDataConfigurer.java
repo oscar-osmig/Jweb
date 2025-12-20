@@ -1,7 +1,5 @@
 package com.osmig.Jweb.framework.data;
 
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
-
 import java.util.Map;
 
 /**
@@ -17,7 +15,7 @@ import java.util.Map;
  *   <li>Batch operation settings for better performance</li>
  * </ul>
  */
-public class JWebDataConfigurer implements HibernatePropertiesCustomizer {
+public class JWebDataConfigurer {
 
     private final JWebDataProperties properties;
 
@@ -25,7 +23,11 @@ public class JWebDataConfigurer implements HibernatePropertiesCustomizer {
         this.properties = properties;
     }
 
-    @Override
+    /**
+     * Applies JWeb defaults to Hibernate properties.
+     *
+     * @param hibernateProperties the properties map to customize
+     */
     public void customize(Map<String, Object> hibernateProperties) {
         // Apply JWeb defaults (only if not already set)
         hibernateProperties.putIfAbsent("hibernate.hbm2ddl.auto", properties.getDdlAuto());

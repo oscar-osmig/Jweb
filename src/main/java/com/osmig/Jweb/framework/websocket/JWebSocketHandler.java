@@ -1,10 +1,12 @@
 package com.osmig.Jweb.framework.websocket;
 
 import com.osmig.Jweb.framework.events.DomEvent;
-import com.osmig.Jweb.framework.events.Event;
 import com.osmig.Jweb.framework.events.EventRegistry;
 import com.osmig.Jweb.framework.state.State;
 import com.osmig.Jweb.framework.state.StateManager;
+import com.osmig.Jweb.framework.util.Json;
+import com.osmig.Jweb.framework.util.Log;
+import com.osmig.Jweb.framework.websocket.WebSocketMessage.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -12,6 +14,8 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,47 +46,54 @@ public class JWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         sessions.put(session.getId(), session);
-        System.out.println("[JWeb] WebSocket connected: " + session.getId());
+        Log.debug("WebSocket connected: {}", session.getId());
 
         // Send acknowledgment
-        sendMessage(session, "{\"type\":\"connected\",\"sessionId\":\"" + session.getId() + "\"}");
+        sendMessage(session, new ConnectedResponse(session.getId()));
     }
 
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         String payload = message.getPayload();
-        System.out.println("[JWeb] Received: " + payload);
+        Log.trace("Received: {}", payload);
 
         try {
-            // Simple JSON parsing (can be replaced with Jackson for production)
-            if (payload.contains("\"type\":\"event\"")) {
-                handleEventMessage(session, payload);
-            } else if (payload.contains("\"type\":\"init\"")) {
-                handleInitMessage(session, payload);
-            } else if (payload.contains("\"type\":\"ping\"")) {
-                sendMessage(session, "{\"type\":\"pong\"}");
+            // Parse the base message to determine type
+            Base baseMessage = Json.parse(payload, Base.class);
+            String type = baseMessage.getType();
+
+            if (type == null) {
+                sendMessage(session, new ErrorResponse("Missing message type"));
+                return;
             }
+
+            switch (type) {
+                case "event" -> handleEventMessage(session, Json.parse(payload, EventMessage.class));
+                case "init" -> handleInitMessage(session, Json.parse(payload, InitMessage.class));
+                case "ping" -> sendMessage(session, new PongResponse());
+                default -> sendMessage(session, new ErrorResponse("Unknown message type: " + type));
+            }
+        } catch (Json.JsonException e) {
+            Log.warn("JSON parse error: {}", e.getMessage());
+            sendMessage(session, new ErrorResponse("Invalid JSON: " + e.getMessage()));
         } catch (Exception e) {
-            System.err.println("[JWeb] Error handling message: " + e.getMessage());
-            e.printStackTrace();
-            sendMessage(session, "{\"type\":\"error\",\"message\":\"" + escapeJson(e.getMessage()) + "\"}");
+            Log.error("Error handling message: {}", e.getMessage(), e);
+            sendMessage(session, new ErrorResponse(e.getMessage()));
         }
     }
 
     /**
      * Handles event messages from the client.
-     * Format: {"type":"event","handler":"h_123","value":"...","targetId":"...","contextId":"..."}
      */
-    private void handleEventMessage(WebSocketSession session, String payload) throws IOException {
-        // Extract handler ID
-        String handlerId = extractJsonValue(payload, "handler");
+    private void handleEventMessage(WebSocketSession session, EventMessage msg) throws IOException {
+        String handlerId = msg.getHandler();
         if (handlerId == null) {
-            sendMessage(session, "{\"type\":\"error\",\"message\":\"Missing handler ID\"}");
+            sendMessage(session, new ErrorResponse("Missing handler ID"));
             return;
         }
 
         // Extract context ID and restore context for this thread
-        String contextId = extractJsonValue(payload, "contextId");
+        String contextId = msg.getContextId();
         StateManager.StateContext context = null;
         if (contextId != null) {
             context = StateManager.getContextById(contextId);
@@ -91,20 +102,22 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             }
         }
 
-        // Build event from payload
+        // Build event from message
         DomEvent event = DomEvent.builder()
-                .type(extractJsonValue(payload, "eventType"))
-                .targetId(extractJsonValue(payload, "targetId"))
-                .value(extractJsonValue(payload, "value"))
-                .key(extractJsonValue(payload, "key"))
-                .keyCode(extractJsonInt(payload, "keyCode", -1))
-                .ctrlKey(extractJsonBool(payload, "ctrlKey"))
-                .shiftKey(extractJsonBool(payload, "shiftKey"))
-                .altKey(extractJsonBool(payload, "altKey"))
-                .metaKey(extractJsonBool(payload, "metaKey"))
-                .clientX(extractJsonInt(payload, "clientX", -1))
-                .clientY(extractJsonInt(payload, "clientY", -1))
-                .checked(extractJsonBool(payload, "checked"))
+                .type(msg.getEventType())
+                .targetId(msg.getTargetId())
+                .value(msg.getValue())
+                .key(msg.getKey())
+                .keyCode(msg.getKeyCode() != null ? msg.getKeyCode() : -1)
+                .ctrlKey(Boolean.TRUE.equals(msg.getCtrlKey()))
+                .shiftKey(Boolean.TRUE.equals(msg.getShiftKey()))
+                .altKey(Boolean.TRUE.equals(msg.getAltKey()))
+                .metaKey(Boolean.TRUE.equals(msg.getMetaKey()))
+                .clientX(msg.getClientX() != null ? msg.getClientX() : -1)
+                .clientY(msg.getClientY() != null ? msg.getClientY() : -1)
+                .checked(Boolean.TRUE.equals(msg.getChecked()))
+                .formData(msg.getFormData())
+                .dataset(msg.getDataset())
                 .build();
 
         // Execute the handler
@@ -120,15 +133,11 @@ public class JWebSocketHandler extends TextWebSocketHandler {
                 var changedStates = context.getChangedStates();
                 if (!changedStates.isEmpty()) {
                     // Send state updates
-                    StringBuilder sb = new StringBuilder("{\"type\":\"stateUpdate\",\"states\":[");
-                    boolean first = true;
+                    List<StateData> stateDataList = new ArrayList<>();
                     for (State<?> state : changedStates) {
-                        if (!first) sb.append(",");
-                        sb.append(state.toJson());
-                        first = false;
+                        stateDataList.add(new StateData(state.getId(), state.get()));
                     }
-                    sb.append("]}");
-                    sendMessage(session, sb.toString());
+                    sendMessage(session, new StateUpdateResponse(stateDataList));
 
                     // Re-render components and send DOM updates
                     sendDomUpdates(session, context);
@@ -138,10 +147,9 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             }
 
             // Send success response
-            sendMessage(session, "{\"type\":\"eventHandled\",\"handler\":\"" + handlerId +
-                    "\",\"preventDefault\":" + event.isDefaultPrevented() + "}");
+            sendMessage(session, new EventHandledResponse(handlerId, event.isDefaultPrevented()));
         } else {
-            sendMessage(session, "{\"type\":\"error\",\"message\":\"Handler not found: " + handlerId + "\"}");
+            sendMessage(session, new ErrorResponse("Handler not found: " + handlerId));
         }
 
         // Clear thread-local context
@@ -157,74 +165,81 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        StringBuilder sb = new StringBuilder("{\"type\":\"domUpdate\",\"updates\":[");
-        boolean first = true;
-
+        List<DomPatch> patches = new ArrayList<>();
         for (var entry : components.entrySet()) {
             String componentId = entry.getKey();
             var component = entry.getValue();
-
             String newHtml = component.render();
-
-            if (!first) sb.append(",");
-            sb.append("{\"id\":\"").append(componentId).append("\",");
-            sb.append("\"html\":\"").append(escapeJson(newHtml)).append("\"}");
-            first = false;
+            patches.add(new DomPatch(componentId, newHtml));
         }
 
-        sb.append("]}");
-        sendMessage(session, sb.toString());
+        sendMessage(session, new DomUpdateResponse(patches));
     }
 
     /**
      * Handles initialization messages from the client.
-     * Format: {"type":"init","contextId":"..."}
      */
-    private void handleInitMessage(WebSocketSession session, String payload) throws IOException {
-        String contextId = extractJsonValue(payload, "contextId");
+    private void handleInitMessage(WebSocketSession session, InitMessage msg) throws IOException {
+        String contextId = msg.getContextId();
         if (contextId != null) {
             sessionContextMap.put(session.getId(), contextId);
         }
 
         // Send current state if available
         StateManager.StateContext context = StateManager.getContext();
+        List<StateData> stateDataList = new ArrayList<>();
+
         if (context != null) {
-            sendMessage(session, "{\"type\":\"initState\",\"states\":" + context.toJson() + "}");
-        } else {
-            sendMessage(session, "{\"type\":\"initState\",\"states\":[]}");
+            for (State<?> state : context.getStates().values()) {
+                stateDataList.add(new StateData(state.getId(), state.get()));
+            }
         }
+
+        sendMessage(session, new InitStateResponse(stateDataList));
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session.getId());
         sessionContextMap.remove(session.getId());
-        System.out.println("[JWeb] WebSocket disconnected: " + session.getId());
+        Log.debug("WebSocket disconnected: {}", session.getId());
     }
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
-        System.err.println("[JWeb] WebSocket error: " + exception.getMessage());
+        Log.error("WebSocket error: {}", exception.getMessage(), exception);
     }
 
     /**
-     * Sends a message to a specific session.
+     * Sends a message object to a specific session.
+     * The object will be serialized to JSON.
      */
-    public void sendMessage(WebSocketSession session, String message) throws IOException {
+    public void sendMessage(WebSocketSession session, Object message) throws IOException {
         if (session.isOpen()) {
-            session.sendMessage(new TextMessage(message));
+            String json = Json.stringify(message);
+            session.sendMessage(new TextMessage(json));
+        }
+    }
+
+    /**
+     * Sends a raw JSON string to a specific session.
+     */
+    public void sendRawMessage(WebSocketSession session, String json) throws IOException {
+        if (session.isOpen()) {
+            session.sendMessage(new TextMessage(json));
         }
     }
 
     /**
      * Broadcasts a message to all connected sessions.
      */
-    public void broadcast(String message) {
+    public void broadcast(Object message) {
+        String json = Json.stringify(message);
         sessions.values().forEach(session -> {
             try {
-                sendMessage(session, message);
+                sendRawMessage(session, json);
             } catch (IOException e) {
-                System.err.println("[JWeb] Broadcast error: " + e.getMessage());
+                Log.warn("Broadcast error: {}", e.getMessage());
             }
         });
     }
@@ -233,51 +248,8 @@ public class JWebSocketHandler extends TextWebSocketHandler {
      * Sends a state update to all sessions.
      */
     public void broadcastStateUpdate(State<?> state) {
-        String message = "{\"type\":\"stateUpdate\",\"states\":[" + state.toJson() + "]}";
-        broadcast(message);
-    }
-
-    // Simple JSON parsing helpers (for basic use - can be replaced with Jackson)
-
-    private String extractJsonValue(String json, String key) {
-        String search = "\"" + key + "\":\"";
-        int start = json.indexOf(search);
-        if (start == -1) return null;
-        start += search.length();
-        int end = json.indexOf("\"", start);
-        if (end == -1) return null;
-        return json.substring(start, end);
-    }
-
-    private int extractJsonInt(String json, String key, int defaultValue) {
-        String search = "\"" + key + "\":";
-        int start = json.indexOf(search);
-        if (start == -1) return defaultValue;
-        start += search.length();
-        // Skip whitespace
-        while (start < json.length() && Character.isWhitespace(json.charAt(start))) start++;
-        int end = start;
-        while (end < json.length() && (Character.isDigit(json.charAt(end)) || json.charAt(end) == '-')) end++;
-        if (end == start) return defaultValue;
-        try {
-            return Integer.parseInt(json.substring(start, end));
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
-
-    private boolean extractJsonBool(String json, String key) {
-        String searchTrue = "\"" + key + "\":true";
-        return json.contains(searchTrue);
-    }
-
-    private String escapeJson(String s) {
-        if (s == null) return "null";
-        return s.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+        List<StateData> states = List.of(new StateData(state.getId(), state.get()));
+        broadcast(new StateUpdateResponse(states));
     }
 
     /**

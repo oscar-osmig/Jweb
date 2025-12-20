@@ -59,14 +59,13 @@ public final class Mailer {
     private Mailer() {}
 
     /**
-     * Configures the mailer with a Spring JavaMailSender.
-     * Called automatically by JWebMailAutoConfiguration if spring-boot-starter-mail is on classpath.
+     * Configures the mailer with a custom backend.
      *
-     * @param mailSender the Spring mail sender
+     * @param newBackend the backend to use
      */
-    public static void configure(org.springframework.mail.javamail.JavaMailSender mailSender) {
-        backend = new SpringMailBackend(mailSender);
-        log.info("Mailer configured with Spring JavaMailSender");
+    public static void configure(MailerBackend newBackend) {
+        backend = newBackend;
+        log.info("Mailer configured with custom backend");
     }
 
     /**
@@ -147,6 +146,7 @@ public final class Mailer {
 
     /**
      * Backend interface for sending emails.
+     * Implement this to integrate with your mail provider.
      */
     public interface MailerBackend {
         void send(Email email) throws MailException;
@@ -154,6 +154,7 @@ public final class Mailer {
 
     /**
      * Logging backend (used when no mail sender configured).
+     * Simply logs the email details instead of sending.
      */
     private static class LoggingBackend implements MailerBackend {
         @Override
@@ -161,65 +162,11 @@ public final class Mailer {
             log.info("Email would be sent (no mail sender configured):");
             log.info("  To: {}", email.getTo());
             log.info("  Subject: {}", email.getSubject());
-            log.info("  Body: {}", email.getTextBody() != null ?
-                email.getTextBody().substring(0, Math.min(100, email.getTextBody().length())) + "..." :
-                "(HTML only)");
-        }
-    }
-
-    /**
-     * Spring Mail backend.
-     */
-    private static class SpringMailBackend implements MailerBackend {
-        private final org.springframework.mail.javamail.JavaMailSender mailSender;
-
-        SpringMailBackend(org.springframework.mail.javamail.JavaMailSender mailSender) {
-            this.mailSender = mailSender;
-        }
-
-        @Override
-        public void send(Email email) throws MailException {
-            try {
-                jakarta.mail.internet.MimeMessage message = mailSender.createMimeMessage();
-                org.springframework.mail.javamail.MimeMessageHelper helper =
-                    new org.springframework.mail.javamail.MimeMessageHelper(message,
-                        email.hasAttachments(), "UTF-8");
-
-                helper.setTo(email.getTo().toArray(new String[0]));
-                if (!email.getCc().isEmpty()) {
-                    helper.setCc(email.getCc().toArray(new String[0]));
-                }
-                if (!email.getBcc().isEmpty()) {
-                    helper.setBcc(email.getBcc().toArray(new String[0]));
-                }
-                if (email.getFrom() != null) {
-                    helper.setFrom(email.getFrom());
-                }
-                if (email.getReplyTo() != null) {
-                    helper.setReplyTo(email.getReplyTo());
-                }
-                helper.setSubject(email.getSubject());
-
-                if (email.hasHtml()) {
-                    helper.setText(
-                        email.getTextBody() != null ? email.getTextBody() : "",
-                        email.getHtmlBody()
-                    );
-                } else if (email.getTextBody() != null) {
-                    helper.setText(email.getTextBody());
-                }
-
-                for (Email.Attachment att : email.getAttachments()) {
-                    helper.addAttachment(att.filename(),
-                        new org.springframework.core.io.ByteArrayResource(att.content()),
-                        att.contentType());
-                }
-
-                mailSender.send(message);
-                log.info("Email sent to: {}", email.getTo());
-
-            } catch (Exception e) {
-                throw new MailException("Failed to send email: " + e.getMessage(), e);
+            String body = email.getTextBody();
+            if (body != null) {
+                log.info("  Body: {}...", body.substring(0, Math.min(100, body.length())));
+            } else {
+                log.info("  Body: (HTML only)");
             }
         }
     }
@@ -228,6 +175,10 @@ public final class Mailer {
      * Exception thrown when email sending fails.
      */
     public static class MailException extends RuntimeException {
+        public MailException(String message) {
+            super(message);
+        }
+
         public MailException(String message, Throwable cause) {
             super(message, cause);
         }

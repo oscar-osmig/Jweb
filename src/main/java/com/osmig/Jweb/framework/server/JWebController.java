@@ -1,8 +1,10 @@
 package com.osmig.Jweb.framework.server;
 
+import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.hydration.HydrationData;
+import com.osmig.Jweb.framework.middleware.MiddlewareStack;
 import com.osmig.Jweb.framework.routing.Router;
 import com.osmig.Jweb.framework.state.StateManager;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,9 +26,11 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
 public class JWebController {
 
     private final Router router;
+    private final MiddlewareStack middlewareStack;
 
-    public JWebController(Router router) {
-        this.router = router;
+    public JWebController(JWeb jweb) {
+        this.router = jweb.getRouter();
+        this.middlewareStack = jweb.getMiddlewareStack();
     }
 
     @RequestMapping(value = "/**")
@@ -53,7 +57,10 @@ public class JWebController {
         StateManager.StateContext context = StateManager.createContext();
         try {
             Request request = new Request(servletRequest);
-            Object result = match.get().handle(request);
+
+            // Execute through middleware stack
+            Object result = middlewareStack.execute(request, () -> match.get().handle(request));
+
             return processResult(result, context);
         } catch (Exception e) {
             return handleError(e);
@@ -66,6 +73,13 @@ public class JWebController {
     private ResponseEntity<String> processResult(Object result, StateManager.StateContext context) {
         if (result == null) {
             return ResponseEntity.ok().body("");
+        }
+
+        // If middleware already returned a ResponseEntity, use it directly
+        if (result instanceof ResponseEntity<?> responseEntity) {
+            @SuppressWarnings("unchecked")
+            ResponseEntity<String> typed = (ResponseEntity<String>) responseEntity;
+            return typed;
         }
 
         if (result instanceof Element element) {
@@ -84,12 +98,6 @@ public class JWebController {
             return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(str);
-        }
-
-        if (result instanceof ResponseEntity<?> responseEntity) {
-            @SuppressWarnings("unchecked")
-            ResponseEntity<String> typed = (ResponseEntity<String>) responseEntity;
-            return typed;
         }
 
         return ResponseEntity.ok()
@@ -130,7 +138,7 @@ public class JWebController {
                     h1("404"),
                     h2("Page Not Found"),
                     p("The page " + path + " could not be found."),
-                    a("/", "← Go Home")
+                    a("/", "Go Home")
                 )
             )
         );
@@ -154,7 +162,7 @@ public class JWebController {
                     ),
                         code(e.getClass().getName() + ": " + e.getMessage())
                     ),
-                    a("/", "← Go Home")
+                    a("/", "Go Home")
                 )
             )
         );

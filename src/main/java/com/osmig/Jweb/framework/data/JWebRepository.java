@@ -29,7 +29,7 @@ import java.util.Optional;
  *
  * <h2>Convenience Methods</h2>
  * <ul>
- *   <li>{@link #getById(Object)} - Find by ID, throw if not found</li>
+ *   <li>{@link #getOrThrow(Object)} - Find by ID, throw if not found</li>
  *   <li>{@link #hasAny()} - Check if any entities exist</li>
  *   <li>{@link #findFirst()} - Get the first entity</li>
  * </ul>
@@ -47,7 +47,7 @@ public interface JWebRepository<T, ID> extends JpaRepository<T, ID>, JpaSpecific
      * @return the entity
      * @throws EntityNotFoundException if not found
      */
-    default T getById(ID id) {
+    default T getOrThrow(ID id) {
         return findById(id).orElseThrow(() ->
             new EntityNotFoundException("Entity not found with id: " + id)
         );

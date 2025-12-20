@@ -2,11 +2,14 @@ package com.osmig.Jweb.framework;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.core.Page;
+import com.osmig.Jweb.framework.middleware.Middleware;
+import com.osmig.Jweb.framework.middleware.MiddlewareStack;
 import com.osmig.Jweb.framework.routing.Route;
 import com.osmig.Jweb.framework.routing.RouteHandler;
 import com.osmig.Jweb.framework.routing.Router;
 import com.osmig.Jweb.framework.server.Request;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -19,15 +22,19 @@ import java.util.function.Supplier;
  * <pre>
  * app.get("/", () -> h1("Hello World"))
  *    .get("/about", AboutPage::new)
- *    .get("/users/:id", req -> div(h1("User " + req.param("id"))));
+ *    .get("/users/:id", req -> div(h1("User " + req.param("id"))))
+ *    .use(Middlewares.logging())
+ *    .use(Middlewares.csrf());
  * </pre>
  */
 public class JWeb {
 
     private final Router router;
+    private final MiddlewareStack middlewareStack;
 
     private JWeb() {
         this.router = new Router();
+        this.middlewareStack = new MiddlewareStack();
     }
 
     /**
@@ -35,6 +42,56 @@ public class JWeb {
      */
     public static JWeb create() {
         return new JWeb();
+    }
+
+    // ==================== Middleware ====================
+
+    /**
+     * Adds middleware to the application.
+     * Middleware is executed in the order it was added.
+     *
+     * @param middleware the middleware to add
+     * @return this for chaining
+     */
+    public JWeb use(Middleware middleware) {
+        middlewareStack.use(middleware);
+        return this;
+    }
+
+    /**
+     * Adds middleware conditionally.
+     *
+     * @param condition  whether to add the middleware
+     * @param middleware the middleware to add
+     * @return this for chaining
+     */
+    public JWeb useIf(boolean condition, Middleware middleware) {
+        middlewareStack.useIf(condition, middleware);
+        return this;
+    }
+
+    /**
+     * Adds middleware for specific path prefixes.
+     *
+     * @param pathPrefix the path prefix to match
+     * @param middleware the middleware to add
+     * @return this for chaining
+     */
+    public JWeb use(String pathPrefix, Middleware middleware) {
+        middlewareStack.useForPath(pathPrefix, middleware);
+        return this;
+    }
+
+    /**
+     * Adds middleware for specific HTTP methods.
+     *
+     * @param methods    the HTTP methods to match
+     * @param middleware the middleware to add
+     * @return this for chaining
+     */
+    public JWeb useForMethods(List<String> methods, Middleware middleware) {
+        middlewareStack.useForMethods(methods, middleware);
+        return this;
     }
 
     // ==================== Routes ====================
@@ -115,5 +172,9 @@ public class JWeb {
 
     public Router getRouter() {
         return router;
+    }
+
+    public MiddlewareStack getMiddlewareStack() {
+        return middlewareStack;
     }
 }
