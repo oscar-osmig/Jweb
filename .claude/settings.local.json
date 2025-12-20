@@ -23,7 +23,9 @@
       "Bash(find:*)",
       "Bash(cmd.exe /c \"cd /d C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb && mvn compile 2>&1\")",
       "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile -q 2>&1\")",
-      "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile 2>&1 | findstr /I \"\"error\"\"\")"
+      "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile 2>&1 | findstr /I \"\"error\"\"\")",
+      "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" status)",
+      "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" log --oneline -5)"
     ]
   }
 }
