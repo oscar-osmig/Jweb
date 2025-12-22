@@ -3,6 +3,7 @@ package com.osmig.Jweb.framework.server;
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.core.RawContent;
 import com.osmig.Jweb.framework.hydration.HydrationData;
 import com.osmig.Jweb.framework.middleware.MiddlewareStack;
 import com.osmig.Jweb.framework.routing.PageRegistry;
@@ -48,8 +49,8 @@ public class JWebController {
         String method = servletRequest.getMethod();
         String path = servletRequest.getRequestURI();
 
-        // Skip paths handled by other controllers
-        if (path.startsWith("/api") ||
+        // Skip paths handled by other controllers (but not /api/docs, /api/openapi.json, etc.)
+        if (path.startsWith("/api/v") ||  // Skip /api/v1/*, /api/v2/* etc (REST endpoints)
             path.startsWith("/h2-console") ||
             path.equals("/jweb") ||
             "websocket".equalsIgnoreCase(servletRequest.getHeader("Upgrade"))) {
@@ -93,6 +94,16 @@ public class JWebController {
             @SuppressWarnings("unchecked")
             ResponseEntity<String> typed = (ResponseEntity<String>) responseEntity;
             return typed;
+        }
+
+        // Handle RawContent with proper content type
+        if (result instanceof RawContent rawContent) {
+            MediaType mediaType = rawContent.isJson()
+                ? MediaType.APPLICATION_JSON
+                : MediaType.TEXT_HTML;
+            return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(rawContent.toHtml());
         }
 
         if (result instanceof Element element) {

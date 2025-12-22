@@ -111,7 +111,8 @@ public final class Jwt {
      * Generates a new random secret key (for testing/development).
      */
     public static String generateSecret() {
-        return Base64.getEncoder().encodeToString(Keys.secretKeyFor(Jwts.SIG.HS256).getEncoded());
+        SecretKey key = Jwts.SIG.HS256.key().build();
+        return Base64.getEncoder().encodeToString(key.getEncoded());
     }
 
     // ==================== Token Creation ====================

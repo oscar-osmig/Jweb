@@ -2,6 +2,8 @@ package com.osmig.Jweb.app;
 
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.JWebRoutes;
+import com.osmig.Jweb.framework.openapi.OpenApi;
+import com.osmig.Jweb.app.api.ExampleApi;
 import com.osmig.Jweb.app.layout.Layout;
 import com.osmig.Jweb.app.pages.HomePage;
 import com.osmig.Jweb.app.pages.AboutPage;
@@ -32,5 +34,13 @@ public class Routes implements JWebRoutes {
         app.get("/docs", ctx -> new Layout("Documentation - JWeb",
             new DocsPage(ctx.query("section")).render()
         ).render());
+
+        // API documentation
+        OpenApi.create()
+            .title("JWeb Example API")
+            .version("1.0.0")
+            .description("Example REST API built with JWeb")
+            .addApi(ExampleApi.class)
+            .mount(app, "/api");
     }
 }
