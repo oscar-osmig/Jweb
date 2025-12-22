@@ -25,7 +25,6 @@ public class JWebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Serve static files from root path (e.g., /jweb.js)
         registry.addResourceHandler("/*.js", "/*.css", "/*.ico", "/*.png", "/*.jpg", "/*.svg")
             .addResourceLocations("classpath:/static/");
 

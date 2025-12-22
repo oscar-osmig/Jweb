@@ -4,10 +4,12 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.core.Page;
 import com.osmig.Jweb.framework.middleware.Middleware;
 import com.osmig.Jweb.framework.middleware.MiddlewareStack;
+import com.osmig.Jweb.framework.routing.PageRegistry;
 import com.osmig.Jweb.framework.routing.Route;
 import com.osmig.Jweb.framework.routing.RouteHandler;
 import com.osmig.Jweb.framework.routing.Router;
 import com.osmig.Jweb.framework.server.Request;
+import com.osmig.Jweb.framework.template.Template;
 
 import java.util.List;
 import java.util.function.Function;
@@ -16,25 +18,49 @@ import java.util.function.Supplier;
 /**
  * JWeb - A minimalist Java web framework.
  *
- * Build simple web applications entirely in Java with a clean, fluent API.
+ * <p>Build simple web applications entirely in Java with a clean, fluent API.</p>
  *
- * Example:
- * <pre>
- * app.get("/", () -> h1("Hello World"))
- *    .get("/about", AboutPage::new)
- *    .get("/users/:id", req -> div(h1("User " + req.param("id"))))
- *    .use(Middlewares.logging())
- *    .use(Middlewares.csrf());
- * </pre>
+ * <h2>Page Routes</h2>
+ * <pre>{@code
+ * app.layout(MainLayout.class)
+ *    .pages(
+ *        "/", HomePage.class,
+ *        "/about", AboutPage.class,
+ *        "/contact", ContactPage.class
+ *    );
+ * }</pre>
+ *
+ * <h2>API Routes</h2>
+ * <p>APIs are created using the {@code @Api} annotation on classes. They are
+ * automatically discovered by Spring when placed in the component scan path.</p>
+ *
+ * <pre>{@code
+ * @Api("/api/v1/users")
+ * public class UserApi {
+ *
+ *     @Get
+ *     public List<User> getAll() { ... }
+ *
+ *     @Get("/{id}")
+ *     public User getById(@Param("id") Long id) { ... }
+ *
+ *     @Post
+ *     public User create(@Body User user) { ... }
+ * }
+ * }</pre>
+ *
+ * @see com.osmig.Jweb.framework.api.Api
  */
 public class JWeb {
 
     private final Router router;
     private final MiddlewareStack middlewareStack;
+    private final PageRegistry pageRegistry;
 
     private JWeb() {
         this.router = new Router();
         this.middlewareStack = new MiddlewareStack();
+        this.pageRegistry = new PageRegistry();
     }
 
     /**
@@ -168,6 +194,43 @@ public class JWeb {
         return this;
     }
 
+    // ==================== Pages ====================
+
+    /**
+     * Sets the default layout for all pages.
+     *
+     * <pre>{@code
+     * app.layout(MainLayout.class)
+     *    .pages("/", HomePage.class, "/about", AboutPage.class);
+     * }</pre>
+     *
+     * @param layoutClass the layout class to wrap pages
+     * @return this for chaining
+     */
+    public JWeb layout(Class<? extends Template> layoutClass) {
+        pageRegistry.setDefaultLayout(layoutClass);
+        return this;
+    }
+
+    /**
+     * Registers pages using simple map-style syntax.
+     *
+     * <pre>{@code
+     * app.pages(
+     *     "/", HomePage.class,
+     *     "/about", AboutPage.class,
+     *     "/contact", ContactPage.class
+     * );
+     * }</pre>
+     *
+     * @param pathsAndPages alternating paths and page classes
+     * @return this for chaining
+     */
+    public JWeb pages(Object... pathsAndPages) {
+        pageRegistry.register(pathsAndPages);
+        return this;
+    }
+
     // ==================== Getters ====================
 
     public Router getRouter() {
@@ -176,5 +239,9 @@ public class JWeb {
 
     public MiddlewareStack getMiddlewareStack() {
         return middlewareStack;
+    }
+
+    public PageRegistry getPageRegistry() {
+        return pageRegistry;
     }
 }

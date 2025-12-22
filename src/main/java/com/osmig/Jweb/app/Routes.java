@@ -10,30 +10,27 @@ import com.osmig.Jweb.app.docs.DocsPage;
 import org.springframework.stereotype.Component;
 
 /**
- * Application routes.
+ * Application page routes.
+ *
+ * APIs are auto-discovered from @Api @Component classes.
+ * Configure API base path in application.yaml: jweb.api.base=/api/v1
  */
 @Component
 public class Routes implements JWebRoutes {
 
     @Override
     public void configure(JWeb app) {
-        app.get("/", ctx -> new Layout("JWeb - Light Java Web Framework",
-            new HomePage().render()
-        ).render());
+        // Page routes - simple map-style syntax
+        app.layout(Layout.class)
+           .pages(
+               "/", HomePage.class,
+               "/about", AboutPage.class,
+               "/contact", ContactPage.class
+           );
 
-        app.get("/docs", ctx -> {
-            String section = ctx.query("section");
-            return new Layout("Documentation - JWeb",
-                new DocsPage(section).render()
-            ).render();
-        });
-
-        app.get("/about", ctx -> new Layout("About - JWeb",
-            new AboutPage().render()
-        ).render());
-
-        app.get("/contact", ctx -> new Layout("Contact - JWeb",
-            new ContactPage().render()
+        // Docs page needs request access for query params
+        app.get("/docs", ctx -> new Layout("Documentation - JWeb",
+            new DocsPage(ctx.query("section")).render()
         ).render());
     }
 }

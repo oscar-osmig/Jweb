@@ -27,8 +27,13 @@ spring:
       hibernate:
         format_sql: true
 
-# JWeb data configuration
+# JWeb configuration
 jweb:
+  # API configuration
+  api:
+    base: /api/v1
+
+  # Data configuration
   data:
     enabled: true
     show-sql: false
