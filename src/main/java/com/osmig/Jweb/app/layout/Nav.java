@@ -16,6 +16,7 @@ public class Nav implements Template {
     @Override
     public Element render() {
         return nav(attrs().style()
+                .position(sticky).top(zero).zIndex(1000)
                 .background(linearGradient("90deg",
                     hex("#6366f1"),
                     hex("#8b5cf6"),
