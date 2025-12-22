@@ -406,7 +406,10 @@ public final class Elements {
     /**
      * Conditionally renders an element.
      *
-     * Usage: when(isLoggedIn, () -> span("Welcome!"))
+     * <p>Usage:</p>
+     * <pre>
+     * when(isLoggedIn, () -&gt; span("Welcome!"))
+     * </pre>
      */
     public static Element when(boolean condition, java.util.function.Supplier<Element> element) {
         if (condition) {
@@ -416,16 +419,248 @@ public final class Elements {
     }
 
     /**
-     * Conditionally renders one of two elements.
+     * Conditionally renders an element (eager evaluation).
      *
-     * Usage: ifElse(isLoggedIn, () -> span("Welcome!"), () -> link("/login", "Sign In"))
+     * <p>Usage:</p>
+     * <pre>
+     * when(isLoggedIn, span("Welcome!"))
+     * </pre>
      */
+    public static Element when(boolean condition, Element element) {
+        if (condition) {
+            return element;
+        }
+        return () -> new VFragment(List.of());
+    }
+
+    /**
+     * Starts a conditional chain for if/elif/else rendering.
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * when(isAdmin)
+     *     .then(adminPanel())
+     *     .elif(isModerator, modPanel())
+     *     .elif(isUser, userPanel())
+     *     .otherwise(loginPrompt())
+     * </pre>
+     *
+     * @param condition the initial condition to check
+     * @return a Condition builder for chaining
+     */
+    public static Condition when(boolean condition) {
+        return new Condition(condition);
+    }
+
+    /**
+     * Conditionally renders one of two elements (lazy evaluation).
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * ifElse(isLoggedIn, () -&gt; span("Welcome!"), () -&gt; link("/login", "Sign In"))
+     * </pre>
+     *
+     * @deprecated Use {@link #when(boolean)} with .then().otherwise() for cleaner syntax
+     */
+    @Deprecated
     public static Element ifElse(
             boolean condition,
             java.util.function.Supplier<Element> ifTrue,
             java.util.function.Supplier<Element> ifFalse) {
         return condition ? ifTrue.get() : ifFalse.get();
     }
+
+    // ==================== Condition Builder (if/elif/else) ====================
+
+    /**
+     * Builder for if/elif/else conditional rendering chains.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * when(isAdmin)
+     *     .then(adminPanel())
+     *     .elif(isModerator, modPanel())
+     *     .elif(isUser, userPanel())
+     *     .otherwise(loginPrompt())
+     * </pre>
+     */
+    public static class Condition {
+        private boolean matched = false;
+        private Element result = null;
+
+        Condition(boolean condition) {
+            this.matched = condition;
+        }
+
+        /**
+         * Specifies the element to render if the condition is true.
+         *
+         * @param element the element to render
+         * @return this builder for chaining
+         */
+        public Condition then(Element element) {
+            if (matched && result == null) {
+                result = element;
+            }
+            return this;
+        }
+
+        /**
+         * Specifies a lazy element to render if the condition is true.
+         *
+         * @param element supplier for the element to render
+         * @return this builder for chaining
+         */
+        public Condition then(java.util.function.Supplier<Element> element) {
+            if (matched && result == null) {
+                result = element.get();
+            }
+            return this;
+        }
+
+        /**
+         * Adds an else-if condition.
+         *
+         * @param condition the condition to check
+         * @param element the element to render if this condition is true
+         * @return this builder for chaining
+         */
+        public Condition elif(boolean condition, Element element) {
+            if (!matched && result == null && condition) {
+                matched = true;
+                result = element;
+            }
+            return this;
+        }
+
+        /**
+         * Adds an else-if condition with lazy evaluation.
+         *
+         * @param condition the condition to check
+         * @param element supplier for the element to render
+         * @return this builder for chaining
+         */
+        public Condition elif(boolean condition, java.util.function.Supplier<Element> element) {
+            if (!matched && result == null && condition) {
+                matched = true;
+                result = element.get();
+            }
+            return this;
+        }
+
+        /**
+         * Specifies the fallback element if no conditions matched.
+         * This terminates the chain and returns the final Element.
+         *
+         * @param element the fallback element
+         * @return the matched element or the fallback
+         */
+        public Element otherwise(Element element) {
+            if (result != null) {
+                return result;
+            }
+            return element;
+        }
+
+        /**
+         * Specifies a lazy fallback element if no conditions matched.
+         *
+         * @param element supplier for the fallback element
+         * @return the matched element or the fallback
+         */
+        public Element otherwise(java.util.function.Supplier<Element> element) {
+            if (result != null) {
+                return result;
+            }
+            return element.get();
+        }
+
+        /**
+         * Ends the chain without a fallback (renders nothing if no match).
+         *
+         * @return the matched element or an empty fragment
+         */
+        public Element end() {
+            if (result != null) {
+                return result;
+            }
+            return () -> new VFragment(List.of());
+        }
+    }
+
+    // ==================== Match Expression (pattern matching style) ====================
+
+    /**
+     * Pattern matching style conditional rendering.
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * match(
+     *     cond(isAdmin, adminPanel()),
+     *     cond(isModerator, modPanel()),
+     *     cond(isUser, userPanel()),
+     *     otherwise(loginPrompt())
+     * )
+     * </pre>
+     *
+     * @param cases the condition cases to evaluate
+     * @return the element from the first matching condition
+     */
+    public static Element match(CondCase... cases) {
+        for (CondCase c : cases) {
+            if (c.matches()) {
+                return c.element();
+            }
+        }
+        return () -> new VFragment(List.of());
+    }
+
+    /**
+     * Creates a condition case for use with match().
+     *
+     * @param condition the condition to check
+     * @param element the element to render if condition is true
+     * @return a CondCase
+     */
+    public static CondCase cond(boolean condition, Element element) {
+        return new CondCase(condition, element);
+    }
+
+    /**
+     * Creates a condition case with lazy evaluation.
+     *
+     * @param condition the condition to check
+     * @param element supplier for the element to render
+     * @return a CondCase
+     */
+    public static CondCase cond(boolean condition, java.util.function.Supplier<Element> element) {
+        return new CondCase(condition, condition ? element.get() : null);
+    }
+
+    /**
+     * Creates a fallback case that always matches (for use as last case in match).
+     *
+     * @param element the fallback element
+     * @return a CondCase that always matches
+     */
+    public static CondCase otherwise(Element element) {
+        return new CondCase(true, element);
+    }
+
+    /**
+     * Creates a lazy fallback case that always matches.
+     *
+     * @param element supplier for the fallback element
+     * @return a CondCase that always matches
+     */
+    public static CondCase otherwise(java.util.function.Supplier<Element> element) {
+        return new CondCase(true, element.get());
+    }
+
+    /**
+     * Represents a condition-element pair for pattern matching.
+     */
+    public record CondCase(boolean matches, Element element) {}
 
     // ==================== Generic Tag Factory ====================
 
