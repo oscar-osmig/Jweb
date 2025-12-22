@@ -49,7 +49,7 @@ public class Stylesheet {
      * @return this for chaining
      */
     public Stylesheet rule(String selector, Style<?> style) {
-        rules.add(selector + " { " + style.build() + " }");
+        rules.add(selector + "{" + style.build() + "}");
         return this;
     }
 
@@ -125,7 +125,7 @@ public class Stylesheet {
      */
     public Stylesheet variable(String name, String value) {
         String varName = name.startsWith("--") ? name : "--" + name;
-        rules.add(":root { " + varName + ": " + value + "; }");
+        rules.add(":root{" + varName + ":" + value + "}");
         return this;
     }
 
@@ -136,10 +136,10 @@ public class Stylesheet {
         if (pairs.length % 2 != 0) {
             throw new IllegalArgumentException("Variables must be provided in name-value pairs");
         }
-        StringBuilder sb = new StringBuilder(":root { ");
+        StringBuilder sb = new StringBuilder(":root{");
         for (int i = 0; i < pairs.length; i += 2) {
             String name = pairs[i].startsWith("--") ? pairs[i] : "--" + pairs[i];
-            sb.append(name).append(": ").append(pairs[i + 1]).append("; ");
+            sb.append(name).append(":").append(pairs[i + 1]).append(";");
         }
         sb.append("}");
         rules.add(sb.toString());
@@ -180,10 +180,19 @@ public class Stylesheet {
     }
 
     /**
+     * Builds the stylesheet minified (no whitespace).
+     *
+     * @return minified CSS string
+     */
+    public String buildMinified() {
+        return String.join("", rules).replaceAll("\\s+", " ").replaceAll(" ?\\{ ?", "{").replaceAll(" ?\\} ?", "}").replaceAll(" ?; ?", ";").replaceAll(" ?: ?", ":").trim();
+    }
+
+    /**
      * Builds the stylesheet wrapped in a style tag.
      */
     public String toStyleTag() {
-        return "<style>\n" + build() + "\n</style>";
+        return "<style>" + buildMinified() + "</style>";
     }
 
     @Override
@@ -204,7 +213,7 @@ public class Stylesheet {
         }
 
         public String build() {
-            return selector + " { " + style.build() + " }";
+            return selector + "{" + style.build() + "}";
         }
     }
 }

@@ -265,6 +265,11 @@ public final class JS {
             return this;
         }
 
+        public Script add(Async.AsyncFunc fn) {
+            parts.add(fn.toDecl());
+            return this;
+        }
+
         /**
          * Adds raw JavaScript code.
          * @deprecated Use {@link #unsafeRaw(String)} to make the escape explicit

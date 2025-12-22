@@ -123,38 +123,38 @@ public class StyledElement implements Element {
             return applyInlineStyle(baseElement);
         }
 
-        // Generate CSS rules
+        // Generate minified CSS rules
         StringBuilder css = new StringBuilder();
 
-        // Base style rule
+        // Base style rule (minified - no spaces)
         if (baseStyle != null && !baseStyle.isEmpty()) {
-            css.append(".").append(generatedClass).append(" { ")
+            css.append(".").append(generatedClass).append("{")
                .append(baseStyle.build())
-               .append(" }\n");
+               .append("}");
         }
 
-        // Pseudo-class rules
+        // Pseudo-class rules (minified)
         for (Map.Entry<String, Style<?>> entry : pseudoStyles.entrySet()) {
             String pseudo = entry.getKey();
             Style<?> style = entry.getValue();
 
             if (pseudo.startsWith(":")) {
                 // Pseudo-element (::before, ::after, ::placeholder)
-                css.append(".").append(generatedClass).append(pseudo).append(" { ")
+                css.append(".").append(generatedClass).append(pseudo).append("{")
                    .append(style.build())
-                   .append(" }\n");
+                   .append("}");
             } else {
                 // Pseudo-class (:hover, :focus, etc.)
-                css.append(".").append(generatedClass).append(":").append(pseudo).append(" { ")
+                css.append(".").append(generatedClass).append(":").append(pseudo).append("{")
                    .append(style.build())
-                   .append(" }\n");
+                   .append("}");
             }
         }
 
         // Add the generated class to the element
         VNode styledElement = addClassToElement(baseElement);
 
-        // Create a fragment with style tag and element
+        // Create a fragment with style tag and element (minified)
         VNode styleTag = new VRaw("<style>" + css + "</style>");
 
         List<VNode> nodes = new ArrayList<>();

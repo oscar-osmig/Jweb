@@ -1,5 +1,10 @@
 server:
   port: 8081
+  # Enable HTTP compression for faster page loads
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
 
 spring:
   application:
@@ -39,3 +44,19 @@ jweb:
     show-sql: false
     ddl-auto: update
     h2-console: true
+
+  # Development settings
+  dev:
+    # Hot reload - auto-refresh browser on file changes
+    hot-reload: true
+    # Paths to watch for changes (comma-separated)
+    watch-paths: src/main/java,src/main/resources
+
+  # Performance settings
+  performance:
+    # Minify CSS output (removes whitespace)
+    minify-css: true
+    # Minify HTML output (removes unnecessary whitespace)
+    minify-html: false
+
+

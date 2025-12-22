@@ -15,8 +15,8 @@ public class HomePage implements Template {
     @Override
     public Element render() {
         return div(attrs().style()
-                .display(flex).flexDirection(column).justifyContent(center)
-                .minHeight(() -> "calc(100vh - 100px)").padding(SP_8)
+                .display(flex).flexDirection(column).justifyContent(center).alignItems(center)
+                .flex(num(1)).padding(SP_8)
             .done(),
             hero(),
             features()
