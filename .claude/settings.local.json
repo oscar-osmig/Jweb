@@ -25,7 +25,11 @@
       "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile -q 2>&1\")",
       "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile 2>&1 | findstr /I \"\"error\"\"\")",
       "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" status)",
-      "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" log --oneline -5)"
+      "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" log --oneline -5)",
+      "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" diff --stat)",
+      "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" log --oneline -3)",
+      "Bash(del \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\\src\\main\\java\\com\\osmig\\Jweb\\framework\\data\\H2ConsoleConfig.java\")",
+      "Bash(cmd.exe /c \"del \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\\src\\main\\java\\com\\osmig\\Jweb\\framework\\data\\H2ConsoleConfig.java\"\"\")"
     ]
   }
 }

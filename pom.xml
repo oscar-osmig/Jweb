@@ -54,7 +54,13 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<scope>runtime</scope>
+		</dependency>
+
+		<!-- MongoDB driver (no Spring auto-configuration) -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongodb-driver-sync</artifactId>
+			<version>5.2.0</version>
 			<optional>true</optional>
 		</dependency>
 	</dependencies>

@@ -47,6 +47,11 @@ public class JWebController {
             return null; // Let WebSocket handler process it
         }
 
+        // Skip H2 console - let Spring handle it
+        if (path.startsWith("/h2-console")) {
+            return null;
+        }
+
         Optional<Router.RouteMatch> match = router.match(method, path);
 
         if (match.isEmpty()) {
