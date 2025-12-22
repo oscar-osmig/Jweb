@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.layout;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.dev.DevServer;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
@@ -23,10 +24,12 @@ public class Layout implements Template {
     public Element render() {
         return html(
             new Head(title).render(),
-            body(attrs().style().display(flex).flexDirection(column).minHeight(vh(100)).done(),
+            body(attrs().style()
+                    .display(flex).flexDirection(column).height(vh(100)).overflow(hidden).done(),
                 new Nav().render(),
-                main(attrs().style().flex(num(1)).done(), content),
-                new Footer().render()
+                main(attrs().style().flex(num(1)).display(flex).minHeight(num(0)).done(), content),
+                new Footer().render(),
+                DevServer.script() // Hot reload - only active when jweb.dev.hot-reload=true
             )
         );
     }

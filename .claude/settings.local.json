@@ -33,7 +33,8 @@
       "Bash(cmd.exe /c \"cd /d \"\"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\"\" && mvn compile -q 2>&1 | findstr /I \"\"error\"\"\")",
       "Bash(dir:*)",
       "Bash(cmd.exe /c:*)",
-      "Bash(./mvnw spring-boot:run:*)"
+      "Bash(./mvnw spring-boot:run:*)",
+      "Bash(wc:*)"
     ]
   }
 }

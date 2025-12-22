@@ -9,43 +9,52 @@ public final class ElementsSection {
     public static Element render() {
         return section(
             title("Elements"),
-            text("All HTML elements are available as static methods."),
+            text("All HTML elements are available as static methods. Pass children as arguments " +
+                 "and attributes using the attrs() builder."),
 
-            subtitle("Basic Usage"),
+            subtitle("Basic Elements"),
             code("""
-                // Simple elements
-                h1("Hello World")
-                p("Some text")
-                div(h1("Title"), p("Content"))
+h1("Hello World")           // <h1>Hello World</h1>
+p("Some text")              // <p>Some text</p>
+div(h1("Title"), p("Text")) // Nested elements
+span(text("inline"))        // Inline element"""),
 
-                // With attributes
-                div(id("main"), class_("container"), "Content")
-                a(href("/about"), "About Us")
-                img(src("/logo.png"), alt("Logo"))"""),
+            subtitle("With Attributes"),
+            code("""
+div(attrs().id("main").class_("container"), content)
+a(attrs().href("/about"), text("About Us"))
+img(attrs().src("/logo.png").alt("Logo"))
+input(attrs().type("email").placeholder("you@example.com"))"""),
 
             subtitle("Attributes Builder"),
             code("""
-                div(attrs()
-                    .id("card")
-                    .class_("card featured")
-                    .data("id", "123"),
-                    h2("Card Title")
-                )
+attrs()
+    .id("card")
+    .class_("card featured")
+    .data("id", "123")
+    .aria("label", "Card")
+    .style()
+        .padding(rem(1))
+        .backgroundColor(white)
+    .done()"""),
 
-                input(attrs()
-                    .type("email")
-                    .name("email")
-                    .placeholder("you@example.com")
-                    .required())"""),
+            subtitle("Element Categories"),
+            list(
+                "Structure: html, head, body, div, span, section, article",
+                "Text: h1-h6, p, strong, em, code, pre, blockquote",
+                "Lists: ul, ol, li, dl, dt, dd",
+                "Tables: table, thead, tbody, tr, th, td",
+                "Forms: form, input, textarea, select, option, button, label",
+                "Media: img, video, audio, canvas, svg, iframe"
+            ),
 
-            subtitle("Available Elements"),
+            subtitle("Special Elements"),
             code("""
-                // Structure: html, head, body, div, span
-                // Text: h1-h6, p, strong, em, code, pre
-                // Lists: ul, ol, li
-                // Tables: table, thead, tbody, tr, th, td
-                // Forms: form, input, textarea, select, button
-                // Media: img, video, audio, canvas, svg""")
+text("plain text")              // Text node
+raw("<b>raw html</b>")          // Unescaped HTML
+fragment(el1, el2)              // Group without wrapper
+each(list, item -> li(item))    // Iterate a list
+when(cond, () -> span("show"))  // Conditional render""")
         );
     }
 }

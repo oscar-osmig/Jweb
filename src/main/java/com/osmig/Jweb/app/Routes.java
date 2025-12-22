@@ -9,6 +9,7 @@ import com.osmig.Jweb.app.pages.HomePage;
 import com.osmig.Jweb.app.pages.AboutPage;
 import com.osmig.Jweb.app.pages.ContactPage;
 import com.osmig.Jweb.app.docs.DocsPage;
+import com.osmig.Jweb.app.docs.DocContent;
 import org.springframework.stereotype.Component;
 
 /**
@@ -34,6 +35,9 @@ public class Routes implements JWebRoutes {
         app.get("/docs", ctx -> new Layout("Documentation - JWeb",
             new DocsPage(ctx.query("section")).render()
         ).render());
+
+        // Docs content endpoint for client-side navigation (returns only content)
+        app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
 
         // API documentation
         OpenApi.create()

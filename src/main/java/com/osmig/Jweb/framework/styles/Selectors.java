@@ -239,6 +239,55 @@ public final class Selectors {
     /** ::backdrop */
     public static final String backdrop = "::backdrop";
 
+    // ==================== Scrollbar Pseudo-elements ====================
+
+    /** ::-webkit-scrollbar - the entire scrollbar */
+    public static final String scrollbar = "::-webkit-scrollbar";
+
+    /** ::-webkit-scrollbar-track - the track (progress bar) */
+    public static final String scrollbarTrack = "::-webkit-scrollbar-track";
+
+    /** ::-webkit-scrollbar-thumb - the draggable handle */
+    public static final String scrollbarThumb = "::-webkit-scrollbar-thumb";
+
+    /** ::-webkit-scrollbar-button - up/down buttons */
+    public static final String scrollbarButton = "::-webkit-scrollbar-button";
+
+    /** ::-webkit-scrollbar-corner - corner where scrollbars meet */
+    public static final String scrollbarCorner = "::-webkit-scrollbar-corner";
+
+    /**
+     * Creates a scrollbar selector for a specific element.
+     * Example: scrollbar(".content") -> .content::-webkit-scrollbar
+     */
+    public static String scrollbar(String element) {
+        return element + "::-webkit-scrollbar";
+    }
+
+    /**
+     * Creates a scrollbar track selector for a specific element.
+     * Example: scrollbarTrack(".content") -> .content::-webkit-scrollbar-track
+     */
+    public static String scrollbarTrack(String element) {
+        return element + "::-webkit-scrollbar-track";
+    }
+
+    /**
+     * Creates a scrollbar thumb selector for a specific element.
+     * Example: scrollbarThumb(".content") -> .content::-webkit-scrollbar-thumb
+     */
+    public static String scrollbarThumb(String element) {
+        return element + "::-webkit-scrollbar-thumb";
+    }
+
+    /**
+     * Creates a scrollbar thumb hover selector for a specific element.
+     * Example: scrollbarThumbHover(".content") -> .content::-webkit-scrollbar-thumb:hover
+     */
+    public static String scrollbarThumbHover(String element) {
+        return element + "::-webkit-scrollbar-thumb:hover";
+    }
+
     // ==================== Attribute Selectors ====================
 
     /**

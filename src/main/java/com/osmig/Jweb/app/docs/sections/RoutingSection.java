@@ -9,47 +9,61 @@ public final class RoutingSection {
     public static Element render() {
         return section(
             title("Routing"),
-            text("Map URL paths to handlers that return elements."),
+            text("Map URL paths to handlers. Handlers return Elements which are rendered to HTML."),
 
-            subtitle("Basic Routes"),
+            subtitle("HTTP Methods"),
             code("""
-                app.get("/", () -> h1("Home"));
-                app.get("/about", () -> new AboutPage().render());
-                app.post("/submit", req -> handleSubmit(req));
-                app.put("/users/:id", req -> updateUser(req));
-                app.delete("/users/:id", req -> deleteUser(req));"""),
+app.get("/", () -> h1("Home"));
+app.post("/submit", req -> handleForm(req));
+app.put("/users/:id", req -> updateUser(req));
+app.delete("/users/:id", req -> deleteUser(req));"""),
 
             subtitle("Path Parameters"),
             code("""
-                // Route: /users/:id
-                app.get("/users/:id", req -> {
-                    String userId = req.param("id");
-                    return div(h1("User: " + userId));
-                });
+// Single parameter
+app.get("/users/:id", req -> {
+    String id = req.param("id");
+    return h1("User: " + id);
+});
 
-                // Route: /posts/:category/:slug
-                app.get("/posts/:category/:slug", req -> {
-                    String category = req.param("category");
-                    String slug = req.param("slug");
-                    return article(h1(slug));
-                });"""),
+// Multiple parameters
+app.get("/posts/:category/:slug", req -> {
+    String category = req.param("category");
+    String slug = req.param("slug");
+    return article(h1(slug), span(category));
+});"""),
 
             subtitle("Query Parameters"),
             code("""
-                // URL: /search?q=java&page=2
-                app.get("/search", req -> {
-                    String query = req.query("q");
-                    String page = req.query("page", "1");
-                    return div(h1("Search: " + query));
-                });"""),
+// URL: /search?q=java&page=2
+app.get("/search", req -> {
+    String query = req.query("q");
+    int page = Integer.parseInt(req.query("page", "1"));
+    return searchResults(query, page);
+});"""),
 
-            subtitle("Request Body"),
+            subtitle("Request Body (Forms)"),
             code("""
-                app.post("/login", req -> {
-                    String email = req.body("email");
-                    String password = req.body("password");
-                    return authenticate(email, password);
-                });""")
+app.post("/login", req -> {
+    String email = req.body("email");
+    String password = req.body("password");
+    // Or get all: Map<String, String> data = req.formData();
+    return authenticate(email, password);
+});"""),
+
+            subtitle("Responses"),
+            code("""
+// Return Element (renders as HTML)
+app.get("/page", () -> div("Hello"));
+
+// Return Template
+app.get("/home", () -> new HomePage());
+
+// Redirect
+app.get("/old", req -> Response.redirect("/new"));
+
+// JSON (for APIs)
+app.get("/api/status", () -> Response.json(Map.of("ok", true)));""")
         );
     }
 }

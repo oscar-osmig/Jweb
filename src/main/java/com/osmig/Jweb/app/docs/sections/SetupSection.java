@@ -9,37 +9,41 @@ public final class SetupSection {
     public static Element render() {
         return section(
             title("Getting Started"),
+            text("JWeb is built on Spring Boot. Create a new project with Spring Initializr " +
+                 "or add JWeb to an existing Spring Boot project."),
 
             subtitle("Project Structure"),
             code("""
-                src/main/java/com/yourapp/
-                ├── App.java          # Entry point
-                ├── Routes.java       # Route definitions
-                ├── layout/           # Layout components
-                │   ├── Layout.java
-                │   └── Nav.java
-                └── pages/            # Page components
-                    └── HomePage.java"""),
+src/main/java/com/yourapp/
+├── App.java          # @SpringBootApplication entry
+├── Routes.java       # URL to handler mappings
+├── layout/           # Shared layout components
+│   ├── Layout.java   # HTML wrapper (head, body)
+│   ├── Nav.java      # Navigation bar
+│   └── Theme.java    # Colors, spacing, typography
+└── pages/            # Page components
+    ├── HomePage.java
+    └── AboutPage.java"""),
+
+            subtitle("Required Imports"),
+            text("Add these static imports to use JWeb's DSL:"),
+            code("""
+import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
 
             subtitle("Your First Route"),
             code("""
-                @Component
-                public class Routes implements JWebRoutes {
-                    public void configure(JWeb app) {
-                        app.get("/", () -> h1("Hello World"));
+@Component
+public class Routes implements JWebRoutes {
+    public void configure(JWeb app) {
+        app.get("/", () -> h1("Hello World"));
+    }
+}"""),
 
-                        app.get("/about", ctx ->
-                            new Layout("About", new AboutPage().render()).render()
-                        );
-                    }
-                }"""),
-
-            subtitle("Required Imports"),
-            code("""
-                import static com.osmig.Jweb.framework.elements.Elements.*;
-                import static com.osmig.Jweb.framework.styles.CSS.*;
-                import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-                import static com.osmig.Jweb.framework.styles.CSSColors.*;""")
+            subtitle("Run the App"),
+            code("mvn spring-boot:run\n# Visit http://localhost:8080")
         );
     }
 }

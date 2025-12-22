@@ -18,12 +18,15 @@ public class DocSidebar implements Template {
 
     @Override
     public Element render() {
-        return aside(attrs().style()
-                .width(px(220)).padding(SP_6)
+        return aside(attrs().class_("docs-sidebar").style()
+                .width(px(220))
+                .padding(SP_6)
                 .borderRight(px(1), solid, hex("#e2e8f0"))
-                .backgroundColor(hex("#fafafa")).minHeight(vh(80))
+                .backgroundColor(hex("#fafafa"))
+                .overflowY(auto)
+                .prop("flex-shrink", "0")
             .done(),
-            div(attrs().style().position(sticky).top(SP_6).done(),
+            div(
                 navSection("Basics",
                     link("intro", "Introduction"),
                     link("setup", "Getting Started"),
@@ -37,6 +40,12 @@ public class DocSidebar implements Template {
                     link("state", "State"),
                     link("forms", "Forms"),
                     link("layouts", "Layouts")),
+                navSection("Advanced",
+                    link("api", "REST API"),
+                    link("security", "Security"),
+                    link("ui", "UI Components"),
+                    link("data", "Data & JPA"),
+                    link("devtools", "DevTools")),
                 navSection("More",
                     link("examples", "Examples"))
             )
@@ -55,11 +64,14 @@ public class DocSidebar implements Template {
 
     private Element link(String id, String label) {
         boolean isActive = id.equals(active);
-        return a(attrs().href("/docs?section=" + id).style()
-            .padding(SP_2, SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
-            .color(isActive ? PRIMARY : TEXT_LIGHT).fontWeight(isActive ? 600 : 400)
-            .backgroundColor(isActive ? hex("#eef2ff") : transparent)
-            .textDecoration(none).transition(all, s(0.15), ease)
-        .done(), text(label));
+        return a(attrs().href("/docs?section=" + id)
+            .data("section", id)
+            .class_("docs-nav-link")
+            .style()
+                .padding(SP_2, SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
+                .color(isActive ? PRIMARY : TEXT_LIGHT).fontWeight(isActive ? 600 : 400)
+                .backgroundColor(isActive ? hex("#eef2ff") : transparent)
+                .textDecoration(none).transition(all, s(0.15), ease)
+            .done(), text(label));
     }
 }

@@ -1,11 +1,11 @@
 package com.osmig.Jweb.framework.server;
 
 import com.osmig.Jweb.framework.JWeb;
-import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.core.RawContent;
 import com.osmig.Jweb.framework.hydration.HydrationData;
 import com.osmig.Jweb.framework.middleware.MiddlewareStack;
+import com.osmig.Jweb.framework.performance.Prefetch;
 import com.osmig.Jweb.framework.routing.PageRegistry;
 import com.osmig.Jweb.framework.routing.PageRoute;
 import com.osmig.Jweb.framework.routing.Router;
@@ -138,64 +138,34 @@ public class JWebController {
     }
 
     private String injectHydrationData(String html, String hydrationScript) {
+        // Build prefetch script (automatically injected by framework)
+        String prefetchScript = Prefetch.scriptTag();
+
         // Inject before </body> if present
         int bodyEnd = html.lastIndexOf("</body>");
         if (bodyEnd != -1) {
-            return html.substring(0, bodyEnd) + hydrationScript + html.substring(bodyEnd);
+            return html.substring(0, bodyEnd) + prefetchScript + hydrationScript + html.substring(bodyEnd);
         }
         // Inject before </html> if no body
         int htmlEnd = html.lastIndexOf("</html>");
         if (htmlEnd != -1) {
-            return html.substring(0, htmlEnd) + hydrationScript + html.substring(htmlEnd);
+            return html.substring(0, htmlEnd) + prefetchScript + hydrationScript + html.substring(htmlEnd);
         }
         // Append at end
-        return html + hydrationScript;
+        return html + prefetchScript + hydrationScript;
     }
 
     private ResponseEntity<String> handleNotFound(String path) {
-        Element notFoundPage = html(
-            head(title("404 - Not Found")),
-            body(
-                div(new Attributes().style(
-                    "font-family: system-ui, sans-serif; max-width: 600px; margin: 100px auto; text-align: center;"
-                ),
-                    h1("404"),
-                    h2("Page Not Found"),
-                    p("The page " + path + " could not be found."),
-                    a("/", "Go Home")
-                )
-            )
-        );
-
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .contentType(MediaType.TEXT_HTML)
-            .body(notFoundPage.toHtml());
+            .body(ErrorPage.render404(path).toHtml());
     }
 
     private ResponseEntity<String> handleError(Exception e) {
-        Element errorPage = html(
-            head(title("500 - Server Error")),
-            body(
-                div(new Attributes().style(
-                    "font-family: system-ui, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px;"
-                ),
-                    h1(new Attributes().style("color: #dc3545;"), "500 - Server Error"),
-                    p("An error occurred while processing your request."),
-                    pre(new Attributes().style(
-                        "background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto;"
-                    ),
-                        code(e.getClass().getName() + ": " + e.getMessage())
-                    ),
-                    a("/", "Go Home")
-                )
-            )
-        );
-
         e.printStackTrace();
-
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.TEXT_HTML)
-            .body(errorPage.toHtml());
+            .body(ErrorPage.render(500, "Server Error", e).toHtml());
     }
 
     // ==================== Page Route Matching ====================

@@ -1304,4 +1304,282 @@ state.subscribe(callback) // Listen for changes
 state.unsubscribe(cb)     // Remove listener
 state.getId()             // Unique state ID
 state.toJson()            // JSON serialization""";
+
+    // ==================== API Section ====================
+
+    public static final String API_CONTROLLER = """
+@REST("/api/users")
+public class UserApi {
+    @GET
+    public List<User> getAll() {
+        return userService.findAll();
+    }
+
+    @GET("/:id")
+    public User getById(@PathVariable Long id) {
+        return userService.findById(id);
+    }
+
+    @POST
+    public User create(@RequestBody User user) {
+        return userService.save(user);
+    }
+
+    @DEL("/:id")
+    public void delete(@PathVariable Long id) {
+        userService.delete(id);
+    }
+}""";
+
+    public static final String API_ANNOTATIONS = """
+// JWeb simplified annotations
+@REST("/api")      // Marks REST controller with base path
+@GET               // GET request (list all)
+@GET("/:id")       // GET with path variable
+@POST              // POST request (create)
+@UPDATE("/:id")    // PUT request (update)
+@DEL("/:id")       // DELETE request
+
+// These map to Spring's @RestController, @GetMapping, etc.""";
+
+    public static final String API_JSON_RESPONSE = """
+@GET("/status")
+public Map<String, Object> status() {
+    return Map.of(
+        "status", "healthy",
+        "timestamp", Instant.now()
+    );
+}
+// Response: {"status":"healthy","timestamp":"..."}""";
+
+    public static final String API_REQUEST_BODY = """
+@POST
+public User create(@RequestBody User user) {
+    return userService.save(user);
+}
+
+@GET("/:category/:id")
+public Item getItem(
+    @PathVariable String category,
+    @PathVariable Long id) {
+    return itemService.find(category, id);
+}""";
+
+    public static final String API_OPENAPI_CONFIG = """
+# application.yaml
+jweb:
+  api:
+    base: /api/v1
+
+# Access documentation at /api-docs""";
+
+    // ==================== Security Section ====================
+
+    public static final String SECURITY_PASSWORD = """
+import com.osmig.Jweb.framework.security.Auth;
+
+// Hash a password
+String hashed = Auth.hashPassword("user-password");
+
+// Verify a password
+boolean valid = Auth.verifyPassword("input", hashed);""";
+
+    public static final String SECURITY_JWT = """
+// Generate JWT token
+String token = Auth.generateToken(userId, Map.of(
+    "role", "admin"
+));
+
+// Validate token
+Optional<Auth.TokenClaims> claims = Auth.validateToken(token);
+claims.ifPresent(c -> {
+    String subject = c.subject();
+    String role = c.get("role");
+});""";
+
+    public static final String SECURITY_SESSION = """
+// Store in session
+Session.set(request, "userId", user.getId());
+
+// Retrieve from session
+Long userId = Session.get(request, "userId", Long.class);
+
+// Clear session (logout)
+Session.clear(request);""";
+
+    public static final String SECURITY_PROTECTED = """
+// Protect routes with middleware
+app.use("/admin", req -> {
+    if (!Session.has(req, "userId")) {
+        return Response.redirect("/login");
+    }
+    return null; // Continue to route
+});""";
+
+    public static final String SECURITY_CSRF = """
+String csrfToken = Auth.generateCsrfToken(session);
+
+form(attrs().action("/submit").method("POST"),
+    input(attrs().type("hidden").name("_csrf").value(csrfToken)),
+    // ... form fields
+    button(type("submit"), text("Submit"))
+)""";
+
+    // ==================== UI Components Section ====================
+
+    public static final String UI_MODAL = """
+UI.modal("confirm-modal")
+    .title("Confirm Action")
+    .body(p("Are you sure?"))
+    .footer(
+        UI.secondaryButton("Cancel", e -> {}),
+        UI.dangerButton("Delete", e -> deleteItem())
+    )
+    .build()
+
+// Trigger: UI.modalTrigger("confirm-modal", "Delete")
+// Script: UI.modalScript()""";
+
+    public static final String UI_TABS = """
+UI.tabs("settings-tabs")
+    .tab("general", "General", generalContent)
+    .tab("security", "Security", securityContent)
+    .defaultTab("general")
+    .build()
+
+// Include once: UI.tabsScript()""";
+
+    public static final String UI_DROPDOWN = """
+UI.dropdown("user-menu")
+    .trigger(div(UI.avatar("John"), span("John")))
+    .item("Profile", "/profile")
+    .item("Settings", "/settings")
+    .divider()
+    .item("Logout", e -> logout())
+    .build()""";
+
+    public static final String UI_ACCORDION = """
+UI.accordion("faq")
+    .item("q1", "What is JWeb?", p("A Java web framework."))
+    .item("q2", "Do I need Node?", p("No, just Maven."))
+    .allowMultiple(false)
+    .build()""";
+
+    public static final String UI_TOAST = """
+// Setup (once in layout)
+Toast.setup()
+
+// Show from JavaScript
+button(attrs().onClick("Toast.success('Saved!')"), text("Save"))
+button(attrs().onClick("Toast.error('Failed')"), text("Delete"))
+
+// Show on page load
+Toast.initial(Toast.Type.SUCCESS, "Welcome!")""";
+
+    public static final String UI_DATATABLE = """
+UI.dataTable(users)
+    .column("Name", User::getName)
+    .column("Email", User::getEmail)
+    .column("Role", u -> UI.badge(u.getRole(), Badge.INFO))
+    .striped()
+    .hoverable()
+    .build()""";
+
+    public static final String UI_NAVBAR = """
+UI.navbar()
+    .brand("/", "MyApp")
+    .link("/", "Home")
+    .link("/docs", "Docs")
+    .right(UI.primaryButton("Sign In", e -> {}))
+    .build()""";
+
+    // ==================== Data Section ====================
+
+    public static final String DATA_ENTITY = """
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(unique = true)
+    private String email;
+
+    // getters and setters
+}""";
+
+    public static final String DATA_REPOSITORY = """
+public interface UserRepository extends JpaRepository<User, Long> {
+    // Built-in: findAll(), findById(), save(), delete()
+
+    // Auto-implemented by name
+    Optional<User> findByEmail(String email);
+    List<User> findByRole(Role role);
+}""";
+
+    public static final String DATA_USAGE = """
+@Component
+public class Routes implements JWebRoutes {
+    private final UserRepository userRepo;
+
+    public Routes(UserRepository userRepo) {
+        this.userRepo = userRepo;
+    }
+
+    public void configure(JWeb app) {
+        app.get("/users", req -> {
+            List<User> users = userRepo.findAll();
+            return new UsersPage(users).render();
+        });
+    }
+}""";
+
+    public static final String DATA_CONFIG = """
+# application.yaml
+spring:
+  datasource:
+    url: jdbc:h2:mem:devdb
+  jpa:
+    hibernate:
+      ddl-auto: update
+  h2:
+    console:
+      enabled: true""";
+
+    // ==================== DevTools Section ====================
+
+    public static final String DEV_CONFIG = """
+# application.yaml
+jweb:
+  dev:
+    hot-reload: true
+    watch-paths: src/main/java,src/main/resources""";
+
+    public static final String DEV_LAYOUT = """
+import com.osmig.Jweb.framework.dev.DevServer;
+
+public class Layout implements Template {
+    public Element render() {
+        return html(
+            head(title("My App")),
+            body(
+                content,
+                DevServer.script()  // Hot reload script
+            )
+        );
+    }
+}""";
+
+    public static final String DEV_DEVTOOLS_POM = """
+<!-- pom.xml - Add for full hot reload -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>""";
 }

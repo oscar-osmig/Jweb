@@ -9,8 +9,6 @@ import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.Stylesheet.*;
 import static com.osmig.Jweb.framework.styles.Selectors.*;
-import static com.osmig.Jweb.framework.js.JS.*;
-import static com.osmig.Jweb.framework.js.Async.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 /**
@@ -57,28 +55,95 @@ public class DocsPage implements Template {
     }
 
     private String clientNavScript() {
-        return script()
-            .add(asyncFunc("loadSection", "section")
-                .await_("response", fetch(variable("'/docs/content?section='+section")).get().toVal())
-                .await_("html", variable("response").dot("text").invoke())
-                .unsafeRaw("document.querySelector('.docs-content').innerHTML=html")
-                .call("updateActiveLink", variable("section"))
-                .call("history.pushState", null_(), str(""), variable("'/docs?section='+section")))
-            .add(func("updateActiveLink", "section")
-                .unsafeRaw("document.querySelectorAll('.docs-nav-link').forEach(function(link){" +
+        // Use singleton pattern to prevent duplicate initialization
+        return "(function(){" +
+            // Prevent duplicate initialization
+            "if(window.__docsNavInit)return;" +
+            "window.__docsNavInit=true;" +
+
+            // Use global cache (persists across navigation)
+            "window.__docsCache=window.__docsCache||{};" +
+            "var contentCache=window.__docsCache;" +
+            "var contentPending={};" +
+            "var TTL=300000;" + // 5 min cache
+
+            // Prefetch content section
+            "function prefetchContent(section){" +
+                "var url='/docs/content?section='+section;" +
+                "if(contentCache[section]&&Date.now()-contentCache[section].time<TTL)return;" +
+                "if(contentPending[section])return;" +
+                "contentPending[section]=true;" +
+                "fetch(url,{credentials:'same-origin'})" +
+                ".then(function(r){return r.text()})" +
+                ".then(function(html){" +
+                    "contentCache[section]={html:html,time:Date.now()};" +
+                    "delete contentPending[section]" +
+                "})" +
+                ".catch(function(){delete contentPending[section]})" +
+            "}" +
+
+            // Load section - use cache if available
+            "function loadSection(section){" +
+                "var cached=contentCache[section];" +
+                "if(cached&&Date.now()-cached.time<TTL){" +
+                    "document.querySelector('.docs-content').innerHTML=cached.html;" +
+                    "updateActiveLink(section);" +
+                    "history.pushState(null,'','/docs?section='+section);" +
+                    "return" +
+                "}" +
+                // Fetch if not cached
+                "fetch('/docs/content?section='+section,{credentials:'same-origin'})" +
+                ".then(function(r){return r.text()})" +
+                ".then(function(html){" +
+                    "contentCache[section]={html:html,time:Date.now()};" +
+                    "document.querySelector('.docs-content').innerHTML=html;" +
+                    "updateActiveLink(section);" +
+                    "history.pushState(null,'','/docs?section='+section)" +
+                "})" +
+            "}" +
+
+            "function updateActiveLink(section){" +
+                "document.querySelectorAll('.docs-nav-link').forEach(function(link){" +
                     "var isActive=link.dataset.section===section;" +
                     "link.style.color=isActive?'#4f46e5':'#64748b';" +
                     "link.style.fontWeight=isActive?'600':'400';" +
                     "link.style.backgroundColor=isActive?'#eef2ff':'transparent'" +
-                    "})"))
-            .add(func("initDocsNav")
-                .unsafeRaw("document.querySelectorAll('.docs-nav-link').forEach(function(link){" +
-                    "link.addEventListener('click',function(e){" +
+                "})" +
+            "}" +
+
+            // Hover prefetch using event delegation (single listener)
+            "var hoverTimeout=null;" +
+            "var sidebar=document.querySelector('.docs-sidebar');" +
+            "if(sidebar){" +
+                "sidebar.addEventListener('mouseover',function(e){" +
+                    "var link=e.target.closest('.docs-nav-link');" +
+                    "if(!link)return;" +
+                    "var section=link.dataset.section;" +
+                    "if(!section)return;" +
+                    "if(hoverTimeout)clearTimeout(hoverTimeout);" +
+                    "hoverTimeout=setTimeout(function(){prefetchContent(section)},50)" +
+                "});" +
+                "sidebar.addEventListener('mouseout',function(){" +
+                    "if(hoverTimeout){clearTimeout(hoverTimeout);hoverTimeout=null}" +
+                "});" +
+                // Click handler using event delegation (single listener)
+                "sidebar.addEventListener('click',function(e){" +
+                    "var link=e.target.closest('.docs-nav-link');" +
+                    "if(!link)return;" +
                     "e.preventDefault();" +
-                    "loadSection(this.dataset.section)" +
-                    "})" +
-                    "})"))
-            .unsafeRaw("initDocsNav()")
-            .build();
+                    "loadSection(link.dataset.section)" +
+                "})" +
+            "}" +
+
+            // Handle browser back/forward (single global listener)
+            "if(!window.__docsPopstate){" +
+                "window.__docsPopstate=true;" +
+                "window.addEventListener('popstate',function(){" +
+                    "var params=new URLSearchParams(location.search);" +
+                    "var section=params.get('section')||'intro';" +
+                    "loadSection(section)" +
+                "})" +
+            "}" +
+        "})();";
     }
 }

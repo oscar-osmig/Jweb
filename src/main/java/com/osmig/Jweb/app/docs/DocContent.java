@@ -16,6 +16,11 @@ public class DocContent {
             case "state" -> StateSection.render();
             case "forms" -> FormsSection.render();
             case "layouts" -> LayoutsSection.render();
+            case "api" -> ApiSection.render();
+            case "security" -> SecuritySection.render();
+            case "ui" -> UIComponentsSection.render();
+            case "data" -> DataSection.render();
+            case "devtools" -> DevToolsSection.render();
             case "examples" -> ExamplesSection.render();
             default -> IntroSection.render();
         };

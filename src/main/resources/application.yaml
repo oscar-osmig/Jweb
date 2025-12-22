@@ -58,5 +58,12 @@ jweb:
     minify-css: true
     # Minify HTML output (removes unnecessary whitespace)
     minify-html: false
+    # Prefetch - preload pages on hover for instant navigation
+    prefetch:
+      enabled: true
+      # Cache TTL in milliseconds (default: 5 minutes)
+      cache-ttl: 300000
+      # Delay before prefetching on hover (default: 100ms)
+      hover-delay: 10
 
 
