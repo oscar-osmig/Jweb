@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 
@@ -31,8 +34,39 @@ public final class StateManager {
     // Global state change listeners (for WebSocket integration)
     private static final List<BiConsumer<State<?>, Object>> globalListeners = new ArrayList<>();
 
+    // Non-blocking scheduled cleanup (replaces Thread.sleep patterns)
+    private static final ScheduledExecutorService cleanupScheduler =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "StateManager-Cleanup");
+                t.setDaemon(true);
+                return t;
+            });
+
+    // Context TTL in milliseconds (5 minutes)
+    private static final long CONTEXT_TTL_MS = 5 * 60 * 1000;
+
+    static {
+        // Schedule periodic cleanup of stale contexts (runs every minute)
+        cleanupScheduler.scheduleAtFixedRate(
+                StateManager::cleanupStaleContexts,
+                1, 1, TimeUnit.MINUTES
+        );
+    }
+
     private StateManager() {
         // Static utility class
+    }
+
+    /**
+     * Removes stale contexts that haven't been explicitly cleaned up.
+     * This prevents memory leaks from abandoned requests or exceptions.
+     */
+    private static void cleanupStaleContexts() {
+        long now = System.currentTimeMillis();
+        contextRegistry.entrySet().removeIf(entry -> {
+            StateContext ctx = entry.getValue();
+            return now - ctx.getCreatedAt() > CONTEXT_TTL_MS;
+        });
     }
 
     /**
@@ -191,9 +225,19 @@ public final class StateManager {
         private final List<State<?>> changedStates = new ArrayList<>();
         private final Map<String, RenderableComponent> components = new ConcurrentHashMap<>();
         private final String sessionId;
+        private final long createdAt;
 
         StateContext() {
-            this.sessionId = "ctx_" + System.currentTimeMillis() + "_" + Thread.currentThread().threadId();
+            this.createdAt = System.currentTimeMillis();
+            this.sessionId = "ctx_" + createdAt + "_" + Thread.currentThread().threadId();
+        }
+
+        /**
+         * Gets the creation timestamp of this context.
+         * Used for TTL-based cleanup.
+         */
+        public long getCreatedAt() {
+            return createdAt;
         }
 
         void register(State<?> state) {
@@ -290,6 +334,25 @@ public final class StateManager {
             }
             sb.append("]");
             return sb.toString();
+        }
+
+        /**
+         * Clears this context and removes it from the registry.
+         * Call this when the request is complete to prevent memory leaks.
+         */
+        public void clearContext() {
+            // Clear all states
+            states.clear();
+            changedStates.clear();
+            components.clear();
+
+            // Remove from registry to prevent memory leaks
+            contextRegistry.remove(sessionId);
+
+            // Clear thread-local if this is the current context
+            if (currentContext.get() == this) {
+                currentContext.remove();
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ jweb:
       enabled: true
       # Cache TTL in milliseconds (default: 5 minutes)
       cache-ttl: 300000
-      # Delay before prefetching on hover (default: 100ms)
-      hover-delay: 10
+      # Delay before prefetching on hover (ms) - higher values reduce false triggers
+      hover-delay: 300
 
 

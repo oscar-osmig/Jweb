@@ -4,6 +4,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
@@ -346,24 +349,23 @@ public class Cache<K, V> {
         }
     }
 
+    // Shared scheduler for all cache instances - non-blocking
+    private static final ScheduledExecutorService CLEANUP_SCHEDULER =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "Cache-Cleanup");
+                t.setDaemon(true);
+                return t;
+            });
+
     private void scheduleCleanup() {
         if (cleanupScheduled) return;
         cleanupScheduled = true;
 
-        Thread cleanupThread = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted()) {
-                try {
-                    Thread.sleep(60000); // Cleanup every minute
-                    cleanup();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        });
-        cleanupThread.setDaemon(true);
-        cleanupThread.setName("cache-cleanup-" + System.identityHashCode(this));
-        cleanupThread.start();
+        // Non-blocking scheduled cleanup (replaces Thread.sleep)
+        CLEANUP_SCHEDULER.scheduleAtFixedRate(
+                this::cleanup,
+                1, 1, TimeUnit.MINUTES
+        );
     }
 
     // ==================== Entry ====================

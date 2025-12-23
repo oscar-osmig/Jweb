@@ -587,6 +587,239 @@ public class Attributes implements TransitionReceiver {
     public Attributes colspan(int value) { return set("colspan", String.valueOf(value)); }
     /** Sets the rowspan attribute for table cells. @param value the number of rows to span */
     public Attributes rowspan(int value) { return set("rowspan", String.valueOf(value)); }
+    /** Sets the scope attribute for th elements. @param value row, col, rowgroup, colgroup */
+    public Attributes scope(String value) { return set("scope", value); }
+    /** Sets the headers attribute for table cells. @param value space-separated IDs of th elements */
+    public Attributes headers(String value) { return set("headers", value); }
+
+    // ==================== Form Validation Attributes ====================
+
+    /** Sets the pattern attribute for regex validation. @param regex the regex pattern */
+    public Attributes pattern(String regex) { return set("pattern", regex); }
+    /** Sets the min attribute for numeric/date inputs. @param value the minimum value */
+    public Attributes min(String value) { return set("min", value); }
+    /** Sets the min attribute with number. @param value the minimum value */
+    public Attributes min(int value) { return set("min", String.valueOf(value)); }
+    /** Sets the max attribute for numeric/date inputs. @param value the maximum value */
+    public Attributes max(String value) { return set("max", value); }
+    /** Sets the max attribute with number. @param value the maximum value */
+    public Attributes max(int value) { return set("max", String.valueOf(value)); }
+    /** Sets the step attribute for numeric inputs. @param value the step increment */
+    public Attributes step(String value) { return set("step", value); }
+    /** Sets the step attribute with number. @param value the step increment */
+    public Attributes step(double value) { return set("step", String.valueOf(value)); }
+    /** Sets the minlength attribute for text inputs. @param value minimum number of characters */
+    public Attributes minlength(int value) { return set("minlength", String.valueOf(value)); }
+    /** Sets the maxlength attribute for text inputs. @param value maximum number of characters */
+    public Attributes maxlength(int value) { return set("maxlength", String.valueOf(value)); }
+    /** Adds the multiple boolean attribute for file/select inputs. */
+    public Attributes multiple() { return set("multiple", null); }
+    /** Sets the accept attribute for file inputs. @param value acceptable MIME types */
+    public Attributes accept(String value) { return set("accept", value); }
+    /** Sets the autocomplete attribute. @param value on, off, or specific tokens */
+    public Attributes autocomplete(String value) { return set("autocomplete", value); }
+    /** Sets the inputmode attribute for virtual keyboards. @param value none, text, decimal, numeric, tel, search, email, url */
+    public Attributes inputmode(String value) { return set("inputmode", value); }
+    /** Sets the list attribute to connect to a datalist. @param datalistId the datalist element ID */
+    public Attributes list(String datalistId) { return set("list", datalistId); }
+    /** Sets the form attribute to associate input with a form. @param formId the form element ID */
+    public Attributes form(String formId) { return set("form", formId); }
+    /** Sets the enctype attribute for forms. @param value encoding type */
+    public Attributes enctype(String value) { return set("enctype", value); }
+    /** Adds the novalidate boolean attribute to skip form validation. */
+    public Attributes novalidate() { return set("novalidate", null); }
+    /** Sets the size attribute for inputs/selects. @param value the visible size */
+    public Attributes size(int value) { return set("size", String.valueOf(value)); }
+    /** Sets the cols attribute for textareas. @param value number of columns */
+    public Attributes cols(int value) { return set("cols", String.valueOf(value)); }
+    /** Sets the rows attribute for textareas. @param value number of rows */
+    public Attributes rows(int value) { return set("rows", String.valueOf(value)); }
+    /** Sets the wrap attribute for textareas. @param value soft or hard */
+    public Attributes wrap(String value) { return set("wrap", value); }
+
+    // ==================== Global Attributes ====================
+
+    /** Sets the tabindex attribute. @param value tab order (-1 for not focusable, 0 for natural order, positive for explicit order) */
+    public Attributes tabindex(int value) { return set("tabindex", String.valueOf(value)); }
+    /** Sets the accesskey attribute for keyboard shortcuts. @param value the key character */
+    public Attributes accesskey(String value) { return set("accesskey", value); }
+    /** Sets the lang attribute for language. @param value language code (e.g., "en", "es", "zh") */
+    public Attributes lang(String value) { return set("lang", value); }
+    /** Sets the dir attribute for text direction. @param value ltr, rtl, or auto */
+    public Attributes dir(String value) { return set("dir", value); }
+    /** Sets the translate attribute. @param value yes or no */
+    public Attributes translate(String value) { return set("translate", value); }
+    /** Adds the contenteditable boolean attribute. */
+    public Attributes contenteditable() { return set("contenteditable", "true"); }
+    /** Conditionally sets the contenteditable attribute. @param editable whether content is editable */
+    public Attributes contenteditable(boolean editable) { return set("contenteditable", String.valueOf(editable)); }
+    /** Adds the draggable attribute. @param draggable whether element is draggable */
+    public Attributes draggable(boolean draggable) { return set("draggable", String.valueOf(draggable)); }
+    /** Adds the spellcheck attribute. @param check whether to enable spellcheck */
+    public Attributes spellcheck(boolean check) { return set("spellcheck", String.valueOf(check)); }
+    /** Sets the enterkeyhint attribute for virtual keyboards. @param value enter, done, go, next, previous, search, send */
+    public Attributes enterkeyhint(String value) { return set("enterkeyhint", value); }
+    /** Sets the inert attribute (non-interactive). */
+    public Attributes inert() { return set("inert", null); }
+    /** Sets the popover attribute. @param value auto or manual */
+    public Attributes popover(String value) { return set("popover", value); }
+    /** Sets the popovertarget attribute. @param elementId the ID of the popover element */
+    public Attributes popovertarget(String elementId) { return set("popovertarget", elementId); }
+    /** Sets the popovertargetaction attribute. @param value show, hide, or toggle */
+    public Attributes popovertargetaction(String value) { return set("popovertargetaction", value); }
+    /** Sets the part attribute for CSS shadow parts. @param value part name(s) */
+    public Attributes part(String value) { return set("part", value); }
+    /** Sets the slot attribute for shadow DOM. @param value slot name */
+    public Attributes slot(String value) { return set("slot", value); }
+
+    // ==================== Link & Resource Attributes ====================
+
+    /** Sets the rel attribute for links. @param value relationship type */
+    public Attributes rel(String value) { return set("rel", value); }
+    /** Adds the download attribute for forcing downloads. */
+    public Attributes download() { return set("download", null); }
+    /** Sets the download attribute with a filename. @param filename the suggested filename */
+    public Attributes download(String filename) { return set("download", filename); }
+    /** Sets the hreflang attribute for link language. @param value language code */
+    public Attributes hreflang(String value) { return set("hreflang", value); }
+    /** Sets the referrerpolicy attribute. @param value no-referrer, origin, etc. */
+    public Attributes referrerpolicy(String value) { return set("referrerpolicy", value); }
+    /** Sets the crossorigin attribute. @param value anonymous or use-credentials */
+    public Attributes crossorigin(String value) { return set("crossorigin", value); }
+    /** Sets the integrity attribute for subresource integrity. @param hash the SRI hash */
+    public Attributes integrity(String hash) { return set("integrity", hash); }
+    /** Sets the ping attribute for link tracking. @param urls space-separated URLs */
+    public Attributes ping(String urls) { return set("ping", urls); }
+    /** Sets the media attribute for responsive resources. @param mediaQuery the media query */
+    public Attributes media(String mediaQuery) { return set("media", mediaQuery); }
+    /** Sets the as attribute for preload hints. @param value resource type (script, style, image, etc.) */
+    public Attributes as(String value) { return set("as", value); }
+
+    // ==================== Image & Media Attributes ====================
+
+    /** Sets the srcset attribute for responsive images. @param value srcset descriptor */
+    public Attributes srcset(String value) { return set("srcset", value); }
+    /** Sets the sizes attribute for responsive images. @param value sizes descriptor */
+    public Attributes sizes(String value) { return set("sizes", value); }
+    /** Sets the loading attribute for lazy loading. @param value lazy or eager */
+    public Attributes loading(String value) { return set("loading", value); }
+    /** Sets the decoding attribute for image decoding. @param value sync, async, or auto */
+    public Attributes decoding(String value) { return set("decoding", value); }
+    /** Sets the fetchpriority attribute. @param value high, low, or auto */
+    public Attributes fetchpriority(String value) { return set("fetchpriority", value); }
+    /** Adds the ismap boolean attribute for image maps. */
+    public Attributes ismap() { return set("ismap", null); }
+    /** Sets the usemap attribute for image maps. @param mapName the map name (with #) */
+    public Attributes usemap(String mapName) { return set("usemap", mapName); }
+
+    // ==================== Audio/Video Attributes ====================
+
+    /** Adds the controls boolean attribute for media players. */
+    public Attributes controls() { return set("controls", null); }
+    /** Adds the autoplay boolean attribute for media. */
+    public Attributes autoplay() { return set("autoplay", null); }
+    /** Adds the loop boolean attribute for media. */
+    public Attributes loop() { return set("loop", null); }
+    /** Adds the muted boolean attribute for media. */
+    public Attributes muted() { return set("muted", null); }
+    /** Sets the preload attribute for media. @param value none, metadata, or auto */
+    public Attributes preload(String value) { return set("preload", value); }
+    /** Sets the poster attribute for video thumbnails. @param url the poster image URL */
+    public Attributes poster(String url) { return set("poster", url); }
+    /** Adds the playsinline boolean attribute for inline video playback. */
+    public Attributes playsinline() { return set("playsinline", null); }
+    /** Adds the disablepictureinpicture attribute. */
+    public Attributes disablepictureinpicture() { return set("disablepictureinpicture", null); }
+
+    // ==================== Script Attributes ====================
+
+    /** Adds the async boolean attribute for scripts. */
+    public Attributes async() { return set("async", null); }
+    /** Adds the defer boolean attribute for scripts. */
+    public Attributes defer() { return set("defer", null); }
+    /** Adds the nomodule attribute for module fallback scripts. */
+    public Attributes nomodule() { return set("nomodule", null); }
+    /** Sets the nonce attribute for CSP. @param value the nonce value */
+    public Attributes nonce(String value) { return set("nonce", value); }
+
+    // ==================== Meta & Document Attributes ====================
+
+    /** Sets the charset attribute for meta tags. @param value character encoding (usually "UTF-8") */
+    public Attributes charset(String value) { return set("charset", value); }
+    /** Sets the http-equiv attribute for meta tags. @param value HTTP header name */
+    public Attributes httpEquiv(String value) { return set("http-equiv", value); }
+    /** Sets the content attribute for meta tags. @param value the content value */
+    public Attributes content(String value) { return set("content", value); }
+
+    // ==================== SVG Attributes ====================
+
+    /** Sets the viewBox attribute for SVG. @param value e.g., "0 0 100 100" */
+    public Attributes viewBox(String value) { return set("viewBox", value); }
+    /** Sets the preserveAspectRatio attribute for SVG. @param value e.g., "xMidYMid meet" */
+    public Attributes preserveAspectRatio(String value) { return set("preserveAspectRatio", value); }
+    /** Sets the xmlns attribute for SVG namespace. @param value namespace URI */
+    public Attributes xmlns(String value) { return set("xmlns", value); }
+    /** Sets the fill attribute for SVG. @param value color or none */
+    public Attributes fill(String value) { return set("fill", value); }
+    /** Sets the stroke attribute for SVG. @param value color */
+    public Attributes stroke(String value) { return set("stroke", value); }
+    /** Sets the stroke-width attribute for SVG. @param value width */
+    public Attributes strokeWidth(String value) { return set("stroke-width", value); }
+    /** Sets the d attribute for SVG path. @param value path data */
+    public Attributes d(String value) { return set("d", value); }
+    /** Sets the cx attribute for SVG circles. @param value center x */
+    public Attributes cx(String value) { return set("cx", value); }
+    /** Sets the cy attribute for SVG circles. @param value center y */
+    public Attributes cy(String value) { return set("cy", value); }
+    /** Sets the r attribute for SVG circles. @param value radius */
+    public Attributes r(String value) { return set("r", value); }
+    /** Sets the x attribute for SVG elements. @param value x coordinate */
+    public Attributes x(String value) { return set("x", value); }
+    /** Sets the y attribute for SVG elements. @param value y coordinate */
+    public Attributes y(String value) { return set("y", value); }
+    /** Sets the x1 attribute for SVG lines. @param value start x */
+    public Attributes x1(String value) { return set("x1", value); }
+    /** Sets the y1 attribute for SVG lines. @param value start y */
+    public Attributes y1(String value) { return set("y1", value); }
+    /** Sets the x2 attribute for SVG lines. @param value end x */
+    public Attributes x2(String value) { return set("x2", value); }
+    /** Sets the y2 attribute for SVG lines. @param value end y */
+    public Attributes y2(String value) { return set("y2", value); }
+    /** Sets the points attribute for SVG polygons/polylines. @param value coordinate pairs */
+    public Attributes points(String value) { return set("points", value); }
+    /** Sets the transform attribute for SVG transformations. @param value transform functions */
+    public Attributes transform(String value) { return set("transform", value); }
+
+    // ==================== Microdata Attributes ====================
+
+    /** Sets the itemscope boolean attribute for microdata. */
+    public Attributes itemscope() { return set("itemscope", null); }
+    /** Sets the itemtype attribute for microdata. @param value schema type URL */
+    public Attributes itemtype(String value) { return set("itemtype", value); }
+    /** Sets the itemprop attribute for microdata. @param value property name */
+    public Attributes itemprop(String value) { return set("itemprop", value); }
+    /** Sets the itemid attribute for microdata. @param value global identifier */
+    public Attributes itemid(String value) { return set("itemid", value); }
+    /** Sets the itemref attribute for microdata. @param value space-separated IDs */
+    public Attributes itemref(String value) { return set("itemref", value); }
+
+    // ==================== Dialog Attributes ====================
+
+    /** Adds the open boolean attribute for details/dialog. */
+    public Attributes open() { return set("open", null); }
+
+    // ==================== iframe Attributes ====================
+
+    /** Sets the sandbox attribute for iframes. @param value sandbox restrictions */
+    public Attributes sandbox(String value) { return set("sandbox", value); }
+    /** Sets the allow attribute for iframes. @param value feature policy */
+    public Attributes allow(String value) { return set("allow", value); }
+    /** Adds the allowfullscreen boolean attribute. */
+    public Attributes allowfullscreen() { return set("allowfullscreen", null); }
+    /** Sets the srcdoc attribute for inline iframe content. @param html the HTML content */
+    public Attributes srcdoc(String html) { return set("srcdoc", html); }
+    /** Sets the name attribute for iframe targeting. @param value frame name */
+    public Attributes frameName(String value) { return set("name", value); }
 
     // ==================== Event Handlers ====================
 

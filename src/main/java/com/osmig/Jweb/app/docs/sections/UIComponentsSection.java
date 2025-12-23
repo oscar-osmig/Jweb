@@ -2,39 +2,54 @@ package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
-import static com.osmig.Jweb.app.docs.DocExamples.*;
 
 public final class UIComponentsSection {
     private UIComponentsSection() {}
 
     public static Element render() {
         return section(
-            title("UI Components"),
-            text("JWeb includes pre-built UI components for common patterns: " +
-                 "modals, tabs, dropdowns, accordions, toasts, and more."),
+            docTitle("UI Components"),
+            para("Pre-built interactive components for common patterns."),
 
-            subtitle("Modal Dialogs"),
-            code(UI_MODAL),
+            docSubtitle("Modal"),
+            codeBlock("""
+                    Modal.create("confirm-modal")
+                        .title("Confirm Action")
+                        .body(p("Are you sure?"))
+                        .footer(
+                            button(attrs().onClick("Modal.close('confirm-modal')"), "Cancel"),
+                            button(attrs().onClick("handleConfirm()"), "Confirm")
+                        )
+                        .render()"""),
 
-            subtitle("Tabs"),
-            code(UI_TABS),
+            docSubtitle("Tabs"),
+            codeBlock("""
+                        Tabs.create()
+                            .tab("overview", "Overview", overviewContent())
+                            .tab("details", "Details", detailsContent())
+                            .tab("settings", "Settings", settingsContent())
+                            .render()"""),
 
-            subtitle("Dropdown Menus"),
-            code(UI_DROPDOWN),
+            docSubtitle("Dropdown"),
+            codeBlock("""
+                        Dropdown.create("Actions")
+                            .item("Edit", "/edit")
+                            .item("Delete", "handleDelete()")
+                            .divider()
+                            .item("Settings", "/settings")
+                            .render()"""),
 
-            subtitle("Accordion"),
-            code(UI_ACCORDION),
+            docSubtitle("Toast Notifications"),
+            codeBlock("""
+                        // Setup in layout
+                        Toast.setup()
+                        
+                        // Trigger via JavaScript
+                        Toast.success("Saved successfully!")
+                        Toast.error("Something went wrong")
+                        Toast.info("New message received")"""),
 
-            subtitle("Toast Notifications"),
-            text("Show temporary notifications with Toast.setup() and JavaScript calls:"),
-            code(UI_TOAST),
-
-            subtitle("Data Tables"),
-            text("Create sortable, filterable tables from your data:"),
-            code(UI_DATATABLE),
-
-            subtitle("Navigation Bar"),
-            code(UI_NAVBAR)
+            docTip("All UI components include keyboard navigation and ARIA accessibility.")
         );
     }
 }

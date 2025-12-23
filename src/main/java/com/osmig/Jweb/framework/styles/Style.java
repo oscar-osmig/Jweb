@@ -1286,6 +1286,437 @@ public class Style<T extends Style<T>> implements CSSValue {
      */
     public T printColorAdjust(CSSValue value) { return prop("print-color-adjust", value); }
 
+    // ==================== Multi-Column Layout ====================
+
+    /**
+     * Sets columns shorthand for multi-column layout.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().columns(px(200), num(3))  // columns: 200px 3
+     * </pre>
+     *
+     * @param width the column width
+     * @param count the column count
+     * @return this builder for chaining
+     */
+    public T columns(CSSValue width, CSSValue count) {
+        return prop("columns", width.css() + " " + count.css());
+    }
+
+    /** Sets columns with single value. */
+    public T columns(CSSValue value) { return prop("columns", value); }
+
+    /** Sets column-count. @param value number of columns or "auto" */
+    public T columnCount(CSSValue value) { return prop("column-count", value); }
+
+    /** Sets column-count with integer. */
+    public T columnCount(int value) { return prop("column-count", String.valueOf(value)); }
+
+    /** Sets column-width. */
+    public T columnWidth(CSSValue value) { return prop("column-width", value); }
+
+    /** Sets column-gap. */
+    public T columnGapMulti(CSSValue value) { return prop("column-gap", value); }
+
+    /** Sets column-rule shorthand (width, style, color). */
+    public T columnRule(CSSValue width, CSSValue style, CSSValue color) {
+        return prop("column-rule", width.css() + " " + style.css() + " " + color.css());
+    }
+
+    /** Sets column-rule with single value. */
+    public T columnRule(CSSValue value) { return prop("column-rule", value); }
+
+    /** Sets column-rule-width. */
+    public T columnRuleWidth(CSSValue value) { return prop("column-rule-width", value); }
+
+    /** Sets column-rule-style. */
+    public T columnRuleStyle(CSSValue value) { return prop("column-rule-style", value); }
+
+    /** Sets column-rule-color. */
+    public T columnRuleColor(CSSValue value) { return prop("column-rule-color", value); }
+
+    /** Sets column-span. @param value "none" or "all" */
+    public T columnSpan(CSSValue value) { return prop("column-span", value); }
+
+    /** Sets column-fill. @param value "auto" or "balance" */
+    public T columnFill(CSSValue value) { return prop("column-fill", value); }
+
+    // ==================== Float & Clear ====================
+
+    /**
+     * Sets float property.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().float_(left)   // float: left
+     * style().float_(right)  // float: right
+     * </pre>
+     *
+     * @param value left, right, none, inline-start, inline-end
+     * @return this builder for chaining
+     */
+    public T float_(CSSValue value) { return prop("float", value); }
+
+    /**
+     * Sets clear property.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().clear(both)  // clear: both
+     * </pre>
+     *
+     * @param value left, right, both, none, inline-start, inline-end
+     * @return this builder for chaining
+     */
+    public T clear(CSSValue value) { return prop("clear", value); }
+
+    // ==================== Text Decoration (Extended) ====================
+
+    /** Sets text-decoration-line. @param value underline, overline, line-through, none */
+    public T textDecorationLine(CSSValue value) { return prop("text-decoration-line", value); }
+
+    /** Sets text-decoration-color. */
+    public T textDecorationColor(CSSValue value) { return prop("text-decoration-color", value); }
+
+    /** Sets text-decoration-style. @param value solid, double, dotted, dashed, wavy */
+    public T textDecorationStyle(CSSValue value) { return prop("text-decoration-style", value); }
+
+    /** Sets text-decoration-thickness. */
+    public T textDecorationThickness(CSSValue value) { return prop("text-decoration-thickness", value); }
+
+    /** Sets text-underline-offset. */
+    public T textUnderlineOffset(CSSValue value) { return prop("text-underline-offset", value); }
+
+    /** Sets text-underline-position. @param value auto, under, left, right */
+    public T textUnderlinePosition(CSSValue value) { return prop("text-underline-position", value); }
+
+    /** Sets text-decoration-skip-ink. @param value auto, none, all */
+    public T textDecorationSkipInk(CSSValue value) { return prop("text-decoration-skip-ink", value); }
+
+    // ==================== Text Emphasis ====================
+
+    /** Sets text-emphasis shorthand. */
+    public T textEmphasis(CSSValue value) { return prop("text-emphasis", value); }
+
+    /** Sets text-emphasis-style. @param value none, filled, open, dot, circle, etc. */
+    public T textEmphasisStyle(CSSValue value) { return prop("text-emphasis-style", value); }
+
+    /** Sets text-emphasis-color. */
+    public T textEmphasisColor(CSSValue value) { return prop("text-emphasis-color", value); }
+
+    /** Sets text-emphasis-position. @param value over right, under left, etc. */
+    public T textEmphasisPosition(String value) { return prop("text-emphasis-position", value); }
+
+    // ==================== Font Features ====================
+
+    /**
+     * Sets font-variant shorthand.
+     *
+     * @param value font variant value
+     * @return this builder for chaining
+     */
+    public T fontVariant(CSSValue value) { return prop("font-variant", value); }
+
+    /** Sets font-variant-caps. @param value small-caps, all-small-caps, petite-caps, etc. */
+    public T fontVariantCaps(CSSValue value) { return prop("font-variant-caps", value); }
+
+    /** Sets font-variant-numeric. @param value lining-nums, oldstyle-nums, tabular-nums, etc. */
+    public T fontVariantNumeric(CSSValue value) { return prop("font-variant-numeric", value); }
+
+    /** Sets font-variant-ligatures. @param value common-ligatures, no-common-ligatures, etc. */
+    public T fontVariantLigatures(CSSValue value) { return prop("font-variant-ligatures", value); }
+
+    /** Sets font-variant-alternates. */
+    public T fontVariantAlternates(CSSValue value) { return prop("font-variant-alternates", value); }
+
+    /** Sets font-variant-east-asian. @param value jis78, jis83, simplified, traditional, etc. */
+    public T fontVariantEastAsian(CSSValue value) { return prop("font-variant-east-asian", value); }
+
+    /** Sets font-variant-position. @param value normal, sub, super */
+    public T fontVariantPosition(CSSValue value) { return prop("font-variant-position", value); }
+
+    /**
+     * Sets font-feature-settings for OpenType features.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().fontFeatureSettings("'liga' 1, 'calt' 1")
+     * style().fontFeatureSettings("'smcp'")
+     * </pre>
+     *
+     * @param value OpenType feature settings
+     * @return this builder for chaining
+     */
+    public T fontFeatureSettings(String value) { return prop("font-feature-settings", value); }
+
+    /**
+     * Sets font-variation-settings for variable fonts.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().fontVariationSettings("'wght' 600, 'wdth' 100")
+     * </pre>
+     *
+     * @param value font variation axis settings
+     * @return this builder for chaining
+     */
+    public T fontVariationSettings(String value) { return prop("font-variation-settings", value); }
+
+    /** Sets font-optical-sizing. @param value auto or none */
+    public T fontOpticalSizing(CSSValue value) { return prop("font-optical-sizing", value); }
+
+    /** Sets font-kerning. @param value auto, normal, none */
+    public T fontKerning(CSSValue value) { return prop("font-kerning", value); }
+
+    /** Sets font-stretch. @param value normal, condensed, expanded, etc. */
+    public T fontStretch(CSSValue value) { return prop("font-stretch", value); }
+
+    /** Sets font-size-adjust. */
+    public T fontSizeAdjust(CSSValue value) { return prop("font-size-adjust", value); }
+
+    // ==================== Writing Modes & Direction ====================
+
+    /**
+     * Sets writing-mode for vertical/horizontal text.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().writingMode(verticalRl)  // vertical text, right-to-left
+     * style().writingMode(verticalLr)  // vertical text, left-to-right
+     * </pre>
+     *
+     * @param value horizontal-tb, vertical-rl, vertical-lr, sideways-rl, sideways-lr
+     * @return this builder for chaining
+     */
+    public T writingMode(CSSValue value) { return prop("writing-mode", value); }
+
+    /**
+     * Sets direction for text direction.
+     *
+     * @param value ltr or rtl
+     * @return this builder for chaining
+     */
+    public T direction(CSSValue value) { return prop("direction", value); }
+
+    /** Sets text-orientation. @param value mixed, upright, sideways */
+    public T textOrientation(CSSValue value) { return prop("text-orientation", value); }
+
+    /** Sets unicode-bidi. @param value normal, embed, isolate, bidi-override, etc. */
+    public T unicodeBidi(CSSValue value) { return prop("unicode-bidi", value); }
+
+    // ==================== CSS Masking ====================
+
+    /** Sets mask shorthand. */
+    public T mask(CSSValue value) { return prop("mask", value); }
+
+    /** Sets mask-image. */
+    public T maskImage(CSSValue value) { return prop("mask-image", value); }
+
+    /** Sets mask-mode. @param value alpha, luminance, match-source */
+    public T maskMode(CSSValue value) { return prop("mask-mode", value); }
+
+    /** Sets mask-repeat. */
+    public T maskRepeat(CSSValue value) { return prop("mask-repeat", value); }
+
+    /** Sets mask-position. */
+    public T maskPosition(CSSValue value) { return prop("mask-position", value); }
+
+    /** Sets mask-clip. */
+    public T maskClip(CSSValue value) { return prop("mask-clip", value); }
+
+    /** Sets mask-origin. */
+    public T maskOrigin(CSSValue value) { return prop("mask-origin", value); }
+
+    /** Sets mask-size. */
+    public T maskSize(CSSValue value) { return prop("mask-size", value); }
+
+    /** Sets mask-composite. @param value add, subtract, intersect, exclude */
+    public T maskComposite(CSSValue value) { return prop("mask-composite", value); }
+
+    /** Sets mask-type. @param value luminance, alpha */
+    public T maskType(CSSValue value) { return prop("mask-type", value); }
+
+    // ==================== CSS Shapes ====================
+
+    /**
+     * Sets shape-outside for text wrapping around shapes.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().shapeOutside(circleClip(percent(50)))
+     * style().shapeOutside(url("/images/shape.png"))
+     * </pre>
+     *
+     * @param value shape function, image, or box value
+     * @return this builder for chaining
+     */
+    public T shapeOutside(CSSValue value) { return prop("shape-outside", value); }
+
+    /** Sets shape-margin. */
+    public T shapeMargin(CSSValue value) { return prop("shape-margin", value); }
+
+    /** Sets shape-image-threshold (0-1 for transparency threshold). */
+    public T shapeImageThreshold(double value) { return prop("shape-image-threshold", String.valueOf(value)); }
+
+    // ==================== Compositing & Blending ====================
+
+    /**
+     * Sets mix-blend-mode for blending with background.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().mixBlendMode(multiply)
+     * style().mixBlendMode(overlay)
+     * </pre>
+     *
+     * @param value blend mode (multiply, screen, overlay, darken, lighten, etc.)
+     * @return this builder for chaining
+     */
+    public T mixBlendMode(CSSValue value) { return prop("mix-blend-mode", value); }
+
+    /**
+     * Sets background-blend-mode.
+     *
+     * @param value blend mode for background layers
+     * @return this builder for chaining
+     */
+    public T backgroundBlendMode(CSSValue value) { return prop("background-blend-mode", value); }
+
+    /**
+     * Sets isolation for stacking context.
+     *
+     * @param value auto or isolate
+     * @return this builder for chaining
+     */
+    public T isolation(CSSValue value) { return prop("isolation", value); }
+
+    // ==================== Performance Hints ====================
+
+    /**
+     * Sets will-change to hint browser about upcoming changes.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().willChange(propTransform)
+     * style().willChange("transform, opacity")
+     * </pre>
+     *
+     * @param value properties that will change
+     * @return this builder for chaining
+     */
+    public T willChange(CSSValue value) { return prop("will-change", value); }
+
+    /** Sets will-change with string value. */
+    public T willChange(String value) { return prop("will-change", value); }
+
+    /**
+     * Sets contain for layout containment.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().contain(strict)
+     * style().contain(layoutPaint)
+     * </pre>
+     *
+     * @param value none, strict, content, size, layout, style, paint
+     * @return this builder for chaining
+     */
+    public T contain(CSSValue value) { return prop("contain", value); }
+
+    /** Sets content-visibility for rendering optimization. @param value visible, auto, hidden */
+    public T contentVisibility(CSSValue value) { return prop("content-visibility", value); }
+
+    /** Sets contain-intrinsic-size for content-visibility. */
+    public T containIntrinsicSize(CSSValue value) { return prop("contain-intrinsic-size", value); }
+
+    /** Sets contain-intrinsic-size with width and height. */
+    public T containIntrinsicSize(CSSValue width, CSSValue height) {
+        return prop("contain-intrinsic-size", width.css() + " " + height.css());
+    }
+
+    // ==================== Print & Page Break ====================
+
+    /** Sets page-break-before. @param value auto, always, avoid, left, right */
+    public T pageBreakBefore(CSSValue value) { return prop("page-break-before", value); }
+
+    /** Sets page-break-after. @param value auto, always, avoid, left, right */
+    public T pageBreakAfter(CSSValue value) { return prop("page-break-after", value); }
+
+    /** Sets page-break-inside. @param value auto, avoid */
+    public T pageBreakInside(CSSValue value) { return prop("page-break-inside", value); }
+
+    /** Sets break-before (modern replacement for page-break-before). */
+    public T breakBefore(CSSValue value) { return prop("break-before", value); }
+
+    /** Sets break-after (modern replacement for page-break-after). */
+    public T breakAfter(CSSValue value) { return prop("break-after", value); }
+
+    /** Sets break-inside (modern replacement for page-break-inside). */
+    public T breakInside(CSSValue value) { return prop("break-inside", value); }
+
+    /** Sets orphans (minimum lines at bottom of page). */
+    public T orphans(int value) { return prop("orphans", String.valueOf(value)); }
+
+    /** Sets widows (minimum lines at top of page). */
+    public T widows(int value) { return prop("widows", String.valueOf(value)); }
+
+    // ==================== Misc Properties ====================
+
+    /** Sets quotes for q element. @param value e.g., "\"\\201C\" \"\\201D\" \"\\2018\" \"\\2019\"" */
+    public T quotes(String value) { return prop("quotes", value); }
+
+    /** Sets tab-size for tab character width. */
+    public T tabSize(CSSValue value) { return prop("tab-size", value); }
+
+    /** Sets tab-size with integer (number of spaces). */
+    public T tabSize(int value) { return prop("tab-size", String.valueOf(value)); }
+
+    /** Sets hyphens. @param value none, manual, auto */
+    public T hyphens(CSSValue value) { return prop("hyphens", value); }
+
+    /** Sets hyphenate-character. */
+    public T hyphenateCharacter(String value) { return prop("hyphenate-character", value); }
+
+    /** Sets caret-color for text cursor. */
+    public T caretColor(CSSValue value) { return prop("caret-color", value); }
+
+    /** Sets appearance for form control styling. @param value none, auto, menulist-button, etc. */
+    public T appearance(CSSValue value) { return prop("appearance", value); }
+
+    /** Sets touch-action. @param value auto, none, pan-x, pan-y, manipulation, etc. */
+    public T touchAction(CSSValue value) { return prop("touch-action", value); }
+
+    /** Sets scroll-snap-margin-* for individual sides. */
+    public T scrollMarginTop(CSSValue value) { return prop("scroll-margin-top", value); }
+    public T scrollMarginRight(CSSValue value) { return prop("scroll-margin-right", value); }
+    public T scrollMarginBottom(CSSValue value) { return prop("scroll-margin-bottom", value); }
+    public T scrollMarginLeft(CSSValue value) { return prop("scroll-margin-left", value); }
+
+    /** Sets scroll-padding-* for individual sides. */
+    public T scrollPaddingTop(CSSValue value) { return prop("scroll-padding-top", value); }
+    public T scrollPaddingRight(CSSValue value) { return prop("scroll-padding-right", value); }
+    public T scrollPaddingBottom(CSSValue value) { return prop("scroll-padding-bottom", value); }
+    public T scrollPaddingLeft(CSSValue value) { return prop("scroll-padding-left", value); }
+
+    /** Sets image-rendering. @param value auto, crisp-edges, pixelated */
+    public T imageRendering(CSSValue value) { return prop("image-rendering", value); }
+
+    /** Sets counter-reset. */
+    public T counterReset(String value) { return prop("counter-reset", value); }
+
+    /** Sets counter-increment. */
+    public T counterIncrement(String value) { return prop("counter-increment", value); }
+
+    /** Sets counter-set. */
+    public T counterSet(String value) { return prop("counter-set", value); }
+
+    /** Sets text-overflow. @param value clip, ellipsis */
+    public T textOverflow(CSSValue value) { return prop("text-overflow", value); }
+
+    /** Sets all property to reset all properties. @param value initial, inherit, unset, revert */
+    public T all(CSSValue value) { return prop("all", value); }
+
     // ==================== Raw Property ====================
 
     /**

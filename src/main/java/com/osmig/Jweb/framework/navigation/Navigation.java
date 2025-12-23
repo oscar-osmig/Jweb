@@ -113,7 +113,7 @@ public final class Navigation {
                             html = cached.html;
                         } else {
                             const response = await fetch(href, {
-                                headers: { 'X-Navigation': 'true' }
+                                headers: { 'X-Navigation': 'true', 'X-Prefetch': 'true' }
                             });
                             if (!response.ok) {
                                 window.location.href = href;
@@ -127,43 +127,85 @@ public final class Navigation {
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
 
-                        if (swapTarget) {
-                            // Partial swap
-                            const target = document.querySelector(swapTarget);
-                            const source = doc.querySelector(swapTarget);
+                        // Use View Transitions API if available for smooth animations
+                        const performSwap = () => {
+                            if (swapTarget) {
+                                // Partial swap - more efficient
+                                const target = document.querySelector(swapTarget);
+                                const source = doc.querySelector(swapTarget);
 
-                            if (target && source) {
-                                switch (swapStrategy) {
-                                    case 'outerHTML':
-                                        target.outerHTML = source.outerHTML;
-                                        break;
-                                    case 'beforeend':
-                                        target.insertAdjacentHTML('beforeend', source.innerHTML);
-                                        break;
-                                    case 'afterbegin':
-                                        target.insertAdjacentHTML('afterbegin', source.innerHTML);
-                                        break;
-                                    default:
-                                        target.innerHTML = source.innerHTML;
+                                if (target && source) {
+                                    switch (swapStrategy) {
+                                        case 'outerHTML':
+                                            target.outerHTML = source.outerHTML;
+                                            break;
+                                        case 'beforeend':
+                                            target.insertAdjacentHTML('beforeend', source.innerHTML);
+                                            break;
+                                        case 'afterbegin':
+                                            target.insertAdjacentHTML('afterbegin', source.innerHTML);
+                                            break;
+                                        default:
+                                            target.innerHTML = source.innerHTML;
+                                    }
                                 }
-                            }
 
-                            // Update title
-                            const newTitle = doc.querySelector('title');
-                            if (newTitle) document.title = newTitle.textContent;
-                        } else {
-                            // Full page swap
-                            document.documentElement.innerHTML = doc.documentElement.innerHTML;
+                                // Update title
+                                const newTitle = doc.querySelector('title');
+                                if (newTitle) document.title = newTitle.textContent;
+                            } else {
+                                // Optimized full page swap - update head and body separately
+                                // This preserves more state and is more efficient than innerHTML
 
-                            // Re-run scripts
-                            doc.querySelectorAll('script').forEach(oldScript => {
-                                const newScript = document.createElement('script');
-                                Array.from(oldScript.attributes).forEach(attr => {
-                                    newScript.setAttribute(attr.name, attr.value);
+                                // Update <head> - merge new meta, title, styles
+                                const newHead = doc.head;
+                                const newTitle = doc.querySelector('title');
+                                if (newTitle) document.title = newTitle.textContent;
+
+                                // Update stylesheets (add new ones, keep existing)
+                                const existingStyles = new Set([...document.head.querySelectorAll('link[rel="stylesheet"]')].map(l => l.href));
+                                doc.head.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                                    if (!existingStyles.has(link.href)) {
+                                        document.head.appendChild(link.cloneNode(true));
+                                    }
                                 });
-                                newScript.textContent = oldScript.textContent;
-                                document.body.appendChild(newScript);
-                            });
+
+                                // Swap body content efficiently using morphdom-style approach
+                                const newBody = doc.body;
+                                const oldMain = document.querySelector('main') || document.body;
+                                const newMain = newBody.querySelector('main') || newBody;
+
+                                // If we have main elements, only swap those (much faster)
+                                if (oldMain.tagName === 'MAIN' && newMain.tagName === 'MAIN') {
+                                    oldMain.innerHTML = newMain.innerHTML;
+                                } else {
+                                    // Fallback: swap entire body content
+                                    document.body.innerHTML = newBody.innerHTML;
+                                }
+
+                                // Re-run only new inline scripts (avoid re-executing all)
+                                const existingScripts = new Set([...document.scripts].map(s => s.src || s.textContent.slice(0, 100)));
+                                doc.querySelectorAll('script').forEach(oldScript => {
+                                    const scriptKey = oldScript.src || oldScript.textContent.slice(0, 100);
+                                    if (!oldScript.src && !existingScripts.has(scriptKey)) {
+                                        const newScript = document.createElement('script');
+                                        Array.from(oldScript.attributes).forEach(attr => {
+                                            newScript.setAttribute(attr.name, attr.value);
+                                        });
+                                        newScript.textContent = oldScript.textContent;
+                                        document.body.appendChild(newScript);
+                                    }
+                                });
+                            }
+                        };
+
+                        // Use View Transitions API for smooth animations if available
+                        if (document.startViewTransition) {
+                            await document.startViewTransition(() => {
+                                performSwap();
+                            }).finished;
+                        } else {
+                            performSwap();
                         }
 
                         // Update URL
@@ -171,8 +213,8 @@ public final class Navigation {
                             history.pushState({ jweb: true }, '', href);
                         }
 
-                        // Scroll to top
-                        window.scrollTo(0, 0);
+                        // Scroll to top (use smooth scroll if View Transitions is supported)
+                        window.scrollTo({ top: 0, behavior: document.startViewTransition ? 'instant' : 'auto' });
 
                         // Update active states
                         updateActiveLinks(href);

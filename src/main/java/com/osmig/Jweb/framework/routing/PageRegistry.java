@@ -4,15 +4,20 @@ import com.osmig.Jweb.framework.template.Template;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
- * Registry for page routes.
+ * Registry for page routes with O(1) lookup.
  */
 public class PageRegistry {
 
     private final List<PageRoute> routes = new ArrayList<>();
+    // O(1) lookup index for exact path matches
+    private final Map<String, PageRoute> routeIndex = new HashMap<>();
     private Class<? extends Template> defaultLayout;
 
     /**
@@ -47,7 +52,8 @@ public class PageRegistry {
             } else if (pageArg instanceof Supplier<?> supplier) {
                 @SuppressWarnings("unchecked")
                 Supplier<? extends Template> pageSupplier = (Supplier<? extends Template>) supplier;
-                routes.add(new PageRoute(path, extractTitle(path), pageSupplier, defaultLayout));
+                PageRoute route = new PageRoute(path, extractTitle(path), pageSupplier, defaultLayout);
+                addRoute(route);
             }
         }
     }
@@ -67,7 +73,23 @@ public class PageRegistry {
             }
         };
 
-        routes.add(new PageRoute(path, title, supplier, defaultLayout));
+        PageRoute route = new PageRoute(path, title, supplier, defaultLayout);
+        addRoute(route);
+    }
+
+    private void addRoute(PageRoute route) {
+        routes.add(route);
+        routeIndex.put(route.path(), route);
+    }
+
+    /**
+     * Finds a route by exact path match in O(1) time.
+     *
+     * @param path the path to match
+     * @return the matching route, or empty if not found
+     */
+    public Optional<PageRoute> findByPath(String path) {
+        return Optional.ofNullable(routeIndex.get(path));
     }
 
     private String extractTitle(String path) {
@@ -86,5 +108,6 @@ public class PageRegistry {
 
     public void clear() {
         routes.clear();
+        routeIndex.clear();
     }
 }

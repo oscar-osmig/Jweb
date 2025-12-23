@@ -8,62 +8,52 @@ public final class ExamplesSection {
 
     public static Element render() {
         return section(
-            title("Examples"),
-            text("Complete examples showing JWeb in action."),
+            docTitle("Examples"),
+            para("Complete examples showing JWeb patterns."),
 
-            subtitle("Todo App"),
-            code("""
-                public class TodoApp implements Template {
-                    private final State<List<String>> todos = useState(new ArrayList<>());
-                    private final State<String> input = useState("");
+            docSubtitle("Counter"),
+            codeBlock("""
+State<Integer> count = useState(0);
 
-                    public Element render() {
-                        return div(attrs().style().maxWidth(px(400)).margin(zero, auto).done(),
-                            h1("Todo List"),
-                            form(attrs().onSubmit(e -> {
-                                    e.preventDefault();
-                                    if (!input.get().isBlank()) {
-                                        todos.update(list -> {
-                                            list.add(input.get());
-                                            return list;
-                                        });
-                                        input.set("");
-                                    }
-                                }),
-                                input(attrs()
-                                    .type("text")
-                                    .value(input.get())
-                                    .onInput(e -> input.set(e.value()))),
-                                button(type("submit"), "Add")
-                            ),
-                            ul(each(todos.get(), todo -> li(todo)))
-                        );
-                    }
-                }"""),
+div(
+    h1("Count: " + count.get()),
+    button(attrs().onClick(e -> count.update(c -> c + 1)), "+"),
+    button(attrs().onClick(e -> count.update(c -> c - 1)), "-")
+)"""),
 
-            subtitle("User Card"),
-            code("""
-                public class UserCard implements Template {
-                    private final User user;
+            docSubtitle("User Card"),
+            codeBlock("""
+public class UserCard implements Template {
+    private final User user;
 
-                    public UserCard(User user) { this.user = user; }
+    public UserCard(User user) { this.user = user; }
 
-                    public Element render() {
-                        return div(attrs().style()
-                                .padding(rem(1.5))
-                                .backgroundColor(white)
-                                .borderRadius(px(8))
-                                .boxShadow(px(0), px(2), px(8), rgba(0,0,0,0.1)).done(),
-                            h3(user.getName()),
-                            p(user.getEmail()),
-                            when(user.isAdmin(), span(attrs().style()
-                                .backgroundColor(hex("#22c55e"))
-                                .color(white)
-                                .padding(px(2), px(8))
-                                .borderRadius(px(4)).done(), "Admin"))
-                        );
-                    }
-                }""")
+    public Element render() {
+        return div(attrs().style()
+                .padding(rem(1)).backgroundColor(white)
+                .borderRadius(px(8)).boxShadow(px(0), px(2), px(8), rgba(0,0,0,0.1)).done(),
+            h3(user.getName()),
+            p(user.getEmail()),
+            when(user.isAdmin(), () -> badge("Admin"))
+        );
+    }
+}"""),
+
+            docSubtitle("Data Table"),
+            codeBlock("""
+table(
+    thead(tr(th("Name"), th("Email"), th("Actions"))),
+    tbody(each(users, user -> tr(
+        td(user.getName()),
+        td(user.getEmail()),
+        td(
+            button(attrs().onClick("edit(" + user.getId() + ")"), "Edit"),
+            button(attrs().onClick("delete(" + user.getId() + ")"), "Delete")
+        )
+    )))
+)"""),
+
+            docTip("See more examples at github.com/osmig/jweb-examples")
         );
     }
 }

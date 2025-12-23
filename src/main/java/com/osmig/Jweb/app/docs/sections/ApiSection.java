@@ -2,36 +2,56 @@ package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
-import static com.osmig.Jweb.app.docs.DocExamples.*;
 
 public final class ApiSection {
     private ApiSection() {}
 
     public static Element render() {
         return section(
-            title("REST API"),
-            text("JWeb provides simplified REST API annotations that work alongside " +
-                 "Spring's built-in REST support. Use @REST to mark a controller, " +
-                 "and @GET, @POST, @PUT, @DEL, @PATCH for endpoints."),
+            docTitle("REST API"),
+            para("Build JSON APIs with simplified annotations."),
 
-            subtitle("Basic API Controller"),
-            code(API_CONTROLLER),
+            docSubtitle("Basic Controller"),
+            codeBlock("""
+@REST("/api/users")
+public class UserApi {
 
-            subtitle("Simplified Annotations"),
-            text("JWeb's REST annotations reduce boilerplate compared to standard Spring:"),
-            code(API_ANNOTATIONS),
+    @GET
+    public List<User> list() {
+        return userService.findAll();
+    }
 
-            subtitle("Returning JSON"),
-            text("Return any object and it will be serialized to JSON automatically:"),
-            code(API_JSON_RESPONSE),
+    @GET("/:id")
+    public User get(@Path("id") Long id) {
+        return userService.findById(id);
+    }
 
-            subtitle("Request Body & Path Variables"),
-            code(API_REQUEST_BODY),
+    @POST
+    public User create(@Body User user) {
+        return userService.save(user);
+    }
+}"""),
 
-            subtitle("OpenAPI Documentation"),
-            text("JWeb auto-generates OpenAPI/Swagger documentation. Access it at /api-docs " +
-                 "when enabled in application.yaml:"),
-            code(API_OPENAPI_CONFIG)
+            docSubtitle("Annotations"),
+            codeBlock("""
+@REST("/api")    // Base path for controller
+@GET             // GET request
+@POST            // POST request
+@PUT             // PUT request
+@DEL             // DELETE request
+@Path("id")      // Path parameter
+@Body            // Request body (JSON)
+@Query("q")      // Query parameter"""),
+
+            docSubtitle("Response Types"),
+            codeBlock("""
+@GET("/users")
+public List<User> users() { ... }  // Auto-JSON
+
+@GET("/download")
+public ResponseEntity<byte[]> file() { ... }"""),
+
+            docTip("API docs auto-generated at /api/docs when openapi.enabled=true")
         );
     }
 }

@@ -8,7 +8,11 @@ import com.osmig.Jweb.framework.vdom.VText;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -59,11 +63,15 @@ import java.util.function.Supplier;
  */
 public class Suspense<T> implements Element {
 
+    // Shared executor for non-blocking suspense - virtual threads for efficiency
+    private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
+
     private final Callable<T> dataLoader;
     private Supplier<Element> loadingElement;
     private Function<Throwable, Element> errorElement;
     private Function<T, Element> contentRenderer;
     private long timeoutMs = 30000; // 30 second default
+    private long nonBlockingTimeoutMs = 0; // 0 means blocking mode (default)
 
     private Suspense(Callable<T> dataLoader) {
         this.dataLoader = dataLoader;
@@ -174,6 +182,40 @@ public class Suspense<T> implements Element {
     }
 
     /**
+     * Enables non-blocking mode: if data isn't ready within the specified time,
+     * immediately render the loading state instead of blocking the entire page.
+     *
+     * <p>This is useful for slow data sources that shouldn't block the initial page render.
+     * The page will render quickly with loading states, improving perceived performance.</p>
+     *
+     * <p>Example:</p>
+     * <pre>{@code
+     * Suspense.of(() -> slowService.getData())
+     *     .nonBlocking(100, TimeUnit.MILLISECONDS)  // Wait max 100ms
+     *     .loading(() -> spinner("Loading..."))
+     *     .render(data -> displayData(data))
+     * }</pre>
+     *
+     * @param duration max time to wait before showing loading state
+     * @param unit the time unit
+     * @return this builder
+     */
+    public Suspense<T> nonBlocking(long duration, TimeUnit unit) {
+        this.nonBlockingTimeoutMs = unit.toMillis(duration);
+        return this;
+    }
+
+    /**
+     * Shorthand for nonBlocking(50, TimeUnit.MILLISECONDS).
+     * Shows loading state if data isn't ready within 50ms.
+     *
+     * @return this builder
+     */
+    public Suspense<T> nonBlocking() {
+        return nonBlocking(50, TimeUnit.MILLISECONDS);
+    }
+
+    /**
      * Sets the content renderer and completes the Suspense.
      *
      * @param renderer function that receives the loaded data and returns an element
@@ -187,8 +229,23 @@ public class Suspense<T> implements Element {
     @Override
     public VNode toVNode() {
         try {
-            // For server-side rendering, we block and wait for data
-            T data = dataLoader.call();
+            T data;
+
+            if (nonBlockingTimeoutMs > 0) {
+                // Non-blocking mode: try to get data within timeout, show loading if not ready
+                Future<T> future = EXECUTOR.submit(dataLoader);
+                try {
+                    data = future.get(nonBlockingTimeoutMs, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    // Data not ready in time - render loading state immediately
+                    // This prevents slow data sources from blocking the entire page
+                    future.cancel(false); // Don't interrupt, let it complete in background
+                    return loadingElement.get().toVNode();
+                }
+            } else {
+                // Blocking mode (default): wait for data
+                data = dataLoader.call();
+            }
 
             if (contentRenderer != null) {
                 return contentRenderer.apply(data).toVNode();
@@ -263,6 +320,56 @@ public class Suspense<T> implements Element {
         return Suspense.of(loader)
             .loading(() -> new VFragment(List.of()))
             .error(e -> () -> new VFragment(List.of()))
+            .render(content);
+    }
+
+    /**
+     * Non-blocking suspense that shows loading state if data isn't ready within 50ms.
+     * Prevents slow data sources from blocking page render.
+     *
+     * <p>Usage:</p>
+     * <pre>{@code
+     * suspendFast(
+     *     () -> slowApi.getUsers(),
+     *     spinner(),
+     *     users -> userList(users)
+     * )
+     * }</pre>
+     *
+     * @param loader the data loader
+     * @param loading the loading element shown if data isn't ready in time
+     * @param content the content renderer
+     * @param <T> the data type
+     * @return the rendered element
+     */
+    public static <T> Element suspendFast(
+            Supplier<T> loader,
+            Element loading,
+            Function<T, Element> content) {
+        return Suspense.of(loader)
+            .nonBlocking()
+            .loading(loading)
+            .render(content);
+    }
+
+    /**
+     * Non-blocking suspense with custom timeout.
+     *
+     * @param loader the data loader
+     * @param loading the loading element
+     * @param timeoutMs max milliseconds to wait before showing loading state
+     * @param content the content renderer
+     * @param <T> the data type
+     * @return the rendered element
+     */
+    public static <T> Element suspendFast(
+            Supplier<T> loader,
+            Element loading,
+            long timeoutMs,
+            Function<T, Element> content) {
+        return Suspense.of(loader)
+            .nonBlocking(timeoutMs, TimeUnit.MILLISECONDS)
+            .loading(loading)
             .render(content);
     }
 }

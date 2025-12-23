@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.conditionals.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ConditionalsSection {
@@ -8,51 +9,28 @@ public final class ConditionalsSection {
 
     public static Element render() {
         return section(
-            title("Conditionals"),
-            text("Control flow for conditional rendering."),
+            docTitle("Conditionals"),
+            para("JWeb provides fluent conditional rendering utilities. " +
+                 "Control what renders based on conditions, iterate over collections, " +
+                 "and handle multiple cases cleanly."),
 
-            subtitle("Simple Conditional"),
-            code("""
-                // Show element only if condition is true
-                when(isLoggedIn, span("Welcome back!"))
+            docSubtitle("Overview"),
+            para("Use when() for optional content, cond() for either/or choices, " +
+                 "and each() for list iteration."),
+            codeBlock("""
+// Show if true
+when(condition, () -> element())
 
-                // With lazy evaluation
-                when(isLoggedIn, () -> expensiveComponent())"""),
+// Either/or
+cond(condition, trueElement(), falseElement())
 
-            subtitle("If / Elif / Else Chain"),
-            code("""
-                when(isAdmin)
-                    .then(adminPanel())
-                    .elif(isModerator, modPanel())
-                    .elif(isUser, userPanel())
-                    .otherwise(loginPrompt())
+// Iterate
+each(list, item -> renderItem(item))"""),
 
-                // Without else (renders nothing if no match)
-                when(isPremium)
-                    .then(premiumBadge())
-                    .elif(isTrial, trialBadge())
-                    .end()"""),
-
-            subtitle("Pattern Matching Style"),
-            code("""
-                match(
-                    cond(isAdmin, adminPanel()),
-                    cond(isModerator, modPanel()),
-                    cond(isUser, userPanel()),
-                    otherwise(loginPrompt())
-                )"""),
-
-            subtitle("List Iteration"),
-            code("""
-                List<String> items = List.of("Apple", "Banana", "Cherry");
-
-                ul(each(items, item -> li(item)))
-
-                // With index
-                ul(each(users, user ->
-                    li(span(user.getName()),
-                       when(user.isAdmin(), span(" (Admin)")))
-                ))""")
+            CondWhen.render(),
+            CondTernary.render(),
+            CondChain.render(),
+            CondIteration.render()
         );
     }
 }

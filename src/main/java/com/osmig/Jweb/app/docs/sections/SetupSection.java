@@ -8,42 +8,47 @@ public final class SetupSection {
 
     public static Element render() {
         return section(
-            title("Getting Started"),
-            text("JWeb is built on Spring Boot. Create a new project with Spring Initializr " +
-                 "or add JWeb to an existing Spring Boot project."),
+            docTitle("Getting Started"),
+            para("JWeb is built on Spring Boot. Get started by cloning the repository."),
 
-            subtitle("Project Structure"),
-            code("""
-src/main/java/com/yourapp/
-├── App.java          # @SpringBootApplication entry
-├── Routes.java       # URL to handler mappings
-├── layout/           # Shared layout components
-│   ├── Layout.java   # HTML wrapper (head, body)
-│   ├── Nav.java      # Navigation bar
-│   └── Theme.java    # Colors, spacing, typography
-└── pages/            # Page components
-    ├── HomePage.java
-    └── AboutPage.java"""),
+            docSubtitle("Coming Soon"),
+            docTip("We are working to find the best way to make JWeb available for everyone. " +
+                   "For now, we will keep you updated."),
+            codeBlock("""
+                     // please reach out to us if you'd like to try JWeb in its early stage
+                     """),
 
-            subtitle("Required Imports"),
-            text("Add these static imports to use JWeb's DSL:"),
-            code("""
-import static com.osmig.Jweb.framework.elements.Elements.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
+            docSubtitle("Required Imports"),
+            codeBlock("""
+                    import static com.osmig.Jweb.framework.elements.Elements.*;
+                    import static com.osmig.Jweb.framework.styles.CSS.*;
+                    import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+                    import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
 
-            subtitle("Your First Route"),
-            code("""
-@Component
-public class Routes implements JWebRoutes {
-    public void configure(JWeb app) {
-        app.get("/", () -> h1("Hello World"));
-    }
-}"""),
+            docSubtitle("Configure Routes"),
+            codeBlock("""
+                    @Component
+                    public class Routes implements JWebRoutes {
+                        public void configure(JWeb app) {
+                            app.pages(
+                                "/", HomePage.class,
+                                "/about", AboutPage.class
+                            );
+                        }
+                    }"""),
 
-            subtitle("Run the App"),
-            code("mvn spring-boot:run\n# Visit http://localhost:8080")
+            docSubtitle("Create a Page"),
+            codeBlock("""
+                        public class HomePage implements Template {
+                            public Element render() {
+                                return main(
+                                    h1("Welcome"),
+                                    p("Your first JWeb page!")
+                                );
+                            }
+                        }"""),
+
+            docTip("Run with: mvn spring-boot:run, then visit http://localhost:8080")
         );
     }
 }

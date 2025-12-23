@@ -8,6 +8,9 @@ import org.springframework.http.ResponseEntity;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
@@ -304,22 +307,21 @@ public final class RateLimit {
             return path.equals(pattern);
         }
 
+        // Shared scheduler for all rate limiters - non-blocking
+        private static final ScheduledExecutorService CLEANUP_SCHEDULER =
+                Executors.newSingleThreadScheduledExecutor(r -> {
+                    Thread t = new Thread(r, "RateLimit-Cleanup");
+                    t.setDaemon(true);
+                    return t;
+                });
+
         private static void scheduleCleanup(Map<String, RateLimitEntry> limits, long windowMs) {
-            Thread cleanupThread = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        Thread.sleep(Math.min(windowMs, 60000)); // Cleanup every minute or window size
-                        long now = System.currentTimeMillis();
-                        limits.entrySet().removeIf(e -> now - e.getValue().windowStart > windowMs * 2);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-            });
-            cleanupThread.setDaemon(true);
-            cleanupThread.setName("rate-limit-cleanup");
-            cleanupThread.start();
+            // Non-blocking scheduled cleanup (replaces Thread.sleep)
+            long intervalMs = Math.min(windowMs, 60000);
+            CLEANUP_SCHEDULER.scheduleAtFixedRate(() -> {
+                long now = System.currentTimeMillis();
+                limits.entrySet().removeIf(e -> now - e.getValue().windowStart > windowMs * 2);
+            }, intervalMs, intervalMs, TimeUnit.MILLISECONDS);
         }
     }
 

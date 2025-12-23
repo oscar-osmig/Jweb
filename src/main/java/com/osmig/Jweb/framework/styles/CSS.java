@@ -292,6 +292,113 @@ public final class CSS {
         /** Appends :where() with a raw selector string. */
         public Selector where(String selector) { sb.append(":where(").append(selector).append(")"); return this; }
 
+        /** Appends :nth-last-child() pseudo-class. */
+        public Selector nthLastChild(int n) { sb.append(":nth-last-child(").append(n).append(")"); return this; }
+
+        /** Appends :nth-last-child() with pattern. */
+        public Selector nthLastChild(String pattern) { sb.append(":nth-last-child(").append(pattern).append(")"); return this; }
+
+        /** Appends :nth-of-type() pseudo-class. */
+        public Selector nthOfType(int n) { sb.append(":nth-of-type(").append(n).append(")"); return this; }
+
+        /** Appends :nth-of-type() with pattern. */
+        public Selector nthOfType(String pattern) { sb.append(":nth-of-type(").append(pattern).append(")"); return this; }
+
+        /** Appends :nth-last-of-type() pseudo-class. */
+        public Selector nthLastOfType(int n) { sb.append(":nth-last-of-type(").append(n).append(")"); return this; }
+
+        /** Appends :nth-last-of-type() with pattern. */
+        public Selector nthLastOfType(String pattern) { sb.append(":nth-last-of-type(").append(pattern).append(")"); return this; }
+
+        /** Appends :first-of-type pseudo-class. */
+        public Selector firstOfType() { return pseudo("first-of-type"); }
+
+        /** Appends :last-of-type pseudo-class. */
+        public Selector lastOfType() { return pseudo("last-of-type"); }
+
+        /** Appends :only-child pseudo-class. */
+        public Selector onlyChild() { return pseudo("only-child"); }
+
+        /** Appends :only-of-type pseudo-class. */
+        public Selector onlyOfType() { return pseudo("only-of-type"); }
+
+        /** Appends :root pseudo-class (html element). */
+        public Selector root() { return pseudo("root"); }
+
+        /** Appends :target pseudo-class (URL fragment target). */
+        public Selector target() { return pseudo("target"); }
+
+        /** Appends :any-link pseudo-class (any link). */
+        public Selector anyLink() { return pseudo("any-link"); }
+
+        /** Appends :link pseudo-class (unvisited links). */
+        public Selector link() { return pseudo("link"); }
+
+        /** Appends :lang() pseudo-class. @param lang the language code */
+        public Selector lang(String lang) { sb.append(":lang(").append(lang).append(")"); return this; }
+
+        // Form-related pseudo-classes
+        /** Appends :required pseudo-class. */
+        public Selector required() { return pseudo("required"); }
+
+        /** Appends :optional pseudo-class. */
+        public Selector optional() { return pseudo("optional"); }
+
+        /** Appends :valid pseudo-class. */
+        public Selector valid() { return pseudo("valid"); }
+
+        /** Appends :invalid pseudo-class. */
+        public Selector invalid() { return pseudo("invalid"); }
+
+        /** Appends :in-range pseudo-class. */
+        public Selector inRange() { return pseudo("in-range"); }
+
+        /** Appends :out-of-range pseudo-class. */
+        public Selector outOfRange() { return pseudo("out-of-range"); }
+
+        /** Appends :read-only pseudo-class. */
+        public Selector readOnly() { return pseudo("read-only"); }
+
+        /** Appends :read-write pseudo-class. */
+        public Selector readWrite() { return pseudo("read-write"); }
+
+        /** Appends :placeholder-shown pseudo-class. */
+        public Selector placeholderShown() { return pseudo("placeholder-shown"); }
+
+        /** Appends :default pseudo-class (default form element). */
+        public Selector default_() { return pseudo("default"); }
+
+        /** Appends :indeterminate pseudo-class. */
+        public Selector indeterminate() { return pseudo("indeterminate"); }
+
+        /** Appends :autofill pseudo-class. */
+        public Selector autofill() { return pseudo("autofill"); }
+
+        // State pseudo-classes
+        /** Appends :fullscreen pseudo-class. */
+        public Selector fullscreen() { return pseudo("fullscreen"); }
+
+        /** Appends :modal pseudo-class. */
+        public Selector modal() { return pseudo("modal"); }
+
+        /** Appends :picture-in-picture pseudo-class. */
+        public Selector pictureInPicture() { return pseudo("picture-in-picture"); }
+
+        /** Appends :paused pseudo-class (media paused). */
+        public Selector paused() { return pseudo("paused"); }
+
+        /** Appends :playing pseudo-class (media playing). */
+        public Selector playing() { return pseudo("playing"); }
+
+        /** Appends :current pseudo-class. */
+        public Selector current() { return pseudo("current"); }
+
+        /** Appends :past pseudo-class. */
+        public Selector past() { return pseudo("past"); }
+
+        /** Appends :future pseudo-class. */
+        public Selector future() { return pseudo("future"); }
+
         // ========== Pseudo-elements ==========
 
         /** Appends a pseudo-element. @param name the pseudo-element name */
@@ -314,6 +421,39 @@ public final class CSS {
 
         /** Appends ::first-letter pseudo-element. */
         public Selector firstLetter() { return pseudoEl("first-letter"); }
+
+        /** Appends ::marker pseudo-element (list marker). */
+        public Selector marker() { return pseudoEl("marker"); }
+
+        /** Appends ::backdrop pseudo-element (fullscreen/dialog). */
+        public Selector backdrop() { return pseudoEl("backdrop"); }
+
+        /** Appends ::cue pseudo-element (WebVTT captions). */
+        public Selector cue() { return pseudoEl("cue"); }
+
+        /** Appends ::cue() with selector. */
+        public Selector cue(String selector) { sb.append("::cue(").append(selector).append(")"); return this; }
+
+        /** Appends ::file-selector-button pseudo-element. */
+        public Selector fileSelectorButton() { return pseudoEl("file-selector-button"); }
+
+        /** Appends ::slotted() pseudo-element for shadow DOM. */
+        public Selector slotted(String selector) { sb.append("::slotted(").append(selector).append(")"); return this; }
+
+        /** Appends ::part() pseudo-element for shadow DOM parts. */
+        public Selector part(String name) { sb.append("::part(").append(name).append(")"); return this; }
+
+        /** Appends ::highlight() pseudo-element. */
+        public Selector highlight(String name) { sb.append("::highlight(").append(name).append(")"); return this; }
+
+        /** Appends ::spelling-error pseudo-element. */
+        public Selector spellingError() { return pseudoEl("spelling-error"); }
+
+        /** Appends ::grammar-error pseudo-element. */
+        public Selector grammarError() { return pseudoEl("grammar-error"); }
+
+        /** Appends ::target-text pseudo-element. */
+        public Selector targetText() { return pseudoEl("target-text"); }
 
         // ========== Attribute Selectors ==========
 
@@ -941,6 +1081,274 @@ public final class CSS {
     public static final CSSValue exact = () -> "exact";
     /** Print-color-adjust: economy - reduces ink usage. */
     public static final CSSValue economy = () -> "economy";
+
+    // ========== Float & Clear Values ==========
+    // Use with: style().float_(left), style().clear(both)
+
+    /** Float: inline-start - float to start of text direction. */
+    public static final CSSValue inlineStart = () -> "inline-start";
+    /** Float: inline-end - float to end of text direction. */
+    public static final CSSValue inlineEnd = () -> "inline-end";
+
+    // ========== Text Decoration Style Values ==========
+    // Use with: style().textDecorationStyle(wavy)
+
+    /** Text-decoration-style: wavy - wavy line. */
+    public static final CSSValue wavy = () -> "wavy";
+
+    // ========== Writing Mode Values ==========
+    // Use with: style().writingMode(verticalRl)
+
+    /** Writing-mode: horizontal-tb - horizontal, top-to-bottom (default). */
+    public static final CSSValue horizontalTb = () -> "horizontal-tb";
+    /** Writing-mode: vertical-rl - vertical, right-to-left. */
+    public static final CSSValue verticalRl = () -> "vertical-rl";
+    /** Writing-mode: vertical-lr - vertical, left-to-right. */
+    public static final CSSValue verticalLr = () -> "vertical-lr";
+    /** Writing-mode: sideways-rl - characters rotated 90deg clockwise. */
+    public static final CSSValue sidewaysRl = () -> "sideways-rl";
+    /** Writing-mode: sideways-lr - characters rotated 90deg counter-clockwise. */
+    public static final CSSValue sidewaysLr = () -> "sideways-lr";
+
+    // ========== Direction Values ==========
+    // Use with: style().direction(ltr)
+
+    /** Direction: ltr - left-to-right. */
+    public static final CSSValue ltr = () -> "ltr";
+    /** Direction: rtl - right-to-left. */
+    public static final CSSValue rtl = () -> "rtl";
+
+    // ========== Text Orientation Values ==========
+    // Use with: style().textOrientation(upright)
+
+    /** Text-orientation: mixed - default, rotates horizontal scripts. */
+    public static final CSSValue mixed = () -> "mixed";
+    /** Text-orientation: upright - characters upright. */
+    public static final CSSValue upright = () -> "upright";
+    /** Text-orientation: sideways - characters rotated 90 degrees. */
+    public static final CSSValue sideways = () -> "sideways";
+
+    // ========== Unicode Bidi Values ==========
+    // Use with: style().unicodeBidi(embed)
+
+    /** Unicode-bidi: embed. */
+    public static final CSSValue embed = () -> "embed";
+    /** Unicode-bidi: isolate. */
+    public static final CSSValue isolateUni = () -> "isolate";
+    /** Unicode-bidi: bidi-override. */
+    public static final CSSValue bidiOverride = () -> "bidi-override";
+    /** Unicode-bidi: isolate-override. */
+    public static final CSSValue isolateOverride = () -> "isolate-override";
+    /** Unicode-bidi: plaintext. */
+    public static final CSSValue plaintext = () -> "plaintext";
+
+    // ========== Blend Mode Values ==========
+    // Use with: style().mixBlendMode(multiply)
+
+    /** Blend-mode: multiply. */
+    public static final CSSValue multiply = () -> "multiply";
+    /** Blend-mode: screen. */
+    public static final CSSValue screen = () -> "screen";
+    /** Blend-mode: overlay. */
+    public static final CSSValue overlay = () -> "overlay";
+    /** Blend-mode: darken. */
+    public static final CSSValue darken = () -> "darken";
+    /** Blend-mode: lighten. */
+    public static final CSSValue lighten = () -> "lighten";
+    /** Blend-mode: color-dodge. */
+    public static final CSSValue colorDodge = () -> "color-dodge";
+    /** Blend-mode: color-burn. */
+    public static final CSSValue colorBurn = () -> "color-burn";
+    /** Blend-mode: hard-light. */
+    public static final CSSValue hardLight = () -> "hard-light";
+    /** Blend-mode: soft-light. */
+    public static final CSSValue softLight = () -> "soft-light";
+    /** Blend-mode: difference. */
+    public static final CSSValue difference = () -> "difference";
+    /** Blend-mode: exclusion. */
+    public static final CSSValue exclusion = () -> "exclusion";
+    /** Blend-mode: hue. */
+    public static final CSSValue hueBlend = () -> "hue";
+    /** Blend-mode: saturation. */
+    public static final CSSValue saturationBlend = () -> "saturation";
+    /** Blend-mode: color. */
+    public static final CSSValue colorBlend = () -> "color";
+    /** Blend-mode: luminosity. */
+    public static final CSSValue luminosity = () -> "luminosity";
+
+    // ========== Isolation Values ==========
+    /** Isolation: isolate - creates new stacking context. */
+    public static final CSSValue isolateStack = () -> "isolate";
+
+    // ========== Containment Values ==========
+    // Use with: style().contain(strict)
+
+    /** Contain: strict. */
+    public static final CSSValue strict = () -> "strict";
+    /** Contain: content. */
+    public static final CSSValue contentContain = () -> "content";
+    /** Contain: layout. */
+    public static final CSSValue layoutContain = () -> "layout";
+    /** Contain: style. */
+    public static final CSSValue styleContain = () -> "style";
+    /** Contain: paint. */
+    public static final CSSValue paintContain = () -> "paint";
+    /** Contain: size. */
+    public static final CSSValue sizeContain = () -> "size";
+    /** Contain: inline-size. */
+    public static final CSSValue inlineSizeContain = () -> "inline-size";
+
+    // ========== Page Break / Break Values ==========
+    // Use with: style().breakBefore(always)
+
+    /** Break: always. */
+    public static final CSSValue always = () -> "always";
+    /** Break: avoid. */
+    public static final CSSValue avoid = () -> "avoid";
+    /** Break: page. */
+    public static final CSSValue page = () -> "page";
+    /** Break: column. */
+    public static final CSSValue columnBreak = () -> "column";
+    /** Break: avoid-page. */
+    public static final CSSValue avoidPage = () -> "avoid-page";
+    /** Break: avoid-column. */
+    public static final CSSValue avoidColumn = () -> "avoid-column";
+
+    // ========== Column Values ==========
+
+    /** Column-span: all. */
+    public static final CSSValue columnSpanAll = () -> "all";
+    /** Column-fill: balance. */
+    public static final CSSValue columnBalance = () -> "balance";
+    /** Column-fill: balance-all. */
+    public static final CSSValue columnBalanceAll = () -> "balance-all";
+
+    // ========== Hyphens Values ==========
+
+    /** Hyphens: manual. */
+    public static final CSSValue hyphensManual = () -> "manual";
+    /** Hyphens: auto. */
+    public static final CSSValue hyphensAuto = () -> "auto";
+
+    // ========== Font Stretch Values ==========
+
+    /** Font-stretch: ultra-condensed. */
+    public static final CSSValue ultraCondensed = () -> "ultra-condensed";
+    /** Font-stretch: extra-condensed. */
+    public static final CSSValue extraCondensed = () -> "extra-condensed";
+    /** Font-stretch: condensed. */
+    public static final CSSValue condensed = () -> "condensed";
+    /** Font-stretch: semi-condensed. */
+    public static final CSSValue semiCondensed = () -> "semi-condensed";
+    /** Font-stretch: semi-expanded. */
+    public static final CSSValue semiExpanded = () -> "semi-expanded";
+    /** Font-stretch: expanded. */
+    public static final CSSValue expanded = () -> "expanded";
+    /** Font-stretch: extra-expanded. */
+    public static final CSSValue extraExpanded = () -> "extra-expanded";
+    /** Font-stretch: ultra-expanded. */
+    public static final CSSValue ultraExpanded = () -> "ultra-expanded";
+
+    // ========== Font Variant Caps Values ==========
+
+    /** Font-variant-caps: small-caps. */
+    public static final CSSValue smallCaps = () -> "small-caps";
+    /** Font-variant-caps: all-small-caps. */
+    public static final CSSValue allSmallCaps = () -> "all-small-caps";
+    /** Font-variant-caps: petite-caps. */
+    public static final CSSValue petiteCaps = () -> "petite-caps";
+    /** Font-variant-caps: all-petite-caps. */
+    public static final CSSValue allPetiteCaps = () -> "all-petite-caps";
+    /** Font-variant-caps: unicase. */
+    public static final CSSValue unicase = () -> "unicase";
+    /** Font-variant-caps: titling-caps. */
+    public static final CSSValue titlingCaps = () -> "titling-caps";
+
+    // ========== Font Variant Numeric Values ==========
+
+    /** Font-variant-numeric: lining-nums. */
+    public static final CSSValue liningNums = () -> "lining-nums";
+    /** Font-variant-numeric: oldstyle-nums. */
+    public static final CSSValue oldstyleNums = () -> "oldstyle-nums";
+    /** Font-variant-numeric: proportional-nums. */
+    public static final CSSValue proportionalNums = () -> "proportional-nums";
+    /** Font-variant-numeric: tabular-nums. */
+    public static final CSSValue tabularNums = () -> "tabular-nums";
+    /** Font-variant-numeric: diagonal-fractions. */
+    public static final CSSValue diagonalFractions = () -> "diagonal-fractions";
+    /** Font-variant-numeric: stacked-fractions. */
+    public static final CSSValue stackedFractions = () -> "stacked-fractions";
+    /** Font-variant-numeric: ordinal. */
+    public static final CSSValue ordinal = () -> "ordinal";
+    /** Font-variant-numeric: slashed-zero. */
+    public static final CSSValue slashedZero = () -> "slashed-zero";
+
+    // ========== Touch Action Values ==========
+
+    /** Touch-action: manipulation. */
+    public static final CSSValue manipulation = () -> "manipulation";
+    /** Touch-action: pan-x. */
+    public static final CSSValue panX = () -> "pan-x";
+    /** Touch-action: pan-y. */
+    public static final CSSValue panY = () -> "pan-y";
+    /** Touch-action: pinch-zoom. */
+    public static final CSSValue pinchZoom = () -> "pinch-zoom";
+
+    // ========== Image Rendering Values ==========
+
+    /** Image-rendering: crisp-edges. */
+    public static final CSSValue crispEdges = () -> "crisp-edges";
+    /** Image-rendering: pixelated. */
+    public static final CSSValue pixelated = () -> "pixelated";
+
+    // ========== Mask Composite Values ==========
+
+    /** Mask-composite: add. */
+    public static final CSSValue maskAdd = () -> "add";
+    /** Mask-composite: subtract. */
+    public static final CSSValue maskSubtract = () -> "subtract";
+    /** Mask-composite: intersect. */
+    public static final CSSValue maskIntersect = () -> "intersect";
+    /** Mask-composite: exclude. */
+    public static final CSSValue maskExclude = () -> "exclude";
+
+    // ========== Mask Mode Values ==========
+
+    /** Mask-mode: alpha. */
+    public static final CSSValue maskAlpha = () -> "alpha";
+    /** Mask-mode: luminance. */
+    public static final CSSValue maskLuminance = () -> "luminance";
+    /** Mask-mode: match-source. */
+    public static final CSSValue matchSource = () -> "match-source";
+
+    // ========== Additional Cursor Values ==========
+
+    /** Cursor: default. */
+    public static final CSSValue defaultCursor = () -> "default";
+    /** Cursor: context-menu. */
+    public static final CSSValue contextMenu = () -> "context-menu";
+    /** Cursor: progress. */
+    public static final CSSValue progress = () -> "progress";
+    /** Cursor: cell. */
+    public static final CSSValue cell = () -> "cell";
+    /** Cursor: vertical-text. */
+    public static final CSSValue verticalText = () -> "vertical-text";
+    /** Cursor: alias. */
+    public static final CSSValue alias = () -> "alias";
+    /** Cursor: copy. */
+    public static final CSSValue copyCursor = () -> "copy";
+    /** Cursor: no-drop. */
+    public static final CSSValue noDrop = () -> "no-drop";
+    /** Cursor: all-scroll. */
+    public static final CSSValue allScroll = () -> "all-scroll";
+    /** Cursor: col-resize. */
+    public static final CSSValue colResize = () -> "col-resize";
+    /** Cursor: row-resize. */
+    public static final CSSValue rowResize = () -> "row-resize";
+    /** Cursor: zoom-in. */
+    public static final CSSValue zoomIn = () -> "zoom-in";
+    /** Cursor: zoom-out. */
+    public static final CSSValue zoomOut = () -> "zoom-out";
 
     // ========== Scroll-Driven Animation Values ==========
     // Use with: style().animationTimeline(scrollAuto)

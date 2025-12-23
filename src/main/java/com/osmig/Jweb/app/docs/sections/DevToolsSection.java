@@ -2,41 +2,55 @@ package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
-import static com.osmig.Jweb.app.docs.DocExamples.*;
 
 public final class DevToolsSection {
     private DevToolsSection() {}
 
     public static Element render() {
         return section(
-            title("DevTools"),
-            text("JWeb includes development tools for faster iteration: " +
-                 "hot reload, file watching, and browser auto-refresh."),
+            docTitle("DevTools"),
+            para("Hot reload and browser auto-refresh for faster development."),
 
-            subtitle("Hot Reload Setup"),
-            text("Enable hot reload in application.yaml to auto-refresh your browser " +
-                 "when files change:"),
-            code(DEV_CONFIG),
+            docSubtitle("Enable Hot Reload"),
+            codeBlock("""
+# application.yaml
+jweb:
+  dev:
+    hot-reload: true
+    watch-paths:
+      - src/main/java
+      - src/main/resources"""),
 
-            subtitle("Adding to Layout"),
-            text("Add DevServer.script() to your layout for browser refresh:"),
-            code(DEV_LAYOUT),
+            docSubtitle("Add to Layout"),
+            codeBlock("""
+public Element render() {
+    return html(
+        head(...),
+        body(
+            content,
+            DevServer.script()  // Add this
+        )
+    );
+}"""),
 
-            subtitle("How It Works"),
-            list(
-                "DevServer watches src/main/java and src/main/resources",
-                "When files change, it notifies connected browsers via SSE",
-                "Spring Boot DevTools restarts the app automatically",
-                "Browser receives reload signal and refreshes"
+            docSubtitle("Spring DevTools"),
+            codeBlock("""
+<!-- pom.xml -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-devtools</artifactId>
+    <scope>runtime</scope>
+    <optional>true</optional>
+</dependency>"""),
+
+            docSubtitle("How It Works"),
+            docList(
+                "DevServer watches your source files",
+                "Spring DevTools restarts app on changes",
+                "Browser auto-refreshes via SSE connection"
             ),
 
-            subtitle("Spring Boot DevTools"),
-            text("For full hot reload (including Java class reloading), add DevTools:"),
-            code(DEV_DEVTOOLS_POM),
-
-            subtitle("IDE Configuration"),
-            text("Enable 'Build project automatically' in IntelliJ for seamless hot reload. " +
-                 "When you save a file, the app restarts and browser refreshes automatically.")
+            docTip("Enable 'Build automatically' in IntelliJ for seamless hot reload.")
         );
     }
 }

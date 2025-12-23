@@ -13,9 +13,12 @@ import com.osmig.Jweb.framework.state.StateManager;
 import com.osmig.Jweb.framework.template.Template;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -34,6 +37,17 @@ public class JWebController {
     private final Router router;
     private final MiddlewareStack middlewareStack;
     private final PageRegistry pageRegistry;
+
+    // Cache control for navigation responses (short cache for dynamic content)
+    private static final CacheControl NAVIGATION_CACHE = CacheControl
+            .maxAge(30, TimeUnit.SECONDS)
+            .mustRevalidate()
+            .cachePrivate();
+
+    // Cache control for prefetch responses (longer cache)
+    private static final CacheControl PREFETCH_CACHE = CacheControl
+            .maxAge(5, TimeUnit.MINUTES)
+            .cachePrivate();
 
     public JWebController(JWeb jweb) {
         this.router = jweb.getRouter();
@@ -81,6 +95,9 @@ public class JWebController {
             return processResult(result, context);
         } catch (Exception e) {
             return handleError(e);
+        } finally {
+            // Always clean up context to prevent memory leaks
+            context.clearContext();
         }
     }
 
@@ -171,12 +188,8 @@ public class JWebController {
     // ==================== Page Route Matching ====================
 
     private Optional<PageRoute> matchPageRoute(String path) {
-        for (PageRoute route : pageRegistry.getRoutes()) {
-            if (route.path().equals(path)) {
-                return Optional.of(route);
-            }
-        }
-        return Optional.empty();
+        // O(1) HashMap lookup instead of O(n) linear scan
+        return pageRegistry.findByPath(path);
     }
 
     private ResponseEntity<String> handlePageRoute(PageRoute route, HttpServletRequest servletRequest) {
@@ -196,11 +209,19 @@ public class JWebController {
             String hydrationScript = buildHydrationScript(context);
             html = injectHydrationData(html, hydrationScript);
 
+            // Check if this is a prefetch request (has X-Prefetch header)
+            boolean isPrefetch = "true".equals(servletRequest.getHeader("X-Prefetch"));
+            CacheControl cacheControl = isPrefetch ? PREFETCH_CACHE : NAVIGATION_CACHE;
+
             return ResponseEntity.ok()
+                .cacheControl(cacheControl)
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
         } catch (Exception e) {
             return handleError(e);
+        } finally {
+            // Always clean up context to prevent memory leaks
+            context.clearContext();
         }
     }
 

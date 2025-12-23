@@ -11,243 +11,243 @@ public final class DocExamples {
     // ==================== Intro Section ====================
 
     public static final String INTRO_PHILOSOPHY = """
-// A component in JWeb:
-div(class_("card"),
-    h1("Hello")
-)
-
-// Styling in JWeb:
-attrs().style()
-    .padding(rem(2))
-    .backgroundColor(hex("#f5f5f5"))
-.done()""";
+                    // A component in JWeb:
+                    div(class_("card"),
+                        h1("Hello")
+                    )
+                    
+                    // Styling in JWeb:
+                    attrs().style()
+                        .padding(rem(2))
+                        .backgroundColor(hex("#f5f5f5"))
+                    .done()""";
 
     // ==================== Setup Section ====================
 
     public static final String SETUP_PROJECT_STRUCTURE = """
-src/main/java/com/yourapp/
-├── App.java           # Spring Boot entry point
-├── Routes.java        # Route definitions
-├── layout/
-│   ├── Layout.java    # Main page layout
-│   ├── Nav.java       # Navigation component
-│   ├── Footer.java    # Footer component
-│   └── Theme.java     # Design tokens (colors, spacing)
-├── pages/
-│   ├── HomePage.java  # Home page
-│   └── AboutPage.java # About page
-└── partials/
-    └── Card.java      # Reusable card component""";
+                    src/main/java/com/yourapp/
+                    ├── App.java           # Spring Boot entry point
+                    ├── Routes.java        # Route definitions
+                    ├── layout/
+                    │   ├── Layout.java    # Main page layout
+                    │   ├── Nav.java       # Navigation component
+                    │   ├── Footer.java    # Footer component
+                    │   └── Theme.java     # Design tokens (colors, spacing)
+                    ├── pages/
+                    │   ├── HomePage.java  # Home page
+                    │   └── AboutPage.java # About page
+                    └── partials/
+                        └── Card.java      # Reusable card component""";
 
     public static final String SETUP_FIRST_ROUTE = """
-@Component
-public class Routes implements JWebRoutes {
-    @Override
-    public void configure(JWeb app) {
-        // Simple route returning an element
-        app.get("/", () -> h1("Hello World"));
-
-        // Route with a page component
-        app.get("/about", ctx ->
-            new Layout("About", new AboutPage().render()).render()
-        );
-    }
-}""";
+                    @Component
+                    public class Routes implements JWebRoutes {
+                        @Override
+                        public void configure(JWeb app) {
+                            // Simple route returning an element
+                            app.get("/", () -> h1("Hello World"));
+                    
+                            // Route with a page component
+                            app.get("/about", ctx ->
+                                new Layout("About", new AboutPage().render()).render()
+                            );
+                        }
+                    }""";
 
     public static final String SETUP_IMPORTS = """
-import static com.osmig.Jweb.framework.elements.Elements.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;""";
+                    import static com.osmig.Jweb.framework.elements.Elements.*;
+                    import static com.osmig.Jweb.framework.styles.CSS.*;
+                    import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+                    import static com.osmig.Jweb.framework.styles.CSSColors.*;""";
 
     public static final String SETUP_RUN = """
-mvn spring-boot:run
-
-# Or run the main class directly
-java -jar target/your-app.jar""";
+                    mvn spring-boot:run
+                    
+                    # Or run the main class directly
+                    java -jar target/your-app.jar""";
 
     // ==================== Routing Section ====================
 
     public static final String ROUTING_BASIC = """
-app.get("/", () -> h1("Home Page"));
-app.get("/about", () -> div(h1("About"), p("Learn more...")));
-app.post("/submit", req -> handleSubmit(req));
-app.put("/users/:id", req -> updateUser(req));
-app.delete("/users/:id", req -> deleteUser(req));""";
+                app.get("/", () -> h1("Home Page"));
+                app.get("/about", () -> div(h1("About"), p("Learn more...")));
+                app.post("/submit", req -> handleSubmit(req));
+                app.put("/users/:id", req -> updateUser(req));
+                app.delete("/users/:id", req -> deleteUser(req));""";
 
     public static final String ROUTING_PATH_PARAMS = """
-// Route: /users/:id
-app.get("/users/:id", req -> {
-    String userId = req.param("id");
-    return div(h1("User Profile: " + userId));
-});
-
-// Route: /posts/:category/:slug
-app.get("/posts/:category/:slug", req -> {
-    String category = req.param("category");
-    String slug = req.param("slug");
-    return article(h1(slug), span("Category: " + category));
-});""";
+                // Route: /users/:id
+                app.get("/users/:id", req -> {
+                    String userId = req.param("id");
+                    return div(h1("User Profile: " + userId));
+                });
+                
+                // Route: /posts/:category/:slug
+                app.get("/posts/:category/:slug", req -> {
+                    String category = req.param("category");
+                    String slug = req.param("slug");
+                    return article(h1(slug), span("Category: " + category));
+                });""";
 
     public static final String ROUTING_QUERY_PARAMS = """
-// URL: /search?q=java&page=2
-app.get("/search", req -> {
-    String query = req.query("q");
-    String page = req.query("page", "1"); // with default
-    return div(
-        h1("Search: " + query),
-        p("Page: " + page)
-    );
-});""";
+                // URL: /search?q=java&page=2
+                app.get("/search", req -> {
+                    String query = req.query("q");
+                    String page = req.query("page", "1"); // with default
+                    return div(
+                        h1("Search: " + query),
+                        p("Page: " + page)
+                    );
+                });""";
 
     public static final String ROUTING_REQUEST_BODY = """
-app.post("/login", req -> {
-    // Form data
-    String email = req.body("email");
-    String password = req.body("password");
-
-    // Or get all form data as a Map
-    Map<String, String> formData = req.formData();
-
-    return authenticate(email, password);
-});""";
+                app.post("/login", req -> {
+                    // Form data
+                    String email = req.body("email");
+                    String password = req.body("password");
+                
+                    // Or get all form data as a Map
+                    Map<String, String> formData = req.formData();
+                
+                    return authenticate(email, password);
+                });""";
 
     public static final String ROUTING_HANDLERS = """
-// Return an Element (rendered as HTML)
-app.get("/page", () -> div("Hello"));
-
-// Return a Template
-app.get("/home", () -> new HomePage());
-
-// Return a Response object for more control
-app.get("/api/data", req ->
-    Response.json(Map.of("status", "ok"))
-);
-
-// Redirect to another route
-app.get("/old-page", req ->
-    Response.redirect("/new-page")
-);""";
+                // Return an Element (rendered as HTML)
+                app.get("/page", () -> div("Hello"));
+                
+                // Return a Template
+                app.get("/home", () -> new HomePage());
+                
+                // Return a Response object for more control
+                app.get("/api/data", req ->
+                    Response.json(Map.of("status", "ok"))
+                );
+                
+                // Redirect to another route
+                app.get("/old-page", req ->
+                    Response.redirect("/new-page")
+                );""";
 
     public static final String ROUTING_LAYOUTS = """
-app.get("/about", ctx ->
-    new Layout("About Us", new AboutPage().render()).render()
-);
-
-// Or create a helper method:
-private Element withLayout(String title, Element content) {
-    return new Layout(title, content).render();
-}
-
-app.get("/contact", ctx ->
-    withLayout("Contact", new ContactPage().render())
-);""";
+                app.get("/about", ctx ->
+                    new Layout("About Us", new AboutPage().render()).render()
+                );
+                
+                // Or create a helper method:
+                private Element withLayout(String title, Element content) {
+                    return new Layout(title, content).render();
+                }
+                
+                app.get("/contact", ctx ->
+                    withLayout("Contact", new ContactPage().render())
+                );""";
 
     public static final String ROUTING_MIDDLEWARE = """
-// Apply middleware globally
-app.use(Middlewares.logging());
-app.use(Middlewares.csrf());
-
-// Apply to specific paths
-app.use("/admin", Middlewares.auth());
-
-// Apply conditionally
-app.useIf(isProd, Middlewares.compression());""";
+                // Apply middleware globally
+                app.use(Middlewares.logging());
+                app.use(Middlewares.csrf());
+                
+                // Apply to specific paths
+                app.use("/admin", Middlewares.auth());
+                
+                // Apply conditionally
+                app.useIf(isProd, Middlewares.compression());""";
 
     // ==================== Templates Section ====================
 
     public static final String TEMPLATES_INTERFACE = """
-public interface Template extends Element {
-    Element render();
-}""";
+                public interface Template extends Element {
+                    Element render();
+                }""";
 
     public static final String TEMPLATES_CARD = """
-public class Card implements Template {
-    private final String title;
-    private final String content;
-
-    public Card(String title, String content) {
-        this.title = title;
-        this.content = content;
-    }
-
-    @Override
-    public Element render() {
-        return div(attrs().class_("card").style()
-                .padding(SP_4).backgroundColor(hex("#f8fafc"))
-                .borderRadius(ROUNDED).done(),
-            h3(attrs().style().fontSize(TEXT_LG).fontWeight(600).done(),
-                text(title)),
-            p(attrs().style().color(TEXT_LIGHT).marginTop(SP_2).done(),
-                text(content))
-        );
-    }
-}""";
+                public class Card implements Template {
+                    private final String title;
+                    private final String content;
+                
+                    public Card(String title, String content) {
+                        this.title = title;
+                        this.content = content;
+                    }
+                
+                    @Override
+                    public Element render() {
+                        return div(attrs().class_("card").style()
+                                .padding(SP_4).backgroundColor(hex("#f8fafc"))
+                                .borderRadius(ROUNDED).done(),
+                            h3(attrs().style().fontSize(TEXT_LG).fontWeight(600).done(),
+                                text(title)),
+                            p(attrs().style().color(TEXT_LIGHT).marginTop(SP_2).done(),
+                                text(content))
+                        );
+                    }
+                }""";
 
     public static final String TEMPLATES_USAGE = """
-// In another component or page
-div(class_("container"),
-    new Card("Welcome", "Hello World!"),
-    new Card("Features", "Build apps in pure Java"),
-    new Card("Learn More", "Read the documentation")
-)""";
+                // In another component or page
+                div(class_("container"),
+                    new Card("Welcome", "Hello World!"),
+                    new Card("Features", "Build apps in pure Java"),
+                    new Card("Learn More", "Read the documentation")
+                )""";
 
     public static final String TEMPLATES_COMPOSITION = """
-public class CardGrid implements Template {
-    private final List<Card> cards;
-
-    public CardGrid(List<Card> cards) {
-        this.cards = cards;
-    }
-
-    @Override
-    public Element render() {
-        return div(attrs().style()
-                .display(grid)
-                .prop("grid-template-columns", "repeat(3, 1fr)")
-                .gap(SP_4).done(),
-            each(cards, card -> card.render())
-        );
-    }
-}""";
+                public class CardGrid implements Template {
+                    private final List<Card> cards;
+                
+                    public CardGrid(List<Card> cards) {
+                        this.cards = cards;
+                    }
+                
+                    @Override
+                    public Element render() {
+                        return div(attrs().style()
+                                .display(grid)
+                                .prop("grid-template-columns", "repeat(3, 1fr)")
+                                .gap(SP_4).done(),
+                            each(cards, card -> card.render())
+                        );
+                    }
+                }""";
 
     public static final String TEMPLATES_LAYOUT = """
-public class Layout implements Template {
-    private final String title;
-    private final Element content;
-
-    public Layout(String title, Element content) {
-        this.title = title;
-        this.content = content;
-    }
-
-    @Override
-    public Element render() {
-        return html(
-            head(title(title)),
-            body(attrs().style()
-                    .display(flex).flexDirection(column)
-                    .minHeight(vh(100)).done(),
-                new Nav().render(),
-                main(attrs().style().prop("flex", "1").done(),
-                    content),
-                new Footer().render()
-            )
-        );
-    }
-}""";
+                public class Layout implements Template {
+                    private final String title;
+                    private final Element content;
+                
+                    public Layout(String title, Element content) {
+                        this.title = title;
+                        this.content = content;
+                    }
+                
+                    @Override
+                    public Element render() {
+                        return html(
+                            head(title(title)),
+                            body(attrs().style()
+                                    .display(flex).flexDirection(column)
+                                    .minHeight(vh(100)).done(),
+                                new Nav().render(),
+                                main(attrs().style().prop("flex", "1").done(),
+                                    content),
+                                new Footer().render()
+                            )
+                        );
+                    }
+                }""";
 
     public static final String TEMPLATES_CONDITIONAL = """
-// Show element only if condition is true
-when(isLoggedIn, () ->
-    span("Welcome, " + userName)
-)
-
-// Choose between two elements
-ifElse(isAdmin,
-    () -> a("/admin", "Admin Panel"),
-    () -> a("/dashboard", "Dashboard")
-)""";
+            // Show element only if condition is true
+            when(isLoggedIn, () ->
+                span("Welcome, " + userName)
+            )
+            
+            // Choose between two elements
+            ifElse(isAdmin,
+                () -> a("/admin", "Admin Panel"),
+                () -> a("/dashboard", "Dashboard")
+            )""";
 
     public static final String TEMPLATES_LIST = """
 List<User> users = getUsers();

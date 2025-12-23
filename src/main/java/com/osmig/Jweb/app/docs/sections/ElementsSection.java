@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.elements.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ElementsSection {
@@ -8,53 +9,29 @@ public final class ElementsSection {
 
     public static Element render() {
         return section(
-            title("Elements"),
-            text("All HTML elements are available as static methods. Pass children as arguments " +
-                 "and attributes using the attrs() builder."),
+            docTitle("Elements"),
+            para("JWeb's HTML DSL provides Java methods for all HTML elements. " +
+                 "Elements are composable, nestable, and fully checked at compile time."),
 
-            subtitle("Basic Elements"),
-            code("""
-h1("Hello World")           // <h1>Hello World</h1>
-p("Some text")              // <p>Some text</p>
-div(h1("Title"), p("Text")) // Nested elements
-span(text("inline"))        // Inline element"""),
+            docSubtitle("Overview"),
+            para("Every HTML element has a corresponding Java method. " +
+                 "Pass child elements as arguments to create nested structures."),
+            codeBlock("""
+// Basic pattern: element(children...)
+div(h1("Title"), p("Content"))
 
-            subtitle("With Attributes"),
-            code("""
-div(attrs().id("main").class_("container"), content)
-a(attrs().href("/about"), text("About Us"))
-img(attrs().src("/logo.png").alt("Logo"))
-input(attrs().type("email").placeholder("you@example.com"))"""),
+// With attributes: element(attrs()..., children...)
+div(attrs().id("main").class_("container"),
+    h1("Title"),
+    p("Content")
+)"""),
 
-            subtitle("Attributes Builder"),
-            code("""
-attrs()
-    .id("card")
-    .class_("card featured")
-    .data("id", "123")
-    .aria("label", "Card")
-    .style()
-        .padding(rem(1))
-        .backgroundColor(white)
-    .done()"""),
-
-            subtitle("Element Categories"),
-            list(
-                "Structure: html, head, body, div, span, section, article",
-                "Text: h1-h6, p, strong, em, code, pre, blockquote",
-                "Lists: ul, ol, li, dl, dt, dd",
-                "Tables: table, thead, tbody, tr, th, td",
-                "Forms: form, input, textarea, select, option, button, label",
-                "Media: img, video, audio, canvas, svg, iframe"
-            ),
-
-            subtitle("Special Elements"),
-            code("""
-text("plain text")              // Text node
-raw("<b>raw html</b>")          // Unescaped HTML
-fragment(el1, el2)              // Group without wrapper
-each(list, item -> li(item))    // Iterate a list
-when(cond, () -> span("show"))  // Conditional render""")
+            ElementsBasics.render(),
+            ElementsContainers.render(),
+            ElementsLists.render(),
+            ElementsTables.render(),
+            ElementsMedia.render(),
+            ElementsFragments.render()
         );
     }
 }

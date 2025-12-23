@@ -8,59 +8,55 @@ public final class LayoutsSection {
 
     public static Element render() {
         return section(
-            title("Layouts"),
-            text("Page layouts wrap content with common structure."),
+            docTitle("Layouts"),
+            para("Page layouts wrap content with common structure (nav, footer)."),
 
-            subtitle("Basic Layout"),
-            code("""
-                public class Layout implements Template {
-                    private final String title;
-                    private final Element content;
+            docSubtitle("Basic Layout"),
+            codeBlock("""
+public class Layout implements Template {
+    private final String title;
+    private final Element content;
 
-                    public Layout(String title, Element content) {
-                        this.title = title;
-                        this.content = content;
-                    }
+    public Layout(String title, Element content) {
+        this.title = title;
+        this.content = content;
+    }
 
-                    public Element render() {
-                        return html(
-                            head(title(title)),
-                            body(attrs().style()
-                                    .display(flex)
-                                    .flexDirection(column)
-                                    .minHeight(vh(100)).done(),
-                                new Nav().render(),
-                                main(content),
-                                new Footer().render()
-                            )
-                        );
-                    }
-                }"""),
+    public Element render() {
+        return html(
+            head(title(title)),
+            body(new Nav(), main(content), new Footer())
+        );
+    }
+}"""),
 
-            subtitle("Using Layouts"),
-            code("""
-                // In Routes.java
-                app.get("/about", ctx ->
-                    new Layout("About", new AboutPage().render()).render()
-                );"""),
+            docSubtitle("Register Layout"),
+            codeBlock("""
+// In Routes.java - set default layout
+app.layout(Layout.class);
 
-            subtitle("Theme Design Tokens"),
-            code("""
-                public final class Theme {
-                    // Colors
-                    public static final CSSValue PRIMARY = hex("#6366f1");
-                    public static final CSSValue TEXT = hex("#1e293b");
+// Pages automatically wrapped
+app.pages(
+    "/", HomePage.class,
+    "/about", AboutPage.class
+);"""),
 
-                    // Spacing
-                    public static final CSSValue SP_4 = rem(1);
-                    public static final CSSValue SP_8 = rem(2);
+            docSubtitle("Theme Tokens"),
+            codeBlock("""
+public final class Theme {
+    // Colors
+    public static final CSSValue PRIMARY = hex("#6366f1");
+    public static final CSSValue TEXT = hex("#1e293b");
 
-                    // Typography
-                    public static final CSSValue TEXT_LG = rem(1.125);
-                }
+    // Spacing
+    public static final CSSValue SP_4 = rem(1);
+    public static final CSSValue SP_8 = rem(2);
+}
 
-                // Usage
-                div(attrs().style().color(PRIMARY).padding(SP_4).done())""")
+// Usage
+div(attrs().style().color(PRIMARY).padding(SP_4).done())"""),
+
+            docTip("Define design tokens in Theme.java for consistent styling across your app.")
         );
     }
 }

@@ -44,7 +44,7 @@ public class DocSidebar implements Template {
                     link("api", "REST API"),
                     link("security", "Security"),
                     link("ui", "UI Components"),
-                    link("data", "Data & JPA"),
+                    link("data", "Database"),
                     link("devtools", "DevTools")),
                 navSection("More",
                     link("examples", "Examples"))

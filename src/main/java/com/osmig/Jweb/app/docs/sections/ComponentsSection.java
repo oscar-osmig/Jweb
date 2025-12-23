@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.components.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ComponentsSection {
@@ -8,56 +9,32 @@ public final class ComponentsSection {
 
     public static Element render() {
         return section(
-            title("Components"),
-            text("Reusable UI pieces that implement the Template interface."),
+            docTitle("Components"),
+            para("Components are reusable UI pieces that implement the Template interface. " +
+                 "They encapsulate structure, styling, and behavior into self-contained units."),
 
-            subtitle("Basic Component"),
-            code("""
-                public class Card implements Template {
-                    private final String title;
-                    private final String content;
+            docSubtitle("Overview"),
+            para("Create a component by implementing Template and its render() method. " +
+                 "Pass data via constructor parameters."),
+            codeBlock("""
+public class MyComponent implements Template {
+    private final String prop;
 
-                    public Card(String title, String content) {
-                        this.title = title;
-                        this.content = content;
-                    }
+    public MyComponent(String prop) {
+        this.prop = prop;
+    }
 
-                    public Element render() {
-                        return div(attrs().style()
-                                .padding(rem(1.5))
-                                .backgroundColor(white)
-                                .borderRadius(px(8)).done(),
-                            h3(title),
-                            p(content)
-                        );
-                    }
-                }"""),
+    public Element render() {
+        return div(text(prop));
+    }
+}
 
-            subtitle("Using Components"),
-            code("""
-                div(
-                    new Card("Welcome", "Hello World!"),
-                    new Card("Features", "Build apps in pure Java")
-                )"""),
+// Usage: new MyComponent("Hello")"""),
 
-            subtitle("Component with Children"),
-            code("""
-                public class Panel implements Template {
-                    private final Element[] children;
-
-                    public Panel(Element... children) {
-                        this.children = children;
-                    }
-
-                    public Element render() {
-                        return div(attrs().class_("panel"),
-                            fragment(children)
-                        );
-                    }
-                }
-
-                // Usage
-                new Panel(h1("Title"), p("Content"), button("Action"))""")
+            CompBasics.render(),
+            CompProps.render(),
+            CompChildren.render(),
+            CompComposition.render()
         );
     }
 }

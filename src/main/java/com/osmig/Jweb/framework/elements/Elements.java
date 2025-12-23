@@ -186,6 +186,10 @@ public final class Elements {
     public static Tag figure(Object... children) { return tag("figure", children); }
     public static Tag figure(Attributes attrs, Object... children) { return tag("figure", attrs, children); }
     public static Tag figcaption(Object... children) { return tag("figcaption", children); }
+    public static Tag hgroup(Object... children) { return tag("hgroup", children); }
+    public static Tag hgroup(Attributes attrs, Object... children) { return tag("hgroup", attrs, children); }
+    public static Tag search(Object... children) { return tag("search", children); }
+    public static Tag search(Attributes attrs, Object... children) { return tag("search", attrs, children); }
 
     // ==================== Headings ====================
 
@@ -779,6 +783,8 @@ public final class Elements {
     public static Tag blockquote(InlineStyle style, Object... children) { return tag("blockquote", style, children); }
     public static Tag figure(InlineStyle style, Object... children) { return tag("figure", style, children); }
     public static Tag figcaption(InlineStyle style, Object... children) { return tag("figcaption", style, children); }
+    public static Tag hgroup(InlineStyle style, Object... children) { return tag("hgroup", style, children); }
+    public static Tag search(InlineStyle style, Object... children) { return tag("search", style, children); }
     public static Tag strong(InlineStyle style, Object... children) { return tag("strong", style, children); }
     public static Tag em(InlineStyle style, Object... children) { return tag("em", style, children); }
 }

@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.styling.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class StylingSection {
@@ -8,50 +9,31 @@ public final class StylingSection {
 
     public static Element render() {
         return section(
-            title("Styling"),
-            text("Type-safe CSS with IDE autocomplete and compile-time checks."),
+            docTitle("Styling"),
+            para("JWeb's CSS DSL provides Java methods for all CSS properties. " +
+                 "Write styles in Java with IDE autocomplete and compile-time checks."),
 
-            subtitle("Inline Styles"),
-            code("""
-                div(attrs().style()
-                    .display(flex)
-                    .padding(rem(2))
-                    .backgroundColor(hex("#f5f5f5"))
-                    .borderRadius(px(8))
-                .done(),
-                    p("Styled content")
-                )"""),
+            docSubtitle("Overview"),
+            para("Every CSS property has a corresponding fluent method. " +
+                 "Units and colors are type-safe, preventing invalid values."),
+            codeBlock("""
+                    import static com.osmig.Jweb.framework.styles.CSS.*;
+                    import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+                    import static com.osmig.Jweb.framework.styles.CSSColors.*;
+                    
+                    div(attrs().style()
+                        .padding(rem(2))
+                        .backgroundColor(hex("#f5f5f5"))
+                        .borderRadius(px(8))
+                    .done(), content)"""),
 
-            subtitle("Units"),
-            code("""
-                px(16)       // 16px
-                rem(1.5)     // 1.5rem
-                em(2)        // 2em
-                percent(50)  // 50%
-                vh(100)      // 100vh
-                vw(50)       // 50vw"""),
-
-            subtitle("Colors"),
-            code("""
-                hex("#6366f1")
-                rgb(99, 102, 241)
-                rgba(0, 0, 0, 0.5)
-                hsl(239, 84, 67)
-                // Named: red, blue, white, black, transparent"""),
-
-            subtitle("Layout"),
-            code("""
-                // Flexbox
-                .display(flex)
-                .flexDirection(column)
-                .justifyContent(center)
-                .alignItems(center)
-                .gap(rem(1))
-
-                // Grid
-                .display(grid)
-                .gridTemplateColumns(repeat(3, fr(1)))
-                .gap(rem(2))""")
+            StylingBasics.render(),
+            StylingUnits.render(),
+            StylingColors.render(),
+            StylingFlexbox.render(),
+            StylingGrid.render(),
+            StylingTypography.render(),
+            StylingAdvanced.render()
         );
     }
 }
