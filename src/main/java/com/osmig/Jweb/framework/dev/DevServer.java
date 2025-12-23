@@ -53,12 +53,18 @@ public class DevServer {
     private static volatile boolean enabled = false;
     private static volatile boolean watching = false;
     private static String[] watchPaths = {"src/main/java", "src/main/resources"};
+    private static int debounceMs = 50;
 
     @Value("${jweb.dev.watch-paths:src/main/java,src/main/resources}")
     public void setWatchPathsFromConfig(String paths) {
         if (paths != null && !paths.isBlank()) {
             watchPaths = paths.split(",");
         }
+    }
+
+    @Value("${jweb.dev.debounce-ms:50}")
+    public void setDebounceMs(int ms) {
+        debounceMs = Math.max(10, ms);
     }
 
     /**
@@ -240,7 +246,7 @@ public class DevServer {
 
                     if (shouldReload) {
                         // Small delay to batch multiple rapid changes
-                        Thread.sleep(100);
+                        Thread.sleep(debounceMs);
                         triggerReload();
                     }
 

@@ -53,7 +53,7 @@ table(
     )))
 )"""),
 
-            docTip("See more examples at github.com/osmig/jweb-examples")
+            docTip("More examples coming soon.")
         );
     }
 }

@@ -8,24 +8,7 @@ server:
 
 spring:
   application:
-    name: Jweb
-
-  # Disable database auto-configuration (enable when you add a database)
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-
-  # Database configuration (uncomment and configure as needed)
-  # datasource:
-  #   url: jdbc:postgresql://localhost:5432/mydb
-  #   driver-class-name: org.postgresql.Driver
-  #   username: user
-  #   password: pass
-  # jpa:
-  #   hibernate:
-  #     ddl-auto: update
-  #   show-sql: false
+    name: JWeb
 
 # JWeb configuration
 jweb:
@@ -43,6 +26,8 @@ jweb:
     hot-reload: true
     # Paths to watch for changes (comma-separated)
     watch-paths: src/main/java,src/main/resources
+    # Debounce delay in ms before triggering reload (lower = faster, min 10)
+    debounce-ms: 50
 
   # Performance settings
   performance:

@@ -1,0 +1,54 @@
+{
+  "properties": [
+    {
+      "name": "jweb.api.base",
+      "type": "java.lang.String",
+      "description": "Base path for API endpoints"
+    },
+    {
+      "name": "jweb.data.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable database features"
+    },
+    {
+      "name": "jweb.dev.hot-reload",
+      "type": "java.lang.Boolean",
+      "description": "Enable hot reload for development"
+    },
+    {
+      "name": "jweb.dev.watch-paths",
+      "type": "java.lang.String",
+      "description": "Comma-separated paths to watch for changes"
+    },
+    {
+      "name": "jweb.dev.debounce-ms",
+      "type": "java.lang.Integer",
+      "description": "Debounce delay in milliseconds before triggering reload"
+    },
+    {
+      "name": "jweb.performance.minify-css",
+      "type": "java.lang.Boolean",
+      "description": "Minify CSS output"
+    },
+    {
+      "name": "jweb.performance.minify-html",
+      "type": "java.lang.Boolean",
+      "description": "Minify HTML output"
+    },
+    {
+      "name": "jweb.performance.prefetch.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable link prefetching on hover"
+    },
+    {
+      "name": "jweb.performance.prefetch.cache-ttl",
+      "type": "java.lang.Long",
+      "description": "Cache TTL in milliseconds"
+    },
+    {
+      "name": "jweb.performance.prefetch.hover-delay",
+      "type": "java.lang.Integer",
+      "description": "Delay before prefetching on hover in milliseconds"
+    }
+  ]
+}

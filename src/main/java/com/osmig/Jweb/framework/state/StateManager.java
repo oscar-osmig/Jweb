@@ -3,6 +3,7 @@ package com.osmig.Jweb.framework.state;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -222,7 +223,7 @@ public final class StateManager {
      */
     public static class StateContext {
         private final Map<String, State<?>> states = new ConcurrentHashMap<>();
-        private final List<State<?>> changedStates = new ArrayList<>();
+        private final Set<State<?>> changedStates = ConcurrentHashMap.newKeySet();
         private final Map<String, RenderableComponent> components = new ConcurrentHashMap<>();
         private final String sessionId;
         private final long createdAt;
@@ -245,9 +246,7 @@ public final class StateManager {
         }
 
         void onStateChange(State<?> state) {
-            if (!changedStates.contains(state)) {
-                changedStates.add(state);
-            }
+            changedStates.add(state);
         }
 
         /**
