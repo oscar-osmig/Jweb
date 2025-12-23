@@ -52,24 +52,17 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
-		<!-- Spring Data JPA for database access -->
-		<dependency>
+		<!-- Spring Data JPA for database access (uncomment when needed) -->
+		<!-- <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
+		</dependency> -->
 
-		<!-- H2 in-memory database for development -->
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-		</dependency>
-
-		<!-- MongoDB driver (no Spring auto-configuration) -->
+		<!-- MongoDB driver -->
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>5.2.0</version>
-			<optional>true</optional>
 		</dependency>
 
 		<!-- Spring Security Crypto for password hashing (BCrypt) -->

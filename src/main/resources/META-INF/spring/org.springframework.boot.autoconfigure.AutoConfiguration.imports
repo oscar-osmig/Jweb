@@ -1,2 +1,3 @@
-com.osmig.Jweb.framework.data.JWebDataAutoConfiguration
-com.osmig.Jweb.framework.data.JWebH2Configuration
+# JWeb auto-configurations
+# Uncomment when using a database:
+# com.osmig.Jweb.framework.data.JWebDataAutoConfiguration

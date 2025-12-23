@@ -3,8 +3,11 @@ package com.osmig.Jweb.framework.attributes;
 import com.osmig.Jweb.framework.events.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
+import com.osmig.Jweb.framework.ref.Ref;
 import com.osmig.Jweb.framework.styles.CSSValue;
 import com.osmig.Jweb.framework.styles.Style;
+import com.osmig.Jweb.framework.transition.TransitionBuilder;
+import com.osmig.Jweb.framework.transition.TransitionBuilder.TransitionReceiver;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -56,7 +59,7 @@ import java.util.function.UnaryOperator;
  *
  * @see com.osmig.Jweb.framework.elements.Elements#attrs() for creating Attributes instances
  */
-public class Attributes {
+public class Attributes implements TransitionReceiver {
 
     /** Stores attribute name-value pairs in insertion order. */
     private final Map<String, String> attributes = new LinkedHashMap<>();
@@ -1137,6 +1140,48 @@ public class Attributes {
      * @return the internal attributes map
      */
     public Map<String, String> toMap() { return attributes; }
+
+    // ==================== Refs ====================
+
+    /**
+     * Sets a ref on this element for later reference.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * Ref inputRef = Ref.create();
+     * input(attrs().ref(inputRef).type("text"))
+     * // Later: inputRef.id() returns the element's ID
+     * </pre>
+     *
+     * @param ref the ref to attach
+     * @return this for chaining
+     */
+    public Attributes ref(Ref ref) {
+        return id(ref.id());
+    }
+
+    // ==================== Transitions ====================
+
+    /**
+     * Starts a transition builder for CSS transitions.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs()
+     *     .transition()
+     *         .property("opacity", "transform")
+     *         .duration("300ms")
+     *         .easing("ease-in-out")
+     *     .done(),
+     *     content
+     * )
+     * </pre>
+     *
+     * @return a TransitionBuilder
+     */
+    public TransitionBuilder transition() {
+        return new TransitionBuilder(this);
+    }
 
     /**
      * Checks if any attributes have been set.

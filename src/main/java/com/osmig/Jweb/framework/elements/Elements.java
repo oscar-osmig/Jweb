@@ -7,6 +7,8 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.vdom.VFragment;
 import com.osmig.Jweb.framework.vdom.VNode;
 
+import com.osmig.Jweb.framework.core.ErrorBoundary;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -722,6 +724,52 @@ public final class Elements {
     public static Tag td(InlineStyle style, Object... children) { return tag("td", style, children); }
     public static Tag img(InlineStyle style) { return new Tag("img", style.toAttrs()); }
     public static Tag video(InlineStyle style, Object... children) { return tag("video", style, children); }
+
+    // ==================== Error Boundary ====================
+
+    /**
+     * Creates an error boundary that wraps content and displays a fallback on error.
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * errorBoundary(
+     *     () -&gt; riskyComponent.render(),
+     *     error -&gt; p("Error: " + error.getMessage())
+     * )
+     * </pre>
+     *
+     * @param content the content to render
+     * @param fallback function that receives the error and returns a fallback element
+     * @return the rendered element or fallback
+     */
+    public static Element errorBoundary(
+            java.util.function.Supplier<Element> content,
+            Function<Throwable, Element> fallback) {
+        return ErrorBoundary.wrap(content, fallback);
+    }
+
+    /**
+     * Creates an error boundary with a static fallback element.
+     *
+     * @param content the content to render
+     * @param fallback the static fallback element
+     * @return the rendered element or fallback
+     */
+    public static Element errorBoundary(
+            java.util.function.Supplier<Element> content,
+            Element fallback) {
+        return ErrorBoundary.wrap(content, fallback);
+    }
+
+    /**
+     * Creates an error boundary that silently fails (renders nothing on error).
+     *
+     * @param content the content to render
+     * @return the rendered element or empty fragment on error
+     */
+    public static Element tryCatch(java.util.function.Supplier<Element> content) {
+        return ErrorBoundary.silent(content);
+    }
     public static Tag audio(InlineStyle style, Object... children) { return tag("audio", style, children); }
     public static Tag canvas(InlineStyle style) { return new Tag("canvas", style.toAttrs()); }
     public static Tag svg(InlineStyle style, Object... children) { return tag("svg", style, children); }

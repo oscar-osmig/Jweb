@@ -650,12 +650,6 @@ public class Style<T extends Style<T>> implements CSSValue {
         return prop("aspect-ratio", width + " / " + height);
     }
 
-    // ==================== Scroll ====================
-
-    public T scrollBehavior(CSSValue value) { return prop("scroll-behavior", value); }
-    public T scrollMargin(CSSValue value) { return prop("scroll-margin", value); }
-    public T scrollPadding(CSSValue value) { return prop("scroll-padding", value); }
-
     // ==================== Table ====================
 
     public T borderCollapse(CSSValue value) { return prop("border-collapse", value); }
@@ -759,14 +753,6 @@ public class Style<T extends Style<T>> implements CSSValue {
 
     // Text alignment logical
     public T textAlignLast(CSSValue value) { return prop("text-align-last", value); }
-
-    // ==================== Container Queries ====================
-
-    public T containerType(CSSValue value) { return prop("container-type", value); }
-    public T containerName(String name) { return prop("container-name", name); }
-    public T container(String name, CSSValue type) {
-        return prop("container", name + " / " + type.css());
-    }
 
     // ==================== Convenience Presets ====================
 
@@ -961,6 +947,344 @@ public class Style<T extends Style<T>> implements CSSValue {
      * @return this builder for chaining
      */
     public T centerX() { return margin(() -> "0", () -> "auto"); }
+
+    // ==================== Scroll Snap ====================
+
+    /**
+     * Sets scroll-snap-type for scroll containers.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().scrollSnapType(xMandatory)  // Horizontal mandatory snap
+     * style().scrollSnapType(yProximity)  // Vertical proximity snap
+     * style().scrollSnapType(bothMandatory)
+     * </pre>
+     *
+     * @param value the scroll-snap-type value
+     * @return this builder for chaining
+     */
+    public T scrollSnapType(CSSValue value) { return prop("scroll-snap-type", value); }
+
+    /**
+     * Sets scroll-snap-align for snap targets.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().scrollSnapAlign(start)   // Snap to start
+     * style().scrollSnapAlign(center)  // Snap to center
+     * style().scrollSnapAlign(end)     // Snap to end
+     * </pre>
+     *
+     * @param value the scroll-snap-align value
+     * @return this builder for chaining
+     */
+    public T scrollSnapAlign(CSSValue value) { return prop("scroll-snap-align", value); }
+
+    /**
+     * Sets scroll-snap-stop.
+     *
+     * @param value "normal" or "always"
+     * @return this builder for chaining
+     */
+    public T scrollSnapStop(CSSValue value) { return prop("scroll-snap-stop", value); }
+
+    /**
+     * Sets scroll-padding (for scroll containers).
+     *
+     * @param value the scroll padding value
+     * @return this builder for chaining
+     */
+    public T scrollPadding(CSSValue value) { return prop("scroll-padding", value); }
+
+    /**
+     * Sets scroll-padding with individual values.
+     */
+    public T scrollPadding(CSSValue top, CSSValue right, CSSValue bottom, CSSValue left) {
+        return prop("scroll-padding", top.css() + " " + right.css() + " " + bottom.css() + " " + left.css());
+    }
+
+    /**
+     * Sets scroll-margin (for snap targets).
+     *
+     * @param value the scroll margin value
+     * @return this builder for chaining
+     */
+    public T scrollMargin(CSSValue value) { return prop("scroll-margin", value); }
+
+    /**
+     * Sets scroll-behavior for smooth scrolling.
+     *
+     * @param value "auto" or "smooth"
+     * @return this builder for chaining
+     */
+    public T scrollBehavior(CSSValue value) { return prop("scroll-behavior", value); }
+
+    /**
+     * Sets overscroll-behavior.
+     *
+     * @param value the overscroll behavior
+     * @return this builder for chaining
+     */
+    public T overscrollBehavior(CSSValue value) { return prop("overscroll-behavior", value); }
+
+    /**
+     * Sets overscroll-behavior for x axis.
+     */
+    public T overscrollBehaviorX(CSSValue value) { return prop("overscroll-behavior-x", value); }
+
+    /**
+     * Sets overscroll-behavior for y axis.
+     */
+    public T overscrollBehaviorY(CSSValue value) { return prop("overscroll-behavior-y", value); }
+
+    // ==================== Text Wrap ====================
+
+    /**
+     * Sets text-wrap for better text layout.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().textWrap(balance)  // Balances line lengths
+     * style().textWrap(pretty)   // Prettier line breaks
+     * style().textWrap(stable)   // Stable during editing
+     * </pre>
+     *
+     * @param value the text-wrap value
+     * @return this builder for chaining
+     */
+    public T textWrap(CSSValue value) { return prop("text-wrap", value); }
+
+    /**
+     * Sets text-wrap-mode.
+     *
+     * @param value "wrap" or "nowrap"
+     * @return this builder for chaining
+     */
+    public T textWrapMode(CSSValue value) { return prop("text-wrap-mode", value); }
+
+    /**
+     * Sets text-wrap-style.
+     *
+     * @param value "auto", "balance", "pretty", or "stable"
+     * @return this builder for chaining
+     */
+    public T textWrapStyle(CSSValue value) { return prop("text-wrap-style", value); }
+
+    // ==================== View Transitions ====================
+
+    /**
+     * Sets view-transition-name for View Transitions API.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().viewTransitionName("header")
+     * style().viewTransitionName("card-1")
+     * </pre>
+     *
+     * @param name the transition name
+     * @return this builder for chaining
+     */
+    public T viewTransitionName(String name) { return prop("view-transition-name", name); }
+
+    /**
+     * Sets view-transition-name to "none".
+     *
+     * @return this builder for chaining
+     */
+    public T viewTransitionNone() { return prop("view-transition-name", "none"); }
+
+    // ==================== Scroll-Driven Animations ====================
+
+    /**
+     * Sets animation-timeline for scroll-driven animations.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().animationTimeline(scrollTimeline())
+     * style().animationTimeline(viewTimeline())
+     * </pre>
+     *
+     * @param value the animation timeline
+     * @return this builder for chaining
+     */
+    public T animationTimeline(CSSValue value) { return prop("animation-timeline", value); }
+
+    /**
+     * Sets animation-range for scroll-driven animations.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().animationRange("entry", "exit")
+     * style().animationRange("cover 0%", "cover 100%")
+     * </pre>
+     *
+     * @param start the start range
+     * @param end the end range
+     * @return this builder for chaining
+     */
+    public T animationRange(String start, String end) {
+        return prop("animation-range", start + " " + end);
+    }
+
+    /**
+     * Sets animation-range with a single value.
+     *
+     * @param value the animation range
+     * @return this builder for chaining
+     */
+    public T animationRange(CSSValue value) { return prop("animation-range", value); }
+
+    /**
+     * Sets timeline-scope.
+     *
+     * @param name the timeline name
+     * @return this builder for chaining
+     */
+    public T timelineScope(String name) { return prop("timeline-scope", name); }
+
+    /**
+     * Sets scroll-timeline for creating named scroll timelines.
+     *
+     * @param value the scroll timeline value
+     * @return this builder for chaining
+     */
+    public T scrollTimeline(CSSValue value) { return prop("scroll-timeline", value); }
+
+    /**
+     * Sets scroll-timeline-name.
+     *
+     * @param name the timeline name
+     * @return this builder for chaining
+     */
+    public T scrollTimelineName(String name) { return prop("scroll-timeline-name", name); }
+
+    /**
+     * Sets scroll-timeline-axis.
+     *
+     * @param value "block", "inline", "x", or "y"
+     * @return this builder for chaining
+     */
+    public T scrollTimelineAxis(CSSValue value) { return prop("scroll-timeline-axis", value); }
+
+    /**
+     * Sets view-timeline for creating named view timelines.
+     *
+     * @param value the view timeline value
+     * @return this builder for chaining
+     */
+    public T viewTimeline(CSSValue value) { return prop("view-timeline", value); }
+
+    /**
+     * Sets view-timeline-name.
+     *
+     * @param name the timeline name
+     * @return this builder for chaining
+     */
+    public T viewTimelineName(String name) { return prop("view-timeline-name", name); }
+
+    /**
+     * Sets view-timeline-axis.
+     *
+     * @param value "block", "inline", "x", or "y"
+     * @return this builder for chaining
+     */
+    public T viewTimelineAxis(CSSValue value) { return prop("view-timeline-axis", value); }
+
+    /**
+     * Sets view-timeline-inset.
+     *
+     * @param value the inset value
+     * @return this builder for chaining
+     */
+    public T viewTimelineInset(CSSValue value) { return prop("view-timeline-inset", value); }
+
+    // ==================== Container Queries ====================
+
+    /**
+     * Sets container-type for container queries.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().containerType(inlineSize)
+     * style().containerType(size)
+     * </pre>
+     *
+     * @param value the container type
+     * @return this builder for chaining
+     */
+    public T containerType(CSSValue value) { return prop("container-type", value); }
+
+    /**
+     * Sets container-name for named container queries.
+     *
+     * @param name the container name
+     * @return this builder for chaining
+     */
+    public T containerName(String name) { return prop("container-name", name); }
+
+    /**
+     * Sets container shorthand.
+     *
+     * @param name the container name
+     * @param type the container type
+     * @return this builder for chaining
+     */
+    public T container(String name, CSSValue type) {
+        return prop("container", name + " / " + type.css());
+    }
+
+    // ==================== Accent Color ====================
+
+    /**
+     * Sets accent-color for form controls.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().accentColor(blue)
+     * style().accentColor(hex("#ff6b6b"))
+     * </pre>
+     *
+     * @param value the accent color
+     * @return this builder for chaining
+     */
+    public T accentColor(CSSValue value) { return prop("accent-color", value); }
+
+    // ==================== Color Scheme ====================
+
+    /**
+     * Sets color-scheme for light/dark mode.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().colorScheme(light)
+     * style().colorScheme(dark)
+     * style().colorScheme(lightDark)
+     * </pre>
+     *
+     * @param value the color scheme
+     * @return this builder for chaining
+     */
+    public T colorScheme(CSSValue value) { return prop("color-scheme", value); }
+
+    // ==================== Forced Colors ====================
+
+    /**
+     * Sets forced-color-adjust.
+     *
+     * @param value "auto" or "none"
+     * @return this builder for chaining
+     */
+    public T forcedColorAdjust(CSSValue value) { return prop("forced-color-adjust", value); }
+
+    // ==================== Print ====================
+
+    /**
+     * Sets print-color-adjust.
+     *
+     * @param value "economy" or "exact"
+     * @return this builder for chaining
+     */
+    public T printColorAdjust(CSSValue value) { return prop("print-color-adjust", value); }
 
     // ==================== Raw Property ====================
 

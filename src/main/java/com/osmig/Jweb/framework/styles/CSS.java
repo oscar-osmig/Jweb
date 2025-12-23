@@ -274,6 +274,24 @@ public final class CSS {
         /** Appends :not() pseudo-class. @param inner the selector to negate */
         public Selector not(Selector inner) { sb.append(":not(").append(inner.build()).append(")"); return this; }
 
+        /** Appends :has() pseudo-class. @param inner the selector to match */
+        public Selector has(Selector inner) { sb.append(":has(").append(inner.build()).append(")"); return this; }
+
+        /** Appends :has() with a raw selector string. @param selector the selector string */
+        public Selector has(String selector) { sb.append(":has(").append(selector).append(")"); return this; }
+
+        /** Appends :is() pseudo-class (matches any of the selectors). @param inner the selector */
+        public Selector is(Selector inner) { sb.append(":is(").append(inner.build()).append(")"); return this; }
+
+        /** Appends :is() with a raw selector string. */
+        public Selector is(String selector) { sb.append(":is(").append(selector).append(")"); return this; }
+
+        /** Appends :where() pseudo-class (like :is but no specificity). @param inner the selector */
+        public Selector where(Selector inner) { sb.append(":where(").append(inner.build()).append(")"); return this; }
+
+        /** Appends :where() with a raw selector string. */
+        public Selector where(String selector) { sb.append(":where(").append(selector).append(")"); return this; }
+
         // ========== Pseudo-elements ==========
 
         /** Appends a pseudo-element. @param name the pseudo-element name */
@@ -840,6 +858,100 @@ public final class CSS {
     /** Scroll-behavior: smooth - animated scrolling. */
     public static final CSSValue smooth = () -> "smooth";
 
+    // ========== Scroll Snap Values ==========
+    // Use with: style().scrollSnapType(xMandatory)
+
+    /** Scroll-snap-type: x mandatory - horizontal mandatory snap. */
+    public static final CSSValue xMandatory = () -> "x mandatory";
+    /** Scroll-snap-type: y mandatory - vertical mandatory snap. */
+    public static final CSSValue yMandatory = () -> "y mandatory";
+    /** Scroll-snap-type: x proximity - horizontal proximity snap. */
+    public static final CSSValue xProximity = () -> "x proximity";
+    /** Scroll-snap-type: y proximity - vertical proximity snap. */
+    public static final CSSValue yProximity = () -> "y proximity";
+    /** Scroll-snap-type: block mandatory - block axis mandatory snap. */
+    public static final CSSValue blockMandatory = () -> "block mandatory";
+    /** Scroll-snap-type: inline mandatory - inline axis mandatory snap. */
+    public static final CSSValue inlineMandatory = () -> "inline mandatory";
+    /** Scroll-snap-type: both mandatory - both axes mandatory snap. */
+    public static final CSSValue bothMandatory = () -> "both mandatory";
+    /** Scroll-snap-type: both proximity - both axes proximity snap. */
+    public static final CSSValue bothProximity = () -> "both proximity";
+    /** Scroll-snap-align: start. */
+    public static final CSSValue snapStart = () -> "start";
+    /** Scroll-snap-align: end. */
+    public static final CSSValue snapEnd = () -> "end";
+    /** Scroll-snap-align: center. */
+    public static final CSSValue snapCenter = () -> "center";
+    /** Scroll-snap-stop: normal. */
+    public static final CSSValue snapNormal = () -> "normal";
+    /** Scroll-snap-stop: always. */
+    public static final CSSValue snapAlways = () -> "always";
+
+    // ========== Overscroll Behavior ==========
+    // Use with: style().overscrollBehavior(overscrollContain)
+
+    /** Overscroll-behavior: contain - prevents scroll chaining. */
+    public static final CSSValue overscrollContain = () -> "contain";
+    /** Overscroll-behavior: auto - default behavior. */
+    public static final CSSValue overscrollAuto = () -> "auto";
+
+    // ========== Text Wrap Values ==========
+    // Use with: style().textWrap(balance)
+
+    /** Text-wrap: balance - balances line lengths. */
+    public static final CSSValue balance = () -> "balance";
+    /** Text-wrap: pretty - optimizes line breaks for readability. */
+    public static final CSSValue pretty = () -> "pretty";
+    /** Text-wrap: stable - prevents text reflow on dynamic content. */
+    public static final CSSValue stable = () -> "stable";
+
+    // ========== Container Query Values ==========
+    // Use with: style().containerType(inlineSize)
+
+    /** Container-type: inline-size - enables inline axis containment. */
+    public static final CSSValue inlineSize = () -> "inline-size";
+    /** Container-type: size - enables both axis containment. */
+    public static final CSSValue size = () -> "size";
+
+    // ========== Color Scheme Values ==========
+    // Use with: style().colorScheme(lightDark)
+
+    /** Color-scheme: light dark - supports both themes. */
+    public static final CSSValue lightDark = () -> "light dark";
+    /** Color-scheme: light - light mode only. */
+    public static final CSSValue light = () -> "light";
+    /** Color-scheme: dark - dark mode only. */
+    public static final CSSValue dark = () -> "dark";
+    /** Color-scheme: only light - forces light mode. */
+    public static final CSSValue onlyLight = () -> "only light";
+    /** Color-scheme: only dark - forces dark mode. */
+    public static final CSSValue onlyDark = () -> "only dark";
+
+    // ========== Forced Colors Adjust ==========
+    // Use with: style().forcedColorAdjust(preserveParentColor)
+
+    /** Forced-color-adjust: preserve-parent-color. */
+    public static final CSSValue preserveParentColor = () -> "preserve-parent-color";
+
+    // ========== Print Color Adjust ==========
+    // Use with: style().printColorAdjust(exact)
+
+    /** Print-color-adjust: exact - preserves colors in print. */
+    public static final CSSValue exact = () -> "exact";
+    /** Print-color-adjust: economy - reduces ink usage. */
+    public static final CSSValue economy = () -> "economy";
+
+    // ========== Scroll-Driven Animation Values ==========
+    // Use with: style().animationTimeline(scrollAuto)
+
+    /** Animation-timeline: auto. */
+    public static final CSSValue timelineAuto = () -> "auto";
+    /** Animation-timeline: scroll(). */
+    public static final CSSValue scrollDefault = () -> "scroll()";
+    /** Animation-timeline: view(). */
+    public static final CSSValue viewDefault = () -> "view()";
+
     // ========== Animation Fill Mode ==========
     // Use with: style().animationFillMode(forwards)
 
@@ -1290,6 +1402,73 @@ public final class CSS {
     public static CSSValue sepia(double value) {
         return () -> "sepia(" + formatNumber(value) + ")";
     }
+
+    // ==================== Scroll Timeline Functions ====================
+
+    /**
+     * Creates a scroll() timeline function.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().animationTimeline(scroll(nearest, block))
+     * // Output: animation-timeline: scroll(nearest block);
+     * </pre>
+     *
+     * @param scroller the scroll container (nearest, root, self)
+     * @param axis the scroll axis (block, inline, x, y)
+     * @return a CSSValue for the timeline
+     */
+    public static CSSValue scroll(CSSValue scroller, CSSValue axis) {
+        return () -> "scroll(" + scroller.css() + " " + axis.css() + ")";
+    }
+
+    /**
+     * Creates a scroll() timeline with just an axis.
+     *
+     * @param axis the scroll axis (block, inline, x, y)
+     * @return a CSSValue for the timeline
+     */
+    public static CSSValue scroll(CSSValue axis) {
+        return () -> "scroll(" + axis.css() + ")";
+    }
+
+    /**
+     * Creates a view() timeline function.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().animationTimeline(view(block))
+     * // Output: animation-timeline: view(block);
+     * </pre>
+     *
+     * @param axis the view axis (block, inline, x, y)
+     * @return a CSSValue for the timeline
+     */
+    public static CSSValue view(CSSValue axis) {
+        return () -> "view(" + axis.css() + ")";
+    }
+
+    /**
+     * Creates a view() timeline with inset.
+     *
+     * @param axis the view axis
+     * @param inset the inset value
+     * @return a CSSValue for the timeline
+     */
+    public static CSSValue view(CSSValue axis, CSSValue inset) {
+        return () -> "view(" + axis.css() + " " + inset.css() + ")";
+    }
+
+    /** Scroller: nearest - the nearest scroll container. */
+    public static final CSSValue nearest = () -> "nearest";
+    /** Scroller: root - the root scroller (viewport). */
+    public static final CSSValue root = () -> "root";
+    /** Scroller: self - the element itself. */
+    public static final CSSValue self = () -> "self";
+    /** Axis: x - horizontal axis. */
+    public static final CSSValue x = () -> "x";
+    /** Axis: y - vertical axis. */
+    public static final CSSValue y = () -> "y";
 
     // ==================== Clip Path Functions ====================
 
