@@ -34,7 +34,8 @@
       "Bash(dir:*)",
       "Bash(cmd.exe /c:*)",
       "Bash(./mvnw spring-boot:run:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(cd:*)"
     ]
   }
 }

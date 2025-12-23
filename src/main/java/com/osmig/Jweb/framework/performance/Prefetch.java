@@ -14,9 +14,9 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  * <p>How it works:</p>
  * <ul>
  *   <li>On hover over links/buttons, the target page is fetched in background</li>
- *   <li>Results are cached in memory (with configurable TTL)</li>
+ *   <li>Results are cached by the browser via {@code <link rel="prefetch">}</li>
  *   <li>On click, cached content is shown instantly</li>
- *   <li>Works automatically for all internal links</li>
+ *   <li>Works automatically for all internal links and elements with data-prefetch-url</li>
  * </ul>
  *
  * <p>Usage - Add to your layout:</p>
@@ -29,14 +29,28 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  * )
  * </pre>
  *
- * <p>Or enable specific links:</p>
+ * <p>Links (automatic prefetch on hover):</p>
  * <pre>
- * a(attrs().href("/about").data("prefetch", "true"), text("About"))
+ * a(attrs().href("/about"), text("About"))
  * </pre>
  *
- * <p>Disable for specific links:</p>
+ * <p>Buttons (use data-prefetch-url):</p>
+ * <pre>
+ * button(attrs().data("prefetch-url", "/dashboard"), text("Go to Dashboard"))
+ * </pre>
+ *
+ * <p>Any element (use data-prefetch-url):</p>
+ * <pre>
+ * div(attrs().data("prefetch-url", "/products").class_("card"),
+ *     h3("Products"),
+ *     p("Click to view all products")
+ * )
+ * </pre>
+ *
+ * <p>Disable for specific elements:</p>
  * <pre>
  * a(attrs().href("/logout").data("no-prefetch", "true"), text("Logout"))
+ * button(attrs().data("prefetch-url", "/admin").data("no-prefetch", "true"), text("Admin"))
  * </pre>
  */
 public final class Prefetch {
@@ -125,6 +139,13 @@ public final class Prefetch {
     /**
      * Returns the prefetch JavaScript code.
      * Uses link prefetch hints for browser-native caching - safe and fast.
+     *
+     * <p>Supports:</p>
+     * <ul>
+     *   <li>Anchor tags: {@code <a href="/path">}</li>
+     *   <li>Buttons with data-prefetch-url: {@code <button data-prefetch-url="/path">}</li>
+     *   <li>Any element with data-prefetch-url: {@code <div data-prefetch-url="/path">}</li>
+     * </ul>
      */
     public static String clientScript() {
         return "(function(){" +
@@ -137,29 +158,48 @@ public final class Prefetch {
             "var hoverTimeout=null;" +
             "var currentEl=null;" + // Track currently hovered element
 
+            // Find prefetchable element (anchor or element with data-prefetch-url)
+            "function findPrefetchable(target){" +
+                "var el=target.closest('[data-prefetch-url]');" +
+                "if(el)return el;" +
+                "return target.closest('a[href]')" +
+            "}" +
+
+            // Get URL from element (href or data-prefetch-url)
+            "function getUrl(el){" +
+                "if(!el)return null;" +
+                "if(el.dataset&&el.dataset.prefetchUrl)return el.dataset.prefetchUrl;" +
+                "return el.href||null" +
+            "}" +
+
             // Check if URL should be prefetched
             "function shouldPrefetch(el){" +
                 "if(!el)return false;" +
                 "if(el.dataset&&el.dataset.noPrefetch)return false;" +
-                "var url=el.href;" +
+                "var url=getUrl(el);" +
                 "if(!url)return false;" +
                 // Skip already prefetched
                 "if(prefetched[url])return false;" +
+                // Handle relative URLs - convert to absolute for comparison
+                "var fullUrl=new URL(url,location.origin).href;" +
                 // Skip external links
-                "if(url.indexOf(location.origin)!==0)return false;" +
+                "if(fullUrl.indexOf(location.origin)!==0)return false;" +
                 // Skip anchors on same page
-                "if(url.indexOf('#')!==-1&&url.split('#')[0]===location.href.split('#')[0])return false;" +
+                "if(fullUrl.indexOf('#')!==-1&&fullUrl.split('#')[0]===location.href.split('#')[0])return false;" +
                 "return true" +
             "}" +
 
             // Prefetch using link element (browser-native, safe)
             "function prefetch(url){" +
-                "if(prefetched[url])return;" +
-                "prefetched[url]=true;" +
+                "if(!url)return;" +
+                // Convert relative to absolute URL
+                "var fullUrl=new URL(url,location.origin).href;" +
+                "if(prefetched[fullUrl])return;" +
+                "prefetched[fullUrl]=true;" +
                 // Use link prefetch for full page preload
                 "var link=document.createElement('link');" +
                 "link.rel='prefetch';" +
-                "link.href=url;" +
+                "link.href=fullUrl;" +
                 "link.as='document';" +
                 "document.head.appendChild(link)" +
             "}" +
@@ -173,9 +213,9 @@ public final class Prefetch {
                 "currentEl=null" +
             "}" +
 
-            // Hover prefetch for links - only triggers after DELAY ms of continuous hover
+            // Hover prefetch - only triggers after DELAY ms of continuous hover
             "document.addEventListener('mouseover',function(e){" +
-                "var el=e.target.closest('a[href]');" +
+                "var el=findPrefetchable(e.target);" +
                 // If moved to different element, cancel previous
                 "if(el!==currentEl)cancelPrefetch();" +
                 "if(!shouldPrefetch(el))return;" +
@@ -184,7 +224,7 @@ public final class Prefetch {
                 "if(!hoverTimeout){" +
                     "hoverTimeout=setTimeout(function(){" +
                         // Verify still hovering same element
-                        "if(currentEl===el){prefetch(el.href)}" +
+                        "if(currentEl===el){prefetch(getUrl(el))}" +
                         "hoverTimeout=null" +
                     "},DELAY)" +
                 "}" +
@@ -192,15 +232,15 @@ public final class Prefetch {
 
             // Cancel prefetch when leaving any element
             "document.addEventListener('mouseout',function(e){" +
-                "var el=e.target.closest('a[href]');" +
+                "var el=findPrefetchable(e.target);" +
                 // Only cancel if leaving the tracked element
                 "if(el===currentEl)cancelPrefetch()" +
             "});" +
 
             // Touch prefetch (on touchstart) - immediate since touch implies intent
             "document.addEventListener('touchstart',function(e){" +
-                "var el=e.target.closest('a[href]');" +
-                "if(shouldPrefetch(el))prefetch(el.href)" +
+                "var el=findPrefetchable(e.target);" +
+                "if(shouldPrefetch(el))prefetch(getUrl(el))" +
             "},{passive:true});" +
 
             "console.log('[JWeb] Prefetch enabled')" +
