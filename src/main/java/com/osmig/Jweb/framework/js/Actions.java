@@ -1,7 +1,9 @@
 package com.osmig.Jweb.framework.js;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * High-level JavaScript DSL for common UI interactions.
@@ -66,6 +68,27 @@ public final class Actions {
         return new StateBuilder();
     }
 
+    /** Define DOM element references. */
+    public static RefsBuilder refs() {
+        return new RefsBuilder();
+    }
+
+    /**
+     * Listen to window/document events.
+     * Usage: onEvent("popstate").when("isLoggedIn").then(call("clearSession"))
+     */
+    public static EventHandler onEvent(String eventName) {
+        return new EventHandler(eventName);
+    }
+
+    /**
+     * Define a window-accessible function.
+     * Usage: windowFunc("approveReq").params("id", "email").does(...)
+     */
+    public static WindowFuncBuilder windowFunc(String name) {
+        return new WindowFuncBuilder(name);
+    }
+
     // ==================== Actions (what to do) ====================
 
     /** Show a message in an element. */
@@ -81,6 +104,14 @@ public final class Actions {
     /** Hide a modal/dialog. */
     public static Action hideModal(String modalId) {
         return () -> "$_('" + modalId + "').style.display='none'";
+    }
+
+    /**
+     * Show a styled confirm dialog.
+     * Usage: confirmDialog("modal-id").message("Delete this?").onConfirm(action)
+     */
+    public static ConfirmDialog confirmDialog(String modalId) {
+        return new ConfirmDialog(modalId);
     }
 
     /** Show an element. */
@@ -106,6 +137,62 @@ public final class Actions {
     /** Set element text content. */
     public static Action setText(String elementId, String text) {
         return () -> "$_('" + elementId + "').textContent='" + esc(text) + "'";
+    }
+
+    /**
+     * Set element text content and color in one call.
+     * Usage: setTextAndColor("status", "Success!", "#065f46")
+     */
+    public static Action setTextAndColor(String elementId, String text, String color) {
+        return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent='" + esc(text) + "';_e.style.color='" + esc(color) + "';}";
+    }
+
+    /**
+     * Set element text and color from JS expressions.
+     * Usage: setTextAndColorExpr("status", "msg", "'#065f46'")
+     */
+    public static Action setTextAndColorExpr(String elementId, String textExpr, String colorExpr) {
+        return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent=" + textExpr + ";_e.style.color=" + colorExpr + ";}";
+    }
+
+    /**
+     * Try/catch wrapper for error handling.
+     * Usage: tryCatch().try_(asyncAction).catch_(errorAction)
+     */
+    public static TryCatchBuilder tryCatch() {
+        return new TryCatchBuilder();
+    }
+
+    /**
+     * Check if an external library is defined.
+     * Usage: ifDefined("emailjs").then(action).otherwise(fallback)
+     */
+    public static IfAction ifDefined(String libName) {
+        return new IfAction("typeof " + libName + "!=='undefined'");
+    }
+
+    /**
+     * Status feedback element for loading/success/error states.
+     * Usage: statusFeedback("status-el").loading("Sending...").success("Done!").error("Failed")
+     */
+    public static StatusFeedback statusFeedback(String elementId) {
+        return new StatusFeedback(elementId);
+    }
+
+    /**
+     * Call an external service (like emailjs).
+     * Usage: externalService("emailjs").call("send", "'service_id'", "'template_id'", "{email:email}")
+     */
+    public static ExternalServiceCall externalService(String serviceName) {
+        return new ExternalServiceCall(serviceName);
+    }
+
+    /**
+     * Conditional error message based on HTTP response status.
+     * Usage: responseError("error-el").on401("Invalid credentials").otherwise("Connection error")
+     */
+    public static ResponseErrorBuilder responseError(String elementId) {
+        return new ResponseErrorBuilder(elementId);
     }
 
     /** Set element text from response field. */
@@ -146,6 +233,107 @@ public final class Actions {
     /** Download a file. */
     public static DownloadAction download(String url) {
         return new DownloadAction(url);
+    }
+
+    /**
+     * Make an async fetch request (standalone, not tied to form).
+     * Usage: fetch("/api/data").withHeader("X-Token", "myVar").ok(action)
+     */
+    public static FetchBuilder fetch(String url) {
+        return new FetchBuilder(url);
+    }
+
+    /**
+     * Set up tab switching behavior.
+     * Usage: tabs(".tab-btn").activeClass("active").onSwitch(action)
+     */
+    public static TabHandler tabs(String selector) {
+        return new TabHandler(selector);
+    }
+
+    /**
+     * Render a list of items into a container.
+     * Usage: renderList("container").from("dataVar").using("templateFunc").empty("No items")
+     */
+    public static ListRenderer renderList(String containerId) {
+        return new ListRenderer(containerId);
+    }
+
+    /**
+     * Set innerHTML of an element.
+     * Usage: setInnerHtml("container").to(html) or .fromVar("htmlVar")
+     */
+    public static HtmlSetter setInnerHtml(String elementId) {
+        return new HtmlSetter(elementId);
+    }
+
+    /**
+     * Build a JS template function for rendering items.
+     * Usage: template("r").div().style("...").text(field("email")).end()
+     */
+    public static TemplateBuilder template(String itemVar) {
+        return new TemplateBuilder(itemVar);
+    }
+
+    /**
+     * Reference a field from the item in a template.
+     */
+    public static TemplateField field(String name) {
+        return new TemplateField(name);
+    }
+
+    /**
+     * Reference a field with escaping for safe HTML.
+     */
+    public static TemplateField escapedField(String name) {
+        return new TemplateField(name, true);
+    }
+
+    /**
+     * Format a timestamp field as a date.
+     */
+    public static TemplateDateField dateField(String name) {
+        return new TemplateDateField(name);
+    }
+
+    /**
+     * Create a color switch based on a value.
+     * Usage: colorSwitch("status").when("PENDING", "#fef3c7").when("APPROVED", "#d1fae5").otherwise("#fee2e2")
+     */
+    public static ColorSwitch colorSwitch(String fieldName) {
+        return new ColorSwitch(fieldName);
+    }
+
+    /**
+     * Define an async function with optional guards.
+     * Usage: asyncFunc("loadData").guard("!isLoggedIn").does(fetch(...))
+     */
+    public static AsyncFuncBuilder asyncFunc(String name) {
+        return new AsyncFuncBuilder(name);
+    }
+
+    /**
+     * Reset multiple state variables.
+     * Usage: resetVars().var("isLoggedIn", false).var("adminKey", "").array("requests")
+     */
+    public static ResetVarsBuilder resetVars() {
+        return new ResetVarsBuilder();
+    }
+
+    /**
+     * Show modal with dynamic HTML content.
+     * Usage: showModalHtml("modal-overlay", "modal-body").html("<h3>Success!</h3>")
+     */
+    public static ModalHtmlBuilder showModalHtml(String modalId, String bodyRef) {
+        return new ModalHtmlBuilder(modalId, bodyRef);
+    }
+
+    /**
+     * Create an alert/result modal (success, error, info).
+     * Usage: alertModal("modal-overlay", "modal-body").success("Approved!").detail("Token: xyz")
+     */
+    public static AlertModalBuilder alertModal(String modalId, String bodyRef) {
+        return new AlertModalBuilder(modalId, bodyRef);
     }
 
     /** Conditional action. */
@@ -196,6 +384,72 @@ public final class Actions {
     /** Do nothing (placeholder). */
     public static Action noop() {
         return () -> "";
+    }
+
+    /**
+     * Assign a value to a variable.
+     * Usage: assignVar("requests", "_data") or assignVar("isLoggedIn", "true")
+     */
+    public static Action assignVar(String varName, String expression) {
+        return () -> varName + "=" + expression;
+    }
+
+    /**
+     * Assign a literal string value to a variable.
+     * Usage: assignStr("adminKey", "") sets adminKey=''
+     */
+    public static Action assignStr(String varName, String value) {
+        return () -> varName + "='" + esc(value) + "'";
+    }
+
+    /**
+     * Get input value and store in variable.
+     * Usage: getInputValue("admin-email").storeTo("adminEmail")
+     */
+    public static InputValueGetter getInputValue(String elementId) {
+        return new InputValueGetter(elementId);
+    }
+
+    /**
+     * Set text content of an element from an expression.
+     * Usage: setTextExpr("login-error", "_res?.status===401?'Invalid':'Error'")
+     */
+    public static Action setTextExpr(String elementId, String expression) {
+        return () -> "$_('" + esc(elementId) + "').textContent=" + expression;
+    }
+
+    /**
+     * Push state to browser history.
+     * Usage: pushState("admin", "true")
+     */
+    public static Action pushState(String key, String value) {
+        return () -> "history.pushState({" + key + ":" + value + "},'',location.href)";
+    }
+
+    /**
+     * Create a ternary URL expression based on a condition.
+     * Usage: ternaryUrl("tab==='pending'", "/api/pending", "/api/all")
+     * Returns: tab==='pending'?'/api/pending':'/api/all'
+     */
+    public static String ternaryUrl(String condition, String trueUrl, String falseUrl) {
+        return condition + "?'" + esc(trueUrl) + "':'" + esc(falseUrl) + "'";
+    }
+
+    /**
+     * Select input text and copy to clipboard.
+     * Usage: selectAndCopy("token-input")
+     */
+    public static Action selectAndCopy(String elementId) {
+        return () -> "{const _inp=$_('" + esc(elementId) + "');_inp.select();navigator.clipboard.writeText(_inp.value);}";
+    }
+
+    /**
+     * Hide element when clicking on backdrop (the element itself, not children).
+     * Usage: hideOnBackdropClick("modalOverlay")
+     * Common pattern for closing modals by clicking outside content.
+     */
+    public static Action hideOnBackdropClick(String refName) {
+        return () -> "if(e.target===" + refName + ")" + refName + ".style.display='none'";
     }
 
     /** Combine multiple actions. */
@@ -784,6 +1038,90 @@ public final class Actions {
         }
     }
 
+    // ==================== Confirm Dialog ====================
+
+    /**
+     * A styled confirm dialog that shows in a modal.
+     * Replaces browser's window.confirm() with a nice UI.
+     */
+    public static class ConfirmDialog implements Action {
+        private final String modalId;
+        private String message = "Are you sure?";
+        private String confirmText = "Confirm";
+        private String cancelText = "Cancel";
+        private String confirmColor = "#6366f1";
+        private Action onConfirmAction;
+        private Action onCancelAction;
+
+        ConfirmDialog(String modalId) { this.modalId = modalId; }
+
+        /** Set the confirmation message. */
+        public ConfirmDialog message(String message) {
+            this.message = message;
+            return this;
+        }
+
+        /** Set confirm button text. */
+        public ConfirmDialog confirmText(String text) {
+            this.confirmText = text;
+            return this;
+        }
+
+        /** Set cancel button text. */
+        public ConfirmDialog cancelText(String text) {
+            this.cancelText = text;
+            return this;
+        }
+
+        /** Set confirm button color (for danger actions use "#ef4444"). */
+        public ConfirmDialog danger() {
+            this.confirmColor = "#ef4444";
+            return this;
+        }
+
+        /** Action to run when user confirms. */
+        public ConfirmDialog onConfirm(Action action) {
+            this.onConfirmAction = action;
+            return this;
+        }
+
+        /** Action to run when user cancels. */
+        public ConfirmDialog onCancel(Action action) {
+            this.onCancelAction = action;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{const _m=$_('" + modalId + "'),_b=_m.querySelector('[data-modal-body]');");
+            sb.append("_b.innerHTML='<div style=\"text-align:center\">");
+            sb.append("<h3 style=\"margin:0 0 1rem;color:#1f2937\">" + esc(message) + "</h3>");
+            sb.append("<div style=\"display:flex;gap:0.75rem;justify-content:center;margin-top:1.5rem\">");
+            sb.append("<button data-cancel style=\"padding:0.6rem 1.5rem;background:#e5e7eb;color:#374151;border:none;border-radius:8px;cursor:pointer;font-weight:500\">" + esc(cancelText) + "</button>");
+            sb.append("<button data-confirm style=\"padding:0.6rem 1.5rem;background:" + confirmColor + ";color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:500\">" + esc(confirmText) + "</button>");
+            sb.append("</div></div>';");
+            sb.append("_m.style.display='flex';");
+
+            // Cancel handler
+            sb.append("_b.querySelector('[data-cancel]').onclick=()=>{_m.style.display='none';");
+            if (onCancelAction != null) {
+                sb.append(onCancelAction.build());
+            }
+            sb.append("};");
+
+            // Confirm handler
+            sb.append("_b.querySelector('[data-confirm]').onclick=async()=>{_m.style.display='none';");
+            if (onConfirmAction != null) {
+                sb.append(onConfirmAction.build());
+            }
+            sb.append("};");
+
+            sb.append("}");
+            return sb.toString();
+        }
+    }
+
     // ==================== Call Action ====================
 
     public static class CallAction implements Action {
@@ -872,20 +1210,736 @@ public final class Actions {
         }
     }
 
+    // ==================== Color Switch ====================
+
+    /**
+     * Maps a field value to different colors.
+     * Generates: function name(s){return s==='X'?'#color1':s==='Y'?'#color2':'#default'}
+     */
+    public static class ColorSwitch {
+        private final String fieldName;
+        private final List<String[]> cases = new ArrayList<>();
+        private String defaultColor = "#6b7280";
+
+        ColorSwitch(String fieldName) { this.fieldName = fieldName; }
+
+        /** Map a value to a color. */
+        public ColorSwitch when(String value, String color) {
+            cases.add(new String[]{value, color});
+            return this;
+        }
+
+        /** Default color if no match. */
+        public ColorSwitch otherwise(String color) {
+            this.defaultColor = color;
+            return this;
+        }
+
+        /** Build as a named function. */
+        public String buildAs(String funcName) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("function ").append(funcName).append("(s){return ");
+            for (String[] c : cases) {
+                sb.append("s==='").append(esc(c[0])).append("'?'").append(esc(c[1])).append("':");
+            }
+            sb.append("'").append(esc(defaultColor)).append("'}");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Async Function Builder ====================
+
+    /**
+     * Defines an async function with optional early-return guards.
+     */
+    public static class AsyncFuncBuilder {
+        private final String name;
+        private final List<String> params = new ArrayList<>();
+        private String guard;
+        private final List<String> body = new ArrayList<>();
+
+        AsyncFuncBuilder(String name) { this.name = name; }
+
+        /** Add parameters. */
+        public AsyncFuncBuilder params(String... params) {
+            for (String p : params) this.params.add(p);
+            return this;
+        }
+
+        /** Add early-return guard condition. */
+        public AsyncFuncBuilder guard(String condition) {
+            this.guard = condition;
+            return this;
+        }
+
+        /** Add actions to the function body. */
+        public AsyncFuncBuilder does(Action... actions) {
+            for (Action a : actions) body.add(a.build());
+            return this;
+        }
+
+        /** Add raw JS to the function body. */
+        public AsyncFuncBuilder raw(String js) {
+            body.add(js);
+            return this;
+        }
+
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("async function ").append(name).append("(").append(String.join(",", params)).append("){");
+            if (guard != null) {
+                sb.append("if(").append(guard).append(")return;");
+            }
+            for (String s : body) {
+                sb.append(s);
+                if (!s.endsWith(";") && !s.endsWith("}")) sb.append(";");
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Input Value Getter ====================
+
+    /**
+     * Gets input value and stores in a variable.
+     */
+    public static class InputValueGetter implements Action {
+        private final String elementId;
+        private String targetVar;
+
+        InputValueGetter(String elementId) { this.elementId = elementId; }
+
+        /** Store the value in this variable. */
+        public InputValueGetter storeTo(String varName) {
+            this.targetVar = varName;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            return targetVar + "=$_('" + esc(elementId) + "').value";
+        }
+    }
+
+    // ==================== Status Feedback ====================
+
+    /**
+     * Manages status feedback states (loading, success, error) for an element.
+     * Generates actions to set text and color based on state.
+     */
+    public static class StatusFeedback {
+        private final String elementId;
+        private String loadingText;
+        private String loadingColor = "#6b7280";
+        private String successText;
+        private String successColor = "#065f46";
+        private String errorText;
+        private String errorColor = "#991b1b";
+
+        StatusFeedback(String elementId) { this.elementId = elementId; }
+
+        /** Set loading state text and optional color. */
+        public StatusFeedback loading(String text) {
+            this.loadingText = text;
+            return this;
+        }
+
+        public StatusFeedback loading(String text, String color) {
+            this.loadingText = text;
+            this.loadingColor = color;
+            return this;
+        }
+
+        /** Set success state text and optional color. */
+        public StatusFeedback success(String text) {
+            this.successText = text;
+            return this;
+        }
+
+        public StatusFeedback success(String text, String color) {
+            this.successText = text;
+            this.successColor = color;
+            return this;
+        }
+
+        /** Set error state text and optional color. */
+        public StatusFeedback error(String text) {
+            this.errorText = text;
+            return this;
+        }
+
+        public StatusFeedback error(String text, String color) {
+            this.errorText = text;
+            this.errorColor = color;
+            return this;
+        }
+
+        /** Get action to show loading state. */
+        public Action showLoading() {
+            return setTextAndColor(elementId, loadingText, loadingColor);
+        }
+
+        /** Get action to show success state. */
+        public Action showSuccess() {
+            return setTextAndColor(elementId, successText, successColor);
+        }
+
+        /** Get action to show error state. */
+        public Action showError() {
+            return setTextAndColor(elementId, errorText, errorColor);
+        }
+
+        /** Get action to show error with custom message. */
+        public Action showErrorExpr(String msgExpr) {
+            return setTextAndColorExpr(elementId, msgExpr, "'" + esc(errorColor) + "'");
+        }
+    }
+
+    // ==================== Response Error Builder ====================
+
+    /**
+     * Builds conditional error messages based on HTTP response status.
+     * Usage: responseError("error-el").on401("Invalid").otherwise("Error")
+     */
+    public static class ResponseErrorBuilder implements Action {
+        private final String elementId;
+        private final Map<Integer, String> statusMessages = new LinkedHashMap<>();
+        private String defaultMessage = "An error occurred";
+        private boolean showElement = true;
+
+        ResponseErrorBuilder(String elementId) { this.elementId = elementId; }
+
+        /** Message for 401 Unauthorized. */
+        public ResponseErrorBuilder on401(String message) {
+            statusMessages.put(401, message);
+            return this;
+        }
+
+        /** Message for 403 Forbidden. */
+        public ResponseErrorBuilder on403(String message) {
+            statusMessages.put(403, message);
+            return this;
+        }
+
+        /** Message for 404 Not Found. */
+        public ResponseErrorBuilder on404(String message) {
+            statusMessages.put(404, message);
+            return this;
+        }
+
+        /** Message for 500 Server Error. */
+        public ResponseErrorBuilder on500(String message) {
+            statusMessages.put(500, message);
+            return this;
+        }
+
+        /** Message for any status code. */
+        public ResponseErrorBuilder onStatus(int status, String message) {
+            statusMessages.put(status, message);
+            return this;
+        }
+
+        /** Default message if no status matches. */
+        public ResponseErrorBuilder otherwise(String message) {
+            this.defaultMessage = message;
+            return this;
+        }
+
+        /** Don't auto-show the element after setting text. */
+        public ResponseErrorBuilder noShow() {
+            this.showElement = false;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{const _el=$_('" + esc(elementId) + "');_el.textContent=");
+
+            // Build ternary chain
+            for (Map.Entry<Integer, String> entry : statusMessages.entrySet()) {
+                sb.append("_res?.status===").append(entry.getKey())
+                  .append("?'").append(esc(entry.getValue())).append("':");
+            }
+            sb.append("'").append(esc(defaultMessage)).append("';");
+
+            if (showElement) {
+                sb.append("_el.style.display='block';");
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+    }
+
+    // ==================== External Service Call ====================
+
+    /**
+     * Builder for calling external services like emailjs.
+     * Handles checking if service is available and awaiting async calls.
+     */
+    public static class ExternalServiceCall implements Action {
+        private final String serviceName;
+        private String methodName;
+        private final List<String> args = new ArrayList<>();
+        private Action onSuccess;
+        private Action onNotAvailable;
+        private Action onError;
+
+        ExternalServiceCall(String serviceName) { this.serviceName = serviceName; }
+
+        /** Call a method on the service. */
+        public ExternalServiceCall call(String method, String... arguments) {
+            this.methodName = method;
+            for (String arg : arguments) this.args.add(arg);
+            return this;
+        }
+
+        /** Action on success. */
+        public ExternalServiceCall ok(Action action) {
+            this.onSuccess = action;
+            return this;
+        }
+
+        /** Action when service is not available. */
+        public ExternalServiceCall notAvailable(Action action) {
+            this.onNotAvailable = action;
+            return this;
+        }
+
+        /** Action on error. */
+        public ExternalServiceCall fail(Action action) {
+            this.onError = action;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("if(typeof ").append(serviceName).append("!=='undefined'){");
+            sb.append("try{");
+            sb.append("await ").append(serviceName).append(".").append(methodName);
+            sb.append("(").append(String.join(",", args)).append(");");
+            if (onSuccess != null) {
+                sb.append(onSuccess.build());
+                if (!onSuccess.build().endsWith(";") && !onSuccess.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}catch(_err){");
+            if (onError != null) {
+                sb.append(onError.build());
+                if (!onError.build().endsWith(";") && !onError.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}}else{");
+            if (onNotAvailable != null) {
+                sb.append(onNotAvailable.build());
+                if (!onNotAvailable.build().endsWith(";") && !onNotAvailable.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Try/Catch Builder ====================
+
+    /**
+     * Builder for try/catch blocks.
+     * Usage: tryCatch().try_(action).catch_(errorHandler)
+     */
+    public static class TryCatchBuilder implements Action {
+        private Action tryAction;
+        private Action catchAction;
+        private Action finallyAction;
+
+        /** Code to execute in try block. */
+        public TryCatchBuilder try_(Action action) {
+            this.tryAction = action;
+            return this;
+        }
+
+        /** Code to execute on error (has access to '_err' variable). */
+        public TryCatchBuilder catch_(Action action) {
+            this.catchAction = action;
+            return this;
+        }
+
+        /** Code to always execute. */
+        public TryCatchBuilder finally_(Action action) {
+            this.finallyAction = action;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("try{");
+            if (tryAction != null) {
+                sb.append(tryAction.build());
+                if (!tryAction.build().endsWith(";") && !tryAction.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}catch(_err){");
+            if (catchAction != null) {
+                sb.append(catchAction.build());
+                if (!catchAction.build().endsWith(";") && !catchAction.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}");
+            if (finallyAction != null) {
+                sb.append("finally{");
+                sb.append(finallyAction.build());
+                if (!finallyAction.build().endsWith(";") && !finallyAction.build().endsWith("}")) sb.append(";");
+                sb.append("}");
+            }
+            return sb.toString();
+        }
+    }
+
+    // ==================== Reset Vars Builder ====================
+
+    /**
+     * Resets multiple state variables to their initial values.
+     */
+    public static class ResetVarsBuilder implements Action {
+        private final List<String> resets = new ArrayList<>();
+
+        /** Reset a string variable. */
+        public ResetVarsBuilder var(String name, String value) {
+            resets.add(name + "='" + esc(value) + "'");
+            return this;
+        }
+
+        /** Reset a boolean variable. */
+        public ResetVarsBuilder var(String name, boolean value) {
+            resets.add(name + "=" + value);
+            return this;
+        }
+
+        /** Reset an array to empty. */
+        public ResetVarsBuilder array(String name) {
+            resets.add(name + "=[]");
+            return this;
+        }
+
+        /** Reset form. */
+        public ResetVarsBuilder resetForm(String formRef) {
+            resets.add(formRef + "?.reset()");
+            return this;
+        }
+
+        @Override
+        public String build() {
+            return String.join(";", resets);
+        }
+    }
+
+    // ==================== Modal HTML Builder ====================
+
+    /**
+     * Shows a modal with custom HTML content.
+     */
+    public static class ModalHtmlBuilder implements Action {
+        private final String modalId;
+        private final String bodyRef;
+        private String html;
+        private String htmlVar;
+
+        ModalHtmlBuilder(String modalId, String bodyRef) {
+            this.modalId = modalId;
+            this.bodyRef = bodyRef;
+        }
+
+        /** Set HTML from literal string. */
+        public ModalHtmlBuilder html(String html) {
+            this.html = html;
+            return this;
+        }
+
+        /** Set HTML from JS variable. */
+        public ModalHtmlBuilder fromVar(String varName) {
+            this.htmlVar = varName;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(bodyRef).append(".innerHTML=");
+            if (htmlVar != null) {
+                sb.append(htmlVar);
+            } else if (html != null) {
+                sb.append("'").append(esc(html)).append("'");
+            }
+            sb.append(";").append(modalId).append(".style.display='flex'");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Alert Modal Builder ====================
+
+    /**
+     * Creates styled alert modals (success/error/info) with optional details and buttons.
+     */
+    public static class AlertModalBuilder implements Action {
+        private final String modalId;
+        private final String bodyRef;
+        private String type = "info"; // success, error, info
+        private String title;
+        private String detail;
+        private String detailVar;
+        private final List<String[]> buttons = new ArrayList<>(); // [text, onclick, bgColor]
+        private String inputId;
+        private String inputValueVar;
+        private String statusId;
+
+        AlertModalBuilder(String modalId, String bodyRef) {
+            this.modalId = modalId;
+            this.bodyRef = bodyRef;
+        }
+
+        /** Success alert (green). */
+        public AlertModalBuilder success(String title) {
+            this.type = "success";
+            this.title = title;
+            return this;
+        }
+
+        /** Error alert (red). */
+        public AlertModalBuilder error(String title) {
+            this.type = "error";
+            this.title = title;
+            return this;
+        }
+
+        /** Info alert (gray). */
+        public AlertModalBuilder info(String title) {
+            this.type = "info";
+            this.title = title;
+            return this;
+        }
+
+        /** Add detail text. */
+        public AlertModalBuilder detail(String text) {
+            this.detail = text;
+            return this;
+        }
+
+        /** Add detail from JS variable or expression. */
+        public AlertModalBuilder detailExpr(String expr) {
+            this.detailVar = expr;
+            return this;
+        }
+
+        /** Add a readonly input field to display a value. */
+        public AlertModalBuilder inputField(String id, String valueVar) {
+            this.inputId = id;
+            this.inputValueVar = valueVar;
+            return this;
+        }
+
+        /** Add a status message area. */
+        public AlertModalBuilder statusArea(String id) {
+            this.statusId = id;
+            return this;
+        }
+
+        /** Add a button. */
+        public AlertModalBuilder button(String text, String onclick, String bgColor) {
+            buttons.add(new String[]{text, onclick, bgColor});
+            return this;
+        }
+
+        @Override
+        public String build() {
+            String titleColor = switch (type) {
+                case "success" -> "#065f46";
+                case "error" -> "#991b1b";
+                default -> "#1f2937";
+            };
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(bodyRef).append(".innerHTML='<div style=\"text-align:center\">");
+            sb.append("<h3 style=\"color:").append(titleColor).append(";margin-bottom:1rem\">").append(esc(title)).append("</h3>");
+
+            // Detail text
+            if (detail != null) {
+                sb.append("<p style=\"color:#6b7280;margin-bottom:0.5rem\">").append(esc(detail)).append("</p>");
+            } else if (detailVar != null) {
+                sb.append("'+").append(detailVar).append("+'");
+            }
+
+            // Input field
+            if (inputId != null) {
+                sb.append("<input id=\"").append(esc(inputId)).append("\" value=\"'+").append(inputValueVar)
+                  .append("+'\" readonly style=\"width:100%;padding:0.75rem;font-family:monospace;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;margin-bottom:1rem\"/>");
+            }
+
+            // Buttons
+            if (!buttons.isEmpty()) {
+                sb.append("<div style=\"display:flex;gap:0.75rem;justify-content:center\">");
+                for (String[] btn : buttons) {
+                    sb.append("<button onclick=\"").append(btn[1]).append("\" style=\"padding:0.6rem 1.25rem;background:")
+                      .append(btn[2]).append(";color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:500\">")
+                      .append(esc(btn[0])).append("</button>");
+                }
+                sb.append("</div>");
+            }
+
+            // Status area
+            if (statusId != null) {
+                sb.append("<p id=\"").append(esc(statusId)).append("\" style=\"margin-top:0.75rem;font-size:0.875rem;color:#6b7280\"></p>");
+            }
+
+            sb.append("</div>';").append(modalId).append(".style.display='flex'");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Refs Builder ====================
+
+    /**
+     * Builder for DOM element references.
+     * Usage: refs().add("container", "requests-container").add("form", "login-form")
+     */
+    public static class RefsBuilder {
+        private final List<String> refs = new ArrayList<>();
+
+        /** Add a reference: const name = $_('elementId') */
+        public RefsBuilder add(String name, String elementId) {
+            refs.add(name + "=$_('" + esc(elementId) + "')");
+            return this;
+        }
+
+        public String build() {
+            return "const " + String.join(",", refs) + ";";
+        }
+    }
+
+    // ==================== Event Handler ====================
+
+    /**
+     * General event listener for window/document events.
+     */
+    public static class EventHandler {
+        private final String eventName;
+        private String target = "window";
+        private String condition;
+        private Action action;
+
+        EventHandler(String eventName) { this.eventName = eventName; }
+
+        /** Listen on document instead of window. */
+        public EventHandler onDocument() {
+            this.target = "document";
+            return this;
+        }
+
+        /** Listen on a specific element by variable name. */
+        public EventHandler on(String elementVar) {
+            this.target = elementVar;
+            return this;
+        }
+
+        /** Only run action if condition is true. */
+        public EventHandler when(String condition) {
+            this.condition = condition;
+            return this;
+        }
+
+        /** Action to run. */
+        public EventHandler then(Action action) {
+            this.action = action;
+            return this;
+        }
+
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(target).append(".addEventListener('").append(esc(eventName)).append("',");
+            sb.append("function(e){");
+            if (condition != null) {
+                sb.append("if(").append(condition).append("){");
+            }
+            if (action != null) {
+                sb.append(action.build());
+            }
+            if (condition != null) {
+                sb.append("}");
+            }
+            sb.append("})");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Window Function Builder ====================
+
+    /**
+     * Builder for window-accessible functions with parameters.
+     */
+    public static class WindowFuncBuilder {
+        private final String name;
+        private final List<String> params = new ArrayList<>();
+        private boolean isAsync = false;
+        private final List<String> body = new ArrayList<>();
+
+        WindowFuncBuilder(String name) { this.name = name; }
+
+        /** Add parameters. */
+        public WindowFuncBuilder params(String... params) {
+            for (String p : params) this.params.add(p);
+            return this;
+        }
+
+        /** Make function async. */
+        public WindowFuncBuilder async() {
+            this.isAsync = true;
+            return this;
+        }
+
+        /** Add actions to the function body. */
+        public WindowFuncBuilder does(Action... actions) {
+            for (Action a : actions) body.add(a.build());
+            return this;
+        }
+
+        /** Add raw JS to the function body. */
+        public WindowFuncBuilder raw(String js) {
+            body.add(js);
+            return this;
+        }
+
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("window.").append(name).append("=");
+            if (isAsync) sb.append("async ");
+            sb.append("function(").append(String.join(",", params)).append("){");
+            for (String s : body) {
+                sb.append(s);
+                if (!s.endsWith(";") && !s.endsWith("}")) sb.append(";");
+            }
+            sb.append("}");
+            return sb.toString();
+        }
+    }
+
     // ==================== Script Builder ====================
 
     public static class ScriptBuilder {
         private final List<String> parts = new ArrayList<>();
 
-        /** Add helper function for getElementById (used internally). */
+        /** Add helper functions (getElementById, escape, date formatting). */
         public ScriptBuilder withHelpers() {
             parts.add("const $_=id=>document.getElementById(id)");
+            parts.add("function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}");
+            parts.add("function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}");
             return this;
         }
 
         /** Add state variables. */
         public ScriptBuilder state(StateBuilder state) {
             parts.add(state.build());
+            return this;
+        }
+
+        /** Add DOM element references. */
+        public ScriptBuilder refs(RefsBuilder refs) {
+            parts.add(refs.build());
             return this;
         }
 
@@ -911,6 +1965,31 @@ public final class Actions {
             return this;
         }
 
+        public ScriptBuilder add(TabHandler handler) {
+            parts.add(handler.build());
+            return this;
+        }
+
+        public ScriptBuilder add(EventHandler handler) {
+            parts.add(handler.build());
+            return this;
+        }
+
+        public ScriptBuilder add(WindowFuncBuilder func) {
+            parts.add(func.build());
+            return this;
+        }
+
+        public ScriptBuilder add(AsyncFuncBuilder func) {
+            parts.add(func.build());
+            return this;
+        }
+
+        public ScriptBuilder add(ColorSwitch colorSwitch, String funcName) {
+            parts.add(colorSwitch.buildAs(funcName));
+            return this;
+        }
+
         /** Add onLoad actions. */
         public ScriptBuilder onLoad(OnLoadHandler handler) {
             parts.add(handler.build());
@@ -929,9 +2008,632 @@ public final class Actions {
             sb.append("(function(){");
             for (String part : parts) {
                 sb.append(part);
-                if (!part.endsWith(";") && !part.endsWith("}")) sb.append(";");
+                // Always add semicolon for safety - JS ASI can fail with minified code
+                if (!part.endsWith(";")) sb.append(";");
             }
             sb.append("})()");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Template Builder ====================
+
+    /**
+     * Represents a value that can be used in templates.
+     */
+    public interface TemplateValue {
+        String toTemplateJs(String itemVar);
+    }
+
+    /**
+     * A field reference from the item object.
+     */
+    public static class TemplateField implements TemplateValue {
+        private final String name;
+        private final boolean escape;
+
+        TemplateField(String name) { this.name = name; this.escape = false; }
+        TemplateField(String name, boolean escape) { this.name = name; this.escape = escape; }
+
+        @Override
+        public String toTemplateJs(String itemVar) {
+            if (escape) {
+                return "${esc(" + itemVar + "." + name + ")}";
+            }
+            return "${" + itemVar + "." + name + "}";
+        }
+    }
+
+    /**
+     * A date field that gets formatted.
+     */
+    public static class TemplateDateField implements TemplateValue {
+        private final String name;
+        private String format = "MMM d, yyyy 'at' h:mm a";
+
+        TemplateDateField(String name) { this.name = name; }
+
+        public TemplateDateField format(String fmt) {
+            this.format = fmt;
+            return this;
+        }
+
+        @Override
+        public String toTemplateJs(String itemVar) {
+            return "${" + itemVar + "." + name + "?new Date(" + itemVar + "." + name + ").toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}";
+        }
+    }
+
+    /**
+     * Builder for JS template functions.
+     * Generates a function that takes an item and returns HTML string.
+     */
+    public static class TemplateBuilder {
+        private final String itemVar;
+        private final StringBuilder html = new StringBuilder();
+        private final java.util.Deque<String> tagStack = new java.util.ArrayDeque<>();
+        private boolean needsClosingBracket = false;
+
+        TemplateBuilder(String itemVar) { this.itemVar = itemVar; }
+
+        /** Start a div element. */
+        public TemplateBuilder div() {
+            closeOpeningTag();
+            html.append("<div");
+            tagStack.push("div");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Start a span element. */
+        public TemplateBuilder span() {
+            closeOpeningTag();
+            html.append("<span");
+            tagStack.push("span");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Start a button element. */
+        public TemplateBuilder button() {
+            closeOpeningTag();
+            html.append("<button");
+            tagStack.push("button");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Start a code element. */
+        public TemplateBuilder code() {
+            closeOpeningTag();
+            html.append("<code");
+            tagStack.push("code");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Start an input element (self-closing). */
+        public TemplateBuilder input() {
+            closeOpeningTag();
+            html.append("<input");
+            tagStack.push("input");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Start a p element. */
+        public TemplateBuilder p() {
+            closeOpeningTag();
+            html.append("<p");
+            tagStack.push("p");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Start an h3 element. */
+        public TemplateBuilder h3() {
+            closeOpeningTag();
+            html.append("<h3");
+            tagStack.push("h3");
+            needsClosingBracket = true;
+            return this;
+        }
+
+        /** Add style attribute. */
+        public TemplateBuilder style(String css) {
+            html.append(" style=\"").append(esc(css).replace("\"", "&quot;")).append("\"");
+            return this;
+        }
+
+        /** Add id attribute. */
+        public TemplateBuilder id(String id) {
+            html.append(" id=\"").append(esc(id)).append("\"");
+            return this;
+        }
+
+        /** Add id from field. */
+        public TemplateBuilder idFromField(String fieldName) {
+            html.append(" id=\"${" + itemVar + "." + fieldName + "}\"");
+            return this;
+        }
+
+        /** Add class attribute. */
+        public TemplateBuilder cls(String className) {
+            html.append(" class=\"").append(esc(className)).append("\"");
+            return this;
+        }
+
+        /** Add onclick with function call using item fields. */
+        public TemplateBuilder onClick(String funcName, String... fields) {
+            html.append(" onclick=\"").append(funcName).append("(");
+            for (int i = 0; i < fields.length; i++) {
+                if (i > 0) html.append(",");
+                html.append("'${").append(itemVar).append(".").append(fields[i]).append("}'");
+            }
+            html.append(")\"");
+            return this;
+        }
+
+        /** Add onclick with function call using escaped item fields. */
+        public TemplateBuilder onClickEscaped(String funcName, String... fields) {
+            html.append(" onclick=\"").append(funcName).append("(");
+            for (int i = 0; i < fields.length; i++) {
+                if (i > 0) html.append(",");
+                html.append("'${esc(").append(itemVar).append(".").append(fields[i]).append(")}'");
+            }
+            html.append(")\"");
+            return this;
+        }
+
+        /** Add value attribute from field. */
+        public TemplateBuilder valueFromField(String fieldName) {
+            html.append(" value=\"${" + itemVar + "." + fieldName + "}\"");
+            return this;
+        }
+
+        /** Add readonly attribute. */
+        public TemplateBuilder readonly() {
+            html.append(" readonly");
+            return this;
+        }
+
+        /** Add any attribute. */
+        public TemplateBuilder attr(String name, String value) {
+            html.append(" ").append(name).append("=\"").append(esc(value)).append("\"");
+            return this;
+        }
+
+        /** Close the opening tag and add content. */
+        public TemplateBuilder text(String literal) {
+            closeOpeningTag();
+            html.append(esc(literal));
+            return this;
+        }
+
+        /** Add text from field. */
+        public TemplateBuilder text(TemplateValue value) {
+            closeOpeningTag();
+            html.append(value.toTemplateJs(itemVar));
+            return this;
+        }
+
+        /** Add raw HTML (careful - no escaping). */
+        public TemplateBuilder html(String rawHtml) {
+            closeOpeningTag();
+            html.append(rawHtml);
+            return this;
+        }
+
+        /** Add child elements (closes opening tag first). */
+        public TemplateBuilder child() {
+            closeOpeningTag();
+            return this;
+        }
+
+        /** End current element. */
+        public TemplateBuilder end() {
+            String tag = tagStack.pop();
+            if ("input".equals(tag)) {
+                html.append("/>");
+            } else {
+                closeOpeningTag();
+                html.append("</").append(tag).append(">");
+            }
+            return this;
+        }
+
+        /** Conditional block - show only if field is truthy. */
+        public TemplateBuilder when(String fieldName) {
+            closeOpeningTag();
+            html.append("${" + itemVar + "." + fieldName + "?`");
+            tagStack.push("when");
+            return this;
+        }
+
+        /** Conditional block - show only if field equals value. */
+        public TemplateBuilder whenEquals(String fieldName, String value) {
+            closeOpeningTag();
+            html.append("${" + itemVar + "." + fieldName + "==='" + esc(value) + "'?`");
+            tagStack.push("when");
+            return this;
+        }
+
+        /** End conditional block. */
+        public TemplateBuilder endWhen() {
+            tagStack.pop();
+            html.append("`:''}");
+            return this;
+        }
+
+        /**
+         * Add a status badge with dynamic colors.
+         * Usage: .badge("status", "statusBg", "statusTxt")
+         * Creates a pill-shaped badge using color functions for bg/text.
+         */
+        public TemplateBuilder badge(String fieldName, String bgColorFunc, String txtColorFunc) {
+            closeOpeningTag();
+            html.append("<span style=\"padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;")
+                .append("background:${").append(bgColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")};")
+                .append("color:${").append(txtColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")}\"")
+                .append(">${").append(itemVar).append(".").append(fieldName).append("}</span>");
+            return this;
+        }
+
+        /**
+         * Add a status badge with custom base styles.
+         */
+        public TemplateBuilder badge(String fieldName, String bgColorFunc, String txtColorFunc, String extraStyles) {
+            closeOpeningTag();
+            html.append("<span style=\"").append(esc(extraStyles)).append(";")
+                .append("background:${").append(bgColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")};")
+                .append("color:${").append(txtColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")}\"")
+                .append(">${").append(itemVar).append(".").append(fieldName).append("}</span>");
+            return this;
+        }
+
+        private void closeOpeningTag() {
+            if (needsClosingBracket) {
+                html.append(">");
+                needsClosingBracket = false;
+            }
+        }
+
+        /** Build the template function. */
+        public String build() {
+            return itemVar + "=>`" + html.toString() + "`";
+        }
+
+        /** Build as a named function. */
+        public String buildAs(String funcName) {
+            return "function " + funcName + "(" + itemVar + "){return `" + html.toString() + "`;}";
+        }
+    }
+
+    // ==================== List Renderer ====================
+
+    /**
+     * Render a list of items from a JS array variable.
+     */
+    public static class ListRenderer implements Action {
+        private final String containerId;
+        private String dataVar;
+        private String templateFunc;
+        private String emptyMessage = "No items found";
+        private String emptyStyles = "text-align:center;padding:3rem;color:#6b7280";
+        private String selector = "div"; // child selector within container
+
+        ListRenderer(String containerId) { this.containerId = containerId; }
+
+        /** JS variable containing the array data. */
+        public ListRenderer from(String varName) {
+            this.dataVar = varName;
+            return this;
+        }
+
+        /** Function name that generates HTML for each item. */
+        public ListRenderer using(String funcName) {
+            this.templateFunc = funcName;
+            return this;
+        }
+
+        /** Message to show when list is empty. */
+        public ListRenderer empty(String message) {
+            this.emptyMessage = message;
+            return this;
+        }
+
+        /** Styles for empty message. */
+        public ListRenderer emptyStyles(String styles) {
+            this.emptyStyles = styles;
+            return this;
+        }
+
+        /** Child element selector within container (default: "div"). */
+        public ListRenderer into(String selector) {
+            this.selector = selector;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{const _c=$_('" + containerId + "')");
+            if (!"".equals(selector)) {
+                sb.append(".querySelector('" + esc(selector) + "')");
+            }
+            sb.append(";");
+
+            // Check if empty
+            sb.append("if(!" + dataVar + ".length){");
+            sb.append("_c.innerHTML='<div style=\"" + esc(emptyStyles) + "\">" + esc(emptyMessage) + "</div>';");
+            sb.append("}else{");
+            sb.append("_c.innerHTML=" + dataVar + ".map(" + templateFunc + ").join('');");
+            sb.append("}}");
+            return sb.toString();
+        }
+    }
+
+    // ==================== HTML Setter ====================
+
+    /**
+     * Set innerHTML of an element with various sources.
+     */
+    public static class HtmlSetter implements Action {
+        private final String elementId;
+        private String html;
+        private String htmlVar;
+        private String selector;
+
+        HtmlSetter(String elementId) { this.elementId = elementId; }
+
+        /** Set HTML from literal string. */
+        public HtmlSetter to(String html) {
+            this.html = html;
+            return this;
+        }
+
+        /** Set HTML from JS variable. */
+        public HtmlSetter fromVar(String varName) {
+            this.htmlVar = varName;
+            return this;
+        }
+
+        /** Target a child element (optional). */
+        public HtmlSetter child(String selector) {
+            this.selector = selector;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("$_('" + elementId + "')");
+            if (selector != null) {
+                sb.append(".querySelector('" + esc(selector) + "')");
+            }
+            if (htmlVar != null) {
+                sb.append(".innerHTML=" + htmlVar);
+            } else if (html != null) {
+                sb.append(".innerHTML='" + esc(html) + "'");
+            }
+            return sb.toString();
+        }
+    }
+
+    // ==================== Tab Handler ====================
+
+    /**
+     * Tab switching with automatic active state management.
+     */
+    public static class TabHandler {
+        private final String selector;
+        private String stateVar;
+        private String activeStyles = "backgroundColor:'white',color:'#6366f1',borderBottomColor:'#6366f1'";
+        private String inactiveStyles = "backgroundColor:'transparent',color:'#6b7280',borderBottomColor:'transparent'";
+        private Action onSwitchAction;
+        private String dataAttr = "tab";
+
+        TabHandler(String selector) { this.selector = selector; }
+
+        /** JS variable to store current tab value. */
+        public TabHandler storesIn(String varName) {
+            this.stateVar = varName;
+            return this;
+        }
+
+        /** Data attribute to read tab value from (default: "tab" for data-tab). */
+        public TabHandler dataAttribute(String attr) {
+            this.dataAttr = attr;
+            return this;
+        }
+
+        /** Set active tab styles (CSS properties). */
+        public TabHandler activeStyles(String styles) {
+            this.activeStyles = styles;
+            return this;
+        }
+
+        /** Set inactive tab styles (CSS properties). */
+        public TabHandler inactiveStyles(String styles) {
+            this.inactiveStyles = styles;
+            return this;
+        }
+
+        /** Action to run when tab is switched (has access to tab value). */
+        public TabHandler onSwitch(Action action) {
+            this.onSwitchAction = action;
+            return this;
+        }
+
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("document.querySelectorAll('" + esc(selector) + "').forEach(function(_tab){");
+            sb.append("_tab.addEventListener('click',async function(){");
+
+            // Update state variable if defined
+            if (stateVar != null) {
+                sb.append(stateVar + "=this.dataset." + dataAttr + ";");
+            }
+
+            // Reset all tabs to inactive
+            sb.append("document.querySelectorAll('" + esc(selector) + "').forEach(function(_t){");
+            sb.append("Object.assign(_t.style,{" + inactiveStyles + "});");
+            sb.append("});");
+
+            // Set clicked tab to active
+            sb.append("Object.assign(this.style,{" + activeStyles + "});");
+
+            // Run onSwitch action
+            if (onSwitchAction != null) {
+                sb.append(onSwitchAction.build());
+            }
+
+            sb.append("});})");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Fetch Builder ====================
+
+    /**
+     * Standalone async fetch action.
+     * Can use JS variables for headers (for auth flows).
+     */
+    public static class FetchBuilder implements Action {
+        private String url;
+        private String urlVar;
+        private String method = "GET";
+        private final List<String> headers = new ArrayList<>();
+        private String jsonBody;
+        private Action okAction;
+        private Action failAction;
+        private final Map<Integer, Action> statusHandlers = new LinkedHashMap<>();
+
+        FetchBuilder(String url) { this.url = url; }
+
+        /** Handle specific HTTP status code. */
+        public FetchBuilder onStatus(int status, Action action) {
+            statusHandlers.put(status, action);
+            return this;
+        }
+
+        /** Use a JS variable for the URL. */
+        public FetchBuilder urlFromVar(String varName) {
+            this.urlVar = varName;
+            this.url = null;
+            return this;
+        }
+
+        /** Append to URL from variable. */
+        public FetchBuilder appendVar(String varName) {
+            if (urlVar != null) {
+                urlVar = urlVar + "+" + varName;
+            } else if (url != null) {
+                urlVar = "'" + esc(url) + "'+" + varName;
+                url = null;
+            }
+            return this;
+        }
+
+        /** Set HTTP method. */
+        public FetchBuilder method(String method) {
+            this.method = method;
+            return this;
+        }
+
+        /** POST request. */
+        public FetchBuilder post() {
+            this.method = "POST";
+            return this;
+        }
+
+        /** Add header with literal value. */
+        public FetchBuilder header(String name, String value) {
+            headers.add("'" + name + "':'" + esc(value) + "'");
+            return this;
+        }
+
+        /** Add header from JS variable. */
+        public FetchBuilder headerFromVar(String name, String varName) {
+            headers.add("'" + name + "':" + varName);
+            return this;
+        }
+
+        /** Send JSON body. */
+        public FetchBuilder body(String json) {
+            this.jsonBody = json;
+            return this;
+        }
+
+        /** Action on success. */
+        public FetchBuilder ok(Action action) {
+            this.okAction = action;
+            return this;
+        }
+
+        /** Action on failure. */
+        public FetchBuilder fail(Action action) {
+            this.failAction = action;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("{try{");
+
+            // Build fetch URL
+            String fetchUrl = urlVar != null ? urlVar : "'" + esc(url) + "'";
+            sb.append("const _res=await fetch(" + fetchUrl + ",{");
+            sb.append("method:'" + method + "'");
+
+            // Headers
+            List<String> allHeaders = new ArrayList<>(headers);
+            if (jsonBody != null) {
+                allHeaders.add("'Content-Type':'application/json'");
+            }
+            if (!allHeaders.isEmpty()) {
+                sb.append(",headers:{" + String.join(",", allHeaders) + "}");
+            }
+
+            // Body
+            if (jsonBody != null) {
+                sb.append(",body:'" + esc(jsonBody) + "'");
+            }
+
+            sb.append("});");
+            sb.append("const _data=await _res.json();");
+
+            // Status-specific handlers
+            if (!statusHandlers.isEmpty()) {
+                boolean first = true;
+                for (Map.Entry<Integer, Action> entry : statusHandlers.entrySet()) {
+                    sb.append(first ? "if" : "else if");
+                    sb.append("(_res.status===").append(entry.getKey()).append("){");
+                    sb.append(entry.getValue().build()).append(";");
+                    sb.append("}");
+                    first = false;
+                }
+                // After status handlers, check ok/fail
+                if (okAction != null || failAction != null) {
+                    sb.append("else if(_res.ok){");
+                    if (okAction != null) sb.append(okAction.build()).append(";");
+                    sb.append("}else{");
+                    if (failAction != null) sb.append(failAction.build()).append(";");
+                    sb.append("}");
+                }
+            } else if (okAction != null || failAction != null) {
+                // No status handlers, just ok/fail
+                sb.append("if(_res.ok){");
+                if (okAction != null) sb.append(okAction.build()).append(";");
+                sb.append("}else{");
+                if (failAction != null) sb.append(failAction.build()).append(";");
+                sb.append("}");
+            }
+
+            sb.append("}catch(_e){");
+            if (failAction != null) sb.append(failAction.build()).append(";");
+            sb.append("}}");
             return sb.toString();
         }
     }

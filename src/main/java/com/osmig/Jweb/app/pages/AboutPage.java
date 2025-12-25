@@ -12,36 +12,21 @@ public class AboutPage implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style().maxWidth(px(700)).margin(zero, auto).padding(rem(4), SP_8).done(),
-            h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).done(),
+        return div(attrs().style().maxWidth(px(700)).margin(zero, auto).padding(rem(2), SP_8).done(),
+            h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).marginBottom(rem(1.5)).done(),
                 text("About JWeb")),
 
-            h2(attrs().style().fontSize(TEXT_2XL).fontWeight(600).color(TEXT).marginTop(SP_8).done(),
-                text("The Origin")),
-            p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("JWeb was born from a simple thought: what if building web apps could be " +
-                     "easier with Java? What if I didn't need to write HTML, CSS, and JavaScript " +
-                     "separately from my Java code?")),
-
-            h2(attrs().style().fontSize(TEXT_2XL).fontWeight(600).color(TEXT).marginTop(SP_8).done(),
-                text("Why JWeb?")),
-            p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
+            p(attrs().style().color(TEXT_LIGHT).lineHeight(1.7).marginBottom(rem(1)).done(),
                 text("JWeb is a Java web framework that provides a fluent DSL for building web " +
-                     "applications entirely in Java. No need to write separate HTML files, CSS " +
-                     "stylesheets, or JavaScript scripts.")),
+                     "applications entirely in Java. No separate HTML, CSS, or JavaScript files needed.")),
 
-            h2(attrs().style().fontSize(TEXT_2XL).fontWeight(600).color(TEXT).marginTop(SP_8).done(),
-                text("Built for Simplicity")),
-            p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("JWeb is built for developers who want simplicity. Components, styles, routes, " +
-                     "and logic all live together in Java. Your IDE gives you autocomplete, " +
-                     "refactoring, and compile-time checks across your entire application.")),
+            p(attrs().style().color(TEXT_LIGHT).lineHeight(1.7).marginBottom(rem(1)).done(),
+                text("Built for developers who want simplicity. Components, styles, routes, and logic " +
+                     "all live together in Java with full IDE support for autocomplete and refactoring.")),
 
-            h2(attrs().style().fontSize(TEXT_2XL).fontWeight(600).color(TEXT).marginTop(SP_8).done(),
-                text("Powered by Spring Boot")),
-            p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.8).done(),
-                text("JWeb integrates seamlessly with the Java ecosystem. Built on Spring Boot, " +
-                     "it leverages a great ecosystem that Java developers already know and trust."))
+            p(attrs().style().color(TEXT_LIGHT).lineHeight(1.7).done(),
+                text("Powered by Spring Boot, JWeb integrates seamlessly with the Java ecosystem " +
+                     "that developers already know and trust."))
         );
     }
 }

@@ -45,7 +45,7 @@ public final class AdminComponents {
             div(attrs().style().backgroundColor(white).borderRadius(px(16)).padding(rem(2))
                 .maxWidth(px(500)).width(percent(90)).boxShadow("0 20px 60px rgba(0,0,0,0.3)").position(relative).done(),
                 closeBtn(),
-                div(attrs().id("modal-body"))
+                div(attrs().id("modal-body").data("modal-body", ""))
             )
         );
     }
