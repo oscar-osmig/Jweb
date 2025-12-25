@@ -150,7 +150,18 @@ public final class AdminScripts {
                 loadRequests();
             });});
             window.addEventListener('popstate',function(){
-                if(isLoggedIn){isLoggedIn=false;adminKey='';adminEmail='';loginOverlay.style.display='flex';adminContent.style.display='none';}
+                if(isLoggedIn){clearSession();}
+            });
+            function clearSession(){
+                isLoggedIn=false;adminKey='';adminEmail='';requests=[];
+                loginForm?.reset();
+                loginOverlay.style.display='flex';
+                adminContent.style.display='none';
+            }
+            window.addEventListener('pagehide',clearSession);
+            window.addEventListener('beforeunload',clearSession);
+            document.addEventListener('visibilitychange',function(){
+                if(document.hidden&&isLoggedIn){clearSession();}
             });
             """;
     }
