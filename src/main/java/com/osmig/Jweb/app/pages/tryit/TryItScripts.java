@@ -21,20 +21,26 @@ public final class TryItScripts {
             .const_("downloadForm", getElem("download-form"))
             .const_("downloadMsg", getElem("download-message"))
             .add(showMsg)
-            // Request form handler
+            // Initialize EmailJS when ready
+            .unsafeRaw("if(typeof emailjs!=='undefined')emailjs.init('jBoWfcyb20GACTvti');")
+            // Request form handler with EmailJS
             .unsafeRaw("""
                 requestForm?.addEventListener('submit',async(e)=>{
                     e.preventDefault();
                     const btn=requestForm.querySelector('button[type="submit"]');
                     const fd=new FormData(requestForm);
+                    const email=fd.get('email'),message=fd.get('message');
                     btn.disabled=true;btn.textContent='Sending...';
                     try{
                         const res=await fetch('/api/try-it/request',{
                             method:'POST',headers:{'Content-Type':'application/json'},
-                            body:JSON.stringify({email:fd.get('email'),message:fd.get('message')})
+                            body:JSON.stringify({email,message})
                         });
                         const data=await res.json();
-                        showMsg(requestMsg,res.ok?data.message:data.error,res.ok?'ok':'err');
+                        if(res.ok&&typeof emailjs!=='undefined'){
+                            emailjs.send('service_0cbj03m','template_al44e1p',{from_email:email,message});
+                        }
+                        showMsg(requestMsg,data.message||(res.ok?'Success':'Error'),res.ok?'ok':'err');
                         if(res.ok)requestForm.reset();
                     }catch{showMsg(requestMsg,'Network error','err');}
                     btn.disabled=false;btn.textContent='Send Request';

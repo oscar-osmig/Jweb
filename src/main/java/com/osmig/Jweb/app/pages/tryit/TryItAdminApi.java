@@ -5,6 +5,7 @@ import com.osmig.Jweb.framework.api.POST;
 import com.osmig.Jweb.framework.api.REST;
 import com.osmig.Jweb.framework.db.mongo.Doc;
 import com.osmig.Jweb.framework.server.Response;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.time.Instant;
@@ -18,6 +19,12 @@ import java.util.logging.Logger;
 public class TryItAdminApi {
     private static final Logger LOG = Logger.getLogger(TryItAdminApi.class.getName());
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' HH:mm").withZone(ZoneId.systemDefault());
+
+    @Value("${jweb.admin.token}")
+    private String adminToken;
+
+    @Value("${jweb.admin.email}")
+    private String adminEmail;
 
     @GET("/requests")
     public ResponseEntity<String> getPendingRequests(
@@ -70,8 +77,7 @@ public class TryItAdminApi {
     }
 
     private boolean isValidAdmin(String key, String email) {
-        return System.getenv().getOrDefault("JWEB_ADMIN_KEY", "jweb-admin-secret-key").equals(key)
-            && System.getenv().getOrDefault("JWEB_ADMIN_EMAIL", "the.jweb.team@gmail.com").equalsIgnoreCase(email);
+        return adminToken.equals(key) && adminEmail.equalsIgnoreCase(email);
     }
 
     private void logEmail(String to, String subject, String body) {

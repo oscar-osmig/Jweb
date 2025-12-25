@@ -52,6 +52,10 @@ public final class TryItDb {
         Mongo.update(COLLECTION).where("id", id).set("status", "REJECTED").execute();
     }
 
+    public static void deleteByEmail(String email) {
+        Mongo.delete(COLLECTION).where("email", email).execute();
+    }
+
     public static boolean isTokenValid(Doc doc) {
         String token = doc.getString("token");
         Long expiry = doc.getLong("tokenExpiry");

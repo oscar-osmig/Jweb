@@ -29,12 +29,12 @@ public class TryItApi {
 
         Doc existing = TryItDb.findByEmail(email);
         if (existing != null) {
-            String status = existing.getString("status");
-            if ("APPROVED".equals(status) && TryItDb.isTokenValid(existing)) return Response.badRequest("You already have an active access token.");
-            if ("PENDING".equals(status)) return Response.badRequest("Your request is still pending review.");
+            if ("APPROVED".equals(existing.getString("status")) && TryItDb.isTokenValid(existing)) {
+                return Response.badRequest("You already have an active access token.");
+            }
+            TryItDb.deleteByEmail(email);
         }
         TryItDb.saveRequest(email, message);
-        LOG.info("\n========== EMAIL ==========\nTo: the.jweb.team@gmail.com\nSubject: New JWeb Access Request from " + email + "\n\nEmail: " + email + "\nMessage: " + message + "\n===========================");
         return Response.json(Map.of("success", true, "message", "Your request has been submitted! We'll review it and send you a download token via email."));
     }
 

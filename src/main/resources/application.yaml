@@ -10,8 +10,31 @@ spring:
   application:
     name: JWeb
 
+logging:
+  level:
+    org.mongodb.driver: WARN
+
 # JWeb configuration
 jweb:
+  # Admin configuration for TryIt
+  admin:
+    token: Xk9mP2wL4nQz
+    email: the.jweb.team@gmail.com
+
+  # Email configuration with fallback providers
+  mail:
+    enabled: true
+    from: onboarding@resend.dev
+    # Resend.com - 100 emails/day free (https://resend.com)
+    resend:
+      api-key: re_anTKbyXU_6pZtJFUturfMzhdzErdntPyZ
+    # SendGrid - 100 emails/day free (https://sendgrid.com)
+    sendgrid:
+      api-key: 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
+    # Brevo - 300 emails/day free (https://brevo.com)
+    brevo:
+      api-key: zOKsXhQTbCypnSRL
+
   # API configuration
   api:
     base: /api/v1

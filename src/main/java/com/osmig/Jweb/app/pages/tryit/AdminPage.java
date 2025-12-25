@@ -18,6 +18,8 @@ public class AdminPage implements Template {
         return div(attrs().style().width(percent(100)).flex(num(1)).display(flex).flexDirection(column)
             .backgroundColor(GRAY_50).overflow(hidden).done(),
             adminContent(), loginModal(), actionModal(),
+            script("https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"),
+            inlineScript("if(typeof emailjs!=='undefined')emailjs.init('jBoWfcyb20GACTvti');"),
             inlineScript(AdminScripts.adminHandlers())
         );
     }

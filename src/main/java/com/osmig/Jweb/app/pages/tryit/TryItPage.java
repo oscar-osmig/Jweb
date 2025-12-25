@@ -26,6 +26,7 @@ public class TryItPage implements Template {
                 card("rocket", "Request Access", "Get a download token sent to your email", requestForm()),
                 card("download", "Download Project", "Already have a token? Download now", downloadForm())
             ),
+            script("https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"),
             inlineScript(TryItScripts.formHandlers())
         );
     }
