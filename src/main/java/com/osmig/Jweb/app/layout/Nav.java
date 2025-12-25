@@ -33,10 +33,11 @@ public class Nav implements Template {
                 .color(white).fontSize(rem(1.25)).fontWeight(700)
                 .textDecoration(none)
             .done(), text("JWeb")),
-            div(attrs().style().display(flex).gap(rem(1.5)).done(),
+            div(attrs().style().display(flex).gap(rem(1.5)).alignItems(center).done(),
                 link("/docs", "Documentation"),
                 link("/about", "About"),
-                link("/contact", "Contact")
+                link("/contact", "Contact"),
+                tryItButton()
             )
         );
     }
@@ -46,5 +47,19 @@ public class Nav implements Template {
             .color(rgba(255, 255, 255, 0.9)).fontSize(rem(0.9))
             .textDecoration(none).fontWeight(500)
         .done(), text(label));
+    }
+
+    private Element tryItButton() {
+        return a(attrs().href("/try-it").style()
+            .backgroundColor(white)
+            .color(hex("#6366f1"))
+            .padding(rem(0.5), rem(1))
+            .borderRadius(px(6))
+            .fontSize(rem(0.9))
+            .fontWeight(600)
+            .textDecoration(none)
+            .transition(() -> "all 0.2s")
+            .boxShadow("0 2px 4px rgba(0,0,0,0.1)")
+        .done(), text("Try It"));
     }
 }

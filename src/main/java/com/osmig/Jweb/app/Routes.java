@@ -10,6 +10,8 @@ import com.osmig.Jweb.app.pages.AboutPage;
 import com.osmig.Jweb.app.pages.ContactPage;
 import com.osmig.Jweb.app.docs.DocsPage;
 import com.osmig.Jweb.app.docs.DocContent;
+import com.osmig.Jweb.app.tryit.TryItPage;
+import com.osmig.Jweb.app.tryit.AdminPage;
 import org.springframework.stereotype.Component;
 
 /**
@@ -38,6 +40,16 @@ public class Routes implements JWebRoutes {
 
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
+
+        // Try It page - request access and download
+        app.get("/try-it", ctx -> new Layout("Try JWeb - Get Started",
+            new TryItPage().render()
+        ).render());
+
+        // Admin page for managing access requests
+        app.get("/admin/requests", ctx -> new Layout("Admin - Access Requests",
+            new AdminPage().render()
+        ).render());
 
         // API documentation
         OpenApi.create()

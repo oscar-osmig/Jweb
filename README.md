@@ -1611,4 +1611,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-Built with Java by developers who love type safety.
+Built with Java by developers who love Java!
