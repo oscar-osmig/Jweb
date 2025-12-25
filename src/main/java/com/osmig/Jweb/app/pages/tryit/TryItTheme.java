@@ -1,4 +1,4 @@
-package com.osmig.Jweb.app.tryit;
+package com.osmig.Jweb.app.pages.tryit;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.styles.CSSValue;

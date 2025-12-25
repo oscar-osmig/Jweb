@@ -1,4 +1,4 @@
-package com.osmig.Jweb.app.tryit;
+package com.osmig.Jweb.app.pages.tryit;
 
 import static com.osmig.Jweb.framework.js.JS.*;
 

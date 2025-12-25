@@ -11,7 +11,7 @@ import static com.osmig.Jweb.framework.state.StateHooks.*;
 
 ---
 
-## Level 1: Basic Elements
+## Level 1: Basic Elements![img.png](img.png)
 
 ```java
 // Plain text

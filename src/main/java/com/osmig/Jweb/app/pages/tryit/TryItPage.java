@@ -1,4 +1,4 @@
-package com.osmig.Jweb.app.tryit;
+package com.osmig.Jweb.app.pages.tryit;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;
@@ -7,7 +7,7 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
-import static com.osmig.Jweb.app.tryit.TryItTheme.*;
+import static com.osmig.Jweb.app.pages.tryit.TryItTheme.*;
 
 /** Try It page with request access and download forms. */
 public class TryItPage implements Template {

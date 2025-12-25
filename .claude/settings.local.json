@@ -40,7 +40,10 @@
       "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" checkout HEAD -- src/main/java/com/osmig/Jweb/framework/styles/Supports.java src/main/java/com/osmig/Jweb/framework/styles/FontFace.java src/main/java/com/osmig/Jweb/framework/styles/Keyframes.java src/main/java/com/osmig/Jweb/framework/styles/ContainerQuery.java src/main/java/com/osmig/Jweb/framework/styles/MediaQuery.java src/main/java/com/osmig/Jweb/framework/styles/CSSGrid.java src/main/java/com/osmig/Jweb/framework/styles/CSSColors.java src/main/java/com/osmig/Jweb/framework/styles/CSSUnits.java src/main/java/com/osmig/Jweb/framework/styles/CSSValue.java src/main/java/com/osmig/Jweb/framework/security/Principal.java)",
       "Bash(git -C \"C:\\Users\\osmig\\OneDrive\\Desktop\\java mini projects\\Jweb\\Jweb\" checkout HEAD -- src/main/java/com/osmig/Jweb/framework/)",
       "Bash(./mvnw.cmd:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i 's/com\\.osmig\\.Jweb\\.app\\.tryit/com.osmig.Jweb.app.pages.tryit/g' \"$f\")",
+      "Bash(done)"
     ]
   }
 }

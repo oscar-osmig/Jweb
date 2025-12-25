@@ -10,8 +10,8 @@ import com.osmig.Jweb.app.pages.AboutPage;
 import com.osmig.Jweb.app.pages.ContactPage;
 import com.osmig.Jweb.app.docs.DocsPage;
 import com.osmig.Jweb.app.docs.DocContent;
-import com.osmig.Jweb.app.tryit.TryItPage;
-import com.osmig.Jweb.app.tryit.AdminPage;
+import com.osmig.Jweb.app.pages.tryit.TryItPage;
+import com.osmig.Jweb.app.pages.tryit.AdminPage;
 import org.springframework.stereotype.Component;
 
 /**
