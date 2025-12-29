@@ -29,8 +29,12 @@ public class TryItApi {
 
         Doc existing = TryItDb.findByEmail(email);
         if (existing != null) {
-            if ("APPROVED".equals(existing.getString("status")) && TryItDb.isTokenValid(existing)) {
-                return Response.badRequest("You already have an active access token.");
+            String status = existing.getString("status");
+            if ("APPROVED".equals(status) && TryItDb.isTokenValid(existing)) {
+                return Response.json(Map.of("warning", true, "message", "You already have an active access token. Check your email for the download link."));
+            }
+            if ("PENDING".equals(status)) {
+                return Response.json(Map.of("warning", true, "message", "A request was already submitted for this email. If approved, you'll receive a download token via email."));
             }
             TryItDb.deleteByEmail(email);
         }

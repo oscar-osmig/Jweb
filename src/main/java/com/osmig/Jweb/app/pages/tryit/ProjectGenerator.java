@@ -41,21 +41,21 @@ public class ProjectGenerator {
     }
 
     private void addFrameworkFolder(ZipOutputStream zos) throws IOException {
-        Path frameworkPath = Paths.get(FRAMEWORK_PATH);
+        Path frameworkPath = Paths.get(FRAMEWORK_PATH).toAbsolutePath().normalize();
         if (!Files.exists(frameworkPath)) {
-            throw new IOException("Framework folder not found: " + frameworkPath.toAbsolutePath());
+            throw new IOException("Framework folder not found: " + frameworkPath);
         }
 
         Files.walk(frameworkPath)
             .filter(Files::isRegularFile)
             .forEach(file -> {
                 try {
-                    String relativePath = frameworkPath.getParent().relativize(file).toString()
+                    // Get relative path from framework folder itself
+                    String relativePath = frameworkPath.relativize(file).toString()
                         .replace("\\", "/");
-                    String zipPath = "jweb-starter/src/main/java/com/example/" + relativePath;
+                    String zipPath = "jweb-starter/src/main/java/com/example/framework/" + relativePath;
                     String content = Files.readString(file)
-                        .replace("package com.osmig.Jweb.framework", "package com.example.framework")
-                        .replace("import com.osmig.Jweb.framework", "import com.example.framework");
+                        .replace("com.osmig.Jweb.framework", "com.example.framework");
 
                     zos.putNextEntry(new ZipEntry(zipPath));
                     zos.write(content.getBytes());

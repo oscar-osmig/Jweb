@@ -12,6 +12,7 @@ public class DocContent {
             case "styling" -> StylingSection.render();
             case "conditionals" -> ConditionalsSection.render();
             case "components" -> ComponentsSection.render();
+            case "javascript" -> JavaScriptSection.render();
             case "routing" -> RoutingSection.render();
             case "state" -> StateSection.render();
             case "forms" -> FormsSection.render();

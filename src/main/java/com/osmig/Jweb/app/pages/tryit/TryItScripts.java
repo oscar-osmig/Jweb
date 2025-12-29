@@ -12,10 +12,14 @@ public final class TryItScripts {
             .add(onSubmit("request-form")
                 .loading("Sending...")
                 .post("/api/try-it/request").withFormData()
-                .ok(all(
-                    showMessage("request-message").fromResponse("message").success(),
-                    resetForm("request-form")
-                ))
+                .ok(whenResponse("success")
+                    .then(all(
+                        showMessage("request-message").fromResponse("message").success(),
+                        resetForm("request-form")
+                    ))
+                    .otherwise(whenResponse("warning")
+                        .then(showMessage("request-message").fromResponse("message").warning())
+                        .otherwise(showMessage("request-message").fromResponse("message").error())))
                 .fail(showMessage("request-message").error("Network error")))
             .add(onSubmit("download-form")
                 .loading("Validating...")

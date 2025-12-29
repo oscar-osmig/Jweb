@@ -35,6 +35,18 @@ public final class ConfigTemplates {
     }
 
     public static String readme() {
+        return readmeContent().replace("com.osmig.Jweb.framework", "com.example.framework");
+    }
+
+    private static String readmeContent() {
+        try {
+            return java.nio.file.Files.readString(java.nio.file.Paths.get("README.md"));
+        } catch (java.io.IOException e) {
+            return fallbackReadme();
+        }
+    }
+
+    private static String fallbackReadme() {
         return """
             # JWeb Starter Project
 
@@ -47,37 +59,6 @@ public final class ConfigTemplates {
             ```
 
             Then open http://localhost:8080 in your browser.
-
-            ## Project Structure
-
-            ```
-            src/main/java/com/example/
-            ├── app/                    # Your application code
-            │   ├── layout/             # Layout components
-            │   ├── pages/              # Page components
-            │   ├── Routes.java         # Route definitions
-            │   └── App.java            # Main application
-            └── framework/              # JWeb Framework
-            ```
-
-            ## Creating a New Page
-
-            1. Create a class in `app/pages/`:
-
-            ```java
-            public class AboutPage implements Template {
-                @Override
-                public Element render() {
-                    return div(h1("About"), p("Our story..."));
-                }
-            }
-            ```
-
-            2. Add route in `Routes.java`:
-
-            ```java
-            app.layout(Layout.class).pages("/about", AboutPage.class);
-            ```
 
             ## Features
 

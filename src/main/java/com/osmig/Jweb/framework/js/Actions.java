@@ -966,6 +966,19 @@ public final class Actions {
             return this;
         }
 
+        /** Mark as warning message. */
+        public MessageAction warning() {
+            this.type = "warning";
+            return this;
+        }
+
+        /** Mark as warning with text. */
+        public MessageAction warning(String text) {
+            this.type = "warning";
+            this.text = text;
+            return this;
+        }
+
         @Override
         public String build() {
             StringBuilder sb = new StringBuilder();
@@ -986,6 +999,8 @@ public final class Actions {
                 sb.append("_el.style.backgroundColor='#d1fae5';_el.style.color='#065f46';");
             } else if ("error".equals(type)) {
                 sb.append("_el.style.backgroundColor='#fee2e2';_el.style.color='#991b1b';");
+            } else if ("warning".equals(type)) {
+                sb.append("_el.style.backgroundColor='#fef3c7';_el.style.color='#92400e';");
             }
 
             sb.append("}");

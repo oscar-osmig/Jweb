@@ -14,6 +14,7 @@ public final class LayoutTemplates {
             import static com.example.framework.elements.Elements.*;
             import static com.example.framework.styles.CSS.*;
             import static com.example.framework.styles.CSSUnits.*;
+            import static com.example.framework.styles.CSSColors.*;
 
             public class Layout implements Template {
                 private final String title;
@@ -34,9 +35,9 @@ public final class LayoutTemplates {
                             style(globalStyles())
                         ),
                         body(attrs().style().margin(zero).fontFamily("system-ui, sans-serif")
-                                .minHeight(vh(100)).display(flex).flexDirection(column).done(),
+                                .height(vh(100)).display(flex).flexDirection(column).overflow(hidden).done(),
                             new Nav().render(),
-                            main(attrs().style().flex(num(1)).padding(rem(2)).done(), content),
+                            main(attrs().style().flex(num(1)).display(flex).done(), content),
                             new Footer().render(),
                             DevServer.script()
                         )
@@ -44,10 +45,10 @@ public final class LayoutTemplates {
                 }
 
                 private String globalStyles() {
-                    return rules(
+                    return styles(
                         rule("*").boxSizing(borderBox),
-                        rule("a").color(hex("#6366f1")).textDecoration(none),
-                        rule("a:hover").textDecoration(underline)
+                        rule("a").textDecoration(none),
+                        rule("a:hover").opacity(0.8)
                     );
                 }
             }
@@ -69,17 +70,13 @@ public final class LayoutTemplates {
                 @Override
                 public Element render() {
                     return nav(attrs().style()
-                            .backgroundColor(hex("#6366f1")).padding(rem(1), rem(2))
+                            .backgroundColor(hex("#0ea5e9")).padding(rem(1), rem(2))
                             .display(flex).alignItems(center).justifyContent(spaceBetween).done(),
                         a(attrs().href("/").style().color(white).fontSize(rem(1.25)).fontWeight(700).done(),
                             text("My App")),
-                        div(attrs().style().display(flex).gap(rem(1.5)).done(),
-                            navLink("/", "Home"), navLink("/about", "About"))
+                        a(attrs().href("/").style().color(rgba(255, 255, 255, 0.9)).done(),
+                            text("Home"))
                     );
-                }
-
-                private Element navLink(String href, String label) {
-                    return a(attrs().href(href).style().color(rgba(255, 255, 255, 0.9)).done(), text(label));
                 }
             }
             """;
@@ -92,6 +89,7 @@ public final class LayoutTemplates {
             import com.example.framework.core.Element;
             import com.example.framework.template.Template;
             import static com.example.framework.elements.Elements.*;
+            import static com.example.framework.styles.CSS.*;
             import static com.example.framework.styles.CSSUnits.*;
             import static com.example.framework.styles.CSSColors.*;
 
@@ -99,8 +97,8 @@ public final class LayoutTemplates {
                 @Override
                 public Element render() {
                     return footer(attrs().style()
-                            .backgroundColor(gray(100)).padding(rem(1), rem(2))
-                            .textAlign(center).fontSize(rem(0.875)).done(),
+                            .backgroundColor(hex("#f0f9ff")).padding(rem(1), rem(2))
+                            .textAlign(center).fontSize(rem(0.875)).color(hex("#0369a1")).done(),
                         p("Built with JWeb Framework")
                     );
                 }

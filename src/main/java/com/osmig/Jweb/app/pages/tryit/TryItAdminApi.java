@@ -4,6 +4,9 @@ import com.osmig.Jweb.framework.api.GET;
 import com.osmig.Jweb.framework.api.POST;
 import com.osmig.Jweb.framework.api.REST;
 import com.osmig.Jweb.framework.db.mongo.Doc;
+import com.osmig.Jweb.framework.email.EmailTemplate;
+import com.osmig.Jweb.framework.email.Mailer;
+import static com.osmig.Jweb.framework.elements.Elements.*;
 import com.osmig.Jweb.framework.server.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +61,7 @@ public class TryItAdminApi {
         String token = TryItDb.approveRequest(id);
         String reqEmail = request.getString("email");
         long expiry = Instant.now().plusSeconds(7 * 24 * 60 * 60).toEpochMilli();
-        logEmail(reqEmail, "Your JWeb Framework Access Has Been Approved!", "Your token: " + token + "\nValid until: " + DATE_FMT.format(Instant.ofEpochMilli(expiry)));
+        sendApprovalEmail(reqEmail, token, DATE_FMT.format(Instant.ofEpochMilli(expiry)));
         return Response.json(Map.of("success", true, "message", "Request approved. Token sent to " + reqEmail, "token", token));
     }
 
@@ -72,7 +75,7 @@ public class TryItAdminApi {
         if (request == null) return Response.badRequest("Request not found");
         TryItDb.rejectRequest(id);
         String reason = body != null ? body.get("reason") : null;
-        logEmail(request.getString("email"), "Update on Your JWeb Framework Access Request", "Your request has been rejected." + (reason != null ? " Reason: " + reason : ""));
+        sendRejectionEmail(request.getString("email"), reason);
         return Response.json(Map.of("success", true, "message", "Request rejected"));
     }
 
@@ -80,7 +83,55 @@ public class TryItAdminApi {
         return adminToken.equals(key) && adminEmail.equalsIgnoreCase(email);
     }
 
-    private void logEmail(String to, String subject, String body) {
-        LOG.info("\n========== EMAIL ==========\nTo: " + to + "\nSubject: " + subject + "\n\n" + body + "\n===========================");
+    private void sendApprovalEmail(String to, String token, String validUntil) {
+        var email = EmailTemplate.create()
+            .to(to)
+            .subject("Your JWeb Framework Access Has Been Approved!")
+            .primaryColor("#10b981")
+            .layout(EmailTemplate.Layout.CARD)
+            .header(h1("Access Approved!"))
+            .body(
+                p("Congratulations! Your request for JWeb Framework access has been approved."),
+                div(
+                    p(strong("YOUR ACCESS TOKEN")),
+                    p(code(token))
+                ).style(com.osmig.Jweb.framework.styles.Styles.style()
+                    .unsafeProp("background", "#f0fdf4")
+                    .unsafeProp("padding", "16px")
+                    .unsafeProp("border-radius", "8px")
+                    .unsafeProp("text-align", "center")
+                    .unsafeProp("margin", "16px 0")),
+                p("Valid until: " + validUntil),
+                EmailTemplate.button("Download Starter Project", "https://jweb.dev/try-it", "#10b981"),
+                p(small("Use your token on the Try It page to download your starter project."))
+            )
+            .footer(
+                p("Happy coding!"),
+                p("The JWeb Team")
+            )
+            .build();
+
+        Mailer.sendInBackground(email);
+        LOG.info("Approval email sent to: " + to);
+    }
+
+    private void sendRejectionEmail(String to, String reason) {
+        var email = EmailTemplate.create()
+            .to(to)
+            .subject("Update on Your JWeb Framework Access Request")
+            .primaryColor("#ef4444")
+            .layout(EmailTemplate.Layout.CARD)
+            .header(h1("Request Update"))
+            .body(
+                p("Thank you for your interest in JWeb Framework."),
+                p("Unfortunately, your access request has been declined."),
+                reason != null ? p(strong("Reason: "), text(reason)) : null,
+                p("If you believe this was in error, please submit a new request with more details about your intended use.")
+            )
+            .footer(p("The JWeb Team"))
+            .build();
+
+        Mailer.sendInBackground(email);
+        LOG.info("Rejection email sent to: " + to);
     }
 }
