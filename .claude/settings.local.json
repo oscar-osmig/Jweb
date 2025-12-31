@@ -44,7 +44,8 @@
       "Bash(for:*)",
       "Bash(do sed -i 's/com\\.osmig\\.Jweb\\.app\\.tryit/com.osmig.Jweb.app.pages.tryit/g' \"$f\")",
       "Bash(done)",
-      "Bash(openssl rand:*)"
+      "Bash(openssl rand:*)",
+      "Bash(findstr:*)"
     ]
   }
 }

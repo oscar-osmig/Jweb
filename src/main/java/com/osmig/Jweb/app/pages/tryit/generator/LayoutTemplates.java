@@ -6,15 +6,15 @@ public final class LayoutTemplates {
 
     public static String layout() {
         return """
-            package com.example.app.layout;
+            package com.jweb.app.layout;
 
-            import com.example.framework.core.Element;
-            import com.example.framework.dev.DevServer;
-            import com.example.framework.template.Template;
-            import static com.example.framework.elements.Elements.*;
-            import static com.example.framework.styles.CSS.*;
-            import static com.example.framework.styles.CSSUnits.*;
-            import static com.example.framework.styles.CSSColors.*;
+            import com.jweb.framework.core.Element;
+            import com.jweb.framework.dev.DevServer;
+            import com.jweb.framework.template.Template;
+            import static com.jweb.framework.elements.Elements.*;
+            import static com.jweb.framework.styles.CSS.*;
+            import static com.jweb.framework.styles.CSSUnits.*;
+            import static com.jweb.framework.styles.CSSColors.*;
 
             public class Layout implements Template {
                 private final String title;
@@ -57,14 +57,14 @@ public final class LayoutTemplates {
 
     public static String nav() {
         return """
-            package com.example.app.layout;
+            package com.jweb.app.layout;
 
-            import com.example.framework.core.Element;
-            import com.example.framework.template.Template;
-            import static com.example.framework.elements.Elements.*;
-            import static com.example.framework.styles.CSS.*;
-            import static com.example.framework.styles.CSSUnits.*;
-            import static com.example.framework.styles.CSSColors.*;
+            import com.jweb.framework.core.Element;
+            import com.jweb.framework.template.Template;
+            import static com.jweb.framework.elements.Elements.*;
+            import static com.jweb.framework.styles.CSS.*;
+            import static com.jweb.framework.styles.CSSUnits.*;
+            import static com.jweb.framework.styles.CSSColors.*;
 
             public class Nav implements Template {
                 @Override
@@ -84,14 +84,14 @@ public final class LayoutTemplates {
 
     public static String footer() {
         return """
-            package com.example.app.layout;
+            package com.jweb.app.layout;
 
-            import com.example.framework.core.Element;
-            import com.example.framework.template.Template;
-            import static com.example.framework.elements.Elements.*;
-            import static com.example.framework.styles.CSS.*;
-            import static com.example.framework.styles.CSSUnits.*;
-            import static com.example.framework.styles.CSSColors.*;
+            import com.jweb.framework.core.Element;
+            import com.jweb.framework.template.Template;
+            import static com.jweb.framework.elements.Elements.*;
+            import static com.jweb.framework.styles.CSS.*;
+            import static com.jweb.framework.styles.CSSUnits.*;
+            import static com.jweb.framework.styles.CSSColors.*;
 
             public class Footer implements Template {
                 @Override

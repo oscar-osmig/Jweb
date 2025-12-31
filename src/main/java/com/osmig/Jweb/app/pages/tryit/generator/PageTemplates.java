@@ -6,14 +6,14 @@ public final class PageTemplates {
 
     public static String homePage() {
         return """
-            package com.example.app.pages;
+            package com.jweb.app.pages;
 
-            import com.example.framework.core.Element;
-            import com.example.framework.template.Template;
-            import static com.example.framework.elements.Elements.*;
-            import static com.example.framework.styles.CSS.*;
-            import static com.example.framework.styles.CSSUnits.*;
-            import static com.example.framework.styles.CSSColors.*;
+            import com.jweb.framework.core.Element;
+            import com.jweb.framework.template.Template;
+            import static com.jweb.framework.elements.Elements.*;
+            import static com.jweb.framework.styles.CSS.*;
+            import static com.jweb.framework.styles.CSSUnits.*;
+            import static com.jweb.framework.styles.CSSColors.*;
 
             public class HomePage implements Template {
 

@@ -17,7 +17,7 @@ public final class PomTemplate {
                     <version>4.0.0</version>
                     <relativePath/>
                 </parent>
-                <groupId>com.example</groupId>
+                <groupId>com.jweb</groupId>
                 <artifactId>jweb-app</artifactId>
                 <version>1.0.0</version>
                 <name>My JWeb App</name>

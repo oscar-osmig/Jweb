@@ -1,5 +1,9 @@
 package com.osmig.Jweb.app.pages.tryit.generator;
 
+import org.springframework.core.io.ClassPathResource;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 /** Generates configuration files for the starter project. */
 public final class ConfigTemplates {
     private ConfigTemplates() {}
@@ -35,13 +39,14 @@ public final class ConfigTemplates {
     }
 
     public static String readme() {
-        return readmeContent().replace("com.osmig.Jweb.framework", "com.example.framework");
+        return readmeContent().replace("com.osmig.Jweb.framework", "com.jweb.framework");
     }
 
     private static String readmeContent() {
         try {
-            return java.nio.file.Files.readString(java.nio.file.Paths.get("README.md"));
-        } catch (java.io.IOException e) {
+            ClassPathResource resource = new ClassPathResource("readme/README.md");
+            return resource.getContentAsString(StandardCharsets.UTF_8);
+        } catch (IOException e) {
             return fallbackReadme();
         }
     }

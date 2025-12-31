@@ -6,14 +6,14 @@ public final class AppTemplates {
 
     public static String appClass() {
         return """
-            package com.example.app;
+            package com.jweb.app;
 
             import org.springframework.boot.SpringApplication;
             import org.springframework.boot.autoconfigure.SpringBootApplication;
             import org.springframework.context.annotation.ComponentScan;
 
             @SpringBootApplication
-            @ComponentScan(basePackages = {"com.example"})
+            @ComponentScan(basePackages = {"com.jweb"})
             public class App {
                 public static void main(String[] args) {
                     SpringApplication.run(App.class, args);
@@ -24,12 +24,12 @@ public final class AppTemplates {
 
     public static String routesClass() {
         return """
-            package com.example.app;
+            package com.jweb.app;
 
-            import com.example.framework.JWeb;
-            import com.example.framework.JWebRoutes;
-            import com.example.app.layout.Layout;
-            import com.example.app.pages.HomePage;
+            import com.jweb.framework.JWeb;
+            import com.jweb.framework.JWebRoutes;
+            import com.jweb.app.layout.Layout;
+            import com.jweb.app.pages.HomePage;
             import org.springframework.stereotype.Component;
 
             @Component
