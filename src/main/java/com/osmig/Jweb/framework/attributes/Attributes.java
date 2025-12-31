@@ -3,6 +3,7 @@ package com.osmig.Jweb.framework.attributes;
 import com.osmig.Jweb.framework.events.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
+import com.osmig.Jweb.framework.js.Actions.Action;
 import com.osmig.Jweb.framework.ref.Ref;
 import com.osmig.Jweb.framework.styles.CSSValue;
 import com.osmig.Jweb.framework.styles.Style;
@@ -104,6 +105,59 @@ public class Attributes implements TransitionReceiver {
             return set("class", className);
         }
         return set("class", existing + " " + className);
+    }
+
+    /**
+     * Sets multiple CSS classes at once.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().classes("btn", "primary", "lg")
+     * // Output: class="btn primary lg"
+     * </pre>
+     *
+     * @param classNames the class names to add
+     * @return this for chaining
+     */
+    public Attributes classes(String... classNames) {
+        if (classNames == null || classNames.length == 0) {
+            return this;
+        }
+        return set("class", String.join(" ", classNames));
+    }
+
+    /**
+     * Conditionally sets the class attribute.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().class_(isActive, "active")
+     * // Output: class="active" if isActive is true, no class attribute otherwise
+     * </pre>
+     *
+     * @param condition whether to apply the class
+     * @param className the class name to apply if condition is true
+     * @return this for chaining
+     */
+    public Attributes class_(boolean condition, String className) {
+        return condition ? set("class", className) : this;
+    }
+
+    /**
+     * Conditionally adds a CSS class to existing classes.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().class_("btn").addClass(isActive, "active")
+     * // Output: class="btn active" if isActive is true, class="btn" otherwise
+     * </pre>
+     *
+     * @param condition whether to add the class
+     * @param className the class name to add if condition is true
+     * @return this for chaining
+     */
+    public Attributes addClass(boolean condition, String className) {
+        return condition ? addClass(className) : this;
     }
 
     /** Sets inline style from a string. @param value the CSS style string */
@@ -499,6 +553,44 @@ public class Attributes implements TransitionReceiver {
 
         /** Registers a paste event handler. @param handler the handler to execute on paste */
         public Attributes onPaste(Consumer<Event> handler) { return complete().onPaste(handler); }
+
+        // ==================== JavaScript Action Event Handler Shortcuts ====================
+
+        /** Sets a click handler using a JavaScript Action. @param action the action to execute on click */
+        public Attributes onClick(Action action) { return complete().onClick(action); }
+
+        /** Sets a change handler using a JavaScript Action. @param action the action to execute on change */
+        public Attributes onChange(Action action) { return complete().onChange(action); }
+
+        /** Sets an input handler using a JavaScript Action. @param action the action to execute on input */
+        public Attributes onInput(Action action) { return complete().onInput(action); }
+
+        /** Sets a submit handler using a JavaScript Action. @param action the action to execute on submit */
+        public Attributes onSubmit(Action action) { return complete().onSubmit(action); }
+
+        /** Sets a focus handler using a JavaScript Action. @param action the action to execute on focus */
+        public Attributes onFocus(Action action) { return complete().onFocus(action); }
+
+        /** Sets a blur handler using a JavaScript Action. @param action the action to execute on blur */
+        public Attributes onBlur(Action action) { return complete().onBlur(action); }
+
+        /** Sets a keydown handler using a JavaScript Action. @param action the action to execute on keydown */
+        public Attributes onKeyDown(Action action) { return complete().onKeyDown(action); }
+
+        /** Sets a keyup handler using a JavaScript Action. @param action the action to execute on keyup */
+        public Attributes onKeyUp(Action action) { return complete().onKeyUp(action); }
+
+        /** Sets a mouseenter handler using a JavaScript Action. @param action the action to execute on mouseenter */
+        public Attributes onMouseEnter(Action action) { return complete().onMouseEnter(action); }
+
+        /** Sets a mouseleave handler using a JavaScript Action. @param action the action to execute on mouseleave */
+        public Attributes onMouseLeave(Action action) { return complete().onMouseLeave(action); }
+
+        /** Sets a double-click handler using a JavaScript Action. @param action the action to execute on dblclick */
+        public Attributes onDoubleClick(Action action) { return complete().onDoubleClick(action); }
+
+        /** Sets any event handler using a JavaScript Action. @param eventType the event type @param action the action */
+        public Attributes on(String eventType, Action action) { return complete().on(eventType, action); }
 
         // ==================== Generic Setter Shortcut ====================
 
@@ -1324,6 +1416,146 @@ public class Attributes implements TransitionReceiver {
     public Attributes onPaste(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("paste", handler);
         return set("onpaste", eh.toJsAttribute());
+    }
+
+    // ==================== JavaScript Action Event Handlers ====================
+    // These allow using the Actions DSL directly with event attributes.
+    // Usage: attrs().onClick(show("panel"))
+    //        attrs().onClick(all(hide("loader"), show("content")))
+
+    /**
+     * Sets a click handler using a JavaScript Action from the Actions DSL.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * import static com.osmig.Jweb.framework.js.Actions.*;
+     *
+     * button(attrs().onClick(show("panel")), "Show Panel")
+     * button(attrs().onClick(toggle("dropdown")), "Toggle")
+     * button(attrs().onClick(all(hide("a"), show("b"))), "Switch")
+     * </pre>
+     *
+     * @param action the JavaScript action to execute on click
+     * @return this for chaining
+     */
+    public Attributes onClick(Action action) {
+        return set("onclick", action.inline());
+    }
+
+    /**
+     * Sets a change handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on change
+     * @return this for chaining
+     */
+    public Attributes onChange(Action action) {
+        return set("onchange", action.inline());
+    }
+
+    /**
+     * Sets an input handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on input
+     * @return this for chaining
+     */
+    public Attributes onInput(Action action) {
+        return set("oninput", action.inline());
+    }
+
+    /**
+     * Sets a submit handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on submit
+     * @return this for chaining
+     */
+    public Attributes onSubmit(Action action) {
+        return set("onsubmit", action.inline());
+    }
+
+    /**
+     * Sets a focus handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on focus
+     * @return this for chaining
+     */
+    public Attributes onFocus(Action action) {
+        return set("onfocus", action.inline());
+    }
+
+    /**
+     * Sets a blur handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on blur
+     * @return this for chaining
+     */
+    public Attributes onBlur(Action action) {
+        return set("onblur", action.inline());
+    }
+
+    /**
+     * Sets a keydown handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on keydown
+     * @return this for chaining
+     */
+    public Attributes onKeyDown(Action action) {
+        return set("onkeydown", action.inline());
+    }
+
+    /**
+     * Sets a keyup handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on keyup
+     * @return this for chaining
+     */
+    public Attributes onKeyUp(Action action) {
+        return set("onkeyup", action.inline());
+    }
+
+    /**
+     * Sets a mouseenter handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on mouseenter
+     * @return this for chaining
+     */
+    public Attributes onMouseEnter(Action action) {
+        return set("onmouseenter", action.inline());
+    }
+
+    /**
+     * Sets a mouseleave handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on mouseleave
+     * @return this for chaining
+     */
+    public Attributes onMouseLeave(Action action) {
+        return set("onmouseleave", action.inline());
+    }
+
+    /**
+     * Sets a double-click handler using a JavaScript Action.
+     *
+     * @param action the JavaScript action to execute on double-click
+     * @return this for chaining
+     */
+    public Attributes onDoubleClick(Action action) {
+        return set("ondblclick", action.inline());
+    }
+
+    /**
+     * Sets any event handler using a JavaScript Action.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().on("scroll", throttledScrollHandler)
+     * </pre>
+     *
+     * @param eventType the DOM event type
+     * @param action the JavaScript action to execute
+     * @return this for chaining
+     */
+    public Attributes on(String eventType, Action action) {
+        return set("on" + eventType, action.inline());
     }
 
     // ==================== Generic Setters ====================

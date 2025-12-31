@@ -2110,4 +2110,226 @@ public final class CSS {
             return selector != null ? toRule() : build();
         }
     }
+
+    // ==================== CSS Nesting Builder ====================
+
+    /**
+     * Creates a nested CSS rule builder for native CSS nesting.
+     *
+     * <p>CSS Nesting is a modern CSS feature that allows writing nested selectors
+     * without a preprocessor. Use this when targeting modern browsers.</p>
+     *
+     * <p>Example:</p>
+     * <pre>
+     * String css = nested(".card")
+     *     .prop("padding", "1rem")
+     *     .prop("background", "white")
+     *     .child(".header")
+     *         .prop("font-weight", "bold")
+     *         .parent()
+     *     .child(".body")
+     *         .prop("color", "#666")
+     *         .parent()
+     *     .hover()
+     *         .prop("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+     *         .parent()
+     *     .build();
+     *
+     * // Output:
+     * // .card {
+     * //   padding: 1rem;
+     * //   background: white;
+     * //   .header { font-weight: bold; }
+     * //   .body { color: #666; }
+     * //   &amp;:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+     * // }
+     * </pre>
+     *
+     * @param selector the root CSS selector
+     * @return a NestedCSS builder
+     */
+    public static NestedCSS nested(String selector) {
+        return new NestedCSS(selector);
+    }
+
+    /**
+     * Builder for native CSS nesting rules.
+     */
+    public static class NestedCSS {
+        private final String selector;
+        private final NestedCSS parent;
+        private final java.util.List<String> properties = new java.util.ArrayList<>();
+        private final java.util.List<NestedCSS> children = new java.util.ArrayList<>();
+
+        NestedCSS(String selector) {
+            this.selector = selector;
+            this.parent = null;
+        }
+
+        NestedCSS(String selector, NestedCSS parent) {
+            this.selector = selector;
+            this.parent = parent;
+        }
+
+        /**
+         * Adds a CSS property.
+         */
+        public NestedCSS prop(String name, String value) {
+            properties.add(name + ": " + value + ";");
+            return this;
+        }
+
+        /**
+         * Adds a CSS property with CSSValue.
+         */
+        public NestedCSS prop(String name, CSSValue value) {
+            return prop(name, value.css());
+        }
+
+        /**
+         * Creates a nested child selector.
+         *
+         * @param childSelector the child selector (without &amp;)
+         * @return a new NestedCSS for the child
+         */
+        public NestedCSS child(String childSelector) {
+            NestedCSS child = new NestedCSS(childSelector, this);
+            children.add(child);
+            return child;
+        }
+
+        /**
+         * Creates a &amp; prefixed nested selector (for pseudo-classes, combinators).
+         *
+         * @param selectorPart the selector part (e.g., ":hover", " > .item")
+         * @return a new NestedCSS for the nested rule
+         */
+        public NestedCSS and(String selectorPart) {
+            NestedCSS child = new NestedCSS("&" + selectorPart, this);
+            children.add(child);
+            return child;
+        }
+
+        /**
+         * Creates a &amp;:hover nested rule.
+         */
+        public NestedCSS hover() {
+            return and(":hover");
+        }
+
+        /**
+         * Creates a &amp;:focus nested rule.
+         */
+        public NestedCSS focus() {
+            return and(":focus");
+        }
+
+        /**
+         * Creates a &amp;:active nested rule.
+         */
+        public NestedCSS active() {
+            return and(":active");
+        }
+
+        /**
+         * Creates a &amp;:focus-visible nested rule.
+         */
+        public NestedCSS focusVisible() {
+            return and(":focus-visible");
+        }
+
+        /**
+         * Creates a &amp;:first-child nested rule.
+         */
+        public NestedCSS firstChild() {
+            return and(":first-child");
+        }
+
+        /**
+         * Creates a &amp;:last-child nested rule.
+         */
+        public NestedCSS lastChild() {
+            return and(":last-child");
+        }
+
+        /**
+         * Creates a &amp;:disabled nested rule.
+         */
+        public NestedCSS disabled() {
+            return and(":disabled");
+        }
+
+        /**
+         * Creates a &amp;::before nested rule.
+         */
+        public NestedCSS before() {
+            return and("::before");
+        }
+
+        /**
+         * Creates a &amp;::after nested rule.
+         */
+        public NestedCSS after() {
+            return and("::after");
+        }
+
+        /**
+         * Creates a &amp;::placeholder nested rule.
+         */
+        public NestedCSS placeholder() {
+            return and("::placeholder");
+        }
+
+        /**
+         * Returns to the parent NestedCSS to continue building.
+         */
+        public NestedCSS parent() {
+            return parent != null ? parent : this;
+        }
+
+        /**
+         * Returns to the root NestedCSS.
+         */
+        public NestedCSS root() {
+            NestedCSS current = this;
+            while (current.parent != null) {
+                current = current.parent;
+            }
+            return current;
+        }
+
+        /**
+         * Builds the complete CSS string with nesting.
+         *
+         * @return the CSS string
+         */
+        public String build() {
+            return root().buildInternal(0);
+        }
+
+        private String buildInternal(int indent) {
+            StringBuilder sb = new StringBuilder();
+            String pad = "  ".repeat(indent);
+
+            sb.append(pad).append(selector).append(" {\n");
+
+            // Properties
+            for (String prop : properties) {
+                sb.append(pad).append("  ").append(prop).append("\n");
+            }
+
+            // Nested children
+            for (NestedCSS child : children) {
+                sb.append(child.buildInternal(indent + 1));
+            }
+
+            sb.append(pad).append("}\n");
+            return sb.toString();
+        }
+
+        @Override
+        public String toString() {
+            return build();
+        }
+    }
 }

@@ -242,10 +242,10 @@ public final class Actions {
 
     /**
      * Make an async fetch request (standalone, not tied to form).
-     * Usage: fetch("/api/data").withHeader("X-Token", "myVar").ok(action)
+     * Usage: fetch("/api/data").headerFromVar("X-Token", "myVar").ok(action)
      */
     public static FetchBuilder fetch(String url) {
-        return new FetchBuilder(url);
+        return new FetchBuilder("GET", url);
     }
 
     /**
@@ -499,10 +499,41 @@ public final class Actions {
 
     // ==================== Core Interfaces ====================
 
-    /** Represents a buildable action. */
+    /**
+     * Represents a buildable JavaScript action.
+     *
+     * <p>Actions can be used in two ways:</p>
+     * <ol>
+     *   <li>With ScriptBuilder for &lt;script&gt; blocks: {@code script().add(onClick("btn").does(show("panel")))}</li>
+     *   <li>Inline with event attributes: {@code attrs().onClick(show("panel"))}</li>
+     * </ol>
+     */
     @FunctionalInterface
     public interface Action {
+        /**
+         * Builds the JavaScript code for this action.
+         * @return the JavaScript code string
+         */
         String build();
+
+        /**
+         * Returns the action as an inline JavaScript string for use in event attributes.
+         * Can be used directly with onclick, onsubmit, etc.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * // Using with attrs()
+         * button(attrs().set("onclick", show("panel").inline()), "Show Panel")
+         *
+         * // Or use the convenience method
+         * button(attrs().onClick(show("panel")), "Show Panel")
+         * </pre>
+         *
+         * @return the JavaScript code string suitable for inline event handlers
+         */
+        default String inline() {
+            return build();
+        }
     }
 
     /** Represents a value that can come from response or be literal. */
@@ -1165,8 +1196,28 @@ public final class Actions {
         private final String name;
         private final List<String> params = new ArrayList<>();
         private final List<String> body = new ArrayList<>();
+        private boolean isAsync = false;
 
         FunctionDef(String name) { this.name = name; }
+
+        /**
+         * Makes this function async.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * define("loadData").async().params("id").does(
+         *     await_(fetch_("/api/data/" + expr("id"))),
+         *     ...
+         * )
+         * // Output: async function loadData(id) { await fetch('/api/data/' + id); ... }
+         * </pre>
+         *
+         * @return this builder for chaining
+         */
+        public FunctionDef async() {
+            this.isAsync = true;
+            return this;
+        }
 
         public FunctionDef params(String... params) {
             for (String p : params) this.params.add(p);
@@ -1185,12 +1236,1048 @@ public final class Actions {
 
         public String build() {
             StringBuilder sb = new StringBuilder();
+            if (isAsync) {
+                sb.append("async ");
+            }
             sb.append("function " + name + "(" + String.join(",", params) + "){");
             for (String s : body) {
                 sb.append(s);
                 if (!s.endsWith(";") && !s.endsWith("}")) sb.append(";");
             }
             sb.append("}");
+            return sb.toString();
+        }
+    }
+
+    // ==================== Async/Await Support ====================
+
+    /**
+     * Wraps an action with await keyword.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * await_(fetch_("/api/data"))
+     * // Output: await fetch('/api/data')
+     * </pre>
+     *
+     * @param action the action to await
+     * @return an Action that wraps with await
+     */
+    public static Action await_(Action action) {
+        return () -> "await " + action.build();
+    }
+
+    /**
+     * Wraps a raw JavaScript expression with await.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * await_("response.json()")
+     * // Output: await response.json()
+     * </pre>
+     *
+     * @param expression the JavaScript expression to await
+     * @return an Action that wraps with await
+     */
+    public static Action await_(String expression) {
+        return () -> "await " + expression;
+    }
+
+    /**
+     * Creates an async IIFE (Immediately Invoked Function Expression).
+     * Useful for running async code in non-async contexts.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * asyncBlock(
+     *     await_(fetch_("/api/data")),
+     *     setText("result", "done")
+     * )
+     * // Output: (async()=>{await fetch('/api/data');$_('result').textContent='done'})()
+     * </pre>
+     *
+     * @param actions the actions to execute
+     * @return an Action containing the async IIFE
+     */
+    public static Action asyncBlock(Action... actions) {
+        return () -> {
+            StringBuilder sb = new StringBuilder();
+            sb.append("(async()=>{");
+            for (Action a : actions) {
+                sb.append(a.build());
+                String built = a.build();
+                if (!built.endsWith(";") && !built.endsWith("}")) {
+                    sb.append(";");
+                }
+            }
+            sb.append("})()");
+            return sb.toString();
+        };
+    }
+
+    /**
+     * Creates a try-catch block for async operations.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * asyncTry(
+     *     await_(fetch_("/api/data"))
+     * ).catch_(
+     *     showMessage("error").error("Failed to load")
+     * )
+     * </pre>
+     *
+     * @param actions the actions to try
+     * @return an AsyncTryBuilder for chaining
+     */
+    public static AsyncTryBuilder asyncTry(Action... actions) {
+        return new AsyncTryBuilder(actions);
+    }
+
+    /**
+     * Builder for async try-catch-finally blocks.
+     */
+    public static class AsyncTryBuilder implements Action {
+        private final Action[] tryActions;
+        private Action catchAction;
+        private Action finallyAction;
+
+        AsyncTryBuilder(Action[] tryActions) {
+            this.tryActions = tryActions;
+        }
+
+        /**
+         * Adds a catch block. The error is available as '_err'.
+         *
+         * @param action the action to execute on error
+         * @return this builder for chaining
+         */
+        public AsyncTryBuilder catch_(Action action) {
+            this.catchAction = action;
+            return this;
+        }
+
+        /**
+         * Adds a finally block.
+         *
+         * @param action the action to always execute
+         * @return this builder for chaining
+         */
+        public AsyncTryBuilder finally_(Action action) {
+            this.finallyAction = action;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("try{");
+            for (Action a : tryActions) {
+                sb.append(a.build());
+                String built = a.build();
+                if (!built.endsWith(";") && !built.endsWith("}")) {
+                    sb.append(";");
+                }
+            }
+            sb.append("}");
+            if (catchAction != null) {
+                sb.append("catch(_err){");
+                sb.append(catchAction.build());
+                String built = catchAction.build();
+                if (!built.endsWith(";") && !built.endsWith("}")) {
+                    sb.append(";");
+                }
+                sb.append("}");
+            }
+            if (finallyAction != null) {
+                sb.append("finally{");
+                sb.append(finallyAction.build());
+                String built = finallyAction.build();
+                if (!built.endsWith(";") && !built.endsWith("}")) {
+                    sb.append(";");
+                }
+                sb.append("}");
+            }
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Creates a Promise.all() call for parallel async operations.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * promiseAll(
+     *     fetch_("/api/users"),
+     *     fetch_("/api/posts")
+     * )
+     * // Output: Promise.all([fetch('/api/users'),fetch('/api/posts')])
+     * </pre>
+     *
+     * @param actions the promises to run in parallel
+     * @return an Action for Promise.all
+     */
+    public static Action promiseAll(Action... actions) {
+        return () -> {
+            StringBuilder sb = new StringBuilder("Promise.all([");
+            for (int i = 0; i < actions.length; i++) {
+                if (i > 0) sb.append(",");
+                sb.append(actions[i].build());
+            }
+            sb.append("])");
+            return sb.toString();
+        };
+    }
+
+    /**
+     * Creates a sleep/delay action using a Promise.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * await_(sleep(1000))
+     * // Output: await new Promise(r=>setTimeout(r,1000))
+     * </pre>
+     *
+     * @param ms the delay in milliseconds
+     * @return an Action for the sleep promise
+     */
+    public static Action sleep(int ms) {
+        return () -> "new Promise(r=>setTimeout(r," + ms + "))";
+    }
+
+    // ==================== Fetch/HTTP Builder ====================
+
+    /**
+     * Creates a GET fetch request.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * await_(get("/api/users"))
+     * // Output: await fetch('/api/users')
+     * </pre>
+     *
+     * @param url the URL to fetch
+     * @return a FetchBuilder for chaining
+     */
+    public static FetchBuilder get(String url) {
+        return new FetchBuilder("GET", url);
+    }
+
+    /**
+     * Creates a POST fetch request.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * await_(post("/api/users").json("{\"name\":\"John\"}"))
+     * // Output: await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"name":"John"}'})
+     * </pre>
+     *
+     * @param url the URL to post to
+     * @return a FetchBuilder for chaining
+     */
+    public static FetchBuilder post(String url) {
+        return new FetchBuilder("POST", url);
+    }
+
+    /**
+     * Creates a PUT fetch request.
+     *
+     * @param url the URL
+     * @return a FetchBuilder for chaining
+     */
+    public static FetchBuilder put(String url) {
+        return new FetchBuilder("PUT", url);
+    }
+
+    /**
+     * Creates a PATCH fetch request.
+     *
+     * @param url the URL
+     * @return a FetchBuilder for chaining
+     */
+    public static FetchBuilder patch(String url) {
+        return new FetchBuilder("PATCH", url);
+    }
+
+    /**
+     * Creates a DELETE fetch request.
+     *
+     * @param url the URL
+     * @return a FetchBuilder for chaining
+     */
+    public static FetchBuilder delete(String url) {
+        return new FetchBuilder("DELETE", url);
+    }
+
+    /**
+     * Creates a fetch request with any HTTP method.
+     *
+     * @param method the HTTP method
+     * @param url the URL
+     * @return a FetchBuilder for chaining
+     */
+    public static FetchBuilder fetch(String method, String url) {
+        return new FetchBuilder(method, url);
+    }
+
+    /**
+     * Fluent builder for JavaScript fetch() calls.
+     *
+     * <p>Examples:</p>
+     * <pre>
+     * // Simple GET
+     * get("/api/users")
+     *
+     * // POST with JSON
+     * post("/api/users")
+     *     .json("{\"name\":\"John\"}")
+     *     .header("Authorization", "Bearer " + token)
+     *
+     * // With form data
+     * post("/api/upload")
+     *     .formData("myForm")
+     *
+     * // Full request with response handling
+     * get("/api/data")
+     *     .then("json()")                    // Parse as JSON
+     *     .ok(setText("result", "_data"))    // On success
+     *     .fail(showMessage("error"))        // On error
+     * </pre>
+     */
+    public static class FetchBuilder implements Action {
+        private String method;
+        private String url;
+        private String urlSuffix = "";
+        private String body;
+        private String contentType;
+        private final List<String> headers = new ArrayList<>();
+        private String credentials;
+        private String mode;
+        private String thenExpr;
+        private Action okAction;
+        private Action failAction;
+        private final List<StatusHandler> statusHandlers = new ArrayList<>();
+
+        private record StatusHandler(int status, Action action) {}
+
+        FetchBuilder(String method, String url) {
+            this.method = method;
+            this.url = url;
+        }
+
+        /**
+         * Changes the method to POST.
+         *
+         * @return this builder
+         */
+        public FetchBuilder post() {
+            this.method = "POST";
+            return this;
+        }
+
+        /**
+         * Changes the method to PUT.
+         *
+         * @return this builder
+         */
+        public FetchBuilder put() {
+            this.method = "PUT";
+            return this;
+        }
+
+        /**
+         * Changes the method to DELETE.
+         *
+         * @return this builder
+         */
+        public FetchBuilder delete() {
+            this.method = "DELETE";
+            return this;
+        }
+
+        /**
+         * Sets the URL from a JavaScript variable/expression.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * fetch("").urlFromVar("apiUrl")
+         * // Output: fetch(apiUrl, {...})
+         * </pre>
+         *
+         * @param varName the variable name or expression
+         * @return this builder
+         */
+        public FetchBuilder urlFromVar(String varName) {
+            this.url = null;  // Mark as expression-based
+            this.urlSuffix = varName;
+            return this;
+        }
+
+        /**
+         * Appends a JavaScript variable to the URL.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * fetch("/api/users/").appendVar("userId")
+         * // Output: fetch('/api/users/'+userId, {...})
+         * </pre>
+         *
+         * @param varName the variable name to append
+         * @return this builder
+         */
+        public FetchBuilder appendVar(String varName) {
+            this.urlSuffix = varName;
+            return this;
+        }
+
+        /**
+         * Adds a header with value from a JavaScript variable.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * post("/api/data").headerFromVar("X-Auth-Token", "authToken")
+         * // Output: headers: { 'X-Auth-Token': authToken }
+         * </pre>
+         *
+         * @param name the header name
+         * @param varName the JavaScript variable name
+         * @return this builder
+         */
+        public FetchBuilder headerFromVar(String name, String varName) {
+            headers.add("'" + esc(name) + "':" + varName);
+            return this;
+        }
+
+        /**
+         * Handles a specific HTTP status code.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * get("/api/data")
+         *     .onStatus(401, redirect("/login"))
+         *     .onStatus(404, showError("Not found"))
+         *     .ok(processData())
+         * </pre>
+         *
+         * @param status the HTTP status code
+         * @param action the action to execute
+         * @return this builder
+         */
+        public FetchBuilder onStatus(int status, Action action) {
+            statusHandlers.add(new StatusHandler(status, action));
+            return this;
+        }
+
+        /**
+         * Sets JSON body.
+         *
+         * @param jsonBody the JSON string
+         * @return this builder
+         */
+        public FetchBuilder json(String jsonBody) {
+            this.body = "'" + esc(jsonBody) + "'";
+            this.contentType = "application/json";
+            return this;
+        }
+
+        /**
+         * Sets JSON body from a JavaScript expression (not escaped).
+         *
+         * <p>Example:</p>
+         * <pre>
+         * post("/api/save").jsonExpr("JSON.stringify({name: $_('name').value})")
+         * </pre>
+         *
+         * @param jsExpr the JavaScript expression producing JSON
+         * @return this builder
+         */
+        public FetchBuilder jsonExpr(String jsExpr) {
+            this.body = jsExpr;
+            this.contentType = "application/json";
+            return this;
+        }
+
+        /**
+         * Uses FormData from a form element.
+         *
+         * @param formId the form element ID
+         * @return this builder
+         */
+        public FetchBuilder formData(String formId) {
+            this.body = "new FormData($_(" + "'" + formId + "'))";
+            return this;
+        }
+
+        /**
+         * Uses URLSearchParams from a form element.
+         *
+         * @param formId the form element ID
+         * @return this builder
+         */
+        public FetchBuilder urlEncoded(String formId) {
+            this.body = "new URLSearchParams(new FormData($_(" + "'" + formId + "')))";
+            this.contentType = "application/x-www-form-urlencoded";
+            return this;
+        }
+
+        /**
+         * Sets raw body (JavaScript expression).
+         *
+         * @param bodyExpr the body expression
+         * @return this builder
+         */
+        public FetchBuilder body(String bodyExpr) {
+            this.body = bodyExpr;
+            return this;
+        }
+
+        /**
+         * Adds a header.
+         *
+         * @param name the header name
+         * @param value the header value
+         * @return this builder
+         */
+        public FetchBuilder header(String name, String value) {
+            headers.add("'" + esc(name) + "':'" + esc(value) + "'");
+            return this;
+        }
+
+        /**
+         * Adds a header from a JavaScript expression.
+         *
+         * @param name the header name
+         * @param valueExpr the JavaScript expression for the value
+         * @return this builder
+         */
+        public FetchBuilder headerExpr(String name, String valueExpr) {
+            headers.add("'" + esc(name) + "':" + valueExpr);
+            return this;
+        }
+
+        /**
+         * Adds Authorization Bearer header.
+         *
+         * @param token the token value
+         * @return this builder
+         */
+        public FetchBuilder bearer(String token) {
+            return header("Authorization", "Bearer " + token);
+        }
+
+        /**
+         * Adds Authorization Bearer header from expression.
+         *
+         * @param tokenExpr the JavaScript expression for the token
+         * @return this builder
+         */
+        public FetchBuilder bearerExpr(String tokenExpr) {
+            return headerExpr("Authorization", "'Bearer '+(" + tokenExpr + ")");
+        }
+
+        /**
+         * Sets credentials mode.
+         *
+         * @param mode "include", "same-origin", or "omit"
+         * @return this builder
+         */
+        public FetchBuilder credentials(String mode) {
+            this.credentials = mode;
+            return this;
+        }
+
+        /**
+         * Sets credentials to "include" (sends cookies cross-origin).
+         *
+         * @return this builder
+         */
+        public FetchBuilder withCredentials() {
+            return credentials("include");
+        }
+
+        /**
+         * Sets CORS mode.
+         *
+         * @param mode "cors", "no-cors", or "same-origin"
+         * @return this builder
+         */
+        public FetchBuilder mode(String mode) {
+            this.mode = mode;
+            return this;
+        }
+
+        /**
+         * Chains a .then() on the response.
+         * Response is available as 'r'.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * get("/api/data").then("json()")  // r.json()
+         * get("/api/data").then("text()")  // r.text()
+         * </pre>
+         *
+         * @param methodCall the method to call on response (e.g., "json()", "text()")
+         * @return this builder
+         */
+        public FetchBuilder then(String methodCall) {
+            this.thenExpr = "r." + methodCall;
+            return this;
+        }
+
+        /**
+         * Chains .then() with a custom expression.
+         *
+         * @param expr the JavaScript expression (response is 'r')
+         * @return this builder
+         */
+        public FetchBuilder thenExpr(String expr) {
+            this.thenExpr = expr;
+            return this;
+        }
+
+        /**
+         * Action on successful response. Data is available as '_data'.
+         *
+         * @param action the action to execute
+         * @return this builder
+         */
+        public FetchBuilder ok(Action action) {
+            this.okAction = action;
+            return this;
+        }
+
+        /**
+         * Action on error. Error is available as '_err'.
+         *
+         * @param action the action to execute
+         * @return this builder
+         */
+        public FetchBuilder fail(Action action) {
+            this.failAction = action;
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+
+            // Build options object
+            List<String> options = new ArrayList<>();
+            if (!"GET".equals(method)) {
+                options.add("method:'" + method + "'");
+            }
+
+            // Headers
+            List<String> allHeaders = new ArrayList<>(headers);
+            if (contentType != null) {
+                allHeaders.add("'Content-Type':'" + contentType + "'");
+            }
+            if (!allHeaders.isEmpty()) {
+                options.add("headers:{" + String.join(",", allHeaders) + "}");
+            }
+
+            // Body
+            if (body != null) {
+                options.add("body:" + body);
+            }
+
+            // Credentials
+            if (credentials != null) {
+                options.add("credentials:'" + credentials + "'");
+            }
+
+            // Mode
+            if (mode != null) {
+                options.add("mode:'" + mode + "'");
+            }
+
+            // Build fetch call with URL handling
+            sb.append("fetch(");
+            if (url == null) {
+                // URL from variable expression
+                sb.append(urlSuffix);
+            } else if (!urlSuffix.isEmpty()) {
+                // URL with appended variable
+                sb.append("'" + esc(url) + "'+").append(urlSuffix);
+            } else {
+                // Plain URL
+                sb.append("'" + esc(url) + "'");
+            }
+            if (!options.isEmpty()) {
+                sb.append(",{" + String.join(",", options) + "}");
+            }
+            sb.append(")");
+
+            // Handle status code checks
+            if (!statusHandlers.isEmpty()) {
+                sb.append(".then(r=>{");
+                for (StatusHandler h : statusHandlers) {
+                    sb.append("if(r.status===").append(h.status()).append("){")
+                      .append(h.action().build())
+                      .append("return;}");
+                }
+                sb.append("return r.json();})");
+            }
+
+            // Handle .then() chains
+            if (thenExpr != null || okAction != null || failAction != null) {
+                if (thenExpr != null && statusHandlers.isEmpty()) {
+                    sb.append(".then(r=>" + thenExpr + ")");
+                }
+                if (okAction != null) {
+                    sb.append(".then(_data=>{if(_data!==undefined){" + okAction.build() + "}})");
+                }
+                if (failAction != null) {
+                    sb.append(".catch(_err=>{" + failAction.build() + "})");
+                }
+            }
+
+            return sb.toString();
+        }
+    }
+
+    // ==================== DOM Query Builder ====================
+
+    /**
+     * Creates a DOM query builder for selecting and manipulating elements.
+     *
+     * <p>Examples:</p>
+     * <pre>
+     * // Select by ID
+     * query("#myDiv").hide()
+     *
+     * // Select all and iterate
+     * query(".item").forEach(el -&gt; el.addClass("active"))
+     *
+     * // Chain operations
+     * query("#panel").addClass("visible").setText("Hello")
+     *
+     * // Query with closest
+     * query("#btn").closest(".card").addClass("selected")
+     * </pre>
+     *
+     * @param selector CSS selector
+     * @return a DOMQuery builder
+     */
+    public static DOMQuery query(String selector) {
+        return new DOMQuery(selector);
+    }
+
+    /**
+     * Queries all elements matching a selector.
+     *
+     * @param selector CSS selector
+     * @return a DOMQueryAll builder
+     */
+    public static DOMQueryAll queryAll(String selector) {
+        return new DOMQueryAll(selector);
+    }
+
+    /**
+     * Builder for DOM queries and manipulations.
+     */
+    public static class DOMQuery implements Action {
+        private final String selector;
+        private final List<String> operations = new ArrayList<>();
+
+        DOMQuery(String selector) {
+            this.selector = selector;
+        }
+
+        /**
+         * Adds a CSS class.
+         */
+        public DOMQuery addClass(String className) {
+            operations.add(".classList.add('" + esc(className) + "')");
+            return this;
+        }
+
+        /**
+         * Removes a CSS class.
+         */
+        public DOMQuery removeClass(String className) {
+            operations.add(".classList.remove('" + esc(className) + "')");
+            return this;
+        }
+
+        /**
+         * Toggles a CSS class.
+         */
+        public DOMQuery toggleClass(String className) {
+            operations.add(".classList.toggle('" + esc(className) + "')");
+            return this;
+        }
+
+        /**
+         * Sets text content.
+         */
+        public DOMQuery setText(String text) {
+            operations.add(".textContent='" + esc(text) + "'");
+            return this;
+        }
+
+        /**
+         * Sets text content from expression.
+         */
+        public DOMQuery setTextExpr(String expr) {
+            operations.add(".textContent=" + expr);
+            return this;
+        }
+
+        /**
+         * Sets inner HTML.
+         */
+        public DOMQuery setHtml(String html) {
+            operations.add(".innerHTML='" + esc(html) + "'");
+            return this;
+        }
+
+        /**
+         * Sets inner HTML from expression.
+         */
+        public DOMQuery setHtmlExpr(String expr) {
+            operations.add(".innerHTML=" + expr);
+            return this;
+        }
+
+        /**
+         * Sets an attribute.
+         */
+        public DOMQuery attr(String name, String value) {
+            operations.add(".setAttribute('" + esc(name) + "','" + esc(value) + "')");
+            return this;
+        }
+
+        /**
+         * Removes an attribute.
+         */
+        public DOMQuery removeAttr(String name) {
+            operations.add(".removeAttribute('" + esc(name) + "')");
+            return this;
+        }
+
+        /**
+         * Sets a style property.
+         */
+        public DOMQuery style(String property, String value) {
+            operations.add(".style." + property + "='" + esc(value) + "'");
+            return this;
+        }
+
+        /**
+         * Shows the element (display: block).
+         */
+        public DOMQuery show() {
+            return style("display", "block");
+        }
+
+        /**
+         * Hides the element (display: none).
+         */
+        public DOMQuery hide() {
+            return style("display", "none");
+        }
+
+        /**
+         * Sets a data attribute.
+         */
+        public DOMQuery data(String name, String value) {
+            operations.add(".dataset." + name + "='" + esc(value) + "'");
+            return this;
+        }
+
+        /**
+         * Sets the value (for inputs).
+         */
+        public DOMQuery value(String value) {
+            operations.add(".value='" + esc(value) + "'");
+            return this;
+        }
+
+        /**
+         * Focuses the element.
+         */
+        public DOMQuery focus() {
+            operations.add(".focus()");
+            return this;
+        }
+
+        /**
+         * Blurs the element.
+         */
+        public DOMQuery blur() {
+            operations.add(".blur()");
+            return this;
+        }
+
+        /**
+         * Clicks the element.
+         */
+        public DOMQuery click() {
+            operations.add(".click()");
+            return this;
+        }
+
+        /**
+         * Scrolls element into view.
+         */
+        public DOMQuery scrollIntoView() {
+            operations.add(".scrollIntoView({behavior:'smooth'})");
+            return this;
+        }
+
+        /**
+         * Removes the element from DOM.
+         */
+        public DOMQuery remove() {
+            operations.add(".remove()");
+            return this;
+        }
+
+        /**
+         * Appends HTML content.
+         */
+        public DOMQuery append(String html) {
+            operations.add(".insertAdjacentHTML('beforeend','" + esc(html) + "')");
+            return this;
+        }
+
+        /**
+         * Prepends HTML content.
+         */
+        public DOMQuery prepend(String html) {
+            operations.add(".insertAdjacentHTML('afterbegin','" + esc(html) + "')");
+            return this;
+        }
+
+        /**
+         * Finds closest ancestor matching selector.
+         */
+        public DOMQuery closest(String ancestorSelector) {
+            operations.add(".closest('" + esc(ancestorSelector) + "')");
+            return this;
+        }
+
+        /**
+         * Gets parent element.
+         */
+        public DOMQuery parent() {
+            operations.add(".parentElement");
+            return this;
+        }
+
+        /**
+         * Queries child element.
+         */
+        public DOMQuery find(String childSelector) {
+            operations.add(".querySelector('" + esc(childSelector) + "')");
+            return this;
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("document.querySelector('").append(esc(selector)).append("')");
+            for (String op : operations) {
+                sb.append(op);
+            }
+            return sb.toString();
+        }
+    }
+
+    /**
+     * Builder for querying all matching elements.
+     */
+    public static class DOMQueryAll implements Action {
+        private final String selector;
+        private String varName = "el";
+        private final List<String> operations = new ArrayList<>();
+
+        DOMQueryAll(String selector) {
+            this.selector = selector;
+        }
+
+        /**
+         * Performs operation on each element.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * queryAll(".item").forEach("el", addClass("el", "active"))
+         * // Output: document.querySelectorAll('.item').forEach(el=>{el.classList.add('active')})
+         * </pre>
+         *
+         * @param elementVar variable name for each element
+         * @param action the action to perform
+         * @return this builder
+         */
+        public DOMQueryAll forEach(String elementVar, Action action) {
+            this.varName = elementVar;
+            operations.add(".forEach(" + elementVar + "=>{" + action.build() + "})");
+            return this;
+        }
+
+        /**
+         * Adds class to all elements.
+         */
+        public DOMQueryAll addClass(String className) {
+            operations.add(".forEach(el=>el.classList.add('" + esc(className) + "'))");
+            return this;
+        }
+
+        /**
+         * Removes class from all elements.
+         */
+        public DOMQueryAll removeClass(String className) {
+            operations.add(".forEach(el=>el.classList.remove('" + esc(className) + "'))");
+            return this;
+        }
+
+        /**
+         * Sets text on all elements.
+         */
+        public DOMQueryAll setText(String text) {
+            operations.add(".forEach(el=>el.textContent='" + esc(text) + "')");
+            return this;
+        }
+
+        /**
+         * Hides all elements.
+         */
+        public DOMQueryAll hide() {
+            operations.add(".forEach(el=>el.style.display='none')");
+            return this;
+        }
+
+        /**
+         * Shows all elements.
+         */
+        public DOMQueryAll show() {
+            operations.add(".forEach(el=>el.style.display='')");
+            return this;
+        }
+
+        /**
+         * Removes all elements.
+         */
+        public DOMQueryAll remove() {
+            operations.add(".forEach(el=>el.remove())");
+            return this;
+        }
+
+        /**
+         * Gets number of matching elements.
+         */
+        public Action length() {
+            return () -> "document.querySelectorAll('" + esc(selector) + "').length";
+        }
+
+        @Override
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("document.querySelectorAll('").append(esc(selector)).append("')");
+            for (String op : operations) {
+                sb.append(op);
+            }
             return sb.toString();
         }
     }
@@ -2624,151 +3711,6 @@ public final class Actions {
             }
 
             sb.append("});})");
-            return sb.toString();
-        }
-    }
-
-    // ==================== Fetch Builder ====================
-
-    /**
-     * Standalone async fetch action.
-     * Can use JS variables for headers (for auth flows).
-     */
-    public static class FetchBuilder implements Action {
-        private String url;
-        private String urlVar;
-        private String method = "GET";
-        private final List<String> headers = new ArrayList<>();
-        private String jsonBody;
-        private Action okAction;
-        private Action failAction;
-        private final Map<Integer, Action> statusHandlers = new LinkedHashMap<>();
-
-        FetchBuilder(String url) { this.url = url; }
-
-        /** Handle specific HTTP status code. */
-        public FetchBuilder onStatus(int status, Action action) {
-            statusHandlers.put(status, action);
-            return this;
-        }
-
-        /** Use a JS variable for the URL. */
-        public FetchBuilder urlFromVar(String varName) {
-            this.urlVar = varName;
-            this.url = null;
-            return this;
-        }
-
-        /** Append to URL from variable. */
-        public FetchBuilder appendVar(String varName) {
-            if (urlVar != null) {
-                urlVar = urlVar + "+" + varName;
-            } else if (url != null) {
-                urlVar = "'" + esc(url) + "'+" + varName;
-                url = null;
-            }
-            return this;
-        }
-
-        /** Set HTTP method. */
-        public FetchBuilder method(String method) {
-            this.method = method;
-            return this;
-        }
-
-        /** POST request. */
-        public FetchBuilder post() {
-            this.method = "POST";
-            return this;
-        }
-
-        /** Add header with literal value. */
-        public FetchBuilder header(String name, String value) {
-            headers.add("'" + name + "':'" + esc(value) + "'");
-            return this;
-        }
-
-        /** Add header from JS variable. */
-        public FetchBuilder headerFromVar(String name, String varName) {
-            headers.add("'" + name + "':" + varName);
-            return this;
-        }
-
-        /** Send JSON body. */
-        public FetchBuilder body(String json) {
-            this.jsonBody = json;
-            return this;
-        }
-
-        /** Action on success. */
-        public FetchBuilder ok(Action action) {
-            this.okAction = action;
-            return this;
-        }
-
-        /** Action on failure. */
-        public FetchBuilder fail(Action action) {
-            this.failAction = action;
-            return this;
-        }
-
-        @Override
-        public String build() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{try{");
-
-            // Build fetch URL
-            String fetchUrl = urlVar != null ? urlVar : "'" + esc(url) + "'";
-            sb.append("const _res=await fetch(" + fetchUrl + ",{");
-            sb.append("method:'" + method + "'");
-
-            // Headers
-            List<String> allHeaders = new ArrayList<>(headers);
-            if (jsonBody != null) {
-                allHeaders.add("'Content-Type':'application/json'");
-            }
-            if (!allHeaders.isEmpty()) {
-                sb.append(",headers:{" + String.join(",", allHeaders) + "}");
-            }
-
-            // Body
-            if (jsonBody != null) {
-                sb.append(",body:'" + esc(jsonBody) + "'");
-            }
-
-            sb.append("});");
-            sb.append("const _data=await _res.json();");
-
-            // Status-specific handlers
-            if (!statusHandlers.isEmpty()) {
-                boolean first = true;
-                for (Map.Entry<Integer, Action> entry : statusHandlers.entrySet()) {
-                    sb.append(first ? "if" : "else if");
-                    sb.append("(_res.status===").append(entry.getKey()).append("){");
-                    sb.append(entry.getValue().build()).append(";");
-                    sb.append("}");
-                    first = false;
-                }
-                // After status handlers, check ok/fail
-                if (okAction != null || failAction != null) {
-                    sb.append("else if(_res.ok){");
-                    if (okAction != null) sb.append(okAction.build()).append(";");
-                    sb.append("}else{");
-                    if (failAction != null) sb.append(failAction.build()).append(";");
-                    sb.append("}");
-                }
-            } else if (okAction != null || failAction != null) {
-                // No status handlers, just ok/fail
-                sb.append("if(_res.ok){");
-                if (okAction != null) sb.append(okAction.build()).append(";");
-                sb.append("}else{");
-                if (failAction != null) sb.append(failAction.build()).append(";");
-                sb.append("}");
-            }
-
-            sb.append("}catch(_e){");
-            if (failAction != null) sb.append(failAction.build()).append(";");
-            sb.append("}}");
             return sb.toString();
         }
     }

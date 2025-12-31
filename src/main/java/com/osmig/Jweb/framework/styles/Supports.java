@@ -249,4 +249,81 @@ public class Supports {
     public static Supports supportsAspectRatio() {
         return supports("aspect-ratio", "1/1");
     }
+
+    /**
+     * Check for CSS subgrid support.
+     */
+    public static Supports supportsSubgrid() {
+        return supports("grid-template-columns", "subgrid");
+    }
+
+    /**
+     * Check for CSS gap property support (in flexbox).
+     */
+    public static Supports supportsFlexGap() {
+        return supports().property("display", "flex").and().property("gap", "1rem");
+    }
+
+    /**
+     * Check for CSS color-mix() function support.
+     */
+    public static Supports supportsColorMix() {
+        return supports("color", "color-mix(in srgb, red 50%, blue)");
+    }
+
+    /**
+     * Check for CSS :focus-visible selector support.
+     */
+    public static Supports supportsFocusVisible() {
+        return supportsSelector(":focus-visible");
+    }
+
+    /**
+     * Check for CSS scroll-snap support.
+     */
+    public static Supports supportsScrollSnap() {
+        return supports("scroll-snap-type", "x mandatory");
+    }
+
+    /**
+     * Check for CSS position: sticky support.
+     */
+    public static Supports supportsSticky() {
+        return supports("position", "sticky");
+    }
+
+    /**
+     * Check for CSS clamp() function support.
+     */
+    public static Supports supportsClamp() {
+        return supports("font-size", "clamp(1rem, 2vw, 3rem)");
+    }
+
+    /**
+     * Check for CSS :where() selector support.
+     */
+    public static Supports supportsWhereSelector() {
+        return supportsSelector(":where(*)");
+    }
+
+    /**
+     * Check for CSS :is() selector support.
+     */
+    public static Supports supportsIsSelector() {
+        return supportsSelector(":is(*)");
+    }
+
+    /**
+     * Check for CSS logical properties support.
+     */
+    public static Supports supportsLogicalProperties() {
+        return supports("margin-inline-start", "1rem");
+    }
+
+    /**
+     * Helper to create a rule using the same pattern as MediaQuery.
+     */
+    public static MediaQuery.Rule makeRule(String selector, Style<?> style) {
+        return new MediaQuery.Rule(selector, style);
+    }
 }

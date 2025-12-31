@@ -22,15 +22,252 @@ public class Request {
 
     // === Path Parameters ===
 
+    /**
+     * Gets a path parameter as a String.
+     *
+     * @param name the parameter name
+     * @return the value, or null if not found
+     */
     public String param(String name) { return pathParams.get(name); }
+
+    /**
+     * Gets a path parameter as a String with a default value.
+     *
+     * @param name the parameter name
+     * @param defaultValue the default value if not found
+     * @return the value, or defaultValue if not found
+     */
+    public String param(String name, String defaultValue) {
+        String value = param(name);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Gets a path parameter as a Long.
+     *
+     * @param name the parameter name
+     * @return the value, or null if not found or not a valid long
+     */
     public Long paramLong(String name) {
         String value = param(name);
-        return value != null ? Long.parseLong(value) : null;
+        if (value == null) return null;
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
+
+    /**
+     * Gets a path parameter as a long with a default value.
+     *
+     * @param name the parameter name
+     * @param defaultValue the default value if not found or invalid
+     * @return the value, or defaultValue
+     */
+    public long paramLong(String name, long defaultValue) {
+        Long value = paramLong(name);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Gets a path parameter as an Integer.
+     *
+     * @param name the parameter name
+     * @return the value, or null if not found or not a valid int
+     */
     public Integer paramInt(String name) {
         String value = param(name);
-        return value != null ? Integer.parseInt(value) : null;
+        if (value == null) return null;
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
+
+    /**
+     * Gets a path parameter as an int with a default value.
+     *
+     * @param name the parameter name
+     * @param defaultValue the default value if not found or invalid
+     * @return the value, or defaultValue
+     */
+    public int paramInt(String name, int defaultValue) {
+        Integer value = paramInt(name);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Gets a path parameter as a Double.
+     *
+     * @param name the parameter name
+     * @return the value, or null if not found or not a valid double
+     */
+    public Double paramDouble(String name) {
+        String value = param(name);
+        if (value == null) return null;
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets a path parameter as a double with a default value.
+     *
+     * @param name the parameter name
+     * @param defaultValue the default value if not found or invalid
+     * @return the value, or defaultValue
+     */
+    public double paramDouble(String name, double defaultValue) {
+        Double value = paramDouble(name);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Gets a path parameter as a Boolean.
+     * Parses "true", "1", "yes", "on" as true (case-insensitive).
+     *
+     * @param name the parameter name
+     * @return the value, or null if not found
+     */
+    public Boolean paramBool(String name) {
+        String value = param(name);
+        if (value == null) return null;
+        String lower = value.toLowerCase();
+        return "true".equals(lower) || "1".equals(lower) || "yes".equals(lower) || "on".equals(lower);
+    }
+
+    /**
+     * Gets a path parameter as a boolean with a default value.
+     *
+     * @param name the parameter name
+     * @param defaultValue the default value if not found
+     * @return the value, or defaultValue
+     */
+    public boolean paramBool(String name, boolean defaultValue) {
+        Boolean value = paramBool(name);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
+     * Gets a path parameter as a UUID.
+     *
+     * @param name the parameter name
+     * @return the value, or null if not found or not a valid UUID
+     */
+    public java.util.UUID paramUUID(String name) {
+        String value = param(name);
+        if (value == null) return null;
+        try {
+            return java.util.UUID.fromString(value);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Gets a path parameter as an Optional.
+     *
+     * @param name the parameter name
+     * @return Optional containing the value, or empty if not found
+     */
+    public Optional<String> paramOpt(String name) {
+        return Optional.ofNullable(param(name));
+    }
+
+    /**
+     * Gets a path parameter as an Optional Integer.
+     *
+     * @param name the parameter name
+     * @return Optional containing the value, or empty if not found or invalid
+     */
+    public Optional<Integer> paramIntOpt(String name) {
+        return Optional.ofNullable(paramInt(name));
+    }
+
+    /**
+     * Gets a path parameter as an Optional Long.
+     *
+     * @param name the parameter name
+     * @return Optional containing the value, or empty if not found or invalid
+     */
+    public Optional<Long> paramLongOpt(String name) {
+        return Optional.ofNullable(paramLong(name));
+    }
+
+    /**
+     * Gets a path parameter as an Optional UUID.
+     *
+     * @param name the parameter name
+     * @return Optional containing the value, or empty if not found or invalid
+     */
+    public Optional<java.util.UUID> paramUUIDOpt(String name) {
+        return Optional.ofNullable(paramUUID(name));
+    }
+
+    /**
+     * Requires a path parameter to be present and non-empty.
+     *
+     * @param name the parameter name
+     * @return the value
+     * @throws IllegalArgumentException if the parameter is missing or empty
+     */
+    public String requireParam(String name) {
+        String value = param(name);
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Required path parameter missing: " + name);
+        }
+        return value;
+    }
+
+    /**
+     * Requires a path parameter as an int.
+     *
+     * @param name the parameter name
+     * @return the value
+     * @throws IllegalArgumentException if the parameter is missing or invalid
+     */
+    public int requireParamInt(String name) {
+        Integer value = paramInt(name);
+        if (value == null) {
+            throw new IllegalArgumentException("Required int path parameter missing or invalid: " + name);
+        }
+        return value;
+    }
+
+    /**
+     * Requires a path parameter as a long.
+     *
+     * @param name the parameter name
+     * @return the value
+     * @throws IllegalArgumentException if the parameter is missing or invalid
+     */
+    public long requireParamLong(String name) {
+        Long value = paramLong(name);
+        if (value == null) {
+            throw new IllegalArgumentException("Required long path parameter missing or invalid: " + name);
+        }
+        return value;
+    }
+
+    /**
+     * Requires a path parameter as a UUID.
+     *
+     * @param name the parameter name
+     * @return the value
+     * @throws IllegalArgumentException if the parameter is missing or invalid
+     */
+    public java.util.UUID requireParamUUID(String name) {
+        java.util.UUID value = paramUUID(name);
+        if (value == null) {
+            throw new IllegalArgumentException("Required UUID path parameter missing or invalid: " + name);
+        }
+        return value;
+    }
+
     public void setPathParams(Map<String, String> params) {
         this.pathParams = params != null ? params : new HashMap<>();
     }

@@ -354,6 +354,302 @@ public final class Elements {
     public static Tag datalist(Attributes attrs, Object... children) { return tag("datalist", attrs, children); }
     public static Tag select(Object... children) { return tag("select", children); }
 
+    // ==================== Convenient Form Input Builders ====================
+    // These provide concise shortcuts for common form inputs.
+    // The full attrs() API remains available for complex cases.
+
+    /**
+     * Creates a text input with name (id defaults to name).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * textInput("username")
+     * // Output: &lt;input type="text" name="username" id="username"&gt;
+     * </pre>
+     */
+    public static Tag textInput(String name) {
+        return input(attrs().type("text").name(name).id(name));
+    }
+
+    /**
+     * Creates a text input with name and placeholder.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * textInput("username", "Enter username")
+     * </pre>
+     */
+    public static Tag textInput(String name, String placeholder) {
+        return input(attrs().type("text").name(name).id(name).placeholder(placeholder));
+    }
+
+    /**
+     * Creates an email input with name (id defaults to name).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * emailInput("email")
+     * // Output: &lt;input type="email" name="email" id="email"&gt;
+     * </pre>
+     */
+    public static Tag emailInput(String name) {
+        return input(attrs().type("email").name(name).id(name));
+    }
+
+    /**
+     * Creates an email input with name and placeholder.
+     */
+    public static Tag emailInput(String name, String placeholder) {
+        return input(attrs().type("email").name(name).id(name).placeholder(placeholder));
+    }
+
+    /**
+     * Creates a password input with name (id defaults to name).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * passwordInput("password")
+     * </pre>
+     */
+    public static Tag passwordInput(String name) {
+        return input(attrs().type("password").name(name).id(name));
+    }
+
+    /**
+     * Creates a password input with name and placeholder.
+     */
+    public static Tag passwordInput(String name, String placeholder) {
+        return input(attrs().type("password").name(name).id(name).placeholder(placeholder));
+    }
+
+    /**
+     * Creates a number input with name (id defaults to name).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * numberInput("quantity")
+     * </pre>
+     */
+    public static Tag numberInput(String name) {
+        return input(attrs().type("number").name(name).id(name));
+    }
+
+    /**
+     * Creates a number input with name, min, and max values.
+     */
+    public static Tag numberInput(String name, int min, int max) {
+        return input(attrs().type("number").name(name).id(name).min(min).max(max));
+    }
+
+    /**
+     * Creates a checkbox input with name and value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * checkbox("agree", "yes")
+     * // Output: &lt;input type="checkbox" name="agree" value="yes" id="agree"&gt;
+     * </pre>
+     */
+    public static Tag checkbox(String name, String value) {
+        return input(attrs().type("checkbox").name(name).value(value).id(name));
+    }
+
+    /**
+     * Creates a checkbox input with name, value, and checked state.
+     */
+    public static Tag checkbox(String name, String value, boolean checked) {
+        return input(attrs().type("checkbox").name(name).value(value).id(name).checked(checked));
+    }
+
+    /**
+     * Creates a radio input with name and value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * radio("color", "red")
+     * // Output: &lt;input type="radio" name="color" value="red" id="color-red"&gt;
+     * </pre>
+     */
+    public static Tag radio(String name, String value) {
+        return input(attrs().type("radio").name(name).value(value).id(name + "-" + value));
+    }
+
+    /**
+     * Creates a radio input with name, value, and checked state.
+     */
+    public static Tag radio(String name, String value, boolean checked) {
+        return input(attrs().type("radio").name(name).value(value).id(name + "-" + value).checked(checked));
+    }
+
+    /**
+     * Creates a hidden input with name and value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * hiddenInput("csrf", token)
+     * </pre>
+     */
+    public static Tag hiddenInput(String name, String value) {
+        return input(attrs().type("hidden").name(name).value(value));
+    }
+
+    /**
+     * Creates a file input with name.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * fileInput("document")
+     * </pre>
+     */
+    public static Tag fileInput(String name) {
+        return input(attrs().type("file").name(name).id(name));
+    }
+
+    /**
+     * Creates a file input with name and accepted file types.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * fileInput("image", "image/*")
+     * fileInput("document", ".pdf,.doc,.docx")
+     * </pre>
+     */
+    public static Tag fileInput(String name, String accept) {
+        return input(attrs().type("file").name(name).id(name).accept(accept));
+    }
+
+    /**
+     * Creates a date input with name.
+     */
+    public static Tag dateInput(String name) {
+        return input(attrs().type("date").name(name).id(name));
+    }
+
+    /**
+     * Creates a time input with name.
+     */
+    public static Tag timeInput(String name) {
+        return input(attrs().type("time").name(name).id(name));
+    }
+
+    /**
+     * Creates a datetime-local input with name.
+     */
+    public static Tag datetimeInput(String name) {
+        return input(attrs().type("datetime-local").name(name).id(name));
+    }
+
+    /**
+     * Creates a search input with name and placeholder.
+     */
+    public static Tag searchInput(String name, String placeholder) {
+        return input(attrs().type("search").name(name).id(name).placeholder(placeholder));
+    }
+
+    /**
+     * Creates a tel input with name and placeholder.
+     */
+    public static Tag telInput(String name, String placeholder) {
+        return input(attrs().type("tel").name(name).id(name).placeholder(placeholder));
+    }
+
+    /**
+     * Creates a URL input with name and placeholder.
+     */
+    public static Tag urlInput(String name, String placeholder) {
+        return input(attrs().type("url").name(name).id(name).placeholder(placeholder));
+    }
+
+    /**
+     * Creates a range/slider input with name, min, max, and value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * rangeInput("volume", 0, 100, 50)
+     * </pre>
+     */
+    public static Tag rangeInput(String name, int min, int max, int value) {
+        return input(attrs().type("range").name(name).id(name)
+            .min(min).max(max).value(String.valueOf(value)));
+    }
+
+    /**
+     * Creates a color input with name.
+     */
+    public static Tag colorInput(String name) {
+        return input(attrs().type("color").name(name).id(name));
+    }
+
+    /**
+     * Creates a color input with name and default value.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * colorInput("theme", "#ff6b6b")
+     * </pre>
+     */
+    public static Tag colorInput(String name, String defaultColor) {
+        return input(attrs().type("color").name(name).id(name).value(defaultColor));
+    }
+
+    /**
+     * Creates a submit button with text.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * submitButton("Sign Up")
+     * </pre>
+     */
+    public static Tag submitButton(String text) {
+        return button(attrs().type("submit"), text);
+    }
+
+    /**
+     * Creates a submit button with attributes and text.
+     */
+    public static Tag submitButton(Attributes attrs, String text) {
+        return button(new Attributes(attrs.toMap()).type("submit"), text);
+    }
+
+    /**
+     * Creates a reset button with text.
+     */
+    public static Tag resetButton(String text) {
+        return button(attrs().type("reset"), text);
+    }
+
+    /**
+     * Creates a labeled form field with label and input.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * field("Email", emailInput("email", "you@example.com"))
+     * // Output:
+     * // &lt;div&gt;
+     * //   &lt;label for="email"&gt;Email&lt;/label&gt;
+     * //   &lt;input type="email" name="email" id="email"...&gt;
+     * // &lt;/div&gt;
+     * </pre>
+     */
+    public static Tag field(String labelText, Tag inputElement) {
+        String inputId = inputElement.getAttributes().get("id");
+        return div(
+            label(inputId, labelText),
+            inputElement
+        );
+    }
+
+    /**
+     * Creates a labeled form field with custom wrapper attributes.
+     */
+    public static Tag field(Attributes wrapperAttrs, String labelText, Tag inputElement) {
+        String inputId = inputElement.getAttributes().get("id");
+        return div(wrapperAttrs,
+            label(inputId, labelText),
+            inputElement
+        );
+    }
+
     // ==================== Media ====================
 
     public static Tag img(String src) { return tag("img", new Attributes().src(src)); }
