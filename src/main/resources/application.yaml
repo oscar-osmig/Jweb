@@ -39,9 +39,12 @@ jweb:
   api:
     base: /api/v1
 
-  # Data configuration - disabled (no database)
+  # Data configuration - MongoDB
   data:
-    enabled: false
+    enabled: true
+    mongo:
+      uri: ${MONGO_URI:mongodb://localhost:27017}
+      database: ${MONGO_DB:jweb}
 
   # Development settings
   dev:

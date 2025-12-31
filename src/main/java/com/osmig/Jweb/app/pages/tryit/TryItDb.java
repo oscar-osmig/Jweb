@@ -20,7 +20,12 @@ public final class TryItDb {
         if (initialized) return available;
         initialized = true;
         try {
-            Mongo.connect("mongodb://localhost:27017", "jweb");
+            // Use environment variables: MONGO_URI and MONGO_DB
+            String uri = System.getenv("MONGO_URI");
+            String db = System.getenv("MONGO_DB");
+            if (uri == null || uri.isBlank()) uri = "mongodb://localhost:27017";
+            if (db == null || db.isBlank()) db = "jweb";
+            Mongo.connect(uri, db);
             Mongo.getDatabase().listCollectionNames().first();
             available = true;
             LOG.info("MongoDB connected for TryIt API");
