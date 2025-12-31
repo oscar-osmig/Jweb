@@ -1,5 +1,5 @@
 server:
-  port: 8081
+  port: ${PORT:8081}
   # Enable HTTP compression for faster page loads
   compression:
     enabled: true
