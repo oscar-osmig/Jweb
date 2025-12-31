@@ -18,16 +18,16 @@ logging:
 jweb:
   # Admin configuration for TryIt
   admin:
-    token: ${JWEB_ADMIN_TOKEN:change-me}
-    email: ${JWEB_ADMIN_EMAIL:admin@example.com}
+    token: ${JWEB_ADMIN_TOKEN}
+    email: ${JWEB_ADMIN_EMAIL}
 
   # Email configuration with fallback providers
   mail:
     enabled: true
-    from: ${JWEB_MAIL_FROM:onboarding@resend.dev}
+    from: ${JWEB_MAIL_FROM}
     # Resend.com - 100 emails/day free (https://resend.com)
     resend:
-      api-key: ${RESEND_API_KEY:}
+      api-key: ${RESEND_API_KEY}
     # SendGrid - 100 emails/day free (https://sendgrid.com)
     sendgrid:
       api-key: ${SENDGRID_API_KEY:}
@@ -50,7 +50,7 @@ jweb:
     # Paths to watch for changes (comma-separated)
     watch-paths: src/main/java,src/main/resources
     # Debounce delay in ms before triggering reload (lower = faster, min 10)
-    debounce-ms: 50
+    debounce-ms: 10
 
   # Performance settings
   performance:
