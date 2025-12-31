@@ -30,6 +30,12 @@ JWeb brings modern frontend concepts (component model, reactive state, virtual D
   - [CSS Colors](#css-colors)
   - [Media Queries](#media-queries)
   - [Keyframes](#keyframes)
+- [JavaScript DSL](#javascript-dsl)
+  - [Form Handlers](#form-handlers)
+  - [External Service Forms](#external-service-forms)
+  - [Click Handlers](#click-handlers)
+  - [Actions](#actions)
+  - [Script Builder](#script-builder)
 - [Components & Templates](#components--templates)
   - [Template Interface](#template-interface)
   - [Page Components](#page-components)
@@ -65,6 +71,12 @@ JWeb brings modern frontend concepts (component model, reactive state, virtual D
   - [Chaining Validators](#chaining-validators)
   - [Form Validation](#form-validation)
 - [Additional Features](#additional-features)
+- [Development Tools](#development-tools)
+  - [Hot Reload](#hot-reload)
+  - [Debug Mode](#debug-mode)
+  - [Prefetch](#prefetch)
+- [Configuration](#configuration)
+  - [Application YAML](#application-yaml)
 - [Project Structure](#project-structure)
 - [Running the Application](#running-the-application)
 - [Requirements](#requirements)
@@ -623,6 +635,120 @@ String pulse = keyframes("pulse")
     .frame(0, new Style<>().transform(scale(1)))
     .frame(50, new Style<>().transform(scale(1.1)))
     .frame(100, new Style<>().transform(scale(1)))
+    .build();
+```
+
+---
+
+## JavaScript DSL
+
+JWeb provides a type-safe JavaScript DSL for client-side interactions without writing raw JavaScript.
+
+### Form Handlers
+
+Handle form submissions with built-in loading states and error handling:
+
+```java
+import static com.osmig.Jweb.framework.js.Actions.*;
+
+// Form submission to API endpoint
+script()
+    .withHelpers()
+    .add(onSubmit("login-form")
+        .loading("Logging in...")
+        .post("/api/login")
+        .withFormData()
+        .ok(all(
+            showMessage("status").success("Login successful!"),
+            navigateTo("/dashboard")))
+        .fail(showMessage("status").error("Invalid credentials")))
+    .build();
+```
+
+### External Service Forms
+
+Handle forms that call external services (e.g., EmailJS, Stripe):
+
+```java
+// External service form handler (e.g., EmailJS)
+script()
+    .withHelpers()
+    .add(onSubmitExternal("contact-form")
+        .loading("Sending...")
+        .service("emailjs")
+        .call("send", "'service_id'", "'template_id'",
+            "{name:$_('name').value,email:$_('email').value,message:$_('message').value}")
+        .ok(all(
+            showMessage("form-status").success("Message sent successfully!"),
+            resetForm("contact-form")))
+        .fail(showMessage("form-status").error("Failed to send. Please try again."))
+        .notAvailable(showMessage("form-status").error("Email service not available.")))
+    .build();
+```
+
+### Click Handlers
+
+Handle button clicks and element interactions:
+
+```java
+// Simple click handler
+onClick("delete-btn")
+    .confirm("Are you sure you want to delete?")
+    .post("/api/delete")
+    .ok(reload())
+    .fail(showMessage("error").error("Delete failed"))
+
+// Toggle visibility
+onClick("toggle-btn").toggle("panel")
+
+// Show/hide elements
+onClick("show-btn").show("modal")
+onClick("close-btn").hide("modal")
+```
+
+### Actions
+
+Built-in actions for common UI operations:
+
+| Action | Description |
+|--------|-------------|
+| `showMessage(id).success(text)` | Show success message with green styling |
+| `showMessage(id).error(text)` | Show error message with red styling |
+| `showMessage(id).warning(text)` | Show warning message with yellow styling |
+| `resetForm(id)` | Reset form fields |
+| `navigateTo(url)` | Navigate to URL |
+| `reload()` | Reload current page |
+| `show(id)` | Show element |
+| `hide(id)` | Hide element |
+| `toggle(id)` | Toggle element visibility |
+| `setText(id, text)` | Set element text content |
+| `addClass(id, class)` | Add CSS class |
+| `removeClass(id, class)` | Remove CSS class |
+| `focus(id)` | Focus element |
+| `copyToClipboard(id)` | Copy input value to clipboard |
+| `all(actions...)` | Combine multiple actions |
+
+### Script Builder
+
+Build complete scripts with multiple handlers:
+
+```java
+script()
+    .withHelpers()                           // Add $_ helper and utilities
+    .state(state()                           // Define state variables
+        .var("isLoggedIn", false)
+        .var("username", ""))
+    .refs(refs()                             // Define element references
+        .add("form", "login-form")
+        .add("status", "status-message"))
+    .add(onSubmit("login-form")              // Form handler
+        .loading("...")
+        .post("/api/login")
+        .withFormData()
+        .ok(navigateTo("/dashboard")))
+    .add(onClick("logout-btn")               // Click handler
+        .post("/api/logout")
+        .ok(navigateTo("/")))
     .build();
 ```
 
@@ -1511,6 +1637,167 @@ A11y.skipLink("/main", "Skip to main content")
 
 ---
 
+## Development Tools
+
+JWeb includes built-in development tools for a better developer experience.
+
+### Hot Reload
+
+Automatic browser refresh when files change:
+
+```yaml
+jweb:
+  dev:
+    hot-reload: true
+    watch-paths: src/main/java,src/main/resources
+    debounce-ms: 10
+```
+
+Add the hot reload script to your layout:
+
+```java
+import com.osmig.Jweb.framework.dev.DevServer;
+
+body(
+    // ... your content ...
+    DevServer.script()  // Only active when hot-reload is enabled
+)
+```
+
+### Debug Mode
+
+Control console logging in the browser. Set to `true` during development to see JWeb logs:
+
+```yaml
+jweb:
+  dev:
+    debug: false  # Set to true for development console logs
+```
+
+When enabled, you'll see logs like:
+- `[JWeb] Hot reload connected`
+- `[JWeb] Prefetch enabled`
+- `[JWeb] Reloading...`
+
+**Important:** Set `debug: false` for production to keep the browser console clean.
+
+### Prefetch
+
+Automatic link prefetching for instant navigation. When users hover over links, JWeb preloads the target page in the background:
+
+```yaml
+jweb:
+  performance:
+    prefetch:
+      enabled: true
+      cache-ttl: 300000      # Cache for 5 minutes
+      hover-delay: 300       # Wait 300ms before prefetching
+```
+
+Add the prefetch script to your layout:
+
+```java
+import com.osmig.Jweb.framework.performance.Prefetch;
+
+body(
+    nav(...),
+    main(...),
+    footer(...),
+    Prefetch.script()  // Add prefetching
+)
+```
+
+Prefetch works automatically for:
+- All `<a href="...">` links
+- Elements with `data-prefetch-url` attribute
+- Buttons and divs with prefetch URLs
+
+Disable prefetch for specific elements:
+
+```java
+// Disable for logout link
+a(attrs().href("/logout").data("no-prefetch", "true"), text("Logout"))
+```
+
+---
+
+## Configuration
+
+### Application YAML
+
+Full configuration reference for `application.yaml`:
+
+```yaml
+server:
+  port: 8081
+  compression:
+    enabled: true
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    min-response-size: 1024
+
+spring:
+  application:
+    name: MyApp
+
+# JWeb configuration
+jweb:
+  # Admin configuration
+  admin:
+    token: ${JWEB_ADMIN_TOKEN}
+    email: ${JWEB_ADMIN_EMAIL}
+
+  # Email configuration (multiple providers supported)
+  mail:
+    enabled: true
+    from: ${JWEB_MAIL_FROM}
+    resend:
+      api-key: ${RESEND_API_KEY}
+    sendgrid:
+      api-key: ${SENDGRID_API_KEY:}
+    brevo:
+      api-key: ${BREVO_API_KEY:}
+
+  # API configuration
+  api:
+    base: /api/v1
+
+  # Database configuration
+  data:
+    enabled: false  # Set to true to enable MongoDB
+
+  # Development settings
+  dev:
+    hot-reload: true                              # Enable hot reload
+    watch-paths: src/main/java,src/main/resources # Paths to watch
+    debounce-ms: 10                               # Debounce delay (min 10)
+    debug: false                                  # Browser console logs
+
+  # Performance settings
+  performance:
+    minify-css: true      # Minify CSS output
+    minify-html: false    # Minify HTML output
+    prefetch:
+      enabled: true       # Enable link prefetching
+      cache-ttl: 300000   # Cache TTL in ms (5 minutes)
+      hover-delay: 300    # Hover delay before prefetch (ms)
+```
+
+**Environment Variables:**
+
+| Variable | Description |
+|----------|-------------|
+| `JWEB_ADMIN_TOKEN` | Admin authentication token |
+| `JWEB_ADMIN_EMAIL` | Admin email address |
+| `JWEB_MAIL_FROM` | Default sender email |
+| `RESEND_API_KEY` | Resend.com API key |
+| `SENDGRID_API_KEY` | SendGrid API key |
+| `BREVO_API_KEY` | Brevo API key |
+| `JWT_SECRET` | JWT signing secret (min 32 chars) |
+| `MONGO_URI` | MongoDB connection URI |
+| `MONGO_DB` | MongoDB database name |
+
+---
+
 ## Project Structure
 
 ```
@@ -1577,25 +1864,6 @@ Then open `http://localhost:8080` in your browser.
 - **Java 21+** (uses modern Java features like records, pattern matching)
 - **Maven 3.6+**
 - **Spring Boot 3.x**
-
----
-
-## Configuration
-
-`application.properties`:
-```properties
-# Server
-server.port=8080
-
-# MongoDB (optional)
-spring.data.mongodb.uri=mongodb://localhost:27017/mydb
-
-# JWT (optional)
-jwt.secret=your-256-bit-secret-key-minimum-32-characters
-
-# Development
-spring.devtools.restart.enabled=true
-```
 
 ---
 

@@ -52,6 +52,7 @@ public class DevServer {
     private static final AtomicLong version = new AtomicLong(System.currentTimeMillis());
     private static volatile boolean enabled = false;
     private static volatile boolean watching = false;
+    private static volatile boolean debug = false;
     private static String[] watchPaths = {"src/main/java", "src/main/resources"};
     private static int debounceMs = 50;
 
@@ -65,6 +66,11 @@ public class DevServer {
     @Value("${jweb.dev.debounce-ms:50}")
     public void setDebounceMs(int ms) {
         debounceMs = Math.max(10, ms);
+    }
+
+    @Value("${jweb.dev.debug:false}")
+    public void setDebug(boolean debugMode) {
+        debug = debugMode;
     }
 
     /**
@@ -132,19 +138,23 @@ public class DevServer {
      * Returns the hot reload script as a string.
      */
     public static String clientScript() {
+        String reloadLog = debug ? "console.log('[JWeb] Reloading...');" : "";
+        String errorLog = debug ? "console.log('[JWeb] Connection lost, reconnecting...');" : "";
+        String connectedLog = debug ? "console.log('[JWeb] Hot reload connected');" : "";
+
         return "(function(){" +
             "var es=new EventSource('/__jweb_dev/events');" +
             "var lastVersion=null;" +
             "es.onmessage=function(e){" +
             "var data=JSON.parse(e.data);" +
             "if(lastVersion&&data.version!==lastVersion){" +
-            "console.log('[JWeb] Reloading...');" +
+            reloadLog +
             "location.reload()}" +
             "lastVersion=data.version};" +
             "es.onerror=function(){" +
-            "console.log('[JWeb] Connection lost, reconnecting...');" +
+            errorLog +
             "setTimeout(function(){location.reload()},2000)};" +
-            "console.log('[JWeb] Hot reload connected');" +
+            connectedLog +
             "})();";
     }
 

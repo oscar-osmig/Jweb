@@ -51,6 +51,8 @@ jweb:
     watch-paths: src/main/java,src/main/resources
     # Debounce delay in ms before triggering reload (lower = faster, min 10)
     debounce-ms: 10
+    # Debug mode - show console logs in browser (disable for production)
+    debug: false
 
   # Performance settings
   performance:

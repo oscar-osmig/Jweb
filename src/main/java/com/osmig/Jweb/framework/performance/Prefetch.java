@@ -66,6 +66,9 @@ public final class Prefetch {
     // Whether prefetch is enabled globally
     private static boolean enabled = true;
 
+    // Whether debug logging is enabled
+    private static boolean debug = false;
+
     /**
      * Spring configuration for prefetch settings.
      */
@@ -80,12 +83,16 @@ public final class Prefetch {
         @Value("${jweb.performance.prefetch.hover-delay:100}")
         private int prefetchHoverDelay;
 
+        @Value("${jweb.dev.debug:false}")
+        private boolean debugEnabled;
+
         @PostConstruct
         public void init() {
             Prefetch.enabled = prefetchEnabled;
             Prefetch.cacheTtl = prefetchCacheTtl;
             Prefetch.hoverDelay = prefetchHoverDelay;
-            if (prefetchEnabled) {
+            Prefetch.debug = debugEnabled;
+            if (prefetchEnabled && debugEnabled) {
                 System.out.println("[JWeb] Prefetch enabled (cache: " + prefetchCacheTtl + "ms, hover delay: " + prefetchHoverDelay + "ms)");
             }
         }
@@ -241,9 +248,9 @@ public final class Prefetch {
             "document.addEventListener('touchstart',function(e){" +
                 "var el=findPrefetchable(e.target);" +
                 "if(shouldPrefetch(el))prefetch(getUrl(el))" +
-            "},{passive:true});" +
+            "},{passive:true})" +
 
-            "console.log('[JWeb] Prefetch enabled')" +
+            (debug ? ";console.log('[JWeb] Prefetch enabled')" : "") +
         "})();";
     }
 

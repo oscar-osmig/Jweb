@@ -73,22 +73,17 @@ class ContactScripts {
     static String formHandler() {
         return script()
             .withHelpers()
-            .raw("$_('contact-form')?.addEventListener('submit',async function(e){" +
-                "e.preventDefault();" +
-                "const _btn=this.querySelector('button[type=\"submit\"]');" +
-                "const _origText=_btn?.textContent;" +
-                "if(_btn){_btn.disabled=true;_btn.textContent='Sending...';}" +
-                "try{" +
-                externalService("emailjs")
-                    .call("send", "'service_0cbj03m'", "'template_al44e1p'",
-                        "{title:$_('name').value,name:$_('name').value,from_email:$_('email').value,email:$_('email').value,message:$_('message').value}")
-                    .ok(all(
-                        showMessage("form-status").success("Message sent successfully!"),
-                        resetForm("contact-form")))
-                    .fail(showMessage("form-status").error("Failed to send. Please try again."))
-                    .notAvailable(showMessage("form-status").error("Email service not available."))
-                    .build() +
-                "}finally{if(_btn){_btn.disabled=false;_btn.textContent=_origText;}}});")
+            .add(onSubmitExternal("contact-form")
+                .loading("Sending...")
+                .service("emailjs")
+                .call("send", "'service_0cbj03m'", "'template_al44e1p'",
+                    "{title:$_('name').value,name:$_('name').value,from_email:$_('email').value," +
+                    "email:$_('email').value,message:$_('message').value}")
+                .ok(all(
+                    showMessage("form-status").success("Message sent successfully!"),
+                    resetForm("contact-form")))
+                .fail(showMessage("form-status").error("Failed to send. Please try again."))
+                .notAvailable(showMessage("form-status").error("Email service not available.")))
             .build();
     }
 }

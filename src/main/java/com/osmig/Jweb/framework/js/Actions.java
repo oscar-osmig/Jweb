@@ -43,6 +43,11 @@ public final class Actions {
         return new FormHandler(formId);
     }
 
+    /** Handle form submission with external service (e.g., emailjs). */
+    public static ExternalServiceFormHandler onSubmitExternal(String formId) {
+        return new ExternalServiceFormHandler(formId);
+    }
+
     /** Handle button/element click by ID. */
     public static ClickHandler onClick(String elementId) {
         return new ClickHandler(elementId);
@@ -1554,6 +1559,116 @@ public final class Actions {
         }
     }
 
+    // ==================== External Service Form Handler ====================
+
+    /**
+     * Handle form submission with external service call (e.g., emailjs).
+     *
+     * <p>Usage:</p>
+     * <pre>
+     * onSubmitExternal("contact-form")
+     *     .loading("Sending...")
+     *     .service("emailjs")
+     *     .call("send", "'service_id'", "'template_id'", "{name:$_('name').value}")
+     *     .ok(showMessage("status").success("Sent!"))
+     *     .fail(showMessage("status").error("Failed"))
+     *     .notAvailable(showMessage("status").error("Service unavailable"))
+     * </pre>
+     */
+    public static class ExternalServiceFormHandler {
+        private final String formId;
+        private String loadingText;
+        private String serviceName;
+        private String methodName;
+        private final List<String> args = new ArrayList<>();
+        private Action okAction;
+        private Action failAction;
+        private Action notAvailableAction;
+
+        ExternalServiceFormHandler(String formId) { this.formId = formId; }
+
+        /** Show loading state on submit button. */
+        public ExternalServiceFormHandler loading(String text) {
+            this.loadingText = text;
+            return this;
+        }
+
+        /** External service name (e.g., "emailjs"). */
+        public ExternalServiceFormHandler service(String name) {
+            this.serviceName = name;
+            return this;
+        }
+
+        /** Method to call on the service with arguments. */
+        public ExternalServiceFormHandler call(String method, String... arguments) {
+            this.methodName = method;
+            for (String arg : arguments) this.args.add(arg);
+            return this;
+        }
+
+        /** Action on success. */
+        public ExternalServiceFormHandler ok(Action action) {
+            this.okAction = action;
+            return this;
+        }
+
+        /** Action on failure. */
+        public ExternalServiceFormHandler fail(Action action) {
+            this.failAction = action;
+            return this;
+        }
+
+        /** Action when service is not available. */
+        public ExternalServiceFormHandler notAvailable(Action action) {
+            this.notAvailableAction = action;
+            return this;
+        }
+
+        /** Build the handler code. */
+        public String build() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("$_('" + formId + "')?.addEventListener('submit',async function(e){");
+            sb.append("e.preventDefault();");
+            sb.append("const _btn=this.querySelector('button[type=\"submit\"]');");
+
+            if (loadingText != null) {
+                sb.append("const _origText=_btn?.textContent;");
+                sb.append("if(_btn){_btn.disabled=true;_btn.textContent='" + esc(loadingText) + "';}");
+            }
+
+            sb.append("try{");
+            sb.append("if(typeof " + serviceName + "!=='undefined'){");
+            sb.append("try{");
+            sb.append("await " + serviceName + "." + methodName + "(");
+            sb.append(String.join(",", args));
+            sb.append(");");
+            if (okAction != null) {
+                sb.append(okAction.build());
+                if (!okAction.build().endsWith(";") && !okAction.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}catch(_err){");
+            if (failAction != null) {
+                sb.append(failAction.build());
+                if (!failAction.build().endsWith(";") && !failAction.build().endsWith("}")) sb.append(";");
+            }
+            sb.append("}}else{");
+            if (notAvailableAction != null) {
+                sb.append(notAvailableAction.build());
+                if (!notAvailableAction.build().endsWith(";") && !notAvailableAction.build().endsWith("}")) {
+                    sb.append(";");
+                }
+            }
+            sb.append("}");
+            sb.append("}finally{");
+            if (loadingText != null) {
+                sb.append("if(_btn){_btn.disabled=false;_btn.textContent=_origText;}");
+            }
+            sb.append("}");
+            sb.append("})");
+            return sb.toString();
+        }
+    }
+
     // ==================== Try/Catch Builder ====================
 
     /**
@@ -1976,6 +2091,11 @@ public final class Actions {
         }
 
         public ScriptBuilder add(ChangeHandler handler) {
+            parts.add(handler.build());
+            return this;
+        }
+
+        public ScriptBuilder add(ExternalServiceFormHandler handler) {
             parts.add(handler.build());
             return this;
         }
