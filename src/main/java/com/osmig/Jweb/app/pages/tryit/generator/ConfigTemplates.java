@@ -1,9 +1,5 @@
 package com.osmig.Jweb.app.pages.tryit.generator;
 
-import org.springframework.core.io.ClassPathResource;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
 /** Generates configuration files for the starter project. */
 public final class ConfigTemplates {
     private ConfigTemplates() {}
@@ -39,41 +35,6 @@ public final class ConfigTemplates {
     }
 
     public static String readme() {
-        return readmeContent().replace("com.osmig.Jweb.framework", "com.jweb.framework");
-    }
-
-    private static String readmeContent() {
-        try {
-            ClassPathResource resource = new ClassPathResource("readme/README.md");
-            if (resource.exists()) {
-                return resource.getContentAsString(StandardCharsets.UTF_8);
-            }
-        } catch (IOException ignored) {}
-        return fallbackReadme();
-    }
-
-    private static String fallbackReadme() {
-        return """
-            # JWeb Starter Project
-
-            A web application built with the JWeb Framework - pure Java, no templates!
-
-            ## Quick Start
-
-            ```bash
-            mvn spring-boot:run
-            ```
-
-            Then open http://localhost:8080 in your browser.
-
-            ## Features
-
-            - Type-safe HTML, CSS, and JavaScript
-            - Reactive State with automatic UI updates
-            - Hot Reload during development
-            - Component-based architecture
-
-            Happy coding!
-            """;
+        return ReadmeContent.get();
     }
 }
