@@ -63,12 +63,13 @@ public final class AdminScripts {
                                 .headerFromVar("X-Admin-Key", "adminKey")
                                 .headerFromVar("X-Admin-Email", "adminEmail")
                                 .ok(all(
+                                    () -> "window._pendingToken=_data.token;window._pendingEmail=email;",
                                     alertModal("modalOverlay", "modalBody")
                                         .success("Approved!")
                                         .detailExpr("'<p style=\"color:#6b7280;margin-bottom:0.5rem\">Token for '+esc(email)+':'+'</p>'")
                                         .inputField("token-input", "_data.token")
                                         .button("Copy Token", "copyToken()", "#6366f1")
-                                        .button("Send by Email", "sendTokenEmail(\\'" + "'+esc(email)+'" + "\\',\\'" + "'+_data.token+'" + "\\')", "#10b981")
+                                        .button("Send by Email", "sendPendingToken()", "#10b981")
                                         .statusArea("modal-status"),
                                     call("loadRequests")
                                 ))
@@ -102,14 +103,13 @@ public final class AdminScripts {
                     selectAndCopy("token-input"),
                     setText("modal-status", "Token copied!")
                 ))
-            // Send email function - using DSL for clean code
-            .add(windowFunc("sendTokenEmail")
-                .params("email", "token")
+            // Send email function using stored pending values
+            .add(windowFunc("sendPendingToken")
                 .async()
                 .does(
                     setTextAndColor("modal-status", "Sending email...", "#6b7280"),
                     externalService("emailjs")
-                        .call("send", "'service_0cbj03m'", "'template_s4s7d3r'", "{to_email:email,token:token}")
+                        .call("send", "'service_0cbj03m'", "'template_s4s7d3r'", "{to_email:window._pendingEmail,token:window._pendingToken}")
                         .ok(setTextAndColor("modal-status", "Email sent successfully!", "#065f46"))
                         .notAvailable(setTextAndColor("modal-status", "Email service not available", "#991b1b"))
                         .fail(setTextAndColor("modal-status", "Failed to send email", "#991b1b"))

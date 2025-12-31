@@ -45,10 +45,11 @@ public final class ConfigTemplates {
     private static String readmeContent() {
         try {
             ClassPathResource resource = new ClassPathResource("readme/README.md");
-            return resource.getContentAsString(StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            return fallbackReadme();
-        }
+            if (resource.exists()) {
+                return resource.getContentAsString(StandardCharsets.UTF_8);
+            }
+        } catch (IOException ignored) {}
+        return fallbackReadme();
     }
 
     private static String fallbackReadme() {
