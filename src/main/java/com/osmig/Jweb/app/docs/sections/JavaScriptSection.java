@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.javascript.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class JavaScriptSection {
@@ -227,6 +228,10 @@ public final class JavaScriptSection {
                     .build()"""),
 
             docTip("The JS DSL generates minified JavaScript. Use browser DevTools to inspect generated code."),
+
+            JSAsync.render(),
+            JSFetchAdvanced.render(),
+            JSDomQuery.render(),
 
             spacer()
         );

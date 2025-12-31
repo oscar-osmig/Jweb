@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.layouts.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class LayoutsSection {
@@ -56,7 +57,9 @@ public final class Theme {
 // Usage
 div(attrs().style().color(PRIMARY).padding(SP_4).done())"""),
 
-            docTip("Define design tokens in Theme.java for consistent styling across your app.")
+            docTip("Define design tokens in Theme.java for consistent styling across your app."),
+
+            LayoutsI18n.render()
         );
     }
 }

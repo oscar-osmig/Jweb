@@ -43,6 +43,68 @@ app.get("/posts/:postId/comments/:commentId", req -> {
 });
 ```
 
+## Typed Route Parameters
+
+Type-safe parameter extraction with automatic conversion and validation:
+
+```java
+app.get("/users/:id", req -> {
+    // Integer parameters
+    int userId = req.paramInt("id");                    // Throws if invalid
+    Integer userIdOpt = req.paramIntOpt("id");          // Returns null if invalid
+    int page = req.paramInt("id", 1);                   // Default value if missing/invalid
+
+    return new UserPage(userId);
+});
+
+app.get("/products/:id", req -> {
+    // Long parameters (for large IDs)
+    long productId = req.paramLong("id");
+    Long productIdOpt = req.paramLongOpt("id");
+
+    return new ProductPage(productId);
+});
+
+app.get("/items/:price", req -> {
+    // Double parameters
+    double price = req.paramDouble("price");
+    Double priceOpt = req.paramDoubleOpt("price");
+
+    return new PriceFilterPage(price);
+});
+
+app.get("/posts/:published", req -> {
+    // Boolean parameters
+    boolean published = req.paramBool("published");     // true/false, 1/0, yes/no
+    Boolean publishedOpt = req.paramBoolOpt("published");
+
+    return new PostsPage(published);
+});
+
+app.get("/orders/:uuid", req -> {
+    // UUID parameters
+    UUID orderId = req.paramUUID("uuid");
+    UUID orderIdOpt = req.paramUUIDOpt("uuid");
+
+    return new OrderPage(orderId);
+});
+```
+
+### Required Parameters (with Validation)
+
+```java
+app.get("/users/:id", req -> {
+    // Throws ResponseStatusException(400) if missing or invalid
+    int id = req.requireParamInt("id");
+    long bigId = req.requireParamLong("id");
+    double amount = req.requireParamDouble("amount");
+    boolean active = req.requireParamBool("active");
+    UUID uuid = req.requireParamUUID("uuid");
+
+    return new UserPage(id);
+});
+```
+
 ## Query Parameters
 
 ```java

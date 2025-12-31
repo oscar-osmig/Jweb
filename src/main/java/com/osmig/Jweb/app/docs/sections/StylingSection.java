@@ -33,7 +33,9 @@ public final class StylingSection {
             StylingFlexbox.render(),
             StylingGrid.render(),
             StylingTypography.render(),
-            StylingAdvanced.render()
+            StylingAdvanced.render(),
+            StylingNested.render(),
+            StylingSupports.render()
         );
     }
 }

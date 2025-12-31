@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.app.docs.sections.api.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ApiSection {
@@ -51,7 +52,11 @@ public List<User> users() { ... }  // Auto-JSON
 @GET("/download")
 public ResponseEntity<byte[]> file() { ... }"""),
 
-            docTip("API docs auto-generated at /api/docs when openapi.enabled=true")
+            docTip("API docs auto-generated at /api/docs when openapi.enabled=true"),
+
+            ApiEmail.render(),
+            ApiSse.render(),
+            ApiJobs.render()
         );
     }
 }

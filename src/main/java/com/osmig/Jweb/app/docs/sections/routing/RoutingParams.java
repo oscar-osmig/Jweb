@@ -32,6 +32,39 @@ app.get("/blog/:page", req -> {
     return blogListing(page);
 });"""),
 
+            h3Title("Typed Parameters"),
+            para("Get parameters with automatic type conversion and validation."),
+            codeBlock("""
+// Integer parameters
+app.get("/users/:id", req -> {
+    int id = req.paramInt("id");        // Throws if not a number
+    return userService.findById(id);
+});
+
+// Long for large IDs
+app.get("/orders/:orderId", req -> {
+    long orderId = req.paramLong("orderId");
+    return orderService.findById(orderId);
+});
+
+// Double for decimals
+app.get("/products/:price", req -> {
+    double maxPrice = req.paramDouble("price");
+    return productService.findUnder(maxPrice);
+});
+
+// Boolean flags
+app.get("/posts/:featured", req -> {
+    boolean featured = req.paramBool("featured");
+    return postService.findByFeatured(featured);
+});
+
+// UUID for unique identifiers
+app.get("/files/:fileId", req -> {
+    UUID fileId = req.paramUUID("fileId");
+    return fileService.findById(fileId);
+});"""),
+
             h3Title("Query Parameters"),
             para("Access query string parameters from the URL."),
             codeBlock("""

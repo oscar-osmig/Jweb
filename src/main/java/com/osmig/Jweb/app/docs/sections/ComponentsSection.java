@@ -34,7 +34,8 @@ public class MyComponent implements Template {
             CompBasics.render(),
             CompProps.render(),
             CompChildren.render(),
-            CompComposition.render()
+            CompComposition.render(),
+            CompLifecycle.render()
         );
     }
 }

@@ -25,10 +25,12 @@ form(attrs().action("/submit").method("POST"),
 
             FormsBasics.render(),
             FormsInputs.render(),
+            FormsBuilders.render(),
             FormsSelects.render(),
             FormsCheckboxes.render(),
             FormsValidation.render(),
-            FormsEvents.render()
+            FormsEvents.render(),
+            FormsUpload.render()
         );
     }
 }

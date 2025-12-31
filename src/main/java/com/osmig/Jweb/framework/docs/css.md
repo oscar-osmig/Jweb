@@ -254,6 +254,88 @@ Stylesheet sheet = Stylesheet.create()
 String css = sheet.build();
 ```
 
+## Feature Queries (@supports)
+
+Use `@supports` for progressive enhancement:
+
+```java
+import static com.osmig.Jweb.framework.styles.Supports.*;
+
+// Simple property check
+String css = supports("display", "grid")
+    .rule(".container", style().display(grid))
+    .build();
+
+// Multiple conditions
+String css = supports()
+    .property("display", "grid")
+    .and()
+    .property("gap", "1rem")
+    .rule(".grid", style().display(grid).gap(rem(1)))
+    .build();
+
+// NOT condition (fallback)
+String css = supports()
+    .not()
+    .property("display", "grid")
+    .rule(".fallback", style().display(flex))
+    .build();
+
+// Selector support check
+String css = supportsSelector(":has(> img)")
+    .rule(".card:has(> img)", style().padding(zero))
+    .build();
+
+// Convenience methods
+supportsGrid()              // display: grid
+supportsFlexbox()           // display: flex
+supportsCustomProperties()  // CSS variables
+supportsBackdropFilter()    // backdrop-filter
+supportsHasSelector()       // :has() selector
+supportsContainerQueries()  // container queries
+supportsSticky()            // position: sticky
+supportsClamp()             // clamp() function
+```
+
+## Nested CSS
+
+Build CSS with native nesting syntax:
+
+```java
+import static com.osmig.Jweb.framework.styles.CSS.*;
+
+String css = nested(".card")
+    .prop("padding", "1rem")
+    .prop("background", "#fff")
+    .hover()                           // &:hover
+        .prop("box-shadow", "0 4px 12px rgba(0,0,0,0.15)")
+    .end()
+    .focus()                           // &:focus
+        .prop("outline", "2px solid blue")
+    .end()
+    .child(".title")                   // & .title
+        .prop("font-size", "1.5rem")
+    .end()
+    .direct(".icon")                   // & > .icon
+        .prop("width", "24px")
+    .end()
+    .and(".active")                    // &.active
+        .prop("border-color", "green")
+    .end()
+    .build();
+
+// Pseudo-class shortcuts
+.hover()           // &:hover
+.focus()           // &:focus
+.active()          // &:active
+.disabled()        // &:disabled
+.firstChild()      // &:first-child
+.lastChild()       // &:last-child
+.before()          // &::before
+.after()           // &::after
+.placeholder()     // &::placeholder
+```
+
 ## Using in Templates
 
 ```java

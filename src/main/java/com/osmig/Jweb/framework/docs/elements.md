@@ -75,11 +75,53 @@ button(
 
 ## Event Handlers
 
+### String-based Handlers
+
 ```java
 button(
     onClick("handleClick()"),
     onChange("handleChange(event)"),
     onSubmit("return validateForm()")
+)
+```
+
+### Action-based Handlers
+
+Using the Actions DSL for type-safe event handling:
+
+```java
+import static com.osmig.Jweb.framework.js.Actions.*;
+
+// Click with action
+button(
+    onClick(call("doSomething")),
+    "Click Me"
+)
+
+// Multiple actions
+button(
+    onClick(all(
+        call("showLoading"),
+        fetch("/api/data").ok(call("updateUI")),
+        call("hideLoading")
+    )),
+    "Load Data"
+)
+
+// Toggle visibility
+button(
+    onClick(toggle("menu-panel")),
+    "Toggle Menu"
+)
+
+// Form submission with validation
+form(
+    onSubmit(all(
+        preventDefault(),
+        validate("myForm"),
+        fetch("/api/submit").post().ok(call("onSuccess"))
+    )),
+    // form fields...
 )
 ```
 
@@ -105,6 +147,87 @@ button(
 
 ### Forms
 - `form()`, `input()`, `textarea()`, `select()`, `option()`, `button()`, `label()`, `fieldset()`, `legend()`
+
+## Form Input Builders
+
+Type-safe form input builders for common input types:
+
+```java
+import static com.osmig.Jweb.framework.elements.Elements.*;
+
+// Text inputs
+textInput("username")                    // <input type="text" name="username">
+textInput("search", "Search...")         // With placeholder
+emailInput("email")                      // <input type="email" name="email">
+passwordInput("password")                // <input type="password" name="password">
+numberInput("age")                       // <input type="number" name="age">
+telInput("phone")                        // <input type="tel" name="phone">
+urlInput("website")                      // <input type="url" name="website">
+searchInput("q")                         // <input type="search" name="q">
+
+// Selection inputs
+checkbox("remember", "Remember me")       // Checkbox with label
+radio("plan", "basic", "Basic Plan")      // Radio with value and label
+
+// Date/time inputs
+dateInput("birthdate")                    // <input type="date" name="birthdate">
+timeInput("startTime")                    // <input type="time" name="startTime">
+datetimeInput("appointment")              // <input type="datetime-local" name="appointment">
+
+// Other inputs
+hiddenInput("csrf", token)                // <input type="hidden" name="csrf" value="...">
+fileInput("document")                     // <input type="file" name="document">
+colorInput("theme")                       // <input type="color" name="theme">
+rangeInput("volume", 0, 100)              // <input type="range" name="volume" min="0" max="100">
+
+// Field wrapper (label + input + error)
+field("Email", emailInput("email").required())
+field("Password", passwordInput("pwd"), "Must be 8+ characters")
+```
+
+### Chaining Input Methods
+
+```java
+textInput("username")
+    .id("user-input")
+    .required()
+    .minLength(3)
+    .maxLength(50)
+    .pattern("[a-z]+")
+    .autocomplete("username")
+    .build()
+
+numberInput("quantity")
+    .min(1)
+    .max(100)
+    .step(1)
+    .value("1")
+    .build()
+```
+
+## Batch Class Application
+
+Apply multiple classes at once using `classes()`:
+
+```java
+// Multiple classes
+div(classes("card", "featured", "animate"),
+    h2("Featured Item")
+)
+
+// Conditional classes
+div(classes("btn", isActive ? "active" : null, isPrimary ? "primary" : null),
+    "Click me"
+)
+
+// Using class_() with condition
+div(
+    class_("card"),
+    class_("featured", isFeatured),  // Only added if isFeatured is true
+    class_("disabled", isDisabled),
+    text("Card content")
+)
+```
 
 ### Media
 - `img()`, `video()`, `audio()`, `source()`, `iframe()`
