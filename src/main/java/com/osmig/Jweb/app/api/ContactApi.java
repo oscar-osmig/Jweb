@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 
 /**
  * Contact form API - sends messages to the admin email.

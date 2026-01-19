@@ -104,14 +104,21 @@ JWeb is built on these core principles:
 4. **Component-Based** - Build UIs from composable, reusable pieces.
 5. **Reactive** - State changes automatically propagate to the UI.
 6. **Minimal Dependencies** - Built on Spring Boot, no additional JavaScript toolchain required.
+7. **Modular Architecture** - Clean separation with focused files. Single entry points (`El.*` for HTML, `Style` for CSS) hide complexity while keeping internals maintainable.
 
 ---
 
 ## Features
 
+### Core DSL Features
 - **Type-safe HTML** - Build HTML with Java methods, no string templates
 - **Type-safe CSS** - CSS properties as methods with unit validation
 - **Type-safe JavaScript** - Generate JS code from Java with full IDE support
+- **Modular Elements DSL** - Single `El.*` entry point with category-based organization
+- **Modular Styles DSL** - Mixin interfaces for clean separation (BoxModel, Flex, Grid, Typography, Effects, Position)
+- **Lambda-based Validation** - Immutable, functional form validation with `FieldValidator`
+
+### Architecture
 - **Component-based** - Create reusable components with the `Template` interface
 - **Lifecycle Hooks** - `beforeRender`, `onMount`, `onUnmount` for component lifecycle
 - **Reactive State** - React-like state management with `State<T>`
@@ -119,12 +126,20 @@ JWeb is built on these core principles:
 - **Routing System** - Fluent route definitions with typed path parameters
 - **Middleware System** - Request processing pipeline with built-in middleware
 - **REST API** - Annotation-based REST controllers
-- **Form Input Builders** - Convenient shortcuts like `emailInput()`, `checkbox()`, `field()`
+
+### CSS Features
 - **CSS Feature Queries** - `@supports` for progressive enhancement
 - **CSS Nesting** - Native CSS nesting syntax support
+- **Media Queries** - Responsive breakpoints with fluent API
+- **Keyframes** - Animation definitions
+
+### JavaScript Features
+- **Form Input Builders** - Convenient shortcuts using `attrs()` pattern
 - **Async/Await DSL** - Type-safe async JavaScript generation
 - **Fetch Builder** - Fluent HTTP request builder with status handling
 - **DOM Query Builder** - jQuery-like DOM manipulation
+
+### Backend Features
 - **MongoDB Integration** - Fluent DSL for MongoDB operations
 - **JWT Authentication** - Token-based auth with middleware
 - **Validation Framework** - Fluent API for input validation
@@ -133,17 +148,20 @@ JWeb is built on these core principles:
 - **File Uploads** - Easy multipart file handling with validation
 - **Email** - Fluent email builder with templates
 - **Background Jobs** - Async task execution with scheduling
+
+### Developer Experience
 - **Testing Utilities** - Mock requests and assertions for testing
 - **Accessibility** - WCAG 2.1 compliance helpers
 - **Hot Reload** - Development mode with automatic reloading
 - **No build tools** - Just Maven and Java, no webpack/npm required
+- **Clean Imports** - Single `El.*` import for all HTML elements
 
 ---
 
 ## Quick Start
 
 ```java
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
@@ -232,12 +250,31 @@ The Virtual DOM enables:
 
 ## HTML DSL
 
-### Elements
+### Imports
 
-Import the static factory methods to build HTML:
+JWeb provides a clean, single-import system for building HTML:
 
 ```java
-import static com.osmig.Jweb.framework.elements.Elements.*;
+// The ONE import you need for HTML elements
+import static com.osmig.Jweb.framework.elements.El.*;
+
+// Additional imports for styling
+import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static com.osmig.Jweb.framework.styles.CSSColors.*;
+```
+
+The `El` class is the single entry point that re-exports all element factory methods from the modular category files. This design gives you:
+- **One import** - No need to remember multiple imports
+- **Full coverage** - Access to all HTML elements, attributes, and helpers
+- **Type safety** - Compile-time checks for all element usage
+
+### Elements
+
+Import the static factory methods to build HTML using `El` as the single entry point:
+
+```java
+import static com.osmig.Jweb.framework.elements.El.*;
 
 // Simple elements
 div(class_("container"),
@@ -268,18 +305,38 @@ table(class_("data-table"),
 
 **Available Elements:**
 
-| Category | Elements |
-|----------|----------|
-| **Document** | `html`, `head`, `body`, `title`, `meta`, `link`, `script`, `style` |
-| **Semantic** | `header`, `footer`, `nav`, `main`, `section`, `article`, `aside`, `figure`, `figcaption` |
-| **Headings** | `h1`, `h2`, `h3`, `h4`, `h5`, `h6` |
-| **Text** | `p`, `span`, `div`, `strong`, `em`, `code`, `pre`, `blockquote`, `small`, `mark` |
-| **Links** | `a` (with shorthand for href) |
-| **Lists** | `ul`, `ol`, `li`, `dl`, `dt`, `dd` |
-| **Tables** | `table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td`, `caption` |
-| **Forms** | `form`, `input`, `textarea`, `select`, `option`, `button`, `label`, `fieldset`, `legend` |
-| **Media** | `img`, `video`, `audio`, `canvas`, `svg`, `iframe`, `picture` |
-| **Interactive** | `details`, `summary`, `dialog`, `menu` |
+All elements are accessible via `El.*` (the single entry point) and are organized internally into focused modules:
+
+| Category | Elements | Internal Module |
+|----------|----------|-----------------|
+| **Document** | `html`, `head`, `body`, `title`, `meta`, `link`, `script`, `style`, `css`, `inlineScript` | `DocumentElements` |
+| **Semantic** | `header`, `footer`, `nav`, `main`, `section`, `article`, `aside` | `SemanticElements` |
+| **Text** | `h1`-`h6`, `p`, `span`, `div`, `strong`, `em`, `code`, `pre`, `small`, `a`, `br` | `TextElements` |
+| **Lists** | `ul`, `ol`, `li`, `dl`, `dt`, `dd` | `ListElements` |
+| **Tables** | `table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td` | `TableElements` |
+| **Forms** | `form`, `input`, `textarea`, `select`, `option`, `button`, `label` | `FormElements` |
+| **Media** | `img`, `video`, `audio`, `canvas`, `svg`, `iframe` | `MediaElements` |
+| **Helpers** | `text`, `raw`, `fragment`, `each`, `tag` | `El` |
+
+**Modular Architecture:**
+
+The elements DSL uses a clean modular architecture where `El.java` serves as the single entry point that re-exports all element factory methods. This design keeps each category file small and focused while providing a unified import:
+
+```java
+// Single import gives access to all elements
+import static com.osmig.Jweb.framework.elements.El.*;
+
+// Now use any element from any category
+div(class_("layout"),
+    header(nav(a("/", "Home"))),    // Semantic
+    main(                            // Semantic
+        h1("Welcome"),               // Text
+        ul(li("Item 1"), li("Item 2")), // Lists
+        table(tr(td("Cell")))        // Tables
+    ),
+    footer(p("Copyright"))           // Semantic + Text
+)
+```
 
 ### Attributes
 
@@ -349,51 +406,76 @@ div(attrs()
 
 ### Form Input Builders
 
-Convenient shortcuts for common form inputs:
+JWeb uses the fluent `attrs()` pattern for building form inputs. This approach is more flexible and type-safe than factory methods:
+
+**Modern Pattern (Recommended):**
 
 ```java
-// Text inputs
-textInput("username")                    // <input type="text" name="username" id="username">
-textInput("email", "Enter your email")   // With placeholder
+// Use attrs() for all form inputs - clean and explicit
+input(attrs().type("text").name("username").id("username").placeholder("Enter username"))
+input(attrs().type("email").name("email").required())
+input(attrs().type("password").name("password").minlength(8))
+input(attrs().type("number").name("age").min(0).max(120))
 
-// Specialized inputs
-emailInput("email")
-passwordInput("password")
-numberInput("quantity")
-numberInput("age", 0, 120)               // With min/max
+// Checkbox and radio
+input(attrs().type("checkbox").name("agree").value("yes"))
+input(attrs().type("checkbox").name("newsletter").value("1").checked())
+input(attrs().type("radio").name("color").value("red"))
 
-// Selection inputs
-checkbox("agree", "yes")
-checkbox("newsletter", "1", true)        // Pre-checked
-radio("color", "red")
-radio("color", "blue", true)             // Pre-selected
-
-// Other inputs
-hiddenInput("csrf", token)
-fileInput("document")
-fileInput("image", "image/*")            // With accept filter
-dateInput("birthday")
-timeInput("appointment")
-datetimeInput("scheduled")
-searchInput("q", "Search...")
-telInput("phone", "+1 (555) 000-0000")
-urlInput("website", "https://...")
-rangeInput("volume", 0, 100, 50)         // Slider
-colorInput("theme", "#3b82f6")           // Color picker
+// Other input types
+input(attrs().type("hidden").name("csrf").value(token))
+input(attrs().type("file").name("document"))
+input(attrs().type("file").name("image").accept("image/*"))
+input(attrs().type("date").name("birthday"))
+input(attrs().type("search").name("q").placeholder("Search..."))
+input(attrs().type("range").name("volume").min(0).max(100).value("50"))
+input(attrs().type("color").name("theme").value("#3b82f6"))
 
 // Buttons
-submitButton("Sign Up")
-resetButton("Clear Form")
+button(attrs().type("submit"), text("Sign Up"))
+button(attrs().type("reset"), text("Clear Form"))
+```
 
-// Labeled fields (wraps input with label in a div)
-field("Email", emailInput("email", "you@example.com"))
-// Output:
-// <div>
-//   <label for="email">Email</label>
-//   <input type="email" name="email" id="email" placeholder="you@example.com">
-// </div>
+**Building Labeled Fields:**
 
-field(attrs().class_("form-group"), "Password", passwordInput("password"))
+```java
+// Create a labeled input field
+div(attrs().class_("form-group"),
+    label(attrs().for_("email"), text("Email")),
+    input(attrs().type("email").name("email").id("email").placeholder("you@example.com"))
+)
+
+// Reusable field helper pattern
+public static Element field(String labelText, String name, String type, String placeholder) {
+    return div(attrs().class_("form-group"),
+        label(attrs().for_(name), text(labelText)),
+        input(attrs().type(type).name(name).id(name).placeholder(placeholder))
+    );
+}
+
+// Usage
+field("Email", "email", "email", "you@example.com")
+field("Password", "password", "password", "")
+```
+
+**Complete Form Example:**
+
+```java
+form(attrs().action("/submit").method("POST"),
+    div(attrs().class_("form-group"),
+        label(attrs().for_("email"), text("Email")),
+        input(attrs().type("email").name("email").id("email").required())
+    ),
+    div(attrs().class_("form-group"),
+        label(attrs().for_("password"), text("Password")),
+        input(attrs().type("password").name("password").id("password").minlength(8).required())
+    ),
+    div(attrs().class_("form-group"),
+        input(attrs().type("checkbox").name("terms").id("terms").required()),
+        label(attrs().for_("terms"), text("I agree to the terms"))
+    ),
+    button(attrs().type("submit"), text("Sign Up"))
+)
 ```
 
 ### Conditional Rendering
@@ -512,19 +594,31 @@ div(attrs().style()
 )
 ```
 
-**Available CSS Properties:**
+**Modular Style Architecture:**
 
-| Category | Properties |
-|----------|------------|
-| **Box Model** | `margin`, `padding`, `border`, `width`, `height`, `minWidth`, `maxWidth` |
-| **Flexbox** | `display(flex)`, `flexDirection`, `justifyContent`, `alignItems`, `gap`, `flexWrap` |
-| **Grid** | `gridTemplateColumns`, `gridTemplateRows`, `gridArea`, `gridGap` |
-| **Positioning** | `position`, `top`, `right`, `bottom`, `left`, `inset`, `zIndex` |
-| **Typography** | `color`, `fontSize`, `fontWeight`, `lineHeight`, `textAlign`, `fontFamily` |
-| **Background** | `background`, `backgroundColor`, `backgroundImage`, `backgroundSize` |
-| **Effects** | `transform`, `transition`, `animation`, `boxShadow`, `filter`, `opacity` |
-| **Borders** | `borderRadius`, `borderWidth`, `borderStyle`, `borderColor` |
-| **Logical** | `marginInline`, `paddingBlock`, `insetInline` |
+The CSS DSL uses mixin interfaces to organize properties by category while keeping each file focused and maintainable. The `Style` class implements all mixin interfaces, giving you access to every property through a single fluent API:
+
+| Mixin Interface | Properties | Purpose |
+|-----------------|------------|---------|
+| `StyleBoxModel` | `margin`, `padding`, `border`, `width`, `height`, `minWidth`, `maxWidth`, `boxSizing` | Box model and dimensions |
+| `StyleFlex` | `display(flex)`, `flexDirection`, `justifyContent`, `alignItems`, `gap`, `flexWrap`, `flex` | Flexbox layout |
+| `StyleGrid` | `gridTemplateColumns`, `gridTemplateRows`, `gridArea`, `gridGap`, `gridColumn`, `gridRow` | Grid layout |
+| `StyleTypography` | `color`, `fontSize`, `fontWeight`, `lineHeight`, `textAlign`, `fontFamily`, `letterSpacing` | Text and fonts |
+| `StyleEffects` | `transform`, `transition`, `animation`, `boxShadow`, `filter`, `opacity`, `backdropFilter` | Visual effects |
+| `StylePosition` | `position`, `top`, `right`, `bottom`, `left`, `inset`, `zIndex` | Positioning |
+
+This modular design means each mixin file stays under 100 lines while providing a complete, unified API:
+
+```java
+// All properties are available through the fluent Style builder
+attrs().style()
+    .display(flex)           // from StyleFlex
+    .padding(rem(1))         // from StyleBoxModel
+    .fontSize(rem(1.2))      // from StyleTypography
+    .transform(translateY(px(-2)))  // from StyleEffects
+    .position(relative)      // from StylePosition
+.done()
+```
 
 ### CSS Rules
 
@@ -2007,21 +2101,62 @@ if (!result.isValid()) {
 
 ### Form Validation
 
+JWeb provides two patterns for form validation: the classic pattern and the modern lambda-based pattern.
+
+**Lambda-Based Pattern (Recommended):**
+
+The lambda-based pattern provides an immutable, functional approach with better readability:
+
 ```java
 import com.osmig.Jweb.framework.validation.FormValidator;
 
-FormValidator validator = new FormValidator()
-    .field("email", required().and(email()))
-    .field("password", required().and(minLength(8)))
-    .field("age", requiredNumber().and(min(18)));
-
-ValidationResult result = validator.validate(formData);
+ValidationResult result = FormValidator.create()
+    .field("email", email, f -> f.required().email())
+    .field("password", password, f -> f.required().minLength(8))
+    .field("age", age, f -> f.required().min(18).max(120))
+    .field("username", username, f -> f
+        .required()
+        .minLength(3)
+        .maxLength(20)
+        .pattern("^[a-zA-Z0-9_]+$", "Only letters, numbers, and underscores"))
+    .validate();
 
 if (!result.isValid()) {
     Map<String, List<String>> fieldErrors = result.fieldErrors();
     // Display errors next to fields
 }
 ```
+
+**Classic Pattern:**
+
+The classic pattern is also supported:
+
+```java
+FormValidator validator = new FormValidator()
+    .field("email", required().and(email()))
+    .field("password", required().and(minLength(8)))
+    .field("age", requiredNumber().and(min(18)));
+
+ValidationResult result = validator.validate(formData);
+```
+
+**FieldValidator API:**
+
+The lambda parameter `f` is a `FieldValidator` with these methods:
+
+| Method | Description |
+|--------|-------------|
+| `required()` | Field must not be empty |
+| `email()` | Must be valid email format |
+| `url()` | Must be valid URL format |
+| `minLength(n)` | Minimum string length |
+| `maxLength(n)` | Maximum string length |
+| `pattern(regex, msg)` | Must match regex pattern |
+| `min(n)` | Minimum numeric value |
+| `max(n)` | Maximum numeric value |
+| `range(min, max)` | Value must be within range |
+| `positive()` | Must be positive number |
+| `custom(predicate, msg)` | Custom validation logic |
 
 ---
 
@@ -2411,9 +2546,34 @@ src/main/java/com/yourapp/
 │
 └── framework/              # JWeb framework (provided)
     ├── core/               # Element, Renderable interfaces
-    ├── elements/           # HTML elements (Tag, Elements)
-    ├── attributes/         # Attribute builders
-    ├── styles/             # CSS DSL
+    ├── elements/           # HTML elements DSL (modular architecture)
+    │   ├── El.java         # Single entry point - re-exports all elements
+    │   ├── Tag.java        # Core element builder with smart factory
+    │   ├── DocumentElements.java  # html, head, body, meta, link, script
+    │   ├── SemanticElements.java  # header, footer, nav, main, section
+    │   ├── TextElements.java      # h1-h6, p, div, span, a, strong, em
+    │   ├── ListElements.java      # ul, ol, li, dl, dt, dd
+    │   ├── TableElements.java     # table, thead, tbody, tr, th, td
+    │   ├── FormElements.java      # form, input, textarea, select, button
+    │   └── MediaElements.java     # img, video, audio, canvas, svg
+    ├── attributes/         # Attribute builders (Attributes, Attr)
+    ├── styles/             # CSS DSL (modular with mixin interfaces)
+    │   ├── Style.java      # Core style builder
+    │   ├── StyleBoxModel.java    # margin, padding, border, dimensions
+    │   ├── StyleFlex.java        # flexbox properties
+    │   ├── StyleGrid.java        # grid properties
+    │   ├── StyleTypography.java  # font, text properties
+    │   ├── StyleEffects.java     # transform, transition, animation
+    │   ├── StylePosition.java    # position, inset, z-index
+    │   ├── CSS.java, CSSUnits.java, CSSColors.java  # CSS utilities
+    │   ├── MediaQuery.java       # Responsive breakpoints
+    │   └── Stylesheet.java       # CSS rule builders
+    ├── validation/         # Validation framework (immutable design)
+    │   ├── FormValidator.java    # Fluent form validation (lambda-based)
+    │   ├── FieldValidator.java   # Per-field validation builder
+    │   ├── Validators.java       # String validators
+    │   ├── NumberValidators.java # Number validators
+    │   └── ValidationResult.java # Validation results
     ├── vdom/               # Virtual DOM (VNode, VElement)
     ├── state/              # Reactive state management
     ├── events/             # Event handling
@@ -2424,7 +2584,6 @@ src/main/java/com/yourapp/
     ├── api/                # REST annotations
     ├── db/                 # Database (MongoDB)
     ├── security/           # Auth, JWT, CSRF
-    ├── validation/         # Validation framework
     ├── i18n/               # Internationalization
     ├── upload/             # File uploads
     ├── email/              # Email sending

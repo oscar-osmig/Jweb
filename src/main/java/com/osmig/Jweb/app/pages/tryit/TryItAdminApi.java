@@ -6,7 +6,7 @@ import com.osmig.Jweb.framework.api.REST;
 import com.osmig.Jweb.framework.db.mongo.Doc;
 import com.osmig.Jweb.framework.email.EmailTemplate;
 import com.osmig.Jweb.framework.email.Mailer;
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 import com.osmig.Jweb.framework.server.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;

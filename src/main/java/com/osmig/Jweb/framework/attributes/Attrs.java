@@ -3,9 +3,10 @@ package com.osmig.Jweb.framework.attributes;
 /**
  * Static helper for creating Attributes.
  *
- * Usage: import static com.osmig.Jweb.framework.attributes.Attrs.*;
- *        div(attrs().class_("container"), ...)
+ * @deprecated Use {@code El.attrs()} instead.
+ *             Import: {@code import static com.osmig.Jweb.framework.elements.El.*;}
  */
+@Deprecated(since = "2.0", forRemoval = true)
 public final class Attrs {
 
     private Attrs() {}

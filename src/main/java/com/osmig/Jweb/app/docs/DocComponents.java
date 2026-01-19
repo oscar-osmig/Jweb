@@ -2,7 +2,7 @@ package com.osmig.Jweb.app.docs;
 
 import com.osmig.Jweb.framework.core.Element;
 import java.util.List;
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.app.docs.DocStyles.*;
 

@@ -3,7 +3,7 @@ package com.osmig.Jweb.app.pages;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;
 
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;

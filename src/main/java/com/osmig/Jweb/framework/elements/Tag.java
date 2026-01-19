@@ -2,6 +2,7 @@ package com.osmig.Jweb.framework.elements;
 
 import com.osmig.Jweb.framework.attributes.Attr;
 import com.osmig.Jweb.framework.attributes.Attributes;
+import com.osmig.Jweb.framework.attributes.Attributes.InlineStyle;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.events.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
@@ -393,10 +394,12 @@ public class Tag implements Element {
         for (Object child : children) {
             if (child == null) continue;
             if (child instanceof Attr) continue;
+            if (child instanceof Attributes) continue;
+            if (child instanceof InlineStyle) continue;
 
             if (child instanceof Iterable<?> iterable) {
                 for (Object item : iterable) {
-                    if (!(item instanceof Attr)) {
+                    if (!(item instanceof Attr) && !(item instanceof Attributes) && !(item instanceof InlineStyle)) {
                         nodes.add(toVNode(item));
                     }
                 }
@@ -412,10 +415,16 @@ public class Tag implements Element {
         for (Object item : items) {
             if (item instanceof Attr attr) {
                 attrs.put(attr.name(), attr.value());
+            } else if (item instanceof Attributes attributes) {
+                attrs.putAll(attributes.toMap());
+            } else if (item instanceof InlineStyle inlineStyle) {
+                attrs.putAll(inlineStyle.toMap());
             } else if (item instanceof Iterable<?> iterable) {
                 for (Object subItem : iterable) {
                     if (subItem instanceof Attr attr) {
                         attrs.put(attr.name(), attr.value());
+                    } else if (subItem instanceof Attributes attributes) {
+                        attrs.putAll(attributes.toMap());
                     }
                 }
             }
