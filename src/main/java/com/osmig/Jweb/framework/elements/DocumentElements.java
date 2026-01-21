@@ -75,4 +75,26 @@ public final class DocumentElements {
     public static Tag base(Attributes attrs) {
         return new Tag("base", attrs);
     }
+
+    /** Creates a basic favicon link. */
+    public static Tag icon(String href) {
+        return new Tag("link", new Attributes().set("rel", "icon").href(href));
+    }
+
+    /** Creates a sized favicon link with type (e.g., "32x32", "image/png"). */
+    public static Tag icon(String href, String sizes, String type) {
+        return new Tag("link", new Attributes().set("rel", "icon").href(href)
+            .set("sizes", sizes).type(type));
+    }
+
+    /** Creates an Apple touch icon link. */
+    public static Tag appleIcon(String href) {
+        return new Tag("link", new Attributes().set("rel", "apple-touch-icon").href(href));
+    }
+
+    /** Creates a sized Apple touch icon link. */
+    public static Tag appleIcon(String href, String sizes) {
+        return new Tag("link", new Attributes().set("rel", "apple-touch-icon")
+            .href(href).set("sizes", sizes));
+    }
 }

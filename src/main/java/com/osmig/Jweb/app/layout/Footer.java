@@ -19,7 +19,7 @@ public class Footer implements Template {
         return footer(attrs().style()
                 .position(sticky).bottom(zero).zIndex(1000)
                 .backgroundColor(rgba(255, 255, 255, 0.3))
-                .prop("backdrop-filter", "blur(10px)")
+                .backdropFilter(blur(px(10)))
                 .prop("-webkit-backdrop-filter", "blur(10px)")
                 .borderTop(px(1), solid, rgba(255, 255, 255, 0.3))
                 .padding(SP_4, SP_8)

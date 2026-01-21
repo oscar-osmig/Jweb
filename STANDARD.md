@@ -17,11 +17,13 @@ A guide to building maintainable, readable, and consistent applications with JWe
 
 ## 1. File Length
 
-Keep files under **100 lines**.
+Keep files under **100-200 lines**.
 
 Going a few lines over is acceptable, but minimizing file length helps maintain readability and makes the codebase easier to navigate over time.
 
 If a file grows too large, consider splitting it into smaller, focused components.
+
+This should apply to apps other than the framework which should be long enough for the implementation.
 
 ---
 

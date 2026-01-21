@@ -39,7 +39,7 @@ public class HomePage implements Template {
                     hex("#6366f1"), hex("#8b5cf6"), hex("#a855f7"),
                     hex("#ec4899"), hex("#8b5cf6"), hex("#6366f1")))
                 .backgroundSize(() -> "300% 100%")
-                .prop("animation", "gradientShift 8s ease infinite")
+                .animation(anim("gradientShift"), s(8), ease, zero, infinite)
                 .color(white).borderRadius(ROUNDED).fontWeight(600).textDecoration(none)
             .done(), text("Get Started"))
         );
@@ -73,7 +73,7 @@ public class HomePage implements Template {
                     hex("#6366f1"), hex("#8b5cf6"), hex("#a855f7"),
                     hex("#ec4899"), hex("#8b5cf6"), hex("#6366f1")))
                 .backgroundSize(() -> "300% 100%")
-                .prop("animation", "gradientShift 8s ease infinite")
+                .animation(anim("gradientShift"), s(8), ease, zero, infinite)
                 .prop("-webkit-mask", "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)")
                 .prop("mask", "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)")
                 .prop("-webkit-mask-composite", "xor")

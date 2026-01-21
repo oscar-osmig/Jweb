@@ -3,8 +3,6 @@ package com.osmig.Jweb.app.pages.tryit;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.styles.CSSValue;
 
-import com.osmig.Jweb.framework.elements.TextElement;
-
 import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
@@ -54,25 +52,30 @@ public final class TryItTheme {
     }
 
     public static Element card(String icon, String title, String desc, Element form) {
-        String svg = icon.equals("rocket") ? rocketSvg() : downloadSvg();
+        Element iconEl = icon.equals("rocket") ? rocketIcon() : downloadIcon();
         return div(attrs().style().flex(() -> "1 1 340px").maxWidth(px(400)).backgroundColor(white)
             .borderRadius(px(12)).boxShadow("0 8px 30px rgba(0,0,0,0.1)").padding(rem(1.5)).done(),
             div(attrs().style().width(px(50)).height(px(50)).borderRadius(px(10)).backgroundColor(INDIGO)
-                .color(white).display(flex).alignItems(center).justifyContent(center).marginBottom(rem(1)).done(), TextElement.raw(svg)),
+                .color(white).display(flex).alignItems(center).justifyContent(center).marginBottom(rem(1)).done(),
+                iconEl),
             h2(attrs().style().fontSize(rem(1.25)).fontWeight(600).color(hex("#1a1a2e")).margin(zero).done(), text(title)),
             p(attrs().style().fontSize(rem(0.875)).color(GRAY_500).margin(zero).marginBottom(rem(1)).done(), text(desc)),
             form
         );
     }
 
-    private static String rocketSvg() { return """
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
-            <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
-        </svg>"""; }
+    private static Element rocketIcon() {
+        return svg(viewBox(0, 0, 24, 24), attr("width", "28"), attr("height", "28"),
+            fill("none"), stroke("currentColor"), strokeWidth(2),
+            path(d("M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z")),
+            path(d("m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z")));
+    }
 
-    private static String downloadSvg() { return """
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>"""; }
+    private static Element downloadIcon() {
+        return svg(viewBox(0, 0, 24, 24), attr("width", "28"), attr("height", "28"),
+            fill("none"), stroke("currentColor"), strokeWidth(2),
+            path(d("M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4")),
+            polyline(attr("points", "7 10 12 15 17 10")),
+            line(attr("x1", "12"), attr("y1", "15"), attr("x2", "12"), attr("y2", "3")));
+    }
 }

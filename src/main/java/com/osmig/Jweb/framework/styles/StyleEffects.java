@@ -35,6 +35,8 @@ public interface StyleEffects<T extends Style<T>> {
 
     // ==================== Animation ====================
 
+    default T animation(CSSValue value) { return prop("animation", value); }
+
     default T animation(CSSValue name, CSSValue duration, CSSValue timing) {
         return prop("animation", () -> name.css() + " " + duration.css() + " " + timing.css());
     }

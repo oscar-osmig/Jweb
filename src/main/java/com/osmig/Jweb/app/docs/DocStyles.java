@@ -16,7 +16,7 @@ public final class DocStyles {
     public static Style subtitle() {
         return style().fontSize(TEXT_XL).fontWeight(600).color(TEXT)
             .marginTop(SP_8).marginBottom(SP_4).paddingBottom(SP_2)
-            .prop("border-bottom", "1px solid #e2e8f0");
+            .borderBottom(px(1), solid, hex("#e2e8f0"));
     }
 
     public static Style paragraph() {
@@ -36,7 +36,7 @@ public final class DocStyles {
     }
 
     public static Style list() {
-        return style().marginBottom(SP_6).paddingLeft(SP_6).prop("list-style-type", "disc");
+        return style().marginBottom(SP_6).paddingLeft(SP_6).listStyleType(disc);
     }
 
     public static Style listItem() {

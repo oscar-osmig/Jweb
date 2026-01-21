@@ -24,7 +24,7 @@ public class DocSidebar implements Template {
                 .borderRight(px(1), solid, hex("#e2e8f0"))
                 .backgroundColor(hex("#fafafa"))
                 .overflowY(auto)
-                .prop("flex-shrink", "0")
+                .flexShrink(0)
             .done(),
             div(
                 navSection("Basics",

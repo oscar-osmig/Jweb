@@ -2,7 +2,6 @@ package com.osmig.Jweb.app.pages.tryit;
 
 import com.osmig.Jweb.framework.core.Element;
 
-import com.osmig.Jweb.framework.elements.TextElement;
 
 import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
@@ -67,6 +66,6 @@ public final class AdminComponents {
     private static Element closeBtn() {
         return button(attrs().id("modal-close").style().position(absolute).top(rem(1)).right(rem(1))
             .backgroundColor(transparent).border(none).fontSize(rem(1.5)).cursor(pointer)
-            .color(GRAY_500).lineHeight(num(1)).padding(rem(0.25)).done(), TextElement.raw("&times;"));
+            .color(GRAY_500).lineHeight(num(1)).padding(rem(0.25)).done(), text("×"));
     }
 }

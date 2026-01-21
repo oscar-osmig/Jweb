@@ -52,6 +52,14 @@ public final class JS {
         return new Val(name);
     }
 
+    /**
+     * Raw expression: expr("myVar.foo") -> myVar.foo
+     * Use when you need to reference a JS expression not covered by the DSL.
+     */
+    public static Val expr(String rawExpr) {
+        return new Val(rawExpr);
+    }
+
     /** String literal: str("hello") -> 'hello' */
     public static Val str(String value) {
         return new Val("'" + esc(value) + "'");
@@ -185,6 +193,95 @@ public final class JS {
     public static Val round(Val val) { return new Val("Math.round(" + val.code + ")"); }
     public static Val abs(Val val) { return new Val("Math.abs(" + val.code + ")"); }
     public static Val random() { return new Val("Math.random()"); }
+
+    // ==================== Number Parsing & Checking ====================
+
+    /** Parses integer: parseInt(value) */
+    public static Val parseInt(Val value) { return new Val("parseInt(" + value.code + ")"); }
+
+    /** Parses integer with radix: parseInt(value, radix) */
+    public static Val parseInt(Val value, int radix) { return new Val("parseInt(" + value.code + "," + radix + ")"); }
+
+    /** Parses float: parseFloat(value) */
+    public static Val parseFloat(Val value) { return new Val("parseFloat(" + value.code + ")"); }
+
+    /** Checks if NaN: isNaN(value) */
+    public static Val isNaN(Val value) { return new Val("isNaN(" + value.code + ")"); }
+
+    /** Checks if finite: isFinite(value) */
+    public static Val isFinite(Val value) { return new Val("isFinite(" + value.code + ")"); }
+
+    /** Number.isNaN - strict NaN check */
+    public static Val numberIsNaN(Val value) { return new Val("Number.isNaN(" + value.code + ")"); }
+
+    /** Number.isFinite - strict finite check */
+    public static Val numberIsFinite(Val value) { return new Val("Number.isFinite(" + value.code + ")"); }
+
+    /** Number.isInteger - checks if integer */
+    public static Val numberIsInteger(Val value) { return new Val("Number.isInteger(" + value.code + ")"); }
+
+    /** Number.isSafeInteger - checks if safe integer */
+    public static Val numberIsSafeInteger(Val value) { return new Val("Number.isSafeInteger(" + value.code + ")"); }
+
+    // ==================== Object Static Methods ====================
+
+    /** Object.assign: Object.assign(target, ...sources) */
+    public static Val objectAssign(Val target, Val... sources) {
+        StringBuilder sb = new StringBuilder("Object.assign(" + target.code);
+        for (Val source : sources) sb.append(",").append(source.code);
+        return new Val(sb.append(")").toString());
+    }
+
+    /** Object.freeze: Object.freeze(obj) */
+    public static Val objectFreeze(Val obj) { return new Val("Object.freeze(" + obj.code + ")"); }
+
+    /** Object.seal: Object.seal(obj) */
+    public static Val objectSeal(Val obj) { return new Val("Object.seal(" + obj.code + ")"); }
+
+    /** Object.is: Object.is(val1, val2) */
+    public static Val objectIs(Val val1, Val val2) { return new Val("Object.is(" + val1.code + "," + val2.code + ")"); }
+
+    /** Object.create: Object.create(proto) */
+    public static Val objectCreate(Val proto) { return new Val("Object.create(" + proto.code + ")"); }
+
+    /** Object.getOwnPropertyNames: Object.getOwnPropertyNames(obj) */
+    public static Val objectGetOwnPropertyNames(Val obj) { return new Val("Object.getOwnPropertyNames(" + obj.code + ")"); }
+
+    /** Object.getPrototypeOf: Object.getPrototypeOf(obj) */
+    public static Val objectGetPrototypeOf(Val obj) { return new Val("Object.getPrototypeOf(" + obj.code + ")"); }
+
+    /** Object.setPrototypeOf: Object.setPrototypeOf(obj, proto) */
+    public static Val objectSetPrototypeOf(Val obj, Val proto) { return new Val("Object.setPrototypeOf(" + obj.code + "," + proto.code + ")"); }
+
+    /** Object.isFrozen: Object.isFrozen(obj) */
+    public static Val objectIsFrozen(Val obj) { return new Val("Object.isFrozen(" + obj.code + ")"); }
+
+    /** Object.isSealed: Object.isSealed(obj) */
+    public static Val objectIsSealed(Val obj) { return new Val("Object.isSealed(" + obj.code + ")"); }
+
+    /** Object.fromEntries: Object.fromEntries(entries) */
+    public static Val objectFromEntries(Val entries) { return new Val("Object.fromEntries(" + entries.code + ")"); }
+
+    // ==================== Array Static Methods ====================
+
+    /** Array.from: Array.from(arrayLike) */
+    public static Val arrayFrom(Val arrayLike) { return new Val("Array.from(" + arrayLike.code + ")"); }
+
+    /** Array.from with mapper: Array.from(arrayLike, mapFn) */
+    public static Val arrayFrom(Val arrayLike, Func mapper) { return new Val("Array.from(" + arrayLike.code + "," + mapper.toExpr() + ")"); }
+
+    /** Array.isArray: Array.isArray(value) */
+    public static Val arrayIsArray(Val value) { return new Val("Array.isArray(" + value.code + ")"); }
+
+    /** Array.of: Array.of(...items) */
+    public static Val arrayOf(Object... items) {
+        StringBuilder sb = new StringBuilder("Array.of(");
+        for (int i = 0; i < items.length; i++) {
+            if (i > 0) sb.append(",");
+            sb.append(toJs(items[i]));
+        }
+        return new Val(sb.append(")").toString());
+    }
 
     // ==================== Calls ====================
 
@@ -1085,6 +1182,81 @@ public final class JS {
             return new Val(code + ".includes('" + esc(search) + "')");
         }
 
+        /** Repeats string n times: str.repeat(count) */
+        public Val repeat(int count) {
+            return new Val(code + ".repeat(" + count + ")");
+        }
+
+        /** Repeats string n times: str.repeat(count) */
+        public Val repeat(Val count) {
+            return new Val(code + ".repeat(" + count.code + ")");
+        }
+
+        /** Slices string: str.slice(start, end) */
+        public Val sliceStr(int start, int end) {
+            return new Val(code + ".slice(" + start + "," + end + ")");
+        }
+
+        /** Slices string: str.slice(start) */
+        public Val sliceStr(int start) {
+            return new Val(code + ".slice(" + start + ")");
+        }
+
+        /** Searches for regex: str.search(regex) */
+        public Val search(Val regex) {
+            return new Val(code + ".search(" + regex.code + ")");
+        }
+
+        /** Matches against regex: str.match(regex) */
+        public Val match(Val regex) {
+            return new Val(code + ".match(" + regex.code + ")");
+        }
+
+        /** Matches all against regex: str.matchAll(regex) */
+        public Val matchAll(Val regex) {
+            return new Val(code + ".matchAll(" + regex.code + ")");
+        }
+
+        /** Normalizes Unicode: str.normalize() */
+        public Val normalize() {
+            return new Val(code + ".normalize()");
+        }
+
+        /** Normalizes Unicode with form: str.normalize(form) */
+        public Val normalize(String form) {
+            return new Val(code + ".normalize('" + esc(form) + "')");
+        }
+
+        /** Trims start of string: str.trimStart() */
+        public Val trimStart() {
+            return new Val(code + ".trimStart()");
+        }
+
+        /** Trims end of string: str.trimEnd() */
+        public Val trimEnd() {
+            return new Val(code + ".trimEnd()");
+        }
+
+        /** Locale compare: str.localeCompare(other) */
+        public Val localeCompare(Val other) {
+            return new Val(code + ".localeCompare(" + other.code + ")");
+        }
+
+        /** Locale compare: str.localeCompare(other) */
+        public Val localeCompare(String other) {
+            return new Val(code + ".localeCompare('" + esc(other) + "')");
+        }
+
+        /** Dynamic padStart: str.padStart(len, pad) */
+        public Val padStart(Val len, String pad) {
+            return new Val("String(" + code + ").padStart(" + len.code + ",'" + esc(pad) + "')");
+        }
+
+        /** Dynamic padEnd: str.padEnd(len, pad) */
+        public Val padEnd(Val len, String pad) {
+            return new Val("String(" + code + ").padEnd(" + len.code + ",'" + esc(pad) + "')");
+        }
+
         // ==================== Array Methods ====================
 
         /**
@@ -1265,6 +1437,122 @@ public final class JS {
             return new Val(code + ".unshift(" + toJs(value) + ")");
         }
 
+        /**
+         * Flattens nested arrays: arr.flat(depth)
+         */
+        public Val flat() {
+            return new Val(code + ".flat()");
+        }
+
+        /**
+         * Flattens nested arrays: arr.flat(depth)
+         */
+        public Val flat(int depth) {
+            return new Val(code + ".flat(" + depth + ")");
+        }
+
+        /**
+         * Maps and flattens: arr.flatMap(callback)
+         */
+        public Val flatMap(Func mapper) {
+            return new Val(code + ".flatMap(" + mapper.toExpr() + ")");
+        }
+
+        /**
+         * Gets element at index with negative support: arr.at(index)
+         */
+        public Val atIndex(int index) {
+            return new Val(code + ".at(" + index + ")");
+        }
+
+        /**
+         * Gets element at index with negative support: arr.at(index)
+         */
+        public Val atIndex(Val index) {
+            return new Val(code + ".at(" + index.code + ")");
+        }
+
+        /**
+         * Fills array with value: arr.fill(value)
+         */
+        public Val fill(Object value) {
+            return new Val(code + ".fill(" + toJs(value) + ")");
+        }
+
+        /**
+         * Fills array with value from start to end: arr.fill(value, start, end)
+         */
+        public Val fill(Object value, int start, int end) {
+            return new Val(code + ".fill(" + toJs(value) + "," + start + "," + end + ")");
+        }
+
+        /**
+         * Copies array section within itself: arr.copyWithin(target, start, end)
+         */
+        public Val copyWithin(int target, int start) {
+            return new Val(code + ".copyWithin(" + target + "," + start + ")");
+        }
+
+        /**
+         * Copies array section within itself: arr.copyWithin(target, start, end)
+         */
+        public Val copyWithin(int target, int start, int end) {
+            return new Val(code + ".copyWithin(" + target + "," + start + "," + end + ")");
+        }
+
+        /**
+         * Adds/removes elements: arr.splice(start, deleteCount, ...items)
+         */
+        public Val splice(int start, int deleteCount, Object... items) {
+            StringBuilder sb = new StringBuilder(code + ".splice(" + start + "," + deleteCount);
+            for (Object item : items) {
+                sb.append(",").append(toJs(item));
+            }
+            return new Val(sb.append(")").toString());
+        }
+
+        /**
+         * Finds last matching element: arr.findLast(callback)
+         */
+        public Val findLast(Func predicate) {
+            return new Val(code + ".findLast(" + predicate.toExpr() + ")");
+        }
+
+        /**
+         * Finds index of last matching element: arr.findLastIndex(callback)
+         */
+        public Val findLastIndex(Func predicate) {
+            return new Val(code + ".findLastIndex(" + predicate.toExpr() + ")");
+        }
+
+        /**
+         * Creates array without mutating: arr.toSorted(comparator)
+         */
+        public Val toSorted() {
+            return new Val(code + ".toSorted()");
+        }
+
+        /**
+         * Creates array without mutating: arr.toSorted(comparator)
+         */
+        public Val toSorted(Func comparator) {
+            return new Val(code + ".toSorted(" + comparator.toExpr() + ")");
+        }
+
+        /**
+         * Creates reversed array without mutating: arr.toReversed()
+         */
+        public Val toReversed() {
+            return new Val(code + ".toReversed()");
+        }
+
+        /**
+         * Finds indexOf: arr.indexOf(value)
+         */
+        public Val indexOfVal(Val value) {
+            return new Val(code + ".indexOf(" + value.code + ")");
+        }
+
         // ==================== Object Methods ====================
 
         /**
@@ -1293,6 +1581,35 @@ public final class JS {
          */
         public Val hasOwnProperty(String key) {
             return new Val(code + ".hasOwnProperty('" + esc(key) + "')");
+        }
+
+        /**
+         * Checks if object has own property with dynamic key: obj.hasOwnProperty(key)
+         */
+        public Val hasOwnProperty(Val key) {
+            return new Val(code + ".hasOwnProperty(" + key.code + ")");
+        }
+
+        // ==================== Number Formatting ====================
+
+        /** Formats to fixed decimal places: num.toFixed(digits) */
+        public Val toFixed(int digits) {
+            return new Val(code + ".toFixed(" + digits + ")");
+        }
+
+        /** Formats to exponential notation: num.toExponential(digits) */
+        public Val toExponential(int digits) {
+            return new Val(code + ".toExponential(" + digits + ")");
+        }
+
+        /** Formats to precision: num.toPrecision(precision) */
+        public Val toPrecision(int precision) {
+            return new Val(code + ".toPrecision(" + precision + ")");
+        }
+
+        /** Converts to string with radix: num.toString(radix) */
+        public Val toStringRadix(int radix) {
+            return new Val(code + ".toString(" + radix + ")");
         }
 
         // ==================== Type Checking ====================

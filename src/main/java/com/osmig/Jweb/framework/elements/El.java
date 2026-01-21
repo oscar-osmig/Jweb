@@ -36,6 +36,10 @@ public final class El {
     public static Tag script(String s) { return DocumentElements.script(s); }
     public static Tag inlineScript(String c) { return DocumentElements.inlineScript(c); }
     public static Tag style(String c) { return DocumentElements.style(c); }
+    public static Tag icon(String h) { return DocumentElements.icon(h); }
+    public static Tag icon(String h, String s, String t) { return DocumentElements.icon(h, s, t); }
+    public static Tag appleIcon(String h) { return DocumentElements.appleIcon(h); }
+    public static Tag appleIcon(String h, String s) { return DocumentElements.appleIcon(h, s); }
 
     // ==================== Semantic ====================
     public static Tag header(Object... c) { return SemanticElements.header(c); }
@@ -90,6 +94,22 @@ public final class El {
     // ==================== Media ====================
     public static Tag img(String s) { return MediaElements.img(s); }
     public static Tag img(String s, String a) { return MediaElements.img(s, a); }
+
+    // ==================== SVG ====================
+    public static Tag svg(Object... c) { return SVGElements.svg(c); }
+    public static Tag path(Object... c) { return SVGElements.path(c); }
+    public static Tag circle(Object... c) { return SVGElements.circle(c); }
+    public static Tag rect(Object... c) { return SVGElements.rect(c); }
+    public static Tag line(Object... c) { return SVGElements.line(c); }
+    public static Tag polyline(Object... c) { return SVGElements.polyline(c); }
+    public static Tag polygon(Object... c) { return SVGElements.polygon(c); }
+    public static Tag g(Object... c) { return SVGElements.g(c); }
+    public static Attr d(String v) { return SVGElements.d(v); }
+    public static Attr viewBox(String v) { return SVGElements.viewBox(v); }
+    public static Attr viewBox(int x, int y, int w, int h) { return SVGElements.viewBox(x, y, w, h); }
+    public static Attr fill(String v) { return SVGElements.fill(v); }
+    public static Attr stroke(String v) { return SVGElements.stroke(v); }
+    public static Attr strokeWidth(int v) { return SVGElements.strokeWidth(v); }
 
     // ==================== Helpers ====================
     public static TextElement text(String c) { return TextElement.of(c); }

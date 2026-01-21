@@ -1192,6 +1192,50 @@ script()
     .build();
 ```
 
+### Runtime Patterns
+
+Advanced JavaScript patterns for encapsulation and optimization:
+
+```java
+import static com.osmig.Jweb.framework.js.Runtime.*;
+
+// IIFE (Immediately Invoked Function Expression) - encapsulate code
+iife()
+    .var_("count", 0)
+    .let_("running", false)
+    .add(myFunction)
+    .call("init")
+    .build()
+// Output: (function(){var count=0;let running=false;function myFunction(){...};init();})()
+
+// Guard pattern - ensure code runs only once
+guard("initOnce")
+    .const_("config", obj("debug", true))
+    .add(setupFunction)
+    .build()
+// Output: if(window.initOnce)return;window.initOnce=true;const config={debug:true};...
+
+// Global cache for cross-component state
+globalCache("myCache")  // Returns: window.myCache=window.myCache||{}
+
+// Time-based cache with TTL
+Cache cache = cache("dataCache", 60000);  // 60 second TTL
+cache.set("key", valueExpr)              // Set with timestamp
+cache.get("key")                         // Get value
+cache.isValid("key")                     // Check if not expired
+cache.getData("key")                     // Get just the data
+cache.clear("key")                       // Clear specific key
+cache.clearAll()                         // Clear entire cache
+
+// Memoization for expensive computations
+Memoize memo = memoize("cache");
+memo.wrap("key", computeExpr)            // Cache result by key
+memo.wrapMultiArg(argsExpr, computeExpr) // Cache with JSON key
+memo.has("key")                          // Check if cached
+memo.clear("key")                        // Clear specific key
+memo.clear()                             // Clear all
+```
+
 ---
 
 ## Components & Templates
@@ -2555,7 +2599,8 @@ src/main/java/com/yourapp/
     │   ├── ListElements.java      # ul, ol, li, dl, dt, dd
     │   ├── TableElements.java     # table, thead, tbody, tr, th, td
     │   ├── FormElements.java      # form, input, textarea, select, button
-    │   └── MediaElements.java     # img, video, audio, canvas, svg
+    │   ├── MediaElements.java     # img, video, audio, canvas, svg
+    │   └── SVGElements.java       # svg, path, circle, rect, line, polygon
     ├── attributes/         # Attribute builders (Attributes, Attr)
     ├── styles/             # CSS DSL (modular with mixin interfaces)
     │   ├── Style.java      # Core style builder
@@ -2568,30 +2613,38 @@ src/main/java/com/yourapp/
     │   ├── CSS.java, CSSUnits.java, CSSColors.java  # CSS utilities
     │   ├── MediaQuery.java       # Responsive breakpoints
     │   └── Stylesheet.java       # CSS rule builders
+    ├── js/                 # JavaScript DSL (modular architecture)
+    │   ├── Actions.java    # High-level DSL for forms, clicks, UI actions
+    │   ├── JS.java         # Low-level DSL for custom JS logic
+    │   ├── Runtime.java    # IIFE, guards, caching, memoization patterns
+    │   ├── Events.java     # Event handling utilities
+    │   ├── Async.java      # Async/await, promises, fetch patterns
+    │   └── JWebRuntime.java  # Runtime script injection
     ├── validation/         # Validation framework (immutable design)
     │   ├── FormValidator.java    # Fluent form validation (lambda-based)
     │   ├── FieldValidator.java   # Per-field validation builder
     │   ├── Validators.java       # String validators
     │   ├── NumberValidators.java # Number validators
     │   └── ValidationResult.java # Validation results
-    ├── vdom/               # Virtual DOM (VNode, VElement)
-    ├── state/              # Reactive state management
-    ├── events/             # Event handling
-    ├── routing/            # Router and routes
-    ├── middleware/         # Middleware system
-    ├── server/             # Request, Response, Controller
-    ├── template/           # Template interface
-    ├── api/                # REST annotations
-    ├── db/                 # Database (MongoDB)
-    ├── security/           # Auth, JWT, CSRF
-    ├── i18n/               # Internationalization
-    ├── upload/             # File uploads
-    ├── email/              # Email sending
-    ├── async/              # Background jobs
-    ├── health/             # Health checks
-    ├── testing/            # Test utilities
+    ├── vdom/               # Virtual DOM (VNode, VElement, VText, VRaw, VFragment)
+    ├── template/           # Template interface with lifecycle hooks
+    ├── state/              # Reactive state management (State<T>)
+    ├── events/             # Event handling (Event, EventHandler)
+    ├── routing/            # Router and routes (PageRegistry, PageRoute)
+    ├── middleware/         # Middleware system (MiddlewareStack)
+    ├── server/             # Request, Response, JWebController
+    ├── api/                # REST annotations (@REST, @GET, @POST, etc.)
+    ├── db/mongo/           # MongoDB integration (Mongo, Doc, Schema)
+    ├── security/           # Auth (Jwt, Csrf, Password, Cors, OAuth2)
+    ├── i18n/               # Internationalization (I18n, Messages)
+    ├── upload/             # File uploads (FileUpload, UploadedFile)
+    ├── email/              # Email sending (Email, Mailer, EmailTemplate)
+    ├── async/              # Background jobs (Jobs, Scheduler, BackgroundTask)
+    ├── health/             # Health checks (Health, HealthCheck, HealthStatus)
+    ├── testing/            # Test utilities (JWebTest, TestClient, MockRequest)
     ├── accessibility/      # A11y helpers
-    ├── error/              # Error handling
+    ├── dev/                # Development tools (HotReload, DevController)
+    ├── error/              # Error handling (ErrorHandler, JWebException)
     └── util/               # JSON, logging utilities
 ```
 
@@ -2611,7 +2664,7 @@ java -jar target/your-app.jar
 java -jar target/your-app.jar --spring.profiles.active=prod
 ```
 
-Then open `http://localhost:8080` in your browser.
+Then open `http://localhost:8081` in your browser (default port).
 
 ---
 

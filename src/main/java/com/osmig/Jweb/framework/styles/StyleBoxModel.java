@@ -67,6 +67,10 @@ public interface StyleBoxModel<T extends Style<T>> {
     }
 
     default T border(CSSValue value) { return prop("border", value); }
+    default T borderTop(CSSValue value) { return prop("border-top", value); }
+    default T borderRight(CSSValue value) { return prop("border-right", value); }
+    default T borderBottom(CSSValue value) { return prop("border-bottom", value); }
+    default T borderLeft(CSSValue value) { return prop("border-left", value); }
     default T borderWidth(CSSValue value) { return prop("border-width", value); }
     default T borderStyle(CSSValue value) { return prop("border-style", value); }
     default T borderColor(CSSValue value) { return prop("border-color", value); }
