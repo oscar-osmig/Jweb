@@ -49,6 +49,9 @@ public final class El {
     public static Tag section(Object... c) { return SemanticElements.section(c); }
     public static Tag article(Object... c) { return SemanticElements.article(c); }
     public static Tag aside(Object... c) { return SemanticElements.aside(c); }
+    public static Tag hgroup(Object... c) { return SemanticElements.hgroup(c); }
+    public static Tag search(Object... c) { return SemanticElements.search(c); }
+    public static Tag address(Object... c) { return SemanticElements.address(c); }
 
     // ==================== Text ====================
     public static Tag div(Object... c) { return TextElements.div(c); }
@@ -67,6 +70,8 @@ public final class El {
     public static Tag small(Object... c) { return TextElements.small(c); }
     public static Tag code(Object... c) { return TextElements.code(c); }
     public static Tag pre(Object... c) { return TextElements.pre(c); }
+    public static Tag time(Object... c) { return TextElements.time(c); }
+    public static Tag wbr() { return TextElements.wbr(); }
     public static Tag br() { return TextElements.br(); }
 
     // ==================== Lists ====================
@@ -110,6 +115,27 @@ public final class El {
     public static Attr fill(String v) { return SVGElements.fill(v); }
     public static Attr stroke(String v) { return SVGElements.stroke(v); }
     public static Attr strokeWidth(int v) { return SVGElements.strokeWidth(v); }
+
+    // ==================== Modern HTML5 Elements ====================
+    public static Tag dialog(Object... c) { return ModernElements.dialog(c); }
+    public static Tag details(Object... c) { return ModernElements.details(c); }
+    public static Tag summary(Object... c) { return ModernElements.summary(c); }
+    public static Tag meter(Object... a) { return ModernElements.meter(a); }
+    public static Tag meter(double v, double min, double max) { return ModernElements.meter(v, min, max); }
+    public static Tag progress(Object... a) { return ModernElements.progress(a); }
+    public static Tag progress(double v, double max) { return ModernElements.progress(v, max); }
+    public static Tag progressIndeterminate() { return ModernElements.progressIndeterminate(); }
+    public static Tag template(Object... c) { return ModernElements.template(c); }
+    public static Tag slot(Object... c) { return ModernElements.slot(c); }
+    public static Tag slot(String n) { return ModernElements.slot(n); }
+    public static Tag output(Object... c) { return ModernElements.output(c); }
+    public static Tag timeWithDatetime(String dt, String txt) { return ModernElements.timeWithDatetime(dt, txt); }
+    public static Tag data(String v, String txt) { return ModernElements.data(v, txt); }
+    public static Tag bdi(Object... c) { return ModernElements.bdi(c); }
+    public static Tag bdo(Object... c) { return ModernElements.bdo(c); }
+    public static Tag ruby(Object... c) { return ModernElements.ruby(c); }
+    public static Tag rt(Object... c) { return ModernElements.rt(c); }
+    public static Tag rp(Object... c) { return ModernElements.rp(c); }
 
     // ==================== Helpers ====================
     public static TextElement text(String c) { return TextElement.of(c); }

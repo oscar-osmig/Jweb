@@ -122,6 +122,106 @@ public class Style<T extends Style<T>> implements CSSValue {
     /** Sets maximum height. */
     public T maxHeight(CSSValue value) { return prop("max-height", value); }
 
+    // ==================== Size Shortcuts ====================
+
+    /**
+     * Sets both width and height to the same value.
+     * Useful for squares and circles.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().size(px(100))  // width: 100px; height: 100px;
+     * </pre>
+     *
+     * @param value the width and height value
+     * @return this builder for chaining
+     */
+    public T size(CSSValue value) {
+        return width(value).height(value);
+    }
+
+    /**
+     * Sets width and height independently.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().size(px(200), px(100))  // width: 200px; height: 100px;
+     * </pre>
+     *
+     * @param w the width value
+     * @param h the height value
+     * @return this builder for chaining
+     */
+    public T size(CSSValue w, CSSValue h) {
+        return width(w).height(h);
+    }
+
+    /**
+     * Sets both min-width and min-height to the same value.
+     *
+     * @param value the minimum size value
+     * @return this builder for chaining
+     */
+    public T minSize(CSSValue value) {
+        return minWidth(value).minHeight(value);
+    }
+
+    /**
+     * Sets both max-width and max-height to the same value.
+     *
+     * @param value the maximum size value
+     * @return this builder for chaining
+     */
+    public T maxSize(CSSValue value) {
+        return maxWidth(value).maxHeight(value);
+    }
+
+    /**
+     * Sets min-width and max-width range.
+     * Useful for responsive elements.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().widthRange(px(200), px(800))  // min-width: 200px; max-width: 800px;
+     * </pre>
+     *
+     * @param min the minimum width
+     * @param max the maximum width
+     * @return this builder for chaining
+     */
+    public T widthRange(CSSValue min, CSSValue max) {
+        return minWidth(min).maxWidth(max);
+    }
+
+    /**
+     * Sets min-height and max-height range.
+     *
+     * @param min the minimum height
+     * @param max the maximum height
+     * @return this builder for chaining
+     */
+    public T heightRange(CSSValue min, CSSValue max) {
+        return minHeight(min).maxHeight(max);
+    }
+
+    /**
+     * Sets 100vw width (full viewport width).
+     *
+     * @return this builder for chaining
+     */
+    public T fullViewportWidth() {
+        return prop("width", "100vw");
+    }
+
+    /**
+     * Sets 100vh height (full viewport height).
+     *
+     * @return this builder for chaining
+     */
+    public T fullViewportHeight() {
+        return prop("height", "100vh");
+    }
+
     // ==================== Margin ====================
 
     /**
@@ -596,6 +696,72 @@ public class Style<T extends Style<T>> implements CSSValue {
 
     public T boxShadow(String value) { return prop("box-shadow", value); }
 
+    // ==================== Box Shadow Presets ====================
+
+    /**
+     * Extra-small shadow preset.
+     * Equivalent to: box-shadow: 0 1px 2px rgba(0,0,0,0.05)
+     *
+     * @return this builder for chaining
+     */
+    public T shadowXs() { return prop("box-shadow", "0 1px 2px rgba(0,0,0,0.05)"); }
+
+    /**
+     * Small shadow preset.
+     * Equivalent to: box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)
+     *
+     * @return this builder for chaining
+     */
+    public T shadowSm() { return prop("box-shadow", "0 1px 3px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06)"); }
+
+    /**
+     * Default shadow preset.
+     * Equivalent to: box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)
+     *
+     * @return this builder for chaining
+     */
+    public T shadow() { return prop("box-shadow", "0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06)"); }
+
+    /**
+     * Medium shadow preset.
+     * Equivalent to: box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)
+     *
+     * @return this builder for chaining
+     */
+    public T shadowMd() { return prop("box-shadow", "0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05)"); }
+
+    /**
+     * Large shadow preset.
+     * Equivalent to: box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)
+     *
+     * @return this builder for chaining
+     */
+    public T shadowLg() { return prop("box-shadow", "0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04)"); }
+
+    /**
+     * Extra-large shadow preset.
+     * Equivalent to: box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25)
+     *
+     * @return this builder for chaining
+     */
+    public T shadowXl() { return prop("box-shadow", "0 25px 50px -12px rgba(0,0,0,0.25)"); }
+
+    /**
+     * Inner shadow preset.
+     * Equivalent to: box-shadow: inset 0 2px 4px rgba(0,0,0,0.06)
+     *
+     * @return this builder for chaining
+     */
+    public T shadowInner() { return prop("box-shadow", "inset 0 2px 4px rgba(0,0,0,0.06)"); }
+
+    /**
+     * No shadow (removes shadow).
+     * Equivalent to: box-shadow: none
+     *
+     * @return this builder for chaining
+     */
+    public T shadowNone() { return prop("box-shadow", "none"); }
+
     // ==================== Outline ====================
 
     public T outline(CSSValue width, CSSValue style, CSSValue color) {
@@ -940,6 +1106,80 @@ public class Style<T extends Style<T>> implements CSSValue {
      * @return this builder for chaining
      */
     public T rounded(CSSValue value) { return borderRadius(value); }
+
+    // ==================== Border Radius Presets ====================
+
+    /**
+     * No border-radius (removes rounding).
+     * Equivalent to: border-radius: 0
+     *
+     * @return this builder for chaining
+     */
+    public T roundedNone() { return prop("border-radius", "0"); }
+
+    /**
+     * Extra-small border-radius (2px).
+     * For subtle rounding on small elements.
+     *
+     * @return this builder for chaining
+     */
+    public T roundedXs() { return prop("border-radius", "2px"); }
+
+    /**
+     * Small border-radius (4px).
+     * For buttons and small cards.
+     *
+     * @return this builder for chaining
+     */
+    public T roundedSm() { return prop("border-radius", "4px"); }
+
+    /**
+     * Default border-radius (6px).
+     * For cards and containers.
+     *
+     * @return this builder for chaining
+     */
+    public T roundedMd() { return prop("border-radius", "6px"); }
+
+    /**
+     * Large border-radius (8px).
+     * For modals and larger elements.
+     *
+     * @return this builder for chaining
+     */
+    public T roundedLg() { return prop("border-radius", "8px"); }
+
+    /**
+     * Extra-large border-radius (12px).
+     * For prominent elements.
+     *
+     * @return this builder for chaining
+     */
+    public T roundedXl() { return prop("border-radius", "12px"); }
+
+    /**
+     * 2XL border-radius (16px).
+     * For very rounded elements.
+     *
+     * @return this builder for chaining
+     */
+    public T rounded2xl() { return prop("border-radius", "16px"); }
+
+    /**
+     * 3XL border-radius (24px).
+     * For pill-shaped elements.
+     *
+     * @return this builder for chaining
+     */
+    public T rounded3xl() { return prop("border-radius", "24px"); }
+
+    /**
+     * Full border-radius (9999px).
+     * Creates perfect circles (when width = height) or pills (when width > height).
+     *
+     * @return this builder for chaining
+     */
+    public T roundedFull() { return prop("border-radius", "9999px"); }
 
     /**
      * Preset: margin: 0 auto (centers block element horizontally)

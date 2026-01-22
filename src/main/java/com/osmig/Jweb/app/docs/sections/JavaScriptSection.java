@@ -186,15 +186,19 @@ public final class JavaScriptSection {
                 reload()"""),
 
             h3Title("Templates"),
-            para("Build HTML templates for dynamic rendering."),
+            para("Build HTML templates for dynamic rendering with type-safe CSS."),
             codeBlock("""
-                // Template for rendering list items
+                import static com.osmig.Jweb.framework.styles.CSS.*;
+                import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+                import static com.osmig.Jweb.framework.styles.CSSColors.*;
+
+                // Template for rendering list items using CSS DSL
                 template("item")
                     .div().class_("card")
-                        .div().style("font-weight:600")
+                        .div().style(new Style<>().fontWeight(600))
                             .text(escapedField("name"))
                         .end()
-                        .div().style("color:#666")
+                        .div().style(new Style<>().color(hex("#666")))
                             .text(escapedField("email"))
                         .end()
                         .statusBadge("status", "statusBg", "statusTxt")

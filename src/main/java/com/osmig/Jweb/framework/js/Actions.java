@@ -1,5 +1,7 @@
 package com.osmig.Jweb.framework.js;
 
+import com.osmig.Jweb.framework.styles.Style;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -354,6 +356,147 @@ public final class Actions {
     /** Conditional based on response.ok */
     public static IfAction whenOk() {
         return new IfAction("_res.ok");
+    }
+
+    // ==================== Type-Safe Ternary Builder ====================
+
+    /**
+     * Start a type-safe ternary expression builder for a variable.
+     * Eliminates need for raw JavaScript condition strings.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * // Instead of: ternaryUrl("currentTab==='pending'", "/api/pending", "/api/all")
+     * // Use: whenVar("currentTab").equals("pending").thenUrl("/api/pending").elseUrl("/api/all")
+     *
+     * fetch("").urlFromVar(
+     *     whenVar("currentTab").equals("pending")
+     *         .thenUrl("/api/pending")
+     *         .elseUrl("/api/all")
+     * )
+     * </pre>
+     *
+     * @param varName the variable name to check
+     * @return a WhenVarBuilder for chaining
+     */
+    public static WhenVarBuilder whenVar(String varName) {
+        return new WhenVarBuilder(varName);
+    }
+
+    /**
+     * Builder for type-safe ternary expressions.
+     */
+    public static class WhenVarBuilder {
+        private final String varName;
+        private String condition;
+
+        WhenVarBuilder(String varName) {
+            this.varName = varName;
+        }
+
+        /** Check if variable equals a string value. */
+        public WhenVarCondition equals(String value) {
+            this.condition = varName + "==='" + esc(value) + "'";
+            return new WhenVarCondition(condition);
+        }
+
+        /** Check if variable equals a number. */
+        public WhenVarCondition equals(int value) {
+            this.condition = varName + "===" + value;
+            return new WhenVarCondition(condition);
+        }
+
+        /** Check if variable equals a boolean. */
+        public WhenVarCondition equals(boolean value) {
+            this.condition = varName + "===" + value;
+            return new WhenVarCondition(condition);
+        }
+
+        /** Check if variable does not equal a string value. */
+        public WhenVarCondition notEquals(String value) {
+            this.condition = varName + "!=='" + esc(value) + "'";
+            return new WhenVarCondition(condition);
+        }
+
+        /** Check if variable is truthy. */
+        public WhenVarCondition isTruthy() {
+            return new WhenVarCondition(varName);
+        }
+
+        /** Check if variable is falsy. */
+        public WhenVarCondition isFalsy() {
+            return new WhenVarCondition("!" + varName);
+        }
+
+        /** Check if variable is greater than a value. */
+        public WhenVarCondition greaterThan(int value) {
+            this.condition = varName + ">" + value;
+            return new WhenVarCondition(condition);
+        }
+
+        /** Check if variable is less than a value. */
+        public WhenVarCondition lessThan(int value) {
+            this.condition = varName + "<" + value;
+            return new WhenVarCondition(condition);
+        }
+    }
+
+    /**
+     * Condition part of the ternary builder.
+     */
+    public static class WhenVarCondition {
+        private final String condition;
+        private String trueValue;
+
+        WhenVarCondition(String condition) {
+            this.condition = condition;
+        }
+
+        /** The URL to use when condition is true. */
+        public WhenVarThen thenUrl(String url) {
+            this.trueValue = "'" + esc(url) + "'";
+            return new WhenVarThen(condition, trueValue);
+        }
+
+        /** The value to use when condition is true. */
+        public WhenVarThen thenValue(String value) {
+            this.trueValue = "'" + esc(value) + "'";
+            return new WhenVarThen(condition, trueValue);
+        }
+
+        /** The expression to use when condition is true (no escaping). */
+        public WhenVarThen thenExpr(String expr) {
+            this.trueValue = expr;
+            return new WhenVarThen(condition, trueValue);
+        }
+    }
+
+    /**
+     * Then part of the ternary builder.
+     */
+    public static class WhenVarThen {
+        private final String condition;
+        private final String trueValue;
+
+        WhenVarThen(String condition, String trueValue) {
+            this.condition = condition;
+            this.trueValue = trueValue;
+        }
+
+        /** The URL to use when condition is false. Returns the complete ternary expression. */
+        public String elseUrl(String url) {
+            return condition + "?" + trueValue + ":'" + esc(url) + "'";
+        }
+
+        /** The value to use when condition is false. Returns the complete ternary expression. */
+        public String elseValue(String value) {
+            return condition + "?" + trueValue + ":'" + esc(value) + "'";
+        }
+
+        /** The expression to use when condition is false (no escaping). */
+        public String elseExpr(String expr) {
+            return condition + "?" + trueValue + ":" + expr;
+        }
     }
 
     /** Call a defined function. */
@@ -1666,6 +1809,59 @@ public final class Actions {
         public FetchBuilder onStatus(int status, Action action) {
             statusHandlers.add(new StatusHandler(status, action));
             return this;
+        }
+
+        // ==================== Common Status Code Shortcuts ====================
+
+        /**
+         * Shorthand for onStatus(401, action) - handles unauthorized responses.
+         * Common use case: redirect to login or clear session.
+         *
+         * @param action the action to execute on 401
+         * @return this builder
+         */
+        public FetchBuilder onUnauthorized(Action action) {
+            return onStatus(401, action);
+        }
+
+        /**
+         * Shorthand for onStatus(403, action) - handles forbidden responses.
+         *
+         * @param action the action to execute on 403
+         * @return this builder
+         */
+        public FetchBuilder onForbidden(Action action) {
+            return onStatus(403, action);
+        }
+
+        /**
+         * Shorthand for onStatus(404, action) - handles not found responses.
+         *
+         * @param action the action to execute on 404
+         * @return this builder
+         */
+        public FetchBuilder onNotFound(Action action) {
+            return onStatus(404, action);
+        }
+
+        /**
+         * Shorthand for onStatus(500, action) - handles server error responses.
+         *
+         * @param action the action to execute on 500
+         * @return this builder
+         */
+        public FetchBuilder onServerError(Action action) {
+            return onStatus(500, action);
+        }
+
+        /**
+         * Shorthand for onStatus(400, action) - handles bad request responses.
+         *
+         * @param action the action to execute on 400
+         * @return this builder
+         */
+        public FetchBuilder onBadRequest(Action action) {
+            return onStatus(400, action);
         }
 
         /**
@@ -3361,10 +3557,15 @@ public final class Actions {
             return this;
         }
 
-        /** Add style attribute. */
+        /** Add style attribute with raw CSS string. */
         public TemplateBuilder style(String css) {
             html.append(" style=\"").append(esc(css).replace("\"", "&quot;")).append("\"");
             return this;
+        }
+
+        /** Add style attribute using the CSS DSL Style object. */
+        public TemplateBuilder style(Style<?> styleObj) {
+            return style(styleObj.css());
         }
 
         /** Add id attribute. */

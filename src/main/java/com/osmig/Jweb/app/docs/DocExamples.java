@@ -204,7 +204,7 @@ public final class DocExamples {
                     public Element render() {
                         return div(attrs().style()
                                 .display(grid)
-                                .prop("grid-template-columns", "repeat(3, 1fr)")
+                                .gridTemplateColumns(repeat(3, fr(1)))
                                 .gap(SP_4).done(),
                             each(cards, card -> card.render())
                         );
@@ -229,7 +229,7 @@ public final class DocExamples {
                                     .display(flex).flexDirection(column)
                                     .minHeight(vh(100)).done(),
                                 new Nav().render(),
-                                main(attrs().style().prop("flex", "1").done(),
+                                main(attrs().style().flex(num(1)).done(),
                                     content),
                                 new Footer().render()
                             )
@@ -346,7 +346,7 @@ div(attrs().style()
 // Grid
 div(attrs().style()
     .display(grid)
-    .prop("grid-template-columns", "repeat(3, 1fr)")
+    .gridTemplateColumns(repeat(3, fr(1)))
     .gap(SP_4)
 .done())""";
 

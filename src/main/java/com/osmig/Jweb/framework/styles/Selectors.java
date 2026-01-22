@@ -39,12 +39,40 @@ public final class Selectors {
     }
 
     /**
+     * Creates a :has() selector with a type-safe Selector object.
+     * Selects elements that contain elements matching the selector.
+     *
+     * Example: has(cls("icon")) -> :has(.icon)
+     */
+    public static String has(CSS.Selector selector) {
+        return ":has(" + selector.build() + ")";
+    }
+
+    /**
      * Creates a :has() selector with multiple arguments.
      *
      * Example: has(".icon", ".badge") -> :has(.icon, .badge)
      */
     public static String has(String... selectors) {
         return ":has(" + String.join(", ", selectors) + ")";
+    }
+
+    /**
+     * Creates a :has() selector with multiple type-safe Selector objects.
+     *
+     * Example: has(cls("icon"), cls("badge")) -> :has(.icon, .badge)
+     */
+    public static String has(CSS.Selector... selectors) {
+        if (selectors.length == 0) {
+            throw new IllegalArgumentException("At least one selector required");
+        }
+        StringBuilder sb = new StringBuilder(":has(");
+        for (int i = 0; i < selectors.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(selectors[i].build());
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
     /**
@@ -59,6 +87,26 @@ public final class Selectors {
     }
 
     /**
+     * Creates an :is() selector with type-safe Selector objects.
+     * Matches any element that matches any of the selectors.
+     * Takes the specificity of its most specific argument.
+     *
+     * Example: is(tag("h1"), tag("h2"), tag("h3")) -> :is(h1, h2, h3)
+     */
+    public static String is(CSS.Selector... selectors) {
+        if (selectors.length == 0) {
+            throw new IllegalArgumentException("At least one selector required");
+        }
+        StringBuilder sb = new StringBuilder(":is(");
+        for (int i = 0; i < selectors.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(selectors[i].build());
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    /**
      * Creates a :where() selector.
      * Same as :is() but always has zero specificity.
      *
@@ -66,6 +114,25 @@ public final class Selectors {
      */
     public static String where(String... selectors) {
         return ":where(" + String.join(", ", selectors) + ")";
+    }
+
+    /**
+     * Creates a :where() selector with type-safe Selector objects.
+     * Same as :is() but always has zero specificity.
+     *
+     * Example: where(tag("article"), tag("section")) -> :where(article, section)
+     */
+    public static String where(CSS.Selector... selectors) {
+        if (selectors.length == 0) {
+            throw new IllegalArgumentException("At least one selector required");
+        }
+        StringBuilder sb = new StringBuilder(":where(");
+        for (int i = 0; i < selectors.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(selectors[i].build());
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
     /**
@@ -79,12 +146,40 @@ public final class Selectors {
     }
 
     /**
+     * Creates a :not() selector with a type-safe Selector object.
+     * Matches elements that don't match the selector.
+     *
+     * Example: not(cls("disabled")) -> :not(.disabled)
+     */
+    public static String not(CSS.Selector selector) {
+        return ":not(" + selector.build() + ")";
+    }
+
+    /**
      * Creates a :not() selector with multiple arguments.
      *
      * Example: not(".disabled", ".hidden") -> :not(.disabled, .hidden)
      */
     public static String not(String... selectors) {
         return ":not(" + String.join(", ", selectors) + ")";
+    }
+
+    /**
+     * Creates a :not() selector with multiple type-safe Selector objects.
+     *
+     * Example: not(cls("disabled"), cls("hidden")) -> :not(.disabled, .hidden)
+     */
+    public static String not(CSS.Selector... selectors) {
+        if (selectors.length == 0) {
+            throw new IllegalArgumentException("At least one selector required");
+        }
+        StringBuilder sb = new StringBuilder(":not(");
+        for (int i = 0; i < selectors.length; i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(selectors[i].build());
+        }
+        sb.append(")");
+        return sb.toString();
     }
 
     // ==================== Structural Selectors ====================
@@ -238,6 +333,66 @@ public final class Selectors {
 
     /** ::backdrop */
     public static final String backdrop = "::backdrop";
+
+    // ==================== View Transition Pseudo-elements ====================
+
+    /**
+     * ::view-transition - root pseudo-element for all view transitions.
+     * Used to style the entire view transition overlay.
+     */
+    public static final String viewTransition = "::view-transition";
+
+    /**
+     * ::view-transition-group(*) - wraps each view transition group.
+     * Example: ::view-transition-group(header)
+     */
+    public static String viewTransitionGroup(String name) {
+        return "::view-transition-group(" + name + ")";
+    }
+
+    /**
+     * ::view-transition-group(*) with wildcard - matches all groups.
+     */
+    public static final String viewTransitionGroupAll = "::view-transition-group(*)";
+
+    /**
+     * ::view-transition-image-pair(*) - wraps old and new view snapshots.
+     * Example: ::view-transition-image-pair(card-1)
+     */
+    public static String viewTransitionImagePair(String name) {
+        return "::view-transition-image-pair(" + name + ")";
+    }
+
+    /**
+     * ::view-transition-image-pair(*) with wildcard - matches all image pairs.
+     */
+    public static final String viewTransitionImagePairAll = "::view-transition-image-pair(*)";
+
+    /**
+     * ::view-transition-old(*) - the outgoing snapshot.
+     * Example: ::view-transition-old(main-content)
+     */
+    public static String viewTransitionOld(String name) {
+        return "::view-transition-old(" + name + ")";
+    }
+
+    /**
+     * ::view-transition-old(*) with wildcard - matches all old snapshots.
+     */
+    public static final String viewTransitionOldAll = "::view-transition-old(*)";
+
+    /**
+     * ::view-transition-new(*) - the incoming snapshot.
+     * Example: ::view-transition-new(main-content)
+     */
+    public static String viewTransitionNew(String name) {
+        return "::view-transition-new(" + name + ")";
+    }
+
+    /**
+     * ::view-transition-new(*) with wildcard - matches all new snapshots.
+     */
+    public static final String viewTransitionNewAll = "::view-transition-new(*)";
 
     // ==================== Scrollbar Pseudo-elements ====================
 

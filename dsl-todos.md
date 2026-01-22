@@ -4,7 +4,7 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 
 ---
 
-## Completed Improvements (This Session)
+## Completed Improvements (Previous Sessions)
 
 ### JS DSL Core (JS.java)
 - [x] Array methods: `filter`, `map`, `forEach`, `find`, `findIndex`, `some`, `every`, `reduce`, `slice`, `concat`, `join`, `reverse`, `sort`, `includes`, `first`, `last`, `push`, `pop`, `shift`, `unshift`, `flat`, `flatMap`, `atIndex`, `fill`, `copyWithin`, `splice`, `findLast`, `findLastIndex`, `toSorted`, `toReversed`, `indexOfVal`
@@ -15,199 +15,190 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 - [x] Object static methods: `objectAssign`, `objectFreeze`, `objectSeal`, `objectIs`, `objectCreate`, `objectGetOwnPropertyNames`, `objectGetPrototypeOf`, `objectSetPrototypeOf`, `objectIsFrozen`, `objectIsSealed`, `objectFromEntries`
 - [x] Array static methods: `arrayFrom`, `arrayIsArray`, `arrayOf`
 
-### New JS Modules Created
+### Previously Created JS Modules
 - [x] **JSAbort.java** - AbortController API for cancellable async operations
-  - AbortController creation with builder pattern
-  - `abortAfterTimeout`, `abortedSignal`, `anySignal`
-  - Signal properties: `isAborted`, `reason`, `throwIfAborted`
-  - Event listener support with `onAbort`
-
 - [x] **JSGeolocation.java** - Geolocation API for location services
-  - `getCurrentPosition`, `watchPosition`, `clearWatch`
-  - Position properties: `latitude`, `longitude`, `accuracy`, `altitude`, `heading`, `speed`, `timestamp`
-  - Error handling with error codes
-  - Builder pattern with high accuracy, timeout, maximumAge options
-  - `distanceBetween` utility (Haversine formula)
-
 - [x] **JSNotification.java** - Browser Notification API
-  - Permission management: `requestPermission`, `hasPermission`, `isDenied`, `isSupported`
-  - NotificationBuilder with all options: `body`, `icon`, `badge`, `image`, `tag`, `lang`, `dir`, `data`, `requireInteraction`, `renotify`, `silent`
-  - Event handlers: `onClick`, `onClose`, `onError`, `onShow`
-
 - [x] **JSWebAnimations.java** - Web Animations API
-  - `animate` with element and element ID support
-  - KeyframeBuilder with all common CSS properties
-  - Animation controls: `play`, `pause`, `reverse`, `cancel`, `finish`, `commitStyles`, `persist`
-  - Animation properties: `playbackRate`, `currentTime`, `playState`, `finished`, `ready`
-  - AnimationBuilder with duration, easing, delay, iterations, direction, fill options
-  - Event handlers: `onFinish`, `onCancel`, `onRemove`
-
 - [x] **JSVisibility.java** - Page Visibility API
-  - `visibilityState`, `isHidden`, `isVisible`
-  - Event listeners: `onVisibilityChange`, `onVisible`, `onHidden`
-  - `whenVisible` for deferred execution
-  - `visibilityAwareInterval` utility
-  - Hidden time tracking
-
 - [x] **JSFullscreen.java** - Fullscreen API
-  - `requestFullscreen`, `exitFullscreen`, `toggleFullscreen`
-  - State checks: `fullscreenElement`, `isFullscreen`, `isElementFullscreen`, `fullscreenEnabled`
-  - Event listeners: `onFullscreenChange`, `onFullscreenError`
-  - Element-specific listeners
-  - `syncFullscreen`, `fullscreenButton` utilities
-
 - [x] **JSShare.java** - Web Share API
-  - ShareBuilder with `title`, `text`, `url`, `files`
-  - Support checks: `isSupported`, `canShare`, `canShareFiles`
-  - Direct share methods: `shareUrl`, `shareText`, `shareCurrentPage`
-  - PWA share target helpers
 
-### Updated JS Modules
+### Previously Updated JS Modules
 - [x] **JSDate.java** - Enhanced date manipulation
-  - UTC getters/setters
-  - Week operations: `startOfWeek`, `startOfWeekMonday`, `endOfWeek`, `addWeeks`, `getWeekNumber`, `diffWeeks`
-  - Quarter operations: `getQuarter`, `startOfQuarter`, `endOfQuarter`, `addQuarters`
-  - Year operations: `startOfYear`, `endOfYear`, `isLeapYear`, `getDaysInMonth`
-  - Additional formatting: `toUTCString`, `toJSON`, `toLocaleString`
-
 - [x] **JSOperators.java** - Modern JavaScript operators
-  - Bitwise operators: `bitwiseAnd`, `bitwiseOr`, `bitwiseXor`, `bitwiseNot`, `leftShift`, `rightShift`, `unsignedRightShift`
-  - Bitwise assignment operators
-  - Other operators: `pow`, `powAssign`, `in_`, `delete_`, `void_`, `comma`
-
 - [x] **JSStorage.java** - Enhanced storage APIs
-  - Storage events: `onStorageChange`, `onStorageKeyChange`, event property getters
-  - Storage iteration: `forEachKey`, `getAllKeys`, `toObject`
-  - CookieBuilder with all options: `path`, `domain`, `maxAge`, `days`, `expires`, `secure`, `sameSite`
-  - Storage quota: `estimateQuota`, `isPersisted`, `requestPersist`
-
 - [x] **JSIntl.java** - Comprehensive internationalization
-  - Display names: `languageName`, `regionName`, `scriptName`, `currencyName`, `calendarName`, `dateTimeFieldName`
-  - Collator for sorting: `collator`, `localeCompare`, `comparator`, `numericComparator`, `localeSortedArray`
-  - Unit formatting: shortcuts for km, miles, meters, feet, kg, lbs, liters, gallons, celsius, fahrenheit, bytes, etc.
-  - Currency display options
-  - Format to parts: `formatNumberToParts`, `formatDateToParts`
-  - Segmenter: `segmentGraphemes`, `segmentWords`, `segmentSentences`, `graphemeCount`
-  - Locale negotiation: `matchLocale`, `canonicalLocale`, `canonicalLocales`
-
 - [x] **Events.java** - Enhanced event handling
-  - Keyboard events: `onKeyCombo`, `onKey`, `onEscape`, `onEnter`, key/modifier getters
-  - Touch events: `onTouchStart`, `onTouchMove`, `onTouchEnd`, `onTouchCancel`, touch coordinate getters
-  - SwipeBuilder for swipe gesture detection
-  - Event utilities: `preventDefault`, `stopPropagation`, `stopImmediatePropagation`
-  - Custom events: `customEvent`, `dispatchCustomEvent`, `onCustomEvent`, `eventDetail`
-  - Listener options: `once`, `capture`, `passive`
-
 - [x] **JSRegex.java** - Enhanced regex support
-  - Named regex groups: `NamedRegex` class with `group`, `groups`, `extractGroup`, `extractGroups`
-  - Lookahead/lookbehind: `lookahead`, `negativeLookahead`, `lookbehind`, `negativeLookbehind`
-  - Additional patterns: `HEX_COLOR`, `IPV4`, `IPV6`, `DATE_ISO`, `TIME_24H`, `CREDIT_CARD`, `USERNAME`, `PASSWORD_STRONG`, `WHITESPACE`, `NON_ALPHANUMERIC`
-  - Regex utilities: `escapeRegex`, `safeRegex`, `isValidRegex`, `countMatches`
+
+---
+
+## Completed Improvements (Current Session - 2026-01-21)
+
+### New JS Modules Created (10 modules)
+
+- [x] **JSPromise.java** - Comprehensive Promise utilities
+  - Promise.withResolvers() / deferred pattern
+  - Cancellable promises with AbortController integration
+  - Timeout promises with Promise.race
+  - Retry logic with exponential backoff
+  - Promise combinators: all, race, allSettled, any
+  - Promise chaining helpers with .then/.catch/.finally
+  - Delay/sleep, event-to-promise conversions
+  - Debounce/throttle promise patterns, memoization
+
+- [x] **JSIterator.java** - Iterator and Generator support
+  - Iterator protocol (Symbol.iterator, next, done, value)
+  - Generator functions (function*, yield, yield*)
+  - Async iterators and async generators
+  - Iterator helpers (from, map, filter, take, drop, forEach, reduce, toArray)
+  - Creating iterable objects
+  - For...of and for await...of loops
+  - Range helpers, infinite iterators (count, cycle, repeat)
+  - Chain, zip, enumerate utilities
+
+- [x] **JSProxy.java** - Proxy and Reflect API
+  - new Proxy(target, handler) with all 13 handler traps
+  - Proxy.revocable for revocable proxies
+  - Complete Reflect API (get, set, has, deleteProperty, apply, construct, etc.)
+  - Property descriptor builders (data and accessor descriptors)
+
+- [x] **JSWorker.java** - Web Workers API
+  - Dedicated workers with message passing
+  - SharedWorker for cross-tab communication
+  - MessageChannel for two-way communication
+  - BroadcastChannel for simple cross-tab messaging
+  - Inline workers (Blob workers)
+  - Transferable objects support
+
+- [x] **JSServiceWorker.java** - Service Worker API
+  - Registration, ready, controller, getRegistration(s)
+  - Service worker lifecycle events (install, activate, fetch, message, push, sync)
+  - Cache API (open, match, add, addAll, put, delete, keys)
+  - Push API for push notifications
+  - Background Sync API
+  - Notification event handling
+
+- [x] **JSMedia.java** - Audio/Video and Media APIs
+  - HTMLMediaElement control (play, pause, load, volume, etc.)
+  - All media events (play, pause, ended, timeupdate, etc.)
+  - MediaRecorder API with all options
+  - Picture-in-Picture API
+  - Media Session API with action handlers
+  - Web Audio API basics (AudioContext, nodes, connections)
+
+- [x] **JSCanvas.java** - Canvas 2D API
+  - Context management and OffscreenCanvas
+  - Rectangle drawing (fill, stroke, clear)
+  - Path drawing (beginPath, moveTo, lineTo, arc, bezier, etc.)
+  - Styles (fill, stroke, line properties, shadows)
+  - Gradients (linear, radial, conic) and patterns
+  - Text rendering and measurement
+  - Image drawing and pixel manipulation
+  - Transformations (save, restore, scale, rotate, translate, transform)
+  - Compositing and clipping
+
+- [x] **JSWebRTC.java** - WebRTC API
+  - RTCPeerConnection with ICE servers
+  - createOffer/createAnswer, setLocalDescription/setRemoteDescription
+  - Media streams (getUserMedia, getDisplayMedia)
+  - RTCDataChannel with full options
+  - SDP handling (RTCSessionDescription)
+  - ICE candidate handling
+  - Media constraints builders
+
+- [x] **JSCrypto.java** - Web Crypto API
+  - Random values (getRandomValues, randomUUID)
+  - Hashing (SHA-1, SHA-256, SHA-384, SHA-512)
+  - Encryption/decryption (AES-GCM, AES-CBC, AES-CTR, RSA-OAEP)
+  - Signing/verification (HMAC, RSA-PSS, ECDSA)
+  - Key generation (AES, HMAC, RSA, ECDSA, ECDH)
+  - Key derivation (PBKDF2, HKDF, ECDH)
+  - Key import/export (raw, PKCS8, SPKI, JWK)
+  - Key wrapping/unwrapping
+  - Encoding helpers (TextEncoder/Decoder, Base64, Hex)
+
+- [x] **JSPerformance.java** - Performance API
+  - High resolution time (now, timeOrigin)
+  - User Timing API (mark, measure, clear, getEntries)
+  - Navigation Timing (all 25 timing properties)
+  - Resource Timing with buffer management
+  - Paint Timing (first-paint, first-contentful-paint)
+  - Long Tasks API, Element Timing, LCP
+  - PerformanceObserver with builder pattern
+  - Memory API (Chrome)
+  - Utility calculations (page load time, TTFB, etc.)
+
+### CSS DSL Improvements
+
+- [x] **View Transition Pseudo-Elements** (Selectors.java, CSS.java)
+  - ::view-transition, ::view-transition-group
+  - ::view-transition-image-pair, ::view-transition-old, ::view-transition-new
+
+- [x] **CSSScope.java** - @scope rule support
+  - Scoping CSS to specific DOM subtrees
+  - Scope root and limit selectors
+
+- [x] **CSSProperty.java** - @property rule support
+  - Custom property registration with syntax validation
+  - All syntax types (<color>, <length>, <number>, etc.)
+
+- [x] **light-dark() function** (CSSColors.java)
+  - Automatic color switching for light/dark themes
+
+- [x] **CSSVariables.java** - CSS Custom Properties utilities
+  - Variable definition and reference (var() with fallbacks)
+  - Environment variables (env())
+  - Variable naming helpers (scoped, component, theme)
+  - Design System builder (spacing, colors, typography, shadows, etc.)
+  - Theme builder (light/dark mode variable sets)
+  - Common variable patterns
+
+- [x] **CSSAnimations.java** - Enhanced CSS animations
+  - Timing functions (ease, linear, cubic-bezier, steps)
+  - Animation properties (duration, delay, iteration, direction, fill, play-state)
+  - Scroll-driven animations (scroll(), view(), animation-range)
+  - Transition utilities (allow-discrete)
+  - AnimationBuilder for complex animations
+  - 40+ pre-built animations (fade, slide, scale, rotate, flip, shake, bounce, etc.)
+  - Animation composition, sequencing, staggering
+
+### HTML DSL Improvements
+
+- [x] **ModernElements.java** - Modern HTML5 elements
+  - Dialog element with open attribute
+  - Details/Summary with exclusive accordion support
+  - Meter element (value, min, max, low, high, optimum)
+  - Progress element (determinate and indeterminate)
+  - Template element with shadowrootmode
+  - Slot element for web components
+  - Output element for form calculations
+  - Data/Time elements with semantic values
+  - Text direction (bdi, bdo)
+  - Ruby annotation (ruby, rt, rp)
+
+- [x] **DialogHelper.java** - Dialog JavaScript helpers
+  - showModal(), show(), close(), toggle()
+  - closeOnBackdropClick(), getReturnValue(), isOpen()
+
+- [x] **DetailsHelper.java** - Details JavaScript helpers
+  - open(), close(), toggle()
+  - openExclusive(), closeAll(), openAll()
+
+- [x] **El.java Updates** - Added to main entry point
+  - All ModernElements methods
+  - hgroup(), search(), address(), time(), wbr()
+
+- [x] **Attributes.java Updates**
+  - Modern attributes: open, value(double), low, high, optimum, shadowrootmode, datetime
+  - Event handlers: onToggle, onCancel, onClose
 
 ---
 
 ## Remaining Tasks (Future Improvements)
 
-### High Priority
-
-#### JS DSL Gaps
-- [ ] **JSPromise.java** - Dedicated Promise utilities beyond Async.java
-  - Promise.withResolvers()
-  - Cancellable promises
-  - Promise timeout wrapper
-  - Retry logic
-
-- [ ] **JSIterator.java** - Iterator and Generator support
-  - Generator functions
-  - Async iterators
-  - Iterator helpers (map, filter, take, drop, etc.)
-
-- [ ] **JSProxy.java** - Proxy and Reflect API
-  - Proxy creation
-  - Common handler patterns
-  - Reflect methods
-
-- [ ] **JSWorker.java** - Web Workers API
-  - Worker creation
-  - Message passing
-  - SharedWorker support
-  - Transferable objects
-
-- [ ] **JSServiceWorker.java** - Service Worker API
-  - Registration
-  - Cache API
-  - Push notifications
-  - Background sync
-
-### Medium Priority
-
-#### JS DSL Enhancements
-- [ ] **JSMedia.java** - Media APIs
-  - Audio/Video element control
-  - MediaRecorder API
-  - Media Session API
-  - Picture-in-Picture
-
-- [ ] **JSCanvas.java** - Canvas API
-  - 2D context methods
-  - Path operations
-  - Drawing utilities
-  - Image manipulation
-
-- [ ] **JSWebRTC.java** - WebRTC API
-  - RTCPeerConnection
-  - Media streams
-  - Data channels
-
-- [ ] **JSCrypto.java** - Web Crypto API
-  - Hashing
-  - Encryption/Decryption
-  - Key generation
-  - Random values
-
-- [ ] **JSPerformance.java** - Performance API
-  - Performance marks/measures
-  - Navigation timing
-  - Resource timing
-  - Long tasks API
-
-- [ ] **JSIntersectionObserver.java** - Intersection Observer
-  - Observer creation
-  - Entry properties
-  - Common patterns (lazy loading, infinite scroll)
-
 ### Lower Priority
-
-#### CSS DSL Improvements
-- [ ] Add missing CSS properties to Style mixins
-  - Container queries support
-  - Subgrid support
-  - View transitions API
-  - Scroll-driven animations
-  - CSS anchor positioning
-
-- [ ] **CSSVariables.java** - CSS Custom Properties
-  - Variable declaration
-  - Variable usage
-  - Fallback values
-  - Computed styles
-
-- [ ] **CSSAnimations.java** - Enhanced CSS animations
-  - Animation sequencing
-  - Animation events
-  - Motion path
-
-#### HTML DSL Improvements
-- [ ] Add missing HTML5 elements to El
-  - `<dialog>` element
-  - `<details>` / `<summary>`
-  - `<meter>` / `<progress>`
-  - `<template>` / `<slot>`
-
-- [ ] Form enhancements
-  - File input helpers
-  - Form validation integration
-  - FormData builder
 
 #### Framework Integration
 - [ ] Better HTMX integration patterns
@@ -217,41 +208,70 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 
 ---
 
-## Documentation Tasks
-- [ ] Add JSDoc to all new modules
-- [ ] Create usage examples in docs
-- [ ] Update CLAUDE.md with new modules
-- [ ] Create migration guide for major changes
+## Documentation Created
+
+- [x] CSS_DSL_ENHANCEMENTS.md - Modern CSS features documentation
+- [x] MODERN_CSS_EXAMPLE.java - Complete working example
+- [x] MODERN_ELEMENTS.md - HTML modern elements guide
+- [x] MODERN_HTML_ENHANCEMENTS.md - Summary of HTML changes
+- [x] Updated dsl-todos.md (this file)
 
 ---
 
-## Testing Tasks
-- [ ] Unit tests for new JS modules
-- [ ] Integration tests for browser APIs
-- [ ] Snapshot tests for generated JS output
+## Module Summary
 
----
+### JS Modules Created This Session: 10
+- JSPromise.java
+- JSIterator.java
+- JSProxy.java
+- JSWorker.java
+- JSServiceWorker.java
+- JSMedia.java
+- JSCanvas.java
+- JSWebRTC.java
+- JSCrypto.java
+- JSPerformance.java
 
-## Notes
+### CSS Modules Created This Session: 4
+- CSSScope.java
+- CSSProperty.java
+- CSSVariables.java
+- CSSAnimations.java
 
-### Completed Module Count
-- **JS modules**: 23 files
-- **New modules this session**: 7 (JSAbort, JSGeolocation, JSNotification, JSWebAnimations, JSVisibility, JSFullscreen, JSShare)
-- **Enhanced modules this session**: 6 (JS.java, JSDate, JSOperators, JSStorage, JSIntl, Events, JSRegex)
+### HTML Modules Created This Session: 3
+- ModernElements.java
+- DialogHelper.java
+- DetailsHelper.java
+
+### Total New Modules This Session: 17
+
+### Total JS Modules: 33 files
+Previous: 23 + New: 10 = 33
 
 ### Module Locations
-All JS DSL modules are located at:
 ```
-src/main/java/com/osmig/Jweb/framework/js/
+JS DSL:  src/main/java/com/osmig/Jweb/framework/js/
+CSS DSL: src/main/java/com/osmig/Jweb/framework/styles/
+HTML DSL: src/main/java/com/osmig/Jweb/framework/elements/
 ```
 
 ### Usage Pattern
 ```java
+// JS DSL
 import static com.osmig.Jweb.framework.js.JS.*;
-import static com.osmig.Jweb.framework.js.Async.*;
-import static com.osmig.Jweb.framework.js.Events.*;
-import static com.osmig.Jweb.framework.js.JSDate.*;
+import static com.osmig.Jweb.framework.js.JSPromise.*;
+import static com.osmig.Jweb.framework.js.JSCanvas.*;
+import static com.osmig.Jweb.framework.js.JSCrypto.*;
 // etc.
+
+// CSS DSL
+import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSSAnimations.*;
+import static com.osmig.Jweb.framework.styles.CSSVariables.*;
+
+// HTML DSL
+import static com.osmig.Jweb.framework.elements.El.*;
+import static com.osmig.Jweb.framework.elements.ModernElements.*;
 ```
 
 ---

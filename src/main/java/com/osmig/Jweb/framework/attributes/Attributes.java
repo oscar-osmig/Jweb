@@ -160,6 +160,141 @@ public class Attributes implements TransitionReceiver {
         return condition ? addClass(className) : this;
     }
 
+    /**
+     * Fluent conditional class adding.
+     * More readable than addClass(boolean, String) for simple conditions.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().class_("btn").classIf("active", isActive).classIf("disabled", isDisabled)
+     * </pre>
+     *
+     * @param className the class name to add if condition is true
+     * @param condition whether to add the class
+     * @return this for chaining
+     */
+    public Attributes classIf(String className, boolean condition) {
+        return condition ? addClass(className) : this;
+    }
+
+    /**
+     * Adds class based on ternary condition.
+     * Adds trueClass if condition is true, falseClass otherwise.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * attrs().class_("btn").classToggle(isOpen, "open", "closed")
+     * // Result: class="btn open" or class="btn closed"
+     * </pre>
+     *
+     * @param condition the condition to evaluate
+     * @param trueClass the class to add if condition is true
+     * @param falseClass the class to add if condition is false
+     * @return this for chaining
+     */
+    public Attributes classToggle(boolean condition, String trueClass, String falseClass) {
+        return addClass(condition ? trueClass : falseClass);
+    }
+
+    // ==================== Layout Shortcuts ====================
+
+    /**
+     * Applies flexbox centering styles (display: flex; justify-content: center; align-items: center).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs().flexCenter(), ...)
+     * </pre>
+     *
+     * @return this for chaining
+     */
+    public Attributes flexCenter() {
+        return set("style", "display:flex;justify-content:center;align-items:center");
+    }
+
+    /**
+     * Applies flexbox column layout with optional gap.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs().flexColumn("1rem"), ...)
+     * </pre>
+     *
+     * @param gap the gap between items (CSS value like "1rem" or "10px")
+     * @return this for chaining
+     */
+    public Attributes flexColumn(String gap) {
+        return set("style", "display:flex;flex-direction:column;gap:" + gap);
+    }
+
+    /**
+     * Applies flexbox column layout without gap.
+     *
+     * @return this for chaining
+     */
+    public Attributes flexColumn() {
+        return set("style", "display:flex;flex-direction:column");
+    }
+
+    /**
+     * Applies flexbox row layout with optional gap.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs().flexRow("1rem"), ...)
+     * </pre>
+     *
+     * @param gap the gap between items
+     * @return this for chaining
+     */
+    public Attributes flexRow(String gap) {
+        return set("style", "display:flex;flex-direction:row;gap:" + gap);
+    }
+
+    /**
+     * Applies flexbox row layout without gap.
+     *
+     * @return this for chaining
+     */
+    public Attributes flexRow() {
+        return set("style", "display:flex;flex-direction:row");
+    }
+
+    /**
+     * Applies flexbox with space-between.
+     *
+     * @return this for chaining
+     */
+    public Attributes flexBetween() {
+        return set("style", "display:flex;justify-content:space-between;align-items:center");
+    }
+
+    /**
+     * Applies CSS grid with specified number of equal columns.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * div(attrs().gridCols(3, "1rem"), ...)  // 3-column grid with 1rem gap
+     * </pre>
+     *
+     * @param cols the number of columns
+     * @param gap the gap between items
+     * @return this for chaining
+     */
+    public Attributes gridCols(int cols, String gap) {
+        return set("style", "display:grid;grid-template-columns:repeat(" + cols + ",1fr);gap:" + gap);
+    }
+
+    /**
+     * Applies CSS grid with specified number of equal columns without gap.
+     *
+     * @param cols the number of columns
+     * @return this for chaining
+     */
+    public Attributes gridCols(int cols) {
+        return set("style", "display:grid;grid-template-columns:repeat(" + cols + ",1fr)");
+    }
+
     /** Sets inline style from a string. @param value the CSS style string */
     public Attributes style(String value) { return set("style", value); }
 
@@ -520,6 +655,17 @@ public class Attributes implements TransitionReceiver {
 
         /** Registers a scroll event handler. @param handler the handler to execute on scroll */
         public Attributes onScroll(Consumer<Event> handler) { return complete().onScroll(handler); }
+
+        // ==================== Details & Dialog Event Shortcuts ====================
+
+        /** Registers a toggle event handler for details elements. @param handler the handler to execute on toggle */
+        public Attributes onToggle(Consumer<Event> handler) { return complete().onToggle(handler); }
+
+        /** Registers a cancel event handler for dialog elements. @param handler the handler to execute on cancel */
+        public Attributes onCancel(Consumer<Event> handler) { return complete().onCancel(handler); }
+
+        /** Registers a close event handler for dialog elements. @param handler the handler to execute on close */
+        public Attributes onClose(Consumer<Event> handler) { return complete().onClose(handler); }
 
         // ==================== Animation & Transition Event Shortcuts ====================
 
@@ -895,10 +1041,33 @@ public class Attributes implements TransitionReceiver {
     /** Sets the itemref attribute for microdata. @param value space-separated IDs */
     public Attributes itemref(String value) { return set("itemref", value); }
 
-    // ==================== Dialog Attributes ====================
+    // ==================== Dialog & Details Attributes ====================
 
     /** Adds the open boolean attribute for details/dialog. */
     public Attributes open() { return set("open", null); }
+    /** Conditionally adds the open attribute. @param isOpen whether element is open */
+    public Attributes open(boolean isOpen) { return isOpen ? open() : this; }
+
+    // ==================== Meter & Progress Attributes ====================
+
+    /** Sets the value attribute for meter/progress. @param value current value */
+    public Attributes value(double value) { return set("value", String.valueOf(value)); }
+    /** Sets the low attribute for meter. @param value low threshold */
+    public Attributes low(double value) { return set("low", String.valueOf(value)); }
+    /** Sets the high attribute for meter. @param value high threshold */
+    public Attributes high(double value) { return set("high", String.valueOf(value)); }
+    /** Sets the optimum attribute for meter. @param value optimal value */
+    public Attributes optimum(double value) { return set("optimum", String.valueOf(value)); }
+
+    // ==================== Template & Web Component Attributes ====================
+
+    /** Sets the shadowrootmode attribute for declarative shadow DOM. @param value open or closed */
+    public Attributes shadowrootmode(String value) { return set("shadowrootmode", value); }
+
+    // ==================== Semantic Data Attributes ====================
+
+    /** Sets the datetime attribute for time elements. @param value machine-readable datetime */
+    public Attributes datetime(String value) { return set("datetime", value); }
 
     // ==================== iframe Attributes ====================
 
@@ -1311,6 +1480,44 @@ public class Attributes implements TransitionReceiver {
     public Attributes onScroll(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("scroll", handler);
         return set("onscroll", eh.toJsAttribute());
+    }
+
+    // ==================== Details & Dialog Events ====================
+
+    /**
+     * Registers a toggle event handler for details elements.
+     * Fires when the open/closed state changes.
+     *
+     * @param handler the handler to execute on toggle
+     * @return this for chaining
+     */
+    public Attributes onToggle(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("toggle", handler);
+        return set("ontoggle", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a cancel event handler for dialog elements.
+     * Fires when user cancels the dialog (ESC key).
+     *
+     * @param handler the handler to execute on cancel
+     * @return this for chaining
+     */
+    public Attributes onCancel(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("cancel", handler);
+        return set("oncancel", eh.toJsAttribute());
+    }
+
+    /**
+     * Registers a close event handler for dialog elements.
+     * Fires when dialog is closed.
+     *
+     * @param handler the handler to execute on close
+     * @return this for chaining
+     */
+    public Attributes onClose(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("close", handler);
+        return set("onclose", eh.toJsAttribute());
     }
 
     // ==================== Animation & Transition Events ====================

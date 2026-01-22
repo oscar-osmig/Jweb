@@ -455,6 +455,23 @@ public final class CSS {
         /** Appends ::target-text pseudo-element. */
         public Selector targetText() { return pseudoEl("target-text"); }
 
+        // ========== View Transition Pseudo-elements ==========
+
+        /** Appends ::view-transition pseudo-element (root of all view transitions). */
+        public Selector viewTransition() { return pseudoEl("view-transition"); }
+
+        /** Appends ::view-transition-group(*) pseudo-element. @param name the transition name */
+        public Selector viewTransitionGroup(String name) { sb.append("::view-transition-group(").append(name).append(")"); return this; }
+
+        /** Appends ::view-transition-image-pair(*) pseudo-element. @param name the transition name */
+        public Selector viewTransitionImagePair(String name) { sb.append("::view-transition-image-pair(").append(name).append(")"); return this; }
+
+        /** Appends ::view-transition-old(*) pseudo-element (outgoing snapshot). @param name the transition name */
+        public Selector viewTransitionOld(String name) { sb.append("::view-transition-old(").append(name).append(")"); return this; }
+
+        /** Appends ::view-transition-new(*) pseudo-element (incoming snapshot). @param name the transition name */
+        public Selector viewTransitionNew(String name) { sb.append("::view-transition-new(").append(name).append(")"); return this; }
+
         // ========== Attribute Selectors ==========
 
         /** Appends [attr] (has attribute). @param name the attribute name */

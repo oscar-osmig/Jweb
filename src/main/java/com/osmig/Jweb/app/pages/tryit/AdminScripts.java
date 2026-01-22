@@ -1,6 +1,11 @@
 package com.osmig.Jweb.app.pages.tryit;
 
+import com.osmig.Jweb.framework.styles.Style;
+
 import static com.osmig.Jweb.framework.js.Actions.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
 /** JavaScript handlers for Admin page. */
 public final class AdminScripts {
@@ -140,33 +145,50 @@ public final class AdminScripts {
 
     private static String requestCardTemplate() {
         return template("r")
-            .div().style("background:#fff;border-radius:12px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.1)").child()
+            .div().style(new Style<>()
+                .backgroundColor(white).borderRadius(px(12)).padding(rem(1.5))
+                .marginBottom(rem(1)).boxShadow(px(0), px(1), px(3), rgba(0, 0, 0, 0.1))).child()
                 // Header row
-                .div().style("display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem").child()
+                .div().style(new Style<>()
+                    .display(flex).justifyContent(spaceBetween).alignItems(flexStart)
+                    .marginBottom(rem(1))).child()
                     .div().child()
-                        .div().style("font-weight:600;font-size:1.1rem;color:#1f2937").text(escapedField("email")).end()
-                        .div().style("font-size:0.875rem;color:#6b7280").text(dateField("createdAt")).end()
+                        .div().style(new Style<>()
+                            .fontWeight(600).fontSize(rem(1.1)).color(hex("#1f2937"))).text(escapedField("email")).end()
+                        .div().style(new Style<>()
+                            .fontSize(rem(0.875)).color(hex("#6b7280"))).text(dateField("createdAt")).end()
                     .end()
                     .badge("status", "statusBg", "statusTxt")
                 .end()
                 // Message section
-                .div().style("background:#f9fafb;padding:1rem;border-radius:8px;margin-bottom:1rem").child()
-                    .div().style("font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem").text("Message:").end()
-                    .div().style("color:#374151").text(escapedField("message")).end()
+                .div().style(new Style<>()
+                    .backgroundColor(hex("#f9fafb")).padding(rem(1))
+                    .borderRadius(px(8)).marginBottom(rem(1))).child()
+                    .div().style(new Style<>()
+                        .fontSize(rem(0.75)).color(hex("#6b7280")).marginBottom(rem(0.25))).text("Message:").end()
+                    .div().style(new Style<>().color(hex("#374151"))).text(escapedField("message")).end()
                 .end()
                 // Token section (conditional)
                 .when("token")
-                    .div().style("background:#f0fdf4;padding:0.75rem;border-radius:8px;margin-bottom:1rem").child()
-                        .div().style("font-size:0.75rem;color:#065f46;margin-bottom:0.25rem").text("Token:").end()
-                        .code().style("font-size:0.875rem;color:#065f46;word-break:break-all").text(field("token")).end()
+                    .div().style(new Style<>()
+                        .backgroundColor(hex("#f0fdf4")).padding(rem(0.75))
+                        .borderRadius(px(8)).marginBottom(rem(1))).child()
+                        .div().style(new Style<>()
+                            .fontSize(rem(0.75)).color(hex("#065f46")).marginBottom(rem(0.25))).text("Token:").end()
+                        .code().style(new Style<>()
+                            .fontSize(rem(0.875)).color(hex("#065f46")).wordBreak(breakAll)).text(field("token")).end()
                     .end()
                 .endWhen()
                 // Action buttons (conditional)
                 .whenEquals("status", "PENDING")
-                    .div().style("display:flex;gap:0.5rem").child()
-                        .button().style("padding:0.5rem 1rem;background:#10b981;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:500")
+                    .div().style(new Style<>().display(flex).gap(rem(0.5))).child()
+                        .button().style(new Style<>()
+                            .padding(rem(0.5), rem(1)).backgroundColor(hex("#10b981")).color(white)
+                            .border(none).borderRadius(px(6)).cursor(pointer).fontWeight(500))
                             .onClickEscaped("approveReq", "id", "email").text("Approve").end()
-                        .button().style("padding:0.5rem 1rem;background:#ef4444;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:500")
+                        .button().style(new Style<>()
+                            .padding(rem(0.5), rem(1)).backgroundColor(hex("#ef4444")).color(white)
+                            .border(none).borderRadius(px(6)).cursor(pointer).fontWeight(500))
                             .onClick("rejectReq", "id").text("Reject").end()
                     .end()
                 .endWhen()

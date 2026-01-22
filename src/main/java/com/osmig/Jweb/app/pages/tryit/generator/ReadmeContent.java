@@ -790,36 +790,38 @@ Build CSS with native nesting syntax (CSS Nesting Module):
 
 ```java
 import static com.jweb.framework.styles.CSS.*;
+import static com.jweb.framework.styles.CSSUnits.*;
+import static com.jweb.framework.styles.CSSColors.*;
 
-// Nested CSS with pseudo-classes and child selectors
+// Nested CSS with type-safe DSL values (recommended)
 String css = nested(".card")
-    .prop("padding", "1rem")
-    .prop("background", "#fff")
+    .prop("padding", rem(1))
+    .prop("background", white)
     .hover()                           // &:hover
-        .prop("box-shadow", "0 4px 12px rgba(0,0,0,0.15)")
+        .prop("box-shadow", boxShadow(px(0), px(4), px(12), rgba(0, 0, 0, 0.15)))
     .end()
     .focus()                           // &:focus
-        .prop("outline", "2px solid blue")
+        .prop("outline", outline(px(2), solid, blue))
     .end()
     .child(".title")                   // & .title (descendant)
-        .prop("font-size", "1.5rem")
-        .prop("font-weight", "bold")
+        .prop("font-size", rem(1.5))
+        .prop("font-weight", num(700))
     .end()
     .direct(".icon")                   // & > .icon (direct child)
-        .prop("width", "24px")
+        .prop("width", px(24))
     .end()
     .and(".active")                    // &.active (compound)
-        .prop("border-color", "green")
+        .prop("border-color", green)
     .end()
     .build();
 
 // Output:
 // .card {
 //   padding: 1rem;
-//   background: #fff;
-//   &:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+//   background: white;
+//   &:hover { box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15); }
 //   &:focus { outline: 2px solid blue; }
-//   & .title { font-size: 1.5rem; font-weight: bold; }
+//   & .title { font-size: 1.5rem; font-weight: 700; }
 //   & > .icon { width: 24px; }
 //   &.active { border-color: green; }
 // }

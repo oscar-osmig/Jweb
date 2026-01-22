@@ -255,4 +255,23 @@ public final class CSSColors {
     public static CSSValue darken(CSSValue color, int percent) {
         return colorMix(black, color, 100 - percent);
     }
+
+    /**
+     * Creates a light-dark() function that automatically switches between
+     * light and dark mode colors based on the color-scheme property.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().color(lightDark(black, white))
+     * // Output: color: light-dark(black, white);
+     * // Shows black in light mode, white in dark mode
+     * </pre>
+     *
+     * @param lightColor the color to use in light mode
+     * @param darkColor the color to use in dark mode
+     * @return a CSSValue for the light-dark() function
+     */
+    public static CSSValue lightDark(CSSValue lightColor, CSSValue darkColor) {
+        return () -> "light-dark(" + lightColor.css() + ", " + darkColor.css() + ")";
+    }
 }

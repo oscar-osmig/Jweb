@@ -181,9 +181,19 @@ public final class JS {
         return new El("document.getElementById('" + esc(id) + "')");
     }
 
+    /** Shorthand for getElem - simpler to write: $("myId") instead of getElem("myId") */
+    public static El $(String id) {
+        return getElem(id);
+    }
+
     /** document.querySelector('selector') */
     public static El query(String selector) {
         return new El("document.querySelector('" + esc(selector) + "')");
+    }
+
+    /** document.querySelectorAll('selector') */
+    public static Val queryAll(String selector) {
+        return new Val("document.querySelectorAll('" + esc(selector) + "')");
     }
 
     // ==================== Math ====================
@@ -1084,6 +1094,50 @@ public final class JS {
         public Val dot(String prop) { return new Val(code + "." + prop); }
         public Val at(int index) { return new Val(code + "[" + index + "]"); }
         public Val at(Val key) { return new Val(code + "[" + key.code + "]"); }
+
+        /**
+         * Access a nested property path in a single call.
+         * Simplifies: variable("e").dot("target").dot("result")
+         * To: variable("e").path("target.result")
+         *
+         * @param dotPath the dot-separated property path (e.g., "target.result")
+         * @return a Val representing the nested property access
+         */
+        public Val path(String dotPath) {
+            return new Val(code + "." + dotPath);
+        }
+
+        /**
+         * Shorthand for dot().invoke() - calls a method on this value.
+         * Simplifies: variable("response").dot("json").invoke()
+         * To: variable("response").call("json")
+         *
+         * @param method the method name to call
+         * @param args optional arguments to pass to the method
+         * @return a Val representing the method call
+         */
+        public Val call(String method, Object... args) {
+            StringBuilder sb = new StringBuilder(code).append(".").append(method).append("(");
+            for (int i = 0; i < args.length; i++) {
+                if (i > 0) sb.append(",");
+                sb.append(toJs(args[i]));
+            }
+            return new Val(sb.append(")").toString());
+        }
+
+        // Common method shortcuts
+        /** Shorthand for .call("json") - common for fetch responses */
+        public Val json() { return call("json"); }
+        /** Shorthand for .call("text") - common for fetch responses */
+        public Val text() { return call("text"); }
+        /** Shorthand for .call("blob") - common for fetch responses */
+        public Val blob() { return call("blob"); }
+        /** Shorthand for .call("arrayBuffer") - common for fetch responses */
+        public Val arrayBuffer() { return call("arrayBuffer"); }
+        /** Shorthand for .call("formData") - common for fetch responses */
+        public Val formData() { return call("formData"); }
+        /** Shorthand for .call("clone") - clones a Response or Request */
+        public Val clone() { return call("clone"); }
 
         public Val invoke(Object... args) {
             StringBuilder sb = new StringBuilder(code).append("(");
