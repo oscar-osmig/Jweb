@@ -15,10 +15,22 @@ public final class DocComponents {
 
     public static Element docTitle(String t) { return h1(attrs().style(title()), text(t)); }
 
-    public static Element docSubtitle(String t) { return h2(attrs().style(subtitle()), text(t)); }
+    public static Element docSubtitle(String t) {
+        String id = toSlug(t);
+        return h2(attrs().id(id).style(subtitle()), text(t));
+    }
 
     public static Element h3Title(String t) {
-        return h3(attrs().style(subtitle().fontSize(rem(1.1)).marginTop(rem(1.5))), text(t));
+        String id = toSlug(t);
+        return h3(attrs().id(id).style(subtitle().fontSize(rem(1.1)).marginTop(rem(1.5))), text(t));
+    }
+
+    private static String toSlug(String text) {
+        return text.toLowerCase()
+            .replaceAll("[^a-z0-9\\s-]", "")
+            .replaceAll("\\s+", "-")
+            .replaceAll("-+", "-")
+            .replaceAll("^-|-$", "");
     }
 
     public static Element para(String t) { return p(attrs().style(paragraph()), text(t)); }

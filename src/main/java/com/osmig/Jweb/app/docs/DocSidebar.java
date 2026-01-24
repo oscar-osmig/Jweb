@@ -67,7 +67,7 @@ public class DocSidebar implements Template {
         boolean isActive = id.equals(active);
         return a(attrs().href("/docs?section=" + id)
             .data("section", id)
-            .class_("docs-nav-link")
+            .class_(isActive ? "docs-nav-link active" : "docs-nav-link")
             .style()
                 .padding(SP_2, SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
                 .color(isActive ? PRIMARY : TEXT_LIGHT).fontWeight(isActive ? 600 : 400)
