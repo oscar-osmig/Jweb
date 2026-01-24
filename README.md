@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 1.0.1** | **Last Updated: 2026-01-21**
+**Version 1.0.0** | **Last Updated: 2026-01-23 14:30 UTC**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf - just type-safe Java code with compile-time safety and full IDE support.
 
@@ -16,6 +16,7 @@ JWeb brings modern frontend concepts (component model, reactive state, virtual D
 - [Architecture](#architecture)
   - [Core Rendering System](#core-rendering-system)
   - [Virtual DOM](#virtual-dom)
+  - [Framework Structure](#framework-structure)
 - [HTML DSL](#html-dsl)
   - [Elements](#elements)
   - [Attributes](#attributes)
@@ -45,7 +46,7 @@ JWeb brings modern frontend concepts (component model, reactive state, virtual D
   - [Fetch Builder](#fetch-builder)
   - [DOM Query Builder](#dom-query-builder)
   - [Advanced JS Modules](#advanced-js-modules)
-- [Components & Templates](#components--templates)
+- [Components and Templates](#components-and-templates)
   - [Template Interface](#template-interface)
   - [Lifecycle Hooks](#lifecycle-hooks)
   - [Page Components](#page-components)
@@ -61,6 +62,7 @@ JWeb brings modern frontend concepts (component model, reactive state, virtual D
 - [Database Integration](#database-integration)
 - [Security](#security)
 - [Validation](#validation)
+- [AI Integration](#ai-integration)
 - [Additional Features](#additional-features)
 - [Development Tools](#development-tools)
 - [Configuration](#configuration)
@@ -81,16 +83,16 @@ JWeb is built on these core principles:
 4. **Component-Based** - Build UIs from composable, reusable pieces.
 5. **Reactive** - State changes automatically propagate to the UI.
 6. **Minimal Dependencies** - Built on Spring Boot, no additional JavaScript toolchain required.
-7. **Modular Architecture** - Clean separation with focused files. Single entry points (`El.*` for HTML, `Style` for CSS) hide complexity while keeping internals maintainable.
+7. **Modular Architecture** - Clean separation with focused files. Single entry points (`El.*` for HTML, `CSS.*` for CSS, `JS.*` for JavaScript) hide complexity while keeping internals maintainable.
 
 ---
 
 ## Features
 
-### Core DSL Features
-- **Type-safe HTML** - Build HTML with Java methods, no string templates
-- **Type-safe CSS** - CSS properties as methods with unit validation
-- **Type-safe JavaScript** - Generate JS code from Java with full IDE support
+### Core DSL Features (85 modules)
+- **Type-safe HTML** - Build HTML with Java methods, no string templates (18 modules)
+- **Type-safe CSS** - CSS properties as methods with unit validation (29 modules)
+- **Type-safe JavaScript** - Generate JS code from Java with full IDE support (38 modules)
 - **Modular Elements DSL** - Single `El.*` entry point with category-based organization
 - **Modular Styles DSL** - Mixin interfaces for clean separation (BoxModel, Flex, Grid, Typography, Effects, Position)
 - **Lambda-based Validation** - Immutable, functional form validation with `FieldValidator`
@@ -105,7 +107,7 @@ JWeb is built on these core principles:
 - **Middleware System** - Request processing pipeline with built-in middleware
 - **REST API** - Annotation-based REST controllers
 
-### CSS Features
+### CSS Features (29 Modules)
 - **CSS Feature Queries** - `@supports` for progressive enhancement
 - **CSS Nesting** - Native CSS nesting syntax support
 - **CSS Variables** - Custom properties with design system builders
@@ -115,6 +117,7 @@ JWeb is built on these core principles:
 - **Container Queries** - `@container` support
 - **CSS Layers** - `@layer` support
 - **CSS Scope** - `@scope` for DOM-scoped styles
+- **CSS Property** - `@property` for registered custom properties
 
 ### JavaScript Features (38 Modules)
 - **Form Input Builders** - Convenient shortcuts using `attrs()` pattern
@@ -232,6 +235,57 @@ JWeb uses a Virtual DOM (VNode) for efficient rendering:
 | `VRaw` | Represents raw/unescaped HTML |
 | `VFragment` | Groups multiple nodes without a wrapper element |
 
+### Framework Structure (150+ modules across 35+ packages)
+
+```
+framework/
+├── accessibility/      # A11y helpers (WCAG 2.1 compliance)
+├── api/                # REST annotations (@REST, @GET, @POST, @DEL, @PATCH, @UPDATE)
+├── async/              # Background jobs (Jobs, Scheduler, BackgroundTask)
+├── attributes/         # HTML attribute builders (Attr, Attributes)
+├── cache/              # Caching utilities
+├── cli/                # CLI tools (JWebCli, Templates)
+├── config/             # Configuration (JWebConfiguration)
+├── context/            # Request context management
+├── core/               # Core interfaces (Element, Renderable, Component, Page, RawContent)
+├── db/mongo/           # MongoDB integration (Mongo, Doc, Schema, MongoQuery)
+├── dev/                # Development tools (HotReload, DevController)
+├── docs/               # Framework documentation
+├── elements/           # HTML elements DSL (18 modules)
+├── email/              # Email sending (Email, Mailer, EmailTemplate)
+├── error/              # Error handling (ErrorHandler, JWebException)
+├── events/             # Event handling (Event, DomEvent, EventHandler)
+├── forms/              # Form utilities (Form, FormModel)
+├── health/             # Health checks (Health, HealthCheck, HealthStatus)
+├── http/               # HTTP utilities
+├── hydration/          # Client-side hydration
+├── i18n/               # Internationalization (I18n, Messages)
+├── js/                 # JavaScript DSL (38 modules)
+├── layout/             # Layout management
+├── metrics/            # Application metrics
+├── middleware/         # Middleware system (4 modules)
+├── navigation/         # Navigation utilities
+├── openapi/            # OpenAPI documentation
+├── performance/        # Performance utilities
+├── portal/             # Portal rendering
+├── ref/                # Reference utilities
+├── routing/            # Router and routes (Router, PageRegistry)
+├── security/           # Security (Jwt, Password, Cors, Csrf, Auth, OAuth2, RateLimit)
+├── server/             # Request/Response handling
+├── sse/                # Server-Sent Events
+├── state/              # Reactive state (State<T>, StateBinding)
+├── styles/             # CSS DSL (29 modules)
+├── template/           # Template interface
+├── testing/            # Test utilities (JWebTest, MockRequest, TestClient)
+├── transition/         # View transitions
+├── ui/                 # UI components (UI, Toast)
+├── upload/             # File uploads (FileUpload, UploadedFile)
+├── util/               # Utilities (Json, Log)
+├── validation/         # Validation framework
+├── vdom/               # Virtual DOM (VNode, VElement, VText, VRaw, VFragment)
+└── websocket/          # WebSocket support
+```
+
 ---
 
 ## HTML DSL
@@ -250,7 +304,7 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
 ### Elements
 
-The `El` class is the single entry point that re-exports all element factory methods:
+The `El` class is the single entry point that re-exports all element factory methods (18 modules):
 
 ```java
 import static com.osmig.Jweb.framework.elements.El.*;
@@ -286,7 +340,7 @@ table(class_("data-table"),
 
 | Category | Elements |
 |----------|----------|
-| **Document** | `html`, `head`, `body`, `title`, `meta`, `link`, `script`, `style`, `css`, `inlineScript` |
+| **Document** | `html`, `head`, `body`, `title`, `meta`, `link`, `script`, `style`, `css`, `inlineScript`, `icon`, `appleIcon` |
 | **Semantic** | `header`, `footer`, `nav`, `main`, `section`, `article`, `aside`, `hgroup`, `search`, `address` |
 | **Text** | `h1`-`h6`, `p`, `span`, `div`, `strong`, `em`, `code`, `pre`, `small`, `a`, `br`, `time`, `wbr` |
 | **Lists** | `ul`, `ol`, `li` |
@@ -375,7 +429,7 @@ progressIndeterminate()  // Loading spinner
 meter(0.6, 0, 1)  // Scalar measurement
 
 // Time with datetime
-timeWithDatetime("2026-01-21", "January 21, 2026")
+timeWithDatetime("2026-01-23", "January 23, 2026")
 
 // Data element for machine-readable values
 data("SKU-123", "Product Widget")
@@ -524,7 +578,7 @@ div(attrs().style(s -> s
 ```java
 import static com.osmig.Jweb.framework.styles.CSS.*;
 
-String styles = rules(
+String styles = styles(
     rule(".container")
         .maxWidth(px(1200))
         .margin(zero, auto)
@@ -864,7 +918,6 @@ fetch("").urlFromVar(
         .thenUrl("/api/pending")
         .elseUrl("/api/all")
 )
-// Instead of: ternaryUrl("currentTab==='pending'", "/api/pending", "/api/all")
 ```
 
 ### DOM Query Builder
@@ -940,7 +993,7 @@ webSocket("/ws/chat")
 
 ---
 
-## Components & Templates
+## Components and Templates
 
 ### Template Interface
 
@@ -1527,6 +1580,8 @@ See [Ollama Model Library](https://ollama.ai/library) for all available models.
 - **Health Checks** - `Health.register("database", () -> HealthStatus.healthy())`
 - **Testing** - `JWebTest`, `TestClient`, `MockRequest`
 - **Accessibility** - `A11y.srOnly("text")`, ARIA helpers
+- **Server-Sent Events** - SSE support for real-time updates
+- **WebSockets** - WebSocket support with auto-reconnect
 
 ---
 
@@ -1562,14 +1617,22 @@ jweb:
 
 ```yaml
 server:
-  port: 8081
+  port: ${PORT:8085}
+
+spring:
+  application:
+    name: MyApp
 
 jweb:
   admin:
-    token: ${JWEB_ADMIN_TOKEN}
-  mail:
-    enabled: true
-    from: ${JWEB_MAIL_FROM}
+    token: ${JWEB_ADMIN_TOKEN:}
+  api:
+    base: /api/v1
+  data:
+    enabled: false
+    mongo:
+      uri: ${MONGO_URI:mongodb://localhost:27017}
+      database: ${MONGO_DB:myapp}
   dev:
     hot-reload: true
     debug: false
@@ -1581,13 +1644,14 @@ jweb:
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `JWEB_ADMIN_TOKEN` | Admin authentication token |
-| `JWT_SECRET` | JWT signing secret (min 32 chars) |
-| `MONGO_URI` | MongoDB connection URI |
-| `MONGO_DB` | MongoDB database name |
-| `OPENAI_API_KEY` | OpenAI API key for AI features |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `PORT` | Server port | 8085 |
+| `JWEB_ADMIN_TOKEN` | Admin authentication token | - |
+| `JWT_SECRET` | JWT signing secret (min 32 chars) | - |
+| `MONGO_URI` | MongoDB connection URI | mongodb://localhost:27017 |
+| `MONGO_DB` | MongoDB database name | myapp |
+| `OPENAI_API_KEY` | OpenAI API key for AI features | - |
 
 ---
 
@@ -1605,7 +1669,7 @@ src/main/java/com/yourapp/
 |   |-- Routes.java         # Route definitions
 |   |-- App.java            # Application entry point
 |
-|-- framework/              # JWeb framework (140+ modules)
+|-- framework/              # JWeb framework (150+ modules)
     |-- ai/                 # AI/LLM integration (Spring AI)
     |-- core/               # Element, Renderable interfaces
     |-- elements/           # HTML elements DSL (18 modules)
@@ -1648,7 +1712,7 @@ java -jar target/your-app.jar
 java -jar target/your-app.jar --spring.profiles.active=prod
 ```
 
-Then open `http://localhost:8081` in your browser.
+Then open `http://localhost:8085` in your browser.
 
 ---
 
@@ -1656,7 +1720,27 @@ Then open `http://localhost:8081` in your browser.
 
 - **Java 21+** (uses modern Java features like records, pattern matching)
 - **Maven 3.6+**
-- **Spring Boot 3.x**
+- **Spring Boot 4.x**
+
+---
+
+## Dependencies
+
+| Dependency | Version | Purpose |
+|------------|---------|---------|
+| Spring Boot | 4.0.0 | Framework base |
+| Spring Boot Web | - | HTTP handling |
+| Spring Boot WebSocket | - | WebSocket support |
+| Spring Boot DevTools | - | Hot reload |
+| MongoDB Driver | 5.2.0 | Database |
+| Spring Security Crypto | - | BCrypt password hashing |
+| JJWT | 0.12.6 | JWT support |
+| Jackson Databind | - | JSON processing |
+
+### Optional Dependencies (commented in pom.xml)
+- Spring AI OpenAI 2.0.0-M1 - AI/LLM integration
+- Spring AI Ollama 2.0.0-M1 - Local LLM support
+- Testcontainers Ollama 1.20.4 - Docker-based Ollama
 
 ---
 
