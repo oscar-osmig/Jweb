@@ -1,74 +1,29 @@
+# =============================================================================
+# Application Configuration
+# =============================================================================
+# Your app-specific settings. Framework settings are in jweb.yaml.
+# =============================================================================
+
 server:
   port: ${PORT:8081}
-  # Enable HTTP compression for faster page loads
-  compression:
-    enabled: true
-    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
-    min-response-size: 1024
 
 spring:
   application:
-    name: JWeb
+    name: MyApp
 
 logging:
   level:
     org.mongodb.driver: WARN
 
-# JWeb configuration
 jweb:
-  # Admin configuration for TryIt
   admin:
-    token: ${JWEB_ADMIN_TOKEN}
-    email: ${JWEB_ADMIN_EMAIL}
+    token: ${JWEB_ADMIN_TOKEN:}
 
-  # Email configuration with fallback providers
-  mail:
-    enabled: true
-    from: ${JWEB_MAIL_FROM}
-    # Resend.com - 100 emails/day free (https://resend.com)
-    resend:
-      api-key: ${RESEND_API_KEY}
-    # SendGrid - 100 emails/day free (https://sendgrid.com)
-    sendgrid:
-      api-key: ${SENDGRID_API_KEY:}
-    # Brevo - 300 emails/day free (https://brevo.com)
-    brevo:
-      api-key: ${BREVO_API_KEY:}
-
-  # API configuration
   api:
     base: /api/v1
 
-  # Data configuration - MongoDB
   data:
-    enabled: true
+    enabled: false
     mongo:
       uri: ${MONGO_URI:mongodb://localhost:27017}
-      database: ${MONGO_DB:jweb}
-
-  # Development settings
-  dev:
-    # Hot reload - auto-refresh browser on file changes
-    hot-reload: true
-    # Paths to watch for changes (comma-separated)
-    watch-paths: src/main/java,src/main/resources
-    # Debounce delay in ms before triggering reload (lower = faster, min 10)
-    debounce-ms: 10
-    # Debug mode - show console logs in browser (disable for production)
-    debug: false
-
-  # Performance settings
-  performance:
-    # Minify CSS output (removes whitespace)
-    minify-css: true
-    # Minify HTML output (removes unnecessary whitespace)
-    minify-html: false
-    # Prefetch - preload pages on hover for instant navigation
-    prefetch:
-      enabled: true
-      # Cache TTL in milliseconds (default: 5 minutes)
-      cache-ttl: 300000
-      # Delay before prefetching on hover (ms) - higher values reduce false triggers
-      hover-delay: 300
-
-
+      database: ${MONGO_DB:myapp}

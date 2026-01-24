@@ -3,8 +3,10 @@ package com.osmig.Jweb.framework.dev;
 import com.osmig.Jweb.framework.core.Element;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -19,19 +21,20 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
 
 /**
  * Development hot reload server for automatic browser refresh.
+ * Only watches /app code by default, not the framework.
  *
  * <p>Setup in application.yaml:</p>
  * <pre>
  * jweb:
  *   dev:
  *     hot-reload: true
- *     watch-paths: src/main/java,src/main/resources
+ *     watch-paths: src/main/java/com/osmig/Jweb/app  # Only app code
  * </pre>
  *
  * <p>Or in application.properties:</p>
  * <pre>
  * jweb.dev.hot-reload=true
- * jweb.dev.watch-paths=src/main/java,src/main/resources
+ * jweb.dev.watch-paths=src/main/java/com/osmig/Jweb/app
  * </pre>
  *
  * <p>Add to your layout/page:</p>
@@ -53,10 +56,10 @@ public class DevServer {
     private static volatile boolean enabled = false;
     private static volatile boolean watching = false;
     private static volatile boolean debug = false;
-    private static String[] watchPaths = {"src/main/java", "src/main/resources"};
+    private static String[] watchPaths = {"src/main/java/com/osmig/Jweb/app"};
     private static int debounceMs = 50;
 
-    @Value("${jweb.dev.watch-paths:src/main/java,src/main/resources}")
+    @Value("${jweb.dev.watch-paths:src/main/java/com/osmig/Jweb/app}")
     public void setWatchPathsFromConfig(String paths) {
         if (paths != null && !paths.isBlank()) {
             watchPaths = paths.split(",");
@@ -135,16 +138,74 @@ public class DevServer {
     }
 
     /**
+     * Returns a script that uses Spring DevTools LiveReload for instant refresh.
+     * LiveReload is faster than SSE for static changes.
+     * Combines LiveReload with SSE for comprehensive coverage.
+     */
+    public static Element liveReloadScript() {
+        return liveReloadScript(35729);
+    }
+
+    /**
+     * Returns LiveReload script with custom port.
+     */
+    public static Element liveReloadScript(int port) {
+        if (!enabled) {
+            return fragment();
+        }
+        // LiveReload client that connects to Spring DevTools LiveReload server
+        return inlineScript(
+            "(function(){" +
+            "if(window.__jwebLR)return;" +
+            "window.__jwebLR=true;" +
+            "var ws=new WebSocket('ws://'+location.hostname+':" + port + "/livereload');" +
+            "ws.onopen=function(){console.log('[JWeb] LiveReload connected')};" +
+            "ws.onmessage=function(e){" +
+            "var msg=JSON.parse(e.data);" +
+            "if(msg.command==='reload'){location.reload()}};" +
+            "ws.onclose=function(){" +
+            // Reconnect on disconnect
+            "setTimeout(function(){" +
+            "var s=document.createElement('script');" +
+            "s.textContent='('+arguments.callee.toString()+')()';" +
+            "document.body.appendChild(s)},1000)};" +
+            "})();"
+        );
+    }
+
+    /**
+     * Returns a combined script that uses both LiveReload and SSE.
+     * Best of both worlds: LiveReload for static, SSE for Java changes.
+     */
+    public static Element combinedScript() {
+        if (!enabled) {
+            return fragment();
+        }
+        return fragment(
+            liveReloadScript(),
+            script()
+        );
+    }
+
+    /**
      * Returns the hot reload script as a string.
+     * Optimized for fast reconnection and instant reload.
      */
     public static String clientScript() {
         String reloadLog = debug ? "console.log('[JWeb] Reloading...');" : "";
-        String errorLog = debug ? "console.log('[JWeb] Connection lost, reconnecting...');" : "";
+        String errorLog = debug ? "console.log('[JWeb] Connection lost, polling for server...');" : "";
         String connectedLog = debug ? "console.log('[JWeb] Hot reload connected');" : "";
 
+        // Optimized client script:
+        // 1. Uses SSE for instant notification
+        // 2. On disconnect, polls rapidly to detect server restart
+        // 3. Reloads immediately when server is back
         return "(function(){" +
-            "var es=new EventSource('/__jweb_dev/events');" +
+            "if(window.__jwebHR)return;" +
+            "window.__jwebHR=true;" +
             "var lastVersion=null;" +
+            "var connect=function(){" +
+            "var es=new EventSource('/__jweb_dev/events');" +
             "es.onmessage=function(e){" +
             "var data=JSON.parse(e.data);" +
             "if(lastVersion&&data.version!==lastVersion){" +
@@ -152,8 +213,15 @@ public class DevServer {
             "location.reload()}" +
             "lastVersion=data.version};" +
             "es.onerror=function(){" +
+            "es.close();" +
             errorLog +
-            "setTimeout(function(){location.reload()},2000)};" +
+            // Fast polling to detect server restart (50ms intervals)
+            "var poll=function(){" +
+            "fetch('/__jweb_dev/status',{cache:'no-store'})" +
+            ".then(function(r){if(r.ok){location.reload()}})" +
+            ".catch(function(){setTimeout(poll,50)})};" +
+            "poll()}};" +
+            "connect();" +
             connectedLog +
             "})();";
     }
@@ -290,10 +358,23 @@ public class DevServer {
     /**
      * Spring initializer to start watching on application startup.
      */
-    public static class DevServerInitializer {
+    public static class DevServerInitializer implements ApplicationListener<ContextRefreshedEvent> {
+        private static boolean firstStartup = true;
+
         public DevServerInitializer() {
             DevServer.enabled = true;
             DevServer.startWatching();
+        }
+
+        @Override
+        public void onApplicationEvent(ContextRefreshedEvent event) {
+            // On restart (not first startup), immediately bump version
+            // This ensures browsers reload as soon as server is ready
+            if (!firstStartup) {
+                System.out.println("[JWeb] Server restarted - notifying browsers");
+                triggerReload();
+            }
+            firstStartup = false;
         }
     }
 }

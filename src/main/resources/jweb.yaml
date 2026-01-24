@@ -1,0 +1,63 @@
+# =============================================================================
+# JWeb Framework Configuration
+# =============================================================================
+# Internal framework settings that control how JWeb behaves.
+# These are sensible defaults - you typically don't need to change them.
+# App-specific settings (port, database, API keys) go in application.yaml.
+# =============================================================================
+
+server:
+  compression:
+    # Enable gzip compression for responses to reduce bandwidth
+    enabled: true
+    # File types to compress (text-based content benefits most)
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json
+    # Only compress responses larger than 1KB (compression overhead not worth it for small responses)
+    min-response-size: 1024
+
+spring:
+  main:
+    # Delay bean creation until first use - faster startup time
+    lazy-initialization: true
+
+  devtools:
+    restart:
+      # Auto-restart server when code changes (development only)
+      enabled: true
+      # How often to check for file changes
+      poll-interval: 100ms
+      # Wait time after last change before triggering restart (batches rapid changes)
+      quiet-period: 50ms
+      # Don't restart for changes in these paths (static files, framework code)
+      exclude: static/**,public/**,resources/**,META-INF/**,templates/**,**/framework/**
+      # Watch these paths for changes that trigger restart
+      additional-paths: src/main/java/com/osmig/Jweb/app
+    livereload:
+      # Auto-refresh browser when server restarts
+      enabled: true
+      # LiveReload WebSocket port
+      port: 35729
+
+jweb:
+  dev:
+    # Enable hot reload (browser auto-refresh on code changes)
+    hot-reload: true
+    # Directories to watch for changes (only app code, not framework)
+    watch-paths: src/main/java/com/osmig/Jweb/app
+    # Delay before notifying browser (batches rapid file saves)
+    debounce-ms: 10
+    # Log hot reload events to console
+    debug: false
+
+  performance:
+    # Minify generated CSS (remove whitespace, smaller file size)
+    minify-css: true
+    # Minify generated HTML (usually not worth it, minimal savings)
+    minify-html: false
+    prefetch:
+      # Prefetch linked pages on hover for instant navigation
+      enabled: true
+      # How long to cache prefetched pages (5 minutes in milliseconds)
+      cache-ttl: 300000
+      # Delay before prefetching on hover (prevents prefetching on accidental hovers)
+      hover-delay: 300

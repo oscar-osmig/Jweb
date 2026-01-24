@@ -1,17 +1,12 @@
 package com.osmig.Jweb.app;
 
+import com.osmig.Jweb.framework.JWebApplication;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 
 /**
  * JWeb Application Entry Point
- *
- * This is your main application class.
- * Routes are configured in Routes.java.
  */
-@SpringBootApplication
-@ComponentScan(basePackages = "com.osmig.Jweb")
+@JWebApplication
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);

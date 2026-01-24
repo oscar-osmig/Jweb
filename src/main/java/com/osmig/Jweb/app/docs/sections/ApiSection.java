@@ -54,7 +54,6 @@ public ResponseEntity<byte[]> file() { ... }"""),
 
             docTip("API docs auto-generated at /api/docs when openapi.enabled=true"),
 
-            ApiEmail.render(),
             ApiSse.render(),
             ApiJobs.render()
         );

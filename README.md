@@ -138,6 +138,7 @@ JWeb is built on these core principles:
 - **File Uploads** - Easy multipart file handling with validation
 - **Email** - Fluent email builder with templates
 - **Background Jobs** - Async task execution with scheduling
+- **AI Integration** - Spring AI with fluent DSL for OpenAI and local LLMs (Ollama in Docker)
 
 ### Developer Experience
 - **Testing Utilities** - Mock requests and assertions for testing
@@ -1280,6 +1281,243 @@ ValidationResult result = FormValidator.create()
 
 ---
 
+## AI Integration
+
+JWeb includes a fluent DSL for AI/LLM interactions via Spring AI OpenAI.
+
+### Configuration
+
+```yaml
+spring:
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: gpt-4o
+          temperature: 0.7
+```
+
+### Basic Chat
+
+```java
+import static com.osmig.Jweb.framework.ai.AI.*;
+
+// Simple question
+String answer = AI.ask("What is the capital of France?");
+
+// With options
+String response = AI.chat("Explain quantum computing")
+    .model("gpt-4o")
+    .temperature(0.7)
+    .maxTokens(500)
+    .send();
+
+// With system prompt
+String response = AI.chat()
+    .system("You are a helpful coding assistant")
+    .user("How do I sort a list in Java?")
+    .send();
+
+// Presets
+AI.chat("Write a creative story").creative().send();  // High temperature
+AI.chat("Analyze this data").precise().send();        // Low temperature
+AI.chat("Help me with this").balanced().send();       // Moderate settings
+```
+
+### Streaming Responses
+
+```java
+// Stream chunks as they arrive
+AI.stream("Write a long story about Java")
+    .onChunk(chunk -> System.out.print(chunk))
+    .onComplete(fullText -> saveToFile(fullText))
+    .onError(error -> log.error("AI error", error))
+    .send();
+
+// Stream and wait for completion
+String result = AI.stream("Generate a report")
+    .onChunk(chunk -> updateUI(chunk))
+    .sendAndWait();
+```
+
+### Multi-turn Conversations
+
+```java
+// Maintain context across exchanges
+Conversation conv = AI.conversation()
+    .system("You are a friendly assistant")
+    .model("gpt-4o");
+
+String r1 = conv.say("My name is John");
+String r2 = conv.say("What is my name?");  // AI remembers: "Your name is John"
+
+// Get history
+List<Conversation.Turn> history = conv.getHistory();
+
+// Fork conversation for branching
+Conversation branch = conv.fork();
+branch.say("Actually, call me Johnny");
+```
+
+### Task-Specific Helpers
+
+```java
+// Summarization
+String summary = AI.summarize(longArticle)
+    .maxLength(100)
+    .bullets()
+    .send();
+
+// Translation
+String spanish = AI.translate("Hello, world!")
+    .to("Spanish")
+    .formal()
+    .send();
+
+// Code generation/analysis
+String code = AI.code("Sort a list of integers")
+    .language("Java")
+    .send();
+
+String explanation = AI.code(existingCode)
+    .explain()
+    .send();
+
+String review = AI.code(myCode)
+    .review()
+    .send();
+
+// Data extraction
+String json = AI.extract(emailText)
+    .fields("name", "email", "phone", "company")
+    .asJson()
+    .send();
+```
+
+### Check Availability
+
+```java
+if (AI.isAvailable()) {
+    // AI is configured and ready
+    String response = AI.ask("Hello!");
+} else {
+    // Handle missing API key
+    log.warn("AI not configured");
+}
+```
+
+### Ollama - Local or Remote LLMs
+
+Run LLMs locally via Docker or connect to remote Ollama servers.
+
+#### Option 1: Connect to Remote Ollama (Simplest)
+
+No Docker needed - just connect to an existing Ollama server:
+
+```java
+// Connect to Ollama running on a server
+Ollama.connect("http://192.168.1.100:11434");
+Ollama.connect("http://gpu-server.mycompany.com:11434", "llama3.2");
+
+// Check if server is reachable
+if (Ollama.pingOllama("http://server:11434")) {
+    Ollama.connect("http://server:11434");
+}
+
+// Now use it normally
+String response = AI.chat("Hello!").send();
+
+// Disconnect when done
+Ollama.disconnect();
+```
+
+#### Option 2: Remote Docker Host
+
+Run the container on a remote server with Docker:
+
+```java
+// Configure remote Docker (call BEFORE start)
+Ollama.useDockerHost("tcp://192.168.1.100:2375");
+
+// Or use SSH
+Ollama.useDockerSSH("user@gpu-server.mycompany.com");
+
+// Enable GPU support (requires NVIDIA runtime on host)
+Ollama.enableGpu();
+
+// Now start - container runs on remote host
+Ollama.start("llama3.2");
+```
+
+#### Option 3: Local Docker
+
+```java
+// Start Ollama locally (downloads model if needed)
+Ollama.start("llama3.2");           // Default: Llama 3.2 (3B)
+Ollama.start("llama3.2:1b");        // Smaller, faster
+Ollama.start("mistral");            // Mistral 7B
+Ollama.start("codellama");          // Code-focused
+
+// With progress callback
+Ollama.start("llama3.2", progress -> System.out.println(progress));
+
+// Async start (non-blocking)
+Ollama.startAsync("mistral")
+    .thenAccept(url -> System.out.println("Ready at " + url));
+```
+
+#### Using Ollama
+
+```java
+// AI.chat() automatically uses Ollama when connected
+String response = AI.chat("Hello!").send();
+
+// Or use Ollama directly
+String response = Ollama.chat("What is 2+2?").send();
+String answer = Ollama.ask("Quick question");
+
+// With options
+Ollama.chat("Write code")
+    .system("You are a coding assistant")
+    .temperature(0.3)
+    .maxTokens(500)
+    .send();
+
+// Switch models
+Ollama.useModel("codellama");
+
+// Switch between providers
+AI.useOpenAI();   // Use OpenAI API
+AI.useOllama();   // Use Ollama
+
+// Check status
+AI.Provider provider = AI.getProvider();  // OPENAI or OLLAMA
+boolean running = Ollama.isRunning();
+boolean remote = Ollama.isRemote();
+String endpoint = Ollama.getEndpoint();
+
+// Stop/disconnect
+Ollama.stop();
+```
+
+**Available Models:**
+
+| Model | Description | Size |
+|-------|-------------|------|
+| `llama3.2` | Meta Llama 3.2 (default) | 3B |
+| `llama3.2:1b` | Llama 3.2 smaller | 1B |
+| `llama3.1` | Meta Llama 3.1 | 8B |
+| `mistral` | Mistral 7B | 7B |
+| `codellama` | Code Llama | 7B |
+| `phi3` | Microsoft Phi-3 | 3.8B |
+| `gemma2` | Google Gemma 2 | 9B |
+| `qwen2.5` | Alibaba Qwen 2.5 | 7B |
+
+See [Ollama Model Library](https://ollama.ai/library) for all available models.
+
+---
+
 ## Additional Features
 
 - **Internationalization (i18n)** - `I18n.load("en")`, `messages.get("greeting")`
@@ -1349,6 +1587,7 @@ jweb:
 | `JWT_SECRET` | JWT signing secret (min 32 chars) |
 | `MONGO_URI` | MongoDB connection URI |
 | `MONGO_DB` | MongoDB database name |
+| `OPENAI_API_KEY` | OpenAI API key for AI features |
 
 ---
 
@@ -1367,6 +1606,7 @@ src/main/java/com/yourapp/
 |   |-- App.java            # Application entry point
 |
 |-- framework/              # JWeb framework (140+ modules)
+    |-- ai/                 # AI/LLM integration (Spring AI)
     |-- core/               # Element, Renderable interfaces
     |-- elements/           # HTML elements DSL (18 modules)
     |-- styles/             # CSS DSL (29 modules)

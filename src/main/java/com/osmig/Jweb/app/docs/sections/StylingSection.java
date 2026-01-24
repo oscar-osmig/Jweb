@@ -9,33 +9,78 @@ public final class StylingSection {
 
     public static Element render() {
         return section(
-            docTitle("Styling"),
-            para("JWeb's CSS DSL provides Java methods for all CSS properties. " +
-                 "Write styles in Java with IDE autocomplete and compile-time checks."),
+            docTitle("CSS DSL"),
+            para("JWeb's CSS DSL provides type-safe Java methods for all CSS properties. " +
+                 "Write styles with IDE autocomplete and compile-time validation."),
 
-            docSubtitle("Overview"),
-            para("Every CSS property has a corresponding fluent method. " +
-                 "Units and colors are type-safe, preventing invalid values."),
+            docSubtitle("Import Statements"),
             codeBlock("""
-                    import static com.osmig.Jweb.framework.styles.CSS.*;
-                    import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-                    import static com.osmig.Jweb.framework.styles.CSSColors.*;
-                    
-                    div(attrs().style()
-                        .padding(rem(2))
-                        .backgroundColor(hex("#f5f5f5"))
-                        .borderRadius(px(8))
-                    .done(), content)"""),
+// Core CSS DSL
+import static com.osmig.Jweb.framework.styles.CSS.*;
 
-            StylingBasics.render(),
+// Units (px, rem, em, vh, vw, etc.)
+import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+
+// Colors (named colors, rgb, hex, etc.)
+import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
+
+            docSubtitle("Inline Styles"),
+            para("Apply styles directly to elements using the style builder."),
+            codeBlock("""
+// Lambda syntax (recommended)
+div(attrs()
+    .class_("card")
+    .style(s -> s
+        .padding(rem(1.5))
+        .backgroundColor(white)
+        .borderRadius(px(8))
+        .boxShadow(px(0), px(2), px(8), rgba(0, 0, 0, 0.1))
+    ),
+    content
+)
+
+// Reusable Style object
+Style cardStyle = style()
+    .padding(rem(1.5))
+    .backgroundColor(white)
+    .borderRadius(px(8));
+
+div(attrs().style(cardStyle), content)"""),
+
+            docSubtitle("CSS Rules"),
+            para("Generate CSS rules for stylesheets."),
+            codeBlock("""
+// Single rule
+String buttonCss = rule(".btn")
+    .display(inlineBlock)
+    .padding(px(10), px(20))
+    .backgroundColor(blue)
+    .color(white)
+    .borderRadius(px(4))
+    .render();
+
+// Multiple rules
+String css = styles(
+    rule("*").boxSizing(borderBox),
+    rule("body")
+        .margin(zero)
+        .fontFamily("system-ui, -apple-system, sans-serif"),
+    rule(".container")
+        .maxWidth(px(1200))
+        .margin(px(0), auto)
+        .padding(px(0), rem(1))
+);"""),
+
             StylingUnits.render(),
             StylingColors.render(),
+            StylingBoxModel.render(),
             StylingFlexbox.render(),
             StylingGrid.render(),
             StylingTypography.render(),
-            StylingAdvanced.render(),
-            StylingNested.render(),
-            StylingSupports.render()
+            StylingEffects.render(),
+            StylingResponsive.render(),
+            StylingAnimations.render(),
+            StylingVariables.render()
         );
     }
 }

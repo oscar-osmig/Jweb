@@ -9,21 +9,41 @@ public final class ElementsSection {
 
     public static Element render() {
         return section(
-            docTitle("Elements"),
+            docTitle("HTML DSL"),
             para("JWeb's HTML DSL provides Java methods for all HTML elements. " +
-                 "Elements are composable, nestable, and fully checked at compile time."),
+                 "Elements are composable, nestable, and fully type-checked at compile time."),
 
-            docSubtitle("Overview"),
-            para("Every HTML element has a corresponding Java method. " +
-                 "Pass child elements as arguments to create nested structures."),
+            docSubtitle("Import Statement"),
             codeBlock("""
-// Basic pattern: element(children...)
-div(h1("Title"), p("Content"))
+import static com.osmig.Jweb.framework.elements.El.*;"""),
+            para("This single import gives you access to all HTML elements, attributes, and helpers."),
 
-// With attributes: element(attrs()..., children...)
+            docSubtitle("Basic Pattern"),
+            para("Every HTML element has a corresponding Java method. Pass children as arguments to create nested structures."),
+            codeBlock("""
+// Simple element with text
+h1("Hello World")
+
+// Nested elements
+div(
+    h1("Title"),
+    p("Content here")
+)
+
+// With attributes
 div(attrs().id("main").class_("container"),
     h1("Title"),
     p("Content")
+)
+
+// With inline styles (lambda syntax)
+div(attrs()
+    .class_("card")
+    .style(s -> s
+        .padding(rem(1))
+        .backgroundColor(white)
+    ),
+    p("Styled content")
 )"""),
 
             ElementsBasics.render(),
@@ -31,6 +51,11 @@ div(attrs().id("main").class_("container"),
             ElementsLists.render(),
             ElementsTables.render(),
             ElementsMedia.render(),
+            ElementsForms.render(),
+            ElementsModern.render(),
+            ElementsSVG.render(),
+            ElementsAttributes.render(),
+            ElementsConditionals.render(),
             ElementsFragments.render()
         );
     }

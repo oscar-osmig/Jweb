@@ -103,6 +103,38 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+
+		<!-- Spring AI OpenAI (uncomment to enable AI/LLM integration)
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-model-openai</artifactId>
+			<version>2.0.0-M1</version>
+			<optional>true</optional>
+		</dependency>
+		-->
+
+		<!-- Spring AI Ollama (uncomment for local LLM via Ollama)
+		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-model-ollama</artifactId>
+			<version>2.0.0-M1</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>ollama</artifactId>
+			<version>1.20.4</version>
+			<optional>true</optional>
+		</dependency>
+
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers</artifactId>
+			<version>1.20.4</version>
+			<optional>true</optional>
+		</dependency>
+		-->
 	</dependencies>
 
 	<build>
@@ -154,6 +186,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<jvmArguments>
+						--add-opens java.base/sun.misc=ALL-UNNAMED
+						--add-opens java.base/java.nio=ALL-UNNAMED
+					</jvmArguments>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

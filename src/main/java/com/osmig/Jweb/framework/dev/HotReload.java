@@ -5,25 +5,44 @@ import com.osmig.Jweb.framework.core.Element;
 import static com.osmig.Jweb.framework.elements.Elements.*;
 
 /**
- * Simple hot reload support using file polling.
+ * Hot reload support for instant browser refresh during development.
  *
- * <p>This is a simpler alternative to DevServer that works without
- * Spring Boot's SSE support. It uses a polling approach instead.</p>
- *
- * <p>Setup:</p>
+ * <h2>Recommended Setup (Fastest - ~500ms):</h2>
  * <pre>
- * // In your page/layout
+ * // In your layout/page
  * body(
  *     // ... your content ...
- *     HotReload.script()  // Add at the end of body
+ *     HotReload.fast()  // Uses DevServer SSE + rapid polling
  * )
  * </pre>
  *
- * <p>The script polls a version endpoint and reloads when it changes.</p>
+ * <h2>Alternative Options:</h2>
+ * <ul>
+ *   <li>{@link #fast()} - SSE + rapid polling (recommended)</li>
+ *   <li>{@link DevServer#liveReloadScript()} - Spring LiveReload</li>
+ *   <li>{@link DevServer#combinedScript()} - Both LiveReload + SSE</li>
+ *   <li>{@link #pollingScript(String)} - Manual polling endpoint</li>
+ * </ul>
  *
- * <p>For manual reload (e.g., from a build tool):</p>
+ * <h2>Configuration (application.yaml):</h2>
  * <pre>
- * curl -X POST http://localhost:8080/__jweb_dev/reload
+ * spring:
+ *   devtools:
+ *     restart:
+ *       poll-interval: 100ms    # Fast change detection
+ *       quiet-period: 50ms      # Quick restart after changes
+ *     livereload:
+ *       enabled: true
+ *
+ * jweb:
+ *   dev:
+ *     hot-reload: true
+ *     debounce-ms: 10           # Minimal debounce
+ * </pre>
+ *
+ * <h2>Manual Reload Trigger:</h2>
+ * <pre>
+ * curl http://localhost:8081/__jweb_dev/reload
  * </pre>
  */
 public final class HotReload {
@@ -70,6 +89,46 @@ public final class HotReload {
             return fragment();
         }
         return inlineScript(clientScript());
+    }
+
+    /**
+     * Returns the fastest hot reload script.
+     * Uses SSE for instant notification + rapid polling on disconnect.
+     * This is the recommended approach for development.
+     *
+     * @return Script element for fast hot reload
+     */
+    public static Element fast() {
+        if (!enabled) {
+            return fragment();
+        }
+        return DevServer.script();
+    }
+
+    /**
+     * Returns hot reload with LiveReload support.
+     * Works with Spring DevTools LiveReload server.
+     *
+     * @return Script element using LiveReload
+     */
+    public static Element liveReload() {
+        if (!enabled) {
+            return fragment();
+        }
+        return DevServer.liveReloadScript();
+    }
+
+    /**
+     * Returns combined hot reload with both LiveReload and SSE.
+     * Best coverage for all change types.
+     *
+     * @return Script element using both mechanisms
+     */
+    public static Element combined() {
+        if (!enabled) {
+            return fragment();
+        }
+        return DevServer.combinedScript();
     }
 
     /**
