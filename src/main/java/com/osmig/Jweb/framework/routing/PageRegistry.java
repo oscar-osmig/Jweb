@@ -2,12 +2,14 @@ package com.osmig.Jweb.framework.routing;
 
 import com.osmig.Jweb.framework.template.Template;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -19,6 +21,9 @@ public class PageRegistry {
     // O(1) lookup index for exact path matches
     private final Map<String, PageRoute> routeIndex = new HashMap<>();
     private Class<? extends Template> defaultLayout;
+
+    // Cache constructor references to avoid reflection overhead per request
+    private static final Map<Class<?>, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 
     /**
      * Sets the default layout for all pages.
@@ -65,9 +70,24 @@ public class PageRegistry {
             ? annotation.title()
             : extractTitle(path);
 
+        // Cache the constructor reference for fast instantiation
+        @SuppressWarnings("unchecked")
+        Constructor<? extends Template> constructor = (Constructor<? extends Template>) constructorCache.computeIfAbsent(
+            pageClass,
+            clazz -> {
+                try {
+                    Constructor<?> ctor = clazz.getDeclaredConstructor();
+                    ctor.setAccessible(true);
+                    return ctor;
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException("Page class must have no-arg constructor: " + clazz.getName(), e);
+                }
+            }
+        );
+
         Supplier<? extends Template> supplier = () -> {
             try {
-                return pageClass.getDeclaredConstructor().newInstance();
+                return constructor.newInstance();
             } catch (Exception e) {
                 throw new RuntimeException("Failed to instantiate page: " + pageClass.getName(), e);
             }

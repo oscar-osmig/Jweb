@@ -23,7 +23,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.lang.reflect.Constructor;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
 
@@ -48,6 +50,13 @@ public class JWebController {
     private static final CacheControl PREFETCH_CACHE = CacheControl
             .maxAge(5, TimeUnit.MINUTES)
             .cachePrivate();
+
+    // Cache layout constructors to avoid reflection overhead per request
+    private static final Map<Class<?>, Constructor<?>> layoutConstructorCache = new ConcurrentHashMap<>();
+
+    // Pre-cached markers for fast HTML injection
+    private static final String BODY_END = "</body>";
+    private static final String HTML_END = "</html>";
 
     public JWebController(JWeb jweb) {
         this.router = jweb.getRouter();
@@ -155,19 +164,36 @@ public class JWebController {
     }
 
     private String injectHydrationData(String html, String hydrationScript) {
-        // Build prefetch script (automatically injected by framework)
+        // Get pre-cached prefetch script
         String prefetchScript = Prefetch.scriptTag();
 
-        // Inject before </body> if present
-        int bodyEnd = html.lastIndexOf("</body>");
+        // Fast path: if no scripts to inject, return as-is
+        if (prefetchScript.isEmpty() && hydrationScript.isEmpty()) {
+            return html;
+        }
+
+        // Use StringBuilder for efficient string building
+        int bodyEnd = html.lastIndexOf(BODY_END);
         if (bodyEnd != -1) {
-            return html.substring(0, bodyEnd) + prefetchScript + hydrationScript + html.substring(bodyEnd);
+            return new StringBuilder(html.length() + prefetchScript.length() + hydrationScript.length())
+                .append(html, 0, bodyEnd)
+                .append(prefetchScript)
+                .append(hydrationScript)
+                .append(html, bodyEnd, html.length())
+                .toString();
         }
+
         // Inject before </html> if no body
-        int htmlEnd = html.lastIndexOf("</html>");
+        int htmlEnd = html.lastIndexOf(HTML_END);
         if (htmlEnd != -1) {
-            return html.substring(0, htmlEnd) + prefetchScript + hydrationScript + html.substring(htmlEnd);
+            return new StringBuilder(html.length() + prefetchScript.length() + hydrationScript.length())
+                .append(html, 0, htmlEnd)
+                .append(prefetchScript)
+                .append(hydrationScript)
+                .append(html, htmlEnd, html.length())
+                .toString();
         }
+
         // Append at end
         return html + prefetchScript + hydrationScript;
     }
@@ -227,17 +253,29 @@ public class JWebController {
 
     private Element wrapInLayout(Class<? extends Template> layoutClass, String title, Element content) {
         try {
-            // Try constructor with (String, Element) - title and content
-            Constructor<? extends Template> constructor = layoutClass.getConstructor(String.class, Element.class);
-            return constructor.newInstance(title, content).render();
-        } catch (NoSuchMethodException e) {
-            try {
-                // Try constructor with just Element
-                Constructor<? extends Template> constructor = layoutClass.getConstructor(Element.class);
-                return constructor.newInstance(content).render();
-            } catch (Exception ex) {
-                throw new RuntimeException("Layout must have constructor (String, Element) or (Element): " + layoutClass.getName(), ex);
+            // Get cached constructor or find and cache it
+            Constructor<?> cachedCtor = layoutConstructorCache.get(layoutClass);
+
+            if (cachedCtor == null) {
+                // Try to find constructor with (String, Element) first
+                try {
+                    cachedCtor = layoutClass.getConstructor(String.class, Element.class);
+                } catch (NoSuchMethodException e) {
+                    // Try constructor with just Element
+                    cachedCtor = layoutClass.getConstructor(Element.class);
+                }
+                cachedCtor.setAccessible(true);
+                layoutConstructorCache.put(layoutClass, cachedCtor);
             }
+
+            // Invoke the cached constructor
+            Template layout;
+            if (cachedCtor.getParameterCount() == 2) {
+                layout = (Template) cachedCtor.newInstance(title, content);
+            } else {
+                layout = (Template) cachedCtor.newInstance(content);
+            }
+            return layout.render();
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate layout: " + layoutClass.getName(), e);
         }

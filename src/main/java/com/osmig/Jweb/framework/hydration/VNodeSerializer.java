@@ -118,10 +118,26 @@ public final class VNodeSerializer {
         sb.append("]}");
     }
 
+    private static final char[] HEX_DIGITS = "0123456789abcdef".toCharArray();
+
     private static String escapeJson(String s) {
-        if (s == null) return "";
-        StringBuilder sb = new StringBuilder();
-        for (char c : s.toCharArray()) {
+        if (s == null || s.isEmpty()) return "";
+
+        // Fast path: check if escaping is needed
+        boolean needsEscape = false;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < ' ' || c == '\\' || c == '"') {
+                needsEscape = true;
+                break;
+            }
+        }
+        if (!needsEscape) return s;
+
+        // Slow path: build escaped string
+        StringBuilder sb = new StringBuilder(s.length() + 16);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
             switch (c) {
                 case '\\' -> sb.append("\\\\");
                 case '"' -> sb.append("\\\"");
@@ -132,7 +148,10 @@ public final class VNodeSerializer {
                 case '\f' -> sb.append("\\f");
                 default -> {
                     if (c < ' ') {
-                        sb.append(String.format("\\u%04x", (int) c));
+                        // Manual hex conversion instead of String.format
+                        sb.append("\\u00");
+                        sb.append(HEX_DIGITS[(c >> 4) & 0xF]);
+                        sb.append(HEX_DIGITS[c & 0xF]);
                     } else {
                         sb.append(c);
                     }

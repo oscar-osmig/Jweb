@@ -69,6 +69,10 @@ public final class Prefetch {
     // Whether debug logging is enabled
     private static boolean debug = false;
 
+    // Cached script (pre-compiled after config load)
+    private static volatile String cachedScript = null;
+    private static volatile String cachedScriptTag = null;
+
     /**
      * Spring configuration for prefetch settings.
      */
@@ -92,6 +96,8 @@ public final class Prefetch {
             Prefetch.cacheTtl = prefetchCacheTtl;
             Prefetch.hoverDelay = prefetchHoverDelay;
             Prefetch.debug = debugEnabled;
+            // Pre-compile the script after config is loaded
+            Prefetch.compileScript();
             if (prefetchEnabled && debugEnabled) {
                 System.out.println("[JWeb] Prefetch enabled (cache: " + prefetchCacheTtl + "ms, hover delay: " + prefetchHoverDelay + "ms)");
             }
@@ -119,6 +125,22 @@ public final class Prefetch {
      */
     public static void setEnabled(boolean isEnabled) {
         enabled = isEnabled;
+        // Invalidate cache when settings change
+        cachedScript = null;
+        cachedScriptTag = null;
+    }
+
+    /**
+     * Pre-compiles the prefetch script for fast retrieval.
+     */
+    private static void compileScript() {
+        if (!enabled) {
+            cachedScript = "";
+            cachedScriptTag = "";
+            return;
+        }
+        cachedScript = buildClientScript();
+        cachedScriptTag = "<script>" + cachedScript + "</script>";
     }
 
     /**
@@ -140,7 +162,13 @@ public final class Prefetch {
         if (!enabled) {
             return "";
         }
-        return "<script>" + clientScript() + "</script>";
+        // Return cached script tag if available
+        if (cachedScriptTag != null) {
+            return cachedScriptTag;
+        }
+        // Fallback: compile on first use if not pre-compiled
+        compileScript();
+        return cachedScriptTag;
     }
 
     /**
@@ -155,6 +183,19 @@ public final class Prefetch {
      * </ul>
      */
     public static String clientScript() {
+        // Return cached script if available
+        if (cachedScript != null) {
+            return cachedScript;
+        }
+        // Fallback: compile on first use
+        compileScript();
+        return cachedScript;
+    }
+
+    /**
+     * Builds the prefetch JavaScript code (internal).
+     */
+    private static String buildClientScript() {
         return "(function(){" +
             // Prevent duplicate initialization
             "if(window.__jwebPrefetchInit)return;" +
