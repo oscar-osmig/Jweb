@@ -1,7 +1,10 @@
 package com.osmig.Jweb.framework.config;
 
 import com.osmig.Jweb.framework.JWeb;
+import com.osmig.Jweb.framework.db.mongo.Mongo;
 import com.osmig.Jweb.framework.routing.Router;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -12,6 +15,24 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  */
 @Configuration
 public class JWebConfiguration implements WebMvcConfigurer {
+
+    @Value("${jweb.data.enabled:false}")
+    private boolean dataEnabled;
+
+    @Value("${jweb.data.mongo.uri:mongodb://localhost:27017}")
+    private String mongoUri;
+
+    @Value("${jweb.data.mongo.database:myapp}")
+    private String mongoDatabase;
+
+    @Bean
+    public ApplicationRunner mongoInitializer() {
+        return args -> {
+            if (dataEnabled) {
+                Mongo.connect(mongoUri, mongoDatabase);
+            }
+        };
+    }
 
     @Bean
     public Router jwebRouter(JWeb jweb) {

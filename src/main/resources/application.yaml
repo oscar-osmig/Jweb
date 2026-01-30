@@ -18,12 +18,13 @@ logging:
 jweb:
   admin:
     token: ${JWEB_ADMIN_TOKEN:}
+    email: ${JWEB_ADMIN_EMAIL:}
 
   api:
     base: /api/v1
 
   data:
-    enabled: false
+    enabled: true
     mongo:
       uri: ${MONGO_URI:mongodb://localhost:27017}
       database: ${MONGO_DB:myapp}

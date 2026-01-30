@@ -11,7 +11,7 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 import static com.osmig.Jweb.framework.js.Actions.*;
 import static com.osmig.Jweb.app.forms.FormComponents.*;
 
-/** Contact page with EmailJS form submission. */
+/** Contact page with server-side form submission to MongoDB. */
 public class ContactPage implements Template {
 
     @Override
@@ -29,31 +29,25 @@ public class ContactPage implements Template {
                 statusBox("form-status"),
                 submitButton("Send Message")
             ),
-            script("https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"),
-            inlineScript("if(typeof emailjs!=='undefined')emailjs.init('jBoWfcyb20GACTvti');"),
             inlineScript(ContactScripts.formHandler())
         );
     }
 }
 
-/** JavaScript handlers for Contact page using EmailJS. */
+/** JavaScript handlers for Contact page using server POST. */
 class ContactScripts {
     private ContactScripts() {}
 
     static String formHandler() {
         return script()
             .withHelpers()
-            .add(onSubmitExternal("contact-form")
+            .add(onSubmit("contact-form")
                 .loading("Sending...")
-                .service("emailjs")
-                .call("send", "'service_0cbj03m'", "'template_al44e1p'",
-                    "{title:$_('name').value,name:$_('name').value,from_email:$_('email').value," +
-                    "email:$_('email').value,message:$_('message').value}")
+                .post("/api/v1/contact").withFormData()
                 .ok(all(
                     showMessage("form-status").success("Message sent successfully!"),
                     resetForm("contact-form")))
-                .fail(showMessage("form-status").error("Failed to send. Please try again."))
-                .notAvailable(showMessage("form-status").error("Email service not available.")))
+                .fail(showMessage("form-status").error("Failed to send. Please try again.")))
             .build();
     }
 }
