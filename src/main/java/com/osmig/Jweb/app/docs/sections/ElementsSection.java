@@ -53,6 +53,7 @@ div(attrs()
             ElementsMedia.render(),
             ElementsForms.render(),
             ElementsModern.render(),
+            ElementsEnhanced.render(),
             ElementsSVG.render(),
             ElementsAttributes.render(),
             ElementsConditionals.render(),

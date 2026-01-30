@@ -82,6 +82,7 @@ callback("item")
             JSAsync.render(),
             JSBrowserAPIs.render(),
             JSAdvanced.render(),
+            JSNewAPIs.render(),
 
             spacer()
         );

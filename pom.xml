@@ -187,6 +187,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<mainClass>com.osmig.Jweb.app.App</mainClass>
 					<jvmArguments>
 						--add-opens java.base/sun.misc=ALL-UNNAMED
 						--add-opens java.base/java.nio=ALL-UNNAMED

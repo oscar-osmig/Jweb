@@ -196,49 +196,132 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 
 ---
 
+## Completed Improvements (Session - 2026-01-29)
+
+### New JS Modules Created (5 modules)
+
+- [x] **JSIndexedDB.java** - IndexedDB API for client-side storage
+  - Database open/create/delete with OpenDBBuilder
+  - Object store operations (add, put, get, getAll, getAllKeys, count, delete, clear)
+  - Index creation (unique, multi-entry, compound indexes)
+  - Transactions (readonly, readwrite, versionchange) with TransactionBuilder
+  - Cursor iteration with CursorBuilder (directions, IDBKeyRange)
+  - Promise wrappers for request-based operations
+
+- [x] **JSHistory.java** - History API enhancements
+  - pushState/replaceState with multiple overloads (url+state+title, dynamic)
+  - popstate/hashchange event handling
+  - Navigation guards (fixed message, conditional, callback-based)
+  - Query parameter manipulation (get/set/remove/object)
+  - Hash manipulation and direction detection
+
+- [x] **JSDragDrop.java** - Drag and Drop API
+  - DraggableBuilder (data, effectAllowed, dragImage, all drag events)
+  - DropZoneBuilder (dropEffect, automatic preventDefault, all drop events)
+  - DataTransfer helpers (getData, setData, getFiles, getItems, getTypes, clearData)
+  - Custom drag images
+
+- [x] **JSPointer.java** - Pointer Events API
+  - All pointer event listeners (down/move/up/cancel/enter/leave/over/out/capture)
+  - Pointer capture management (setPointerCapture, releasePointerCapture)
+  - Event property accessors (pointerId, pointerType, pressure, tilt, twist, coordinates)
+  - Coalesced/predicted events access
+  - MultiPointerBuilder for automatic multi-pointer tracking
+
+- [x] **JSSpeech.java** - Web Speech API
+  - SpeakBuilder for text-to-speech (lang, voice, rate, pitch, volume, all events)
+  - Synthesis controls (pause, resume, cancel, isSpeaking)
+  - RecognizerBuilder for speech-to-text (lang, continuous, interimResults, all events)
+  - Recognition controls (start, stop, abort)
+  - Result helpers (transcript, confidence, isFinal, fullTranscript)
+
+### New CSS Modules Created (6 modules)
+
+- [x] **CSSAnchorPositioning.java** - CSS Anchor Positioning
+  - anchor-name, position-anchor properties
+  - anchor() function with fallback and default anchor
+  - anchorSize() function, position-area
+  - Position fallback at-rules, position-try, try-tactics
+  - positionVisibility, convenience methods (positionAbove/Below/Left/Right)
+
+- [x] **CSSScrollSnap.java** - Enhanced Scroll Snap
+  - scroll-snap-type (x/y/both/block/inline, mandatory/proximity)
+  - scroll-snap-align (start/center/end/none)
+  - scroll-snap-stop (normal/always)
+  - scroll-padding and scroll-margin (all sides + inline/block)
+  - overscroll-behavior (x/y)
+
+- [x] **CSSTextWrap.java** - Modern Text Wrapping
+  - text-wrap (balance/pretty/stable/nowrap/wrap)
+  - white-space-collapse (collapse/preserve/preserveBreaks/preserveSpaces/breakSpaces)
+  - word-break (normal/breakAll/keepAll/autoPhrase)
+  - overflow-wrap, hyphens, line-clamp, text-overflow
+
+- [x] **CSSSubgrid.java** - CSS Subgrid Support
+  - subgrid columns/rows/both
+  - gridTemplateColumns/Rows with subgrid
+  - Named line references (subgridColumnsNamed/subgridRowsNamed)
+  - Grid placement helpers (gridColumn/gridRow/Full)
+
+- [x] **CSSMasking.java** - CSS Masking and Clipping
+  - mask-image (with -webkit- prefix), mask-mode, mask-position/size/repeat/origin/clip/composite
+  - clip-path with shape functions (circle, ellipse, inset, polygon, SVG path, URL)
+  - Preset shapes (triangleUp/Down/Left/Right, diamond, pentagon, hexagon, star)
+
+- [x] **CSSLogicalProperties.java** - Logical Properties
+  - inline-size/block-size (+ min/max variants)
+  - margin-inline/margin-block (+ start/end)
+  - padding-inline/padding-block (+ start/end)
+  - inset-inline/inset-block (+ start/end)
+  - border-inline/border-block (+ start/end)
+  - Border-radius logical (start-start/start-end/end-start/end-end)
+  - Text alignment, float, clear, overflow, resize logical
+
+### New HTML Modules Created (6 modules)
+
+- [x] **PopoverElements.java** - Popover API
+  - popover, popovertarget, popovertargetaction attributes
+  - autoPopover/manualPopover element helpers
+  - Toggle/show/hide button factories
+  - JS helpers (showPopover, hidePopover, togglePopover)
+
+- [x] **PictureElements.java** - Responsive Images
+  - picture, source elements
+  - srcset, media, type, sizes attributes
+  - Loading attributes (lazy/eager, decoding, fetchPriority)
+  - Convenience methods (responsiveImg, lazyImg)
+
+- [x] **FigureElements.java** - Figure and Caption
+  - figure, figcaption elements
+  - Attributes overloads
+
+- [x] **DefinitionElements.java** - Definition Lists
+  - dl, dt, dd elements
+  - Attributes overloads
+
+- [x] **InteractiveElements.java** - Interactive/Semantic Text Elements
+  - abbr (with title), dfn, cite, q (with cite URL), blockquote (with cite URL)
+  - kbd, samp, var_, mark, sub, sup, ins, del, s
+
+- [x] **FormEnhancements.java** - Modern Form Features
+  - datalist (autocomplete suggestions), optgroup (option grouping)
+  - fieldset/legend (form grouping)
+  - Specialized inputs (color, date, time, datetime, month, week, range)
+  - Form attributes (formaction, formmethod, formenctype, formtarget, formnovalidate)
+
+### El.java Entry Point Updates
+- [x] Added delegates for figure, figcaption, dl, dt, dd
+- [x] Added delegates for abbr, dfn, cite, q, blockquote, kbd, samp, var_, mark, sub, sup, ins, del, s
+- [x] Added delegates for picture, source
+- [x] Added delegates for datalist, optgroup, fieldset, legend
+
+---
+
 ## Remaining Tasks (Future Improvements)
 
 ### High Priority - JavaScript DSL
 
 #### New Browser APIs
-
-- [ ] **JSIndexedDB.java** - IndexedDB API for client-side storage
-  - Database open/create/delete
-  - Object store operations (add, put, get, delete, clear)
-  - Index creation and querying
-  - Transactions (readonly, readwrite, versionchange)
-  - Cursor iteration patterns
-  - IDBKeyRange for range queries
-
-- [ ] **JSHistory.java** - History API enhancements
-  - pushState/replaceState with type-safe state objects
-  - popstate event handling patterns
-  - Navigation guards and confirmations
-  - Query parameter manipulation
-  - Hash change handling
-  - Browser back/forward detection
-
-- [ ] **JSDragDrop.java** - Drag and Drop API
-  - Draggable elements configuration
-  - Drop zones with validation
-  - DataTransfer API (setData, getData, types, files)
-  - Drag events (dragstart, drag, dragenter, dragover, dragleave, drop, dragend)
-  - Custom drag images
-  - Touch-to-drag fallbacks
-
-- [ ] **JSPointer.java** - Pointer Events API
-  - Unified mouse/touch/pen events
-  - Pointer capture (setPointerCapture, releasePointerCapture)
-  - Pressure sensitivity
-  - Tilt and twist detection
-  - Multi-pointer tracking
-
-- [ ] **JSSpeech.java** - Web Speech API
-  - Speech synthesis (text-to-speech)
-  - Voice selection and configuration
-  - Speech recognition (speech-to-text)
-  - Continuous vs single-shot recognition
-  - Interim results handling
 
 - [ ] **JSBluetooth.java** - Web Bluetooth API
   - Device discovery and filtering
@@ -498,36 +581,39 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 
 ## Module Summary
 
-### Current Module Counts (as of 2026-01-23)
+### Current Module Counts (as of 2026-01-29)
 
 | DSL Category | Module Count | Location |
 |--------------|--------------|----------|
-| JavaScript DSL | 38 modules | `framework/js/` |
-| CSS DSL | 29 modules | `framework/styles/` |
-| HTML DSL | 18 modules | `framework/elements/` |
+| JavaScript DSL | 43 modules | `framework/js/` |
+| CSS DSL | 35 modules | `framework/styles/` |
+| HTML DSL | 24 modules | `framework/elements/` |
 | Core Framework | 60+ modules | Various packages |
-| **Total** | **140+ modules** | |
+| **Total** | **160+ modules** | |
 
-### JS Modules (38 total)
+### JS Modules (43 total)
 Core: JS.java, Actions.java, Async.java, Runtime.java, JWebRuntime.java, Events.java
 Browser APIs: JSStorage.java, JSWebSocket.java, JSAnimation.java, JSWebAnimations.java, JSGeolocation.java, JSNotification.java, JSClipboard.java, JSFullscreen.java, JSShare.java, JSVisibility.java, JSAbort.java
 Data: JSJson.java, JSFormData.java, JSUrl.java, JSDate.java, JSMath.java, JSRegex.java, JSIntl.java
 Utilities: JSOperators.java, JSObservers.java, JSConsole.java, JSFile.java
 Advanced (2026-01-21): JSPromise.java, JSIterator.java, JSProxy.java, JSWorker.java, JSServiceWorker.java, JSMedia.java, JSCanvas.java, JSWebRTC.java, JSCrypto.java, JSPerformance.java
+New APIs (2026-01-29): JSIndexedDB.java, JSHistory.java, JSDragDrop.java, JSPointer.java, JSSpeech.java
 
-### CSS Modules (29 total)
+### CSS Modules (35 total)
 Core: CSS.java, Style.java, CSSValue.java, Stylesheet.java, StyledElement.java, Styles.java
 Layout: StyleFlex.java, StyleGrid.java, StyleBoxModel.java, StylePosition.java, CSSGrid.java
 Styling: StyleTypography.java, StyleEffects.java, CSSColors.java, CSSUnits.java
 At-Rules: MediaQuery.java, Keyframes.java, ContainerQuery.java, Supports.java, CSSNested.java, CSSLayer.java, FontFace.java
 Modern (2026-01-21): CSSScope.java, CSSProperty.java, CSSVariables.java, CSSAnimations.java
+New Features (2026-01-29): CSSAnchorPositioning.java, CSSScrollSnap.java, CSSTextWrap.java, CSSSubgrid.java, CSSMasking.java, CSSLogicalProperties.java
 Other: Selectors.java, Theme.java, Utility.java
 
-### HTML Modules (18 total)
+### HTML Modules (24 total)
 Core: El.java, Tag.java, Elements.java, TextElement.java
 Categories: DocumentElements.java, SemanticElements.java, TextElements.java, ListElements.java, TableElements.java, FormElements.java, MediaElements.java, SVGElements.java
 Form Components: Input.java, Button.java, Form.java
 Modern (2026-01-21): ModernElements.java, DialogHelper.java, DetailsHelper.java
+New Elements (2026-01-29): PopoverElements.java, PictureElements.java, FigureElements.java, DefinitionElements.java, InteractiveElements.java, FormEnhancements.java
 
 ### Module Locations
 ```
@@ -584,4 +670,4 @@ import static com.osmig.Jweb.framework.elements.ModernElements.*;
 
 ---
 
-*Last updated: 2026-01-23*
+*Last updated: 2026-01-29*

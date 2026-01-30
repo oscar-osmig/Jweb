@@ -41,3 +41,6 @@ build/
 .claude/
 CLAUDE.md
 prompt.md
+PLAN.md
+JWEB_EXAMPLES.md
+dsl-todos.md

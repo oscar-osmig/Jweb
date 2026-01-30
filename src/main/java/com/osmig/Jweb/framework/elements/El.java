@@ -137,6 +137,53 @@ public final class El {
     public static Tag rt(Object... c) { return ModernElements.rt(c); }
     public static Tag rp(Object... c) { return ModernElements.rp(c); }
 
+    // ==================== Figure & Caption ====================
+    public static Tag figure(Object... c) { return FigureElements.figure(c); }
+    public static Tag figure(Attributes a, Object... c) { return FigureElements.figure(a, c); }
+    public static Tag figcaption(Object... c) { return FigureElements.figcaption(c); }
+    public static Tag figcaption(Attributes a, Object... c) { return FigureElements.figcaption(a, c); }
+
+    // ==================== Definition Lists ====================
+    public static Tag dl(Object... c) { return DefinitionElements.dl(c); }
+    public static Tag dl(Attributes a, Object... c) { return DefinitionElements.dl(a, c); }
+    public static Tag dt(Object... c) { return DefinitionElements.dt(c); }
+    public static Tag dt(Attributes a, Object... c) { return DefinitionElements.dt(a, c); }
+    public static Tag dd(Object... c) { return DefinitionElements.dd(c); }
+    public static Tag dd(Attributes a, Object... c) { return DefinitionElements.dd(a, c); }
+
+    // ==================== Interactive/Semantic Text ====================
+    public static Tag abbr(String abbreviation, String title) { return InteractiveElements.abbr(abbreviation, title); }
+    public static Tag abbr(Object... c) { return InteractiveElements.abbr(c); }
+    public static Tag dfn(Object... c) { return InteractiveElements.dfn(c); }
+    public static Tag cite(Object... c) { return InteractiveElements.cite(c); }
+    public static Tag q(Object... c) { return InteractiveElements.q(c); }
+    public static Tag blockquote(Object... c) { return InteractiveElements.blockquote(c); }
+    public static Tag blockquote(String citeUrl, Object... c) { return InteractiveElements.blockquote(citeUrl, c); }
+    public static Tag blockquote(Attributes a, Object... c) { return InteractiveElements.blockquote(a, c); }
+    public static Tag kbd(Object... c) { return InteractiveElements.kbd(c); }
+    public static Tag samp(Object... c) { return InteractiveElements.samp(c); }
+    public static Tag var_(Object... c) { return InteractiveElements.var_(c); }
+    public static Tag mark(Object... c) { return InteractiveElements.mark(c); }
+    public static Tag sub(Object... c) { return InteractiveElements.sub(c); }
+    public static Tag sup(Object... c) { return InteractiveElements.sup(c); }
+    public static Tag ins(Object... c) { return InteractiveElements.ins(c); }
+    public static Tag del(Object... c) { return InteractiveElements.del(c); }
+    public static Tag s(Object... c) { return InteractiveElements.s(c); }
+
+    // ==================== Picture & Responsive Images ====================
+    public static Tag picture(Object... c) { return PictureElements.picture(c); }
+    public static Tag picture(Attributes a, Object... c) { return PictureElements.picture(a, c); }
+    public static Tag source(Object... c) { return PictureElements.source(c); }
+
+    // ==================== Form Enhancements ====================
+    public static Tag datalist(String id, Object... c) { return FormEnhancements.datalist(id, c); }
+    public static Tag datalist(Attributes a, Object... c) { return FormEnhancements.datalist(a, c); }
+    public static Tag optgroup(String label, Object... c) { return FormEnhancements.optgroup(label, c); }
+    public static Tag fieldset(Object... c) { return FormEnhancements.fieldset(c); }
+    public static Tag fieldset(Attributes a, Object... c) { return FormEnhancements.fieldset(a, c); }
+    public static Tag legend(Object... c) { return FormEnhancements.legend(c); }
+    public static Tag legend(Attributes a, Object... c) { return FormEnhancements.legend(a, c); }
+
     // ==================== Helpers ====================
     public static TextElement text(String c) { return TextElement.of(c); }
     public static TextElement raw(String h) { return TextElement.raw(h); }

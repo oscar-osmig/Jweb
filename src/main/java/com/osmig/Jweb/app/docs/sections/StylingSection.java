@@ -80,7 +80,8 @@ String css = styles(
             StylingEffects.render(),
             StylingResponsive.render(),
             StylingAnimations.render(),
-            StylingVariables.render()
+            StylingVariables.render(),
+            StylingModernCSS.render()
         );
     }
 }
