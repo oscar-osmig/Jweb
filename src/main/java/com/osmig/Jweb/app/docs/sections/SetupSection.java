@@ -22,10 +22,6 @@ public final class SetupSection {
             codeBlock("""
 server:
   port: 8080
-  compression:
-    enabled: true
-    mime-types: text/html,text/css,application/javascript,application/json
-    min-response-size: 1024
 
 spring:
   application:
@@ -36,20 +32,12 @@ jweb:
   api:
     base: /api/v1
 
-  # Development settings
-  dev:
-    hot-reload: true
-    watch-paths: src/main/java,src/main/resources
-    debounce-ms: 50
-
-  # Performance settings
-  performance:
-    minify-css: true
-    minify-html: false
-    prefetch:
-      enabled: true
-      cache-ttl: 300000
-      hover-delay: 300"""),
+  # MongoDB (optional)
+  data:
+    enabled: true
+    mongo:
+      uri: ${MONGO_URI:mongodb://localhost:27017}
+      database: ${MONGO_DB:myapp}"""),
 
             docSubtitle("Required Imports"),
             codeBlock("""
