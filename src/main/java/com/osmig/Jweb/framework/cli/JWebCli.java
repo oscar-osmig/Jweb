@@ -233,9 +233,15 @@ public class JWebCli {
         writeFile(resolvePath("pages", entityName + "FormPage.java"), formCode);
         System.out.println("\u2713 Created form page: " + entityName + "FormPage");
 
-        System.out.println("\nDon't forget to add routes in Routes.java:");
-        System.out.println("  .get(\"/" + entityName.toLowerCase() + "s\", " + entityName + "ListPage::new)");
-        System.out.println("  .get(\"/" + entityName.toLowerCase() + "s/new\", " + entityName + "FormPage::new)");
+        System.out.println("\nThe generated entity and repository use Spring Data JPA.");
+        System.out.println("Add this dependency to your pom.xml if it isn't there yet:");
+        System.out.println("  <dependency>");
+        System.out.println("    <groupId>org.springframework.boot</groupId>");
+        System.out.println("    <artifactId>spring-boot-starter-data-jpa</artifactId>");
+        System.out.println("  </dependency>");
+        System.out.println("\nThen register routes in Routes.java, e.g.:");
+        System.out.println("  app.get(\"/" + entityName.toLowerCase() + "s\", () -> new " + entityName + "ListPage().render());");
+        System.out.println("  app.get(\"/" + entityName.toLowerCase() + "s/new\", () -> new " + entityName + "FormPage().render());");
     }
 
     private static void generateApi(String name, String[] fields) throws IOException {
@@ -257,22 +263,43 @@ public class JWebCli {
         Path pom = projectRoot.resolve("pom.xml");
         if (Files.exists(pom)) {
             try {
-                String content = Files.readString(pom);
-                int start = content.indexOf("<groupId>") + 9;
-                int end = content.indexOf("</groupId>", start);
-                if (start > 8 && end > start) {
-                    String groupId = content.substring(start, end).trim();
-                    int artStart = content.indexOf("<artifactId>") + 12;
-                    int artEnd = content.indexOf("</artifactId>", artStart);
-                    if (artStart > 11 && artEnd > artStart) {
-                        String artifactId = content.substring(artStart, artEnd).trim();
-                        basePackage = groupId + "." + artifactId.replaceAll("[^a-zA-Z0-9]", "");
-                    }
+                String derived = basePackageFromPom(Files.readString(pom));
+                if (derived != null) {
+                    basePackage = derived;
                 }
             } catch (IOException e) {
                 // Use default
             }
         }
+    }
+
+    /**
+     * Derives the base package (groupId + sanitized artifactId) from a pom's
+     * XML, skipping the {@code <parent>} block so the project's own coordinates
+     * are read rather than the parent's (e.g. org.springframework.boot from
+     * spring-boot-starter-parent). Returns null if it cannot be determined.
+     */
+    static String basePackageFromPom(String content) {
+        int searchFrom = 0;
+        int parentEnd = content.indexOf("</parent>");
+        if (parentEnd != -1) {
+            searchFrom = parentEnd + "</parent>".length();
+        }
+        String groupId = between(content, "<groupId>", "</groupId>", searchFrom);
+        String artifactId = between(content, "<artifactId>", "</artifactId>", searchFrom);
+        if (groupId != null && artifactId != null) {
+            return groupId + "." + artifactId.replaceAll("[^a-zA-Z0-9]", "");
+        }
+        return null;
+    }
+
+    private static String between(String content, String open, String close, int from) {
+        int start = content.indexOf(open, from);
+        if (start == -1) return null;
+        start += open.length();
+        int end = content.indexOf(close, start);
+        if (end <= start) return null;
+        return content.substring(start, end).trim();
     }
 
     private static Path resolvePath(String subpackage, String fileName) throws IOException {
@@ -317,7 +344,7 @@ public class JWebCli {
 
     // ==================== Template Generation ====================
 
-    private static String generatePom(String projectName, String packageName) {
+    static String generatePom(String projectName, String packageName) {
         String groupId = packageName.contains(".")
             ? packageName.substring(0, packageName.lastIndexOf('.'))
             : packageName;
@@ -332,7 +359,7 @@ public class JWebCli {
                 <parent>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-parent</artifactId>
-                    <version>3.2.0</version>
+                    <version>4.0.0</version>
                 </parent>
 
                 <groupId>%s</groupId>
@@ -341,7 +368,7 @@ public class JWebCli {
                 <name>%s</name>
 
                 <properties>
-                    <java.version>17</java.version>
+                    <java.version>21</java.version>
                 </properties>
 
                 <dependencies>
@@ -349,7 +376,14 @@ public class JWebCli {
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-starter-web</artifactId>
                     </dependency>
-                    <!-- Add JWeb dependency here -->
+                    <!-- JWeb framework. Not yet on Maven Central: build it once
+                         with `mvn install` in the JWeb repo to publish it to
+                         your local ~/.m2, then this dependency resolves. -->
+                    <dependency>
+                        <groupId>com.osmig</groupId>
+                        <artifactId>Jweb</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
                 </dependencies>
 
                 <build>
@@ -364,29 +398,33 @@ public class JWebCli {
             """.formatted(groupId, projectName, projectName);
     }
 
-    private static String generateApplication(String packageName) {
+    static String generateApplication(String packageName) {
         return """
             package %s;
 
             import org.springframework.boot.SpringApplication;
             import org.springframework.boot.autoconfigure.SpringBootApplication;
+            import org.springframework.context.annotation.ComponentScan;
 
+            // Scan both the JWeb framework package (so its controllers and
+            // auto-configuration load) and this application's own package.
             @SpringBootApplication
+            @ComponentScan(basePackages = {"com.osmig.Jweb", "%s"})
             public class Application {
 
                 public static void main(String[] args) {
                     SpringApplication.run(Application.class, args);
                 }
             }
-            """.formatted(packageName);
+            """.formatted(packageName, packageName);
     }
 
-    private static String generateRoutes(String packageName) {
+    static String generateRoutes(String packageName) {
         return """
             package %s;
 
+            import com.osmig.Jweb.framework.JWeb;
             import com.osmig.Jweb.framework.JWebRoutes;
-            import com.osmig.Jweb.framework.routing.Router;
             import %s.pages.HomePage;
             import org.springframework.stereotype.Component;
 
@@ -394,9 +432,8 @@ public class JWebCli {
             public class Routes implements JWebRoutes {
 
                 @Override
-                public void configure(Router router) {
-                    router
-                        .get("/", HomePage::new);
+                public void configure(JWeb app) {
+                    app.get("/", () -> new HomePage().render());
                 }
             }
             """.formatted(packageName, packageName);
@@ -466,8 +503,8 @@ public class JWebCli {
                             meta(attrs()
                                 .name("viewport")
                                 .content("width=device-width, initial-scale=1.0")),
-                            title(text("JWeb App")),
-                            style(text(globalStyles()))
+                            title("JWeb App"),
+                            style(globalStyles())
                         ),
                         body(attrs().style()
                                 .margin(() -> "0")

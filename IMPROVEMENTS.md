@@ -32,6 +32,21 @@ This document catalogs concrete problems and improvement opportunities found dur
 > and `HardeningTest`. Verified with the full test suite and an HTTP smoke test
 > (doctype present, CSRF field rendered, un-tokened login rejected, rate limit
 > returns 429, 500s show no stack trace). Remaining items below are untouched.
+>
+> **Update (2026-07-18, round 3) — leaks & CLI codegen.** Also now fixed:
+> **H11** (per-instance `Cache` cleanup task that leaked every cache replaced
+> with one global sweeper over a weak registry, so unreferenced caches are
+> collected), **M8** (`Cache.getOrSet` is now atomic per key — the supplier
+> runs once under a concurrent-miss stampede), **M7** (tracked `Jobs` are
+> auto-evicted a short while after they finish instead of accumulating
+> forever), and **H8/H9** (`jweb new` now generates a project that compiles:
+> `Routes` matches `configure(JWeb app)`, the pom declares the real JWeb
+> dependency and Boot 4/Java 21, the app scans both the framework and app
+> packages, `detectProject` reads the project's own groupId not the parent's,
+> and a broken `MainLayout` template was fixed). Verified: full suite green
+> (15 tests, incl. new `CacheTest` and `JWebCliTest`), a generated project
+> compiles end-to-end against the framework, and the app still boots and
+> serves. Remaining items below are untouched.
 
 ---
 

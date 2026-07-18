@@ -70,7 +70,20 @@ public final class Jobs {
     private static final Map<String, BackgroundTask<?>> tasks = new ConcurrentHashMap<>();
     private static final Map<String, ScheduledFuture<?>> scheduledJobs = new ConcurrentHashMap<>();
 
+    // How long a finished task stays queryable before it is auto-evicted, so
+    // the tracked-task map does not grow without bound.
+    private static final Duration COMPLETED_TASK_RETENTION = Duration.ofMinutes(5);
+
     private Jobs() {}
+
+    /**
+     * Evicts a finished task from tracking after a retention window, leaving a
+     * grace period during which its status can still be polled.
+     */
+    private static void scheduleEviction(String taskId) {
+        scheduler.schedule(() -> tasks.remove(taskId),
+                COMPLETED_TASK_RETENTION.toMillis(), TimeUnit.MILLISECONDS);
+    }
 
     // ========== One-time Execution ==========
 
@@ -132,6 +145,7 @@ public final class Jobs {
 
         BackgroundTask<T> bgTask = new BackgroundTask<>(name, future);
         tasks.put(bgTask.getId(), bgTask);
+        future.whenComplete((r, e) -> scheduleEviction(bgTask.getId()));
         return bgTask;
     }
 
@@ -148,6 +162,7 @@ public final class Jobs {
 
         BackgroundTask<T> bgTask = new BackgroundTask<>(name, future);
         tasks.put(bgTask.getId(), bgTask);
+        future.whenComplete((r, e) -> scheduleEviction(bgTask.getId()));
 
         executor.execute(() -> {
             bgTask.markRunning();

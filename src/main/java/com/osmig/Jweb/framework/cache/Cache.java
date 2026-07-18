@@ -2,7 +2,11 @@ package com.osmig.Jweb.framework.cache;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -55,13 +59,30 @@ import java.util.function.Supplier;
 public class Cache<K, V> {
 
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
+
+    // Single shared scheduler and a weak registry of all live caches. Declared
+    // before GLOBAL below because constructing any Cache registers it here, so
+    // these must be initialized first (static fields init in textual order).
+    private static final ScheduledExecutorService CLEANUP_SCHEDULER =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "Cache-Cleanup");
+                t.setDaemon(true);
+                return t;
+            });
+
+    private static final Map<Cache<?, ?>, Boolean> LIVE_CACHES =
+            Collections.synchronizedMap(new WeakHashMap<>());
+
+    static {
+        CLEANUP_SCHEDULER.scheduleAtFixedRate(Cache::sweepAll, 1, 1, TimeUnit.MINUTES);
+    }
+
     private static final Cache<String, Object> GLOBAL = new Cache<>(DEFAULT_TTL);
     private static final Map<String, Cache<?, ?>> NAMED_CACHES = new ConcurrentHashMap<>();
 
     private final Map<K, CacheEntry<V>> store = new ConcurrentHashMap<>();
     private final Duration defaultTtl;
     private final int maxSize;
-    private volatile boolean cleanupScheduled = false;
 
     private Cache(Duration defaultTtl) {
         this(defaultTtl, Integer.MAX_VALUE);
@@ -70,7 +91,11 @@ public class Cache<K, V> {
     private Cache(Duration defaultTtl, int maxSize) {
         this.defaultTtl = defaultTtl;
         this.maxSize = maxSize;
-        scheduleCleanup();
+        // Register with the single global sweeper via a weak reference. This
+        // replaces a per-instance scheduled task that held a strong reference
+        // to `this` forever, so short-lived caches can now be garbage
+        // collected instead of leaking themselves plus a repeating task.
+        registerForCleanup(this);
     }
 
     // ==================== Factory Methods ====================
@@ -147,17 +172,23 @@ public class Cache<K, V> {
 
     /**
      * Gets a value, or computes and caches it with custom TTL.
+     *
+     * <p>The compute-and-store is atomic per key, so under concurrent misses
+     * the supplier runs once rather than every caller stampeding the
+     * (potentially expensive) supplier.</p>
      */
     public V getOrSet(K key, Supplier<V> supplier, Duration ttl) {
-        V value = get(key);
-        if (value != null) {
-            return value;
-        }
-        value = supplier.get();
-        if (value != null) {
-            set(key, value, ttl);
-        }
-        return value;
+        CacheEntry<V> entry = store.compute(key, (k, existing) -> {
+            if (existing != null && !existing.isExpired()) {
+                return existing;
+            }
+            V computed = supplier.get();
+            if (computed == null) {
+                return null; // removes the mapping
+            }
+            return new CacheEntry<>(computed, Instant.now().plus(ttl));
+        });
+        return entry != null ? entry.value : null;
     }
 
     /**
@@ -349,23 +380,28 @@ public class Cache<K, V> {
         }
     }
 
-    // Shared scheduler for all cache instances - non-blocking
-    private static final ScheduledExecutorService CLEANUP_SCHEDULER =
-            Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread t = new Thread(r, "Cache-Cleanup");
-                t.setDaemon(true);
-                return t;
-            });
+    // The shared scheduler and weak registry are declared near the top of the
+    // class so they initialize before the GLOBAL cache instance. One task
+    // sweeps every live cache; caches no longer referenced elsewhere are
+    // collected and drop out of the registry on their own.
+    private static void registerForCleanup(Cache<?, ?> cache) {
+        LIVE_CACHES.put(cache, Boolean.TRUE);
+    }
 
-    private void scheduleCleanup() {
-        if (cleanupScheduled) return;
-        cleanupScheduled = true;
-
-        // Non-blocking scheduled cleanup (replaces Thread.sleep)
-        CLEANUP_SCHEDULER.scheduleAtFixedRate(
-                this::cleanup,
-                1, 1, TimeUnit.MINUTES
-        );
+    private static void sweepAll() {
+        List<Cache<?, ?>> snapshot;
+        synchronized (LIVE_CACHES) {
+            snapshot = new ArrayList<>(LIVE_CACHES.keySet());
+        }
+        for (Cache<?, ?> cache : snapshot) {
+            if (cache != null) {
+                try {
+                    cache.cleanup();
+                } catch (RuntimeException ignored) {
+                    // A misbehaving cache must not stop the others being swept.
+                }
+            }
+        }
     }
 
     // ==================== Entry ====================
