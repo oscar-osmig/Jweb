@@ -12,6 +12,7 @@ import com.osmig.Jweb.framework.routing.PageRoute;
 import com.osmig.Jweb.framework.routing.Router;
 import com.osmig.Jweb.framework.state.StateManager;
 import com.osmig.Jweb.framework.template.Template;
+import com.osmig.Jweb.framework.util.Log;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.CacheControl;
@@ -222,7 +223,9 @@ public class JWebController {
     }
 
     private ResponseEntity<String> handleError(Exception e) {
-        e.printStackTrace();
+        // Log the full detail server-side; the response body only exposes it
+        // when error detail is explicitly enabled (see ErrorPage.showDetails).
+        Log.error("Unhandled error while handling request: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.TEXT_HTML)
             .body(ErrorPage.render(500, "Server Error", e).toHtml());

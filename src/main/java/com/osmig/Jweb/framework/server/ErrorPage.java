@@ -17,8 +17,23 @@ public final class ErrorPage {
 
     private ErrorPage() {}
 
+    /**
+     * Whether error responses may include exception details and stack traces.
+     *
+     * <p>Defaults to {@code false} (production-safe): clients see a generic
+     * message and internal details are only logged server-side. Enable for
+     * local development by setting the system property {@code jweb.errors.detail}
+     * or the environment variable {@code JWEB_ERRORS_DETAIL} to {@code true}.
+     * Leaking class names, file paths, and stack frames to end users hands an
+     * attacker a map of the internals.</p>
+     */
+    public static boolean showDetails() {
+        return Boolean.parseBoolean(System.getProperty("jweb.errors.detail",
+                System.getenv().getOrDefault("JWEB_ERRORS_DETAIL", "false")));
+    }
+
     public static Element render(int status, String title, Exception e) {
-        String stackTrace = getStackTrace(e);
+        boolean detail = showDetails();
 
         return html(
             head(
@@ -38,16 +53,19 @@ public final class ErrorPage {
                     h1(attrs().class_("error-code"), String.valueOf(status)),
                     // Title
                     h2(attrs().class_("error-title"), title),
-                    // Error message
+                    // Error message: generic in production, detailed in dev.
                     p(attrs().class_("error-message"),
-                        e.getClass().getSimpleName() + ": " +
-                        (e.getMessage() != null ? e.getMessage() : "No message")
+                        detail
+                            ? e.getClass().getSimpleName() + ": " +
+                                (e.getMessage() != null ? e.getMessage() : "No message")
+                            : "Something went wrong. Please try again later."
                     ),
-                    // Stack trace (collapsible)
-                    details(attrs().class_("error-details"),
-                        summary(attrs().class_("error-summary"), text("Stack Trace")),
-                        pre(attrs().class_("error-stack"), code(stackTrace))
-                    ),
+                    // Stack trace (collapsible) - development only.
+                    detail
+                        ? details(attrs().class_("error-details"),
+                            summary(attrs().class_("error-summary"), text("Stack Trace")),
+                            pre(attrs().class_("error-stack"), code(getStackTrace(e))))
+                        : text(""),
                     // Actions
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),

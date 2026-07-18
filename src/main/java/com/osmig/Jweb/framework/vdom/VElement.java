@@ -65,6 +65,11 @@ public final class VElement implements VNode {
     @Override
     public String toHtml() {
         StringBuilder html = new StringBuilder();
+        // Emit the HTML5 doctype for the root <html> element so pages render in
+        // standards mode rather than browser quirks mode.
+        if ("html".equals(tag)) {
+            html.append("<!DOCTYPE html>\n");
+        }
         html.append("<").append(tag);
 
         for (Map.Entry<String, String> attr : attributes.entrySet()) {

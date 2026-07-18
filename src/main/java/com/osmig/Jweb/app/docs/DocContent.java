@@ -6,6 +6,11 @@ import com.osmig.Jweb.app.docs.sections.*;
 public class DocContent {
 
     public static Element get(String section) {
+        // A missing ?section= must fall back to the intro rather than NPE the
+        // switch (which would surface as a 500).
+        if (section == null) {
+            return IntroSection.render();
+        }
         return switch (section) {
             case "setup" -> SetupSection.render();
             case "elements" -> ElementsSection.render();

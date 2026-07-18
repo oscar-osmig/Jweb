@@ -13,9 +13,14 @@ import static com.osmig.Jweb.app.forms.FormComponents.*;
 /** Admin login page with gradient-bordered card. */
 public class AdminLoginPage implements Template {
     private final String error;
+    private final String csrfToken;
 
-    public AdminLoginPage() { this.error = null; }
-    public AdminLoginPage(String error) { this.error = error; }
+    public AdminLoginPage() { this(null, null); }
+    public AdminLoginPage(String error) { this(error, null); }
+    public AdminLoginPage(String error, String csrfToken) {
+        this.error = error;
+        this.csrfToken = csrfToken;
+    }
 
     @Override
     public Element render() {
@@ -55,6 +60,7 @@ public class AdminLoginPage implements Template {
                 form(attrs().action("/only-admin/log/in").method("post").style()
                         .display(flex).flexDirection(column).gap(SP_4)
                     .done(),
+                    csrfField(),
                     field("Email", "email", "email", "admin@example.com"),
                     field("Admin Token", "token", "password", "Enter admin token"),
                     gradientSubmitButton("Sign In")
@@ -92,6 +98,11 @@ public class AdminLoginPage implements Template {
             .color(white).border(none).borderRadius(ROUNDED)
             .fontSize(TEXT_BASE).fontWeight(600).cursor(pointer)
         .done(), text(label));
+    }
+
+    private Element csrfField() {
+        if (csrfToken == null || csrfToken.isBlank()) return text("");
+        return input(attrs().type("hidden").name("_csrf").value(csrfToken));
     }
 
     private Element errorMessage() {

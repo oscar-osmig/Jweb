@@ -16,8 +16,22 @@ This document catalogs concrete problems and improvement opportunities found dur
 > Verified by a new `ReactivePipelineTest` and an HTTP smoke test.
 > Resolved items: **C1, C2, C3, C4, C6**, plus **H5** (state listener
 > thread-safety), **L2** (reflected handler id), and **C8**'s broken
-> `contextLoads()` test. The remaining High/Medium/Low items below are
-> untouched.
+> `contextLoads()` test.
+>
+> **Update (2026-07-18, round 2) — security, correctness & build hardening.**
+> Also now fixed: **H1** (stack traces gated behind `jweb.errors.detail`, off by
+> default; errors logged server-side instead of `printStackTrace`), **H2**
+> (WebSocket no longer allows all origins — same-origin by default, allowlist
+> via `jweb.websocket.allowed-origins`), **H3** (admin login/logout now
+> CSRF-protected, logout is POST, login rate-limited per IP), **H7** (HTML5
+> doctype emitted for every page), **H10** (`/docs/content` tolerates a missing
+> section), **H13** (`mvnw` is executable in git), **M6/L1** (admin authz checks
+> the `admin` role; token compared in constant time), **M18** (MongoDB version
+> managed by the Boot BOM), **M19** (Dockerfile runs non-root, correct port,
+> plus a `.dockerignore`). Added a **CI workflow** (`.github/workflows/ci.yml`)
+> and `HardeningTest`. Verified with the full test suite and an HTTP smoke test
+> (doctype present, CSRF field rendered, un-tokened login rejected, rate limit
+> returns 429, 500s show no stack trace). Remaining items below are untouched.
 
 ---
 
