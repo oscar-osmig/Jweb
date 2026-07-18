@@ -6,6 +6,19 @@
 
 This document catalogs concrete problems and improvement opportunities found during a read-through of the codebase. Items are grouped by area and ranked by severity. Line numbers are approximate and refer to the state of the repo at audit time.
 
+> **Update (2026-07-18) — critical reactive-pipeline fixes landed on this branch.**
+> The core round-trip now works end-to-end and is safe: the client runtime is
+> injected and unified on a single HTTP transport (`fetch` → `/jweb/event`),
+> state contexts survive past render with an access-based TTL, event handlers
+> are scoped per-session behind unguessable context ids (no cross-user
+> execution, no unbounded global leak), the event thread-local is always
+> released in a `finally`, and the hydration `<script>` payload is escaped.
+> Verified by a new `ReactivePipelineTest` and an HTTP smoke test.
+> Resolved items: **C1, C2, C3, C4, C6**, plus **H5** (state listener
+> thread-safety), **L2** (reflected handler id), and **C8**'s broken
+> `contextLoads()` test. The remaining High/Medium/Low items below are
+> untouched.
+
 ---
 
 ## Executive summary

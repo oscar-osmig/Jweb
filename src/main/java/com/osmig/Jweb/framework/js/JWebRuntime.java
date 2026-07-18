@@ -5,11 +5,16 @@ package com.osmig.Jweb.framework.js;
  *
  * <p>This generates the client-side JavaScript that handles:</p>
  * <ul>
- *   <li>WebSocket connection to server</li>
- *   <li>Event handler execution</li>
- *   <li>State synchronization</li>
- *   <li>DOM updates</li>
+ *   <li>Reading server-rendered hydration data ({@code __JWEB_DATA__})</li>
+ *   <li>Event handler execution via HTTP POST to {@code /jweb/event}</li>
+ *   <li>Applying state updates returned by the server to bound DOM elements</li>
  * </ul>
+ *
+ * <p>Events use a simple request/response round-trip over {@code fetch()}
+ * rather than a WebSocket: a handler click POSTs the handler id plus the
+ * event data and the server responds with the states that changed, which the
+ * runtime then reflects into the DOM. This keeps the interactive path free of
+ * WebSocket connection lifecycle and cross-origin handshake concerns.</p>
  */
 public final class JWebRuntime {
 
@@ -31,16 +36,11 @@ public final class JWebRuntime {
 
     private static final String RUNTIME_SCRIPT = """
         var JWeb={
-            ws:null,
             state:{},
             data:null,
-            connected:false,
-            reconnectAttempts:0,
-            maxReconnectAttempts:5,
-            reconnectDelay:1000,
+            endpoint:'/jweb/event',
 
             init:function(){
-                console.log('[JWeb] Starting initialization...');
                 var dataEl=document.getElementById('__JWEB_DATA__');
                 if(dataEl){
                     try{
@@ -54,65 +54,6 @@ public final class JWebRuntime {
                     }catch(e){
                         console.error('[JWeb] Failed to parse hydration data:',e);
                     }
-                }
-                this.connect();
-            },
-
-            connect:function(){
-                var protocol=window.location.protocol==='https:'?'wss:':'ws:';
-                var wsUrl=protocol+'//'+window.location.host+'/jweb';
-                try{
-                    this.ws=new WebSocket(wsUrl);
-                    var self=this;
-                    this.ws.onopen=function(){
-                        console.log('[JWeb] WebSocket connected');
-                        self.connected=true;
-                        self.reconnectAttempts=0;
-                        if(self.data&&self.data.contextId){
-                            self.ws.send(JSON.stringify({type:'init',contextId:self.data.contextId}));
-                        }
-                    };
-                    this.ws.onmessage=function(event){
-                        self.handleMessage(JSON.parse(event.data));
-                    };
-                    this.ws.onclose=function(){
-                        console.log('[JWeb] WebSocket disconnected');
-                        self.connected=false;
-                        self.scheduleReconnect();
-                    };
-                    this.ws.onerror=function(error){
-                        console.error('[JWeb] WebSocket error:',error);
-                    };
-                }catch(e){
-                    console.error('[JWeb] Failed to connect:',e);
-                    this.scheduleReconnect();
-                }
-            },
-
-            scheduleReconnect:function(){
-                if(this.reconnectAttempts<this.maxReconnectAttempts){
-                    this.reconnectAttempts++;
-                    var delay=this.reconnectDelay*this.reconnectAttempts;
-                    console.log('[JWeb] Reconnecting in '+delay+'ms');
-                    var self=this;
-                    setTimeout(function(){self.connect();},delay);
-                }
-            },
-
-            handleMessage:function(msg){
-                switch(msg.type){
-                    case 'connected':
-                        console.log('[JWeb] Session:',msg.sessionId);
-                        break;
-                    case 'stateUpdate':
-                        this.handleStateUpdate(msg.states);
-                        break;
-                    case 'domUpdate':
-                        this.handleDomUpdate(msg);
-                        break;
-                    case 'error':
-                        console.error('[JWeb] Server error:',msg.message);
-                        break;
                 }
             },
 
@@ -178,14 +119,14 @@ public final class JWebRuntime {
             },
 
             call:function(handlerId,domEvent){
-                if(!this.connected){
-                    console.warn('[JWeb] Not connected');
+                var contextId=this.data?this.data.contextId:null;
+                if(!contextId){
+                    console.warn('[JWeb] No hydration context; cannot dispatch event');
                     return;
                 }
                 var eventData={
-                    type:'event',
                     handler:handlerId,
-                    contextId:this.data?this.data.contextId:null,
+                    contextId:contextId,
                     eventType:domEvent?domEvent.type:'unknown',
                     targetId:domEvent&&domEvent.target?domEvent.target.id:'',
                     value:domEvent&&domEvent.target?domEvent.target.value:'',
@@ -204,24 +145,27 @@ public final class JWebRuntime {
                     eventData.formData=Object.fromEntries(formData);
                     domEvent.preventDefault();
                 }
-                this.ws.send(JSON.stringify(eventData));
+                var self=this;
+                fetch(this.endpoint,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body:JSON.stringify(eventData)
+                }).then(function(res){
+                    return res.json();
+                }).then(function(msg){
+                    if(msg&&msg.success){
+                        self.handleStateUpdate(msg.states);
+                        if(msg.html!==undefined||msg.updates){self.handleDomUpdate(msg);}
+                    }else if(msg&&msg.error){
+                        console.warn('[JWeb] '+msg.error);
+                    }
+                }).catch(function(err){
+                    console.error('[JWeb] Event request failed:',err);
+                });
             },
 
             getState:function(stateId){
                 return this.state[stateId];
-            },
-
-            setState:function(stateId,value){
-                if(!this.connected){
-                    return;
-                }
-                this.ws.send(JSON.stringify({type:'setState',stateId:stateId,value:value}));
-            },
-
-            ping:function(){
-                if(this.connected){
-                    this.ws.send(JSON.stringify({type:'ping'}));
-                }
             }
         };
 
@@ -230,6 +174,5 @@ public final class JWebRuntime {
         }else{
             JWeb.init();
         }
-        setInterval(function(){JWeb.ping();},30000);
         """;
 }

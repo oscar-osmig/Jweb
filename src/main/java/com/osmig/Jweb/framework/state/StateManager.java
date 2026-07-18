@@ -1,10 +1,14 @@
 package com.osmig.Jweb.framework.state;
 
+import com.osmig.Jweb.framework.events.EventRegistry;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -32,8 +36,10 @@ public final class StateManager {
     // Context registry - maps session ID to context (for WebSocket lookup)
     private static final Map<String, StateContext> contextRegistry = new ConcurrentHashMap<>();
 
-    // Global state change listeners (for WebSocket integration)
-    private static final List<BiConsumer<State<?>, Object>> globalListeners = new ArrayList<>();
+    // Global state change listeners (for WebSocket integration).
+    // CopyOnWriteArrayList so iteration during onStateChange is safe while
+    // listeners are added/removed from other threads (HTTP vs WebSocket).
+    private static final List<BiConsumer<State<?>, Object>> globalListeners = new CopyOnWriteArrayList<>();
 
     // Non-blocking scheduled cleanup (replaces Thread.sleep patterns)
     private static final ScheduledExecutorService cleanupScheduler =
@@ -59,14 +65,24 @@ public final class StateManager {
     }
 
     /**
-     * Removes stale contexts that haven't been explicitly cleaned up.
-     * This prevents memory leaks from abandoned requests or exceptions.
+     * Removes stale contexts that haven't been accessed within the TTL window.
+     *
+     * <p>Eviction is based on last access time, not creation time, so a context
+     * that is actively handling events stays alive; only idle contexts are
+     * reclaimed. When a context is evicted its event handlers are also cleared
+     * so the handler registry does not grow without bound.</p>
      */
     private static void cleanupStaleContexts() {
         long now = System.currentTimeMillis();
         contextRegistry.entrySet().removeIf(entry -> {
             StateContext ctx = entry.getValue();
-            return now - ctx.getCreatedAt() > CONTEXT_TTL_MS;
+            boolean expired = now - ctx.getLastAccess() > CONTEXT_TTL_MS;
+            if (expired) {
+                // Evict the handlers bound to this session to prevent leaks.
+                EventRegistry.clearSession(ctx.getSessionId());
+                ctx.dispose();
+            }
+            return expired;
         });
     }
 
@@ -168,7 +184,12 @@ public final class StateManager {
      * @return the context, or null if not found
      */
     public static StateContext getContextById(String sessionId) {
-        return contextRegistry.get(sessionId);
+        StateContext context = contextRegistry.get(sessionId);
+        if (context != null) {
+            // Touch the context so an actively-used session is not evicted.
+            context.touch();
+        }
+        return context;
     }
 
     /**
@@ -193,6 +214,20 @@ public final class StateManager {
      * Call this at the end of handling a request.
      */
     public static void clearContext() {
+        currentContext.remove();
+    }
+
+    /**
+     * Detaches the current thread from its state context without destroying
+     * the context.
+     *
+     * <p>Use this at the end of a render or event on a pooled servlet thread:
+     * the thread-local binding is removed (so the next unrelated request on
+     * this thread does not inherit a stale context), but the context itself
+     * remains registered so later events referencing its {@code contextId}
+     * can still resolve it. Idle contexts are reclaimed by the TTL sweep.</p>
+     */
+    public static void detachContext() {
         currentContext.remove();
     }
 
@@ -227,18 +262,50 @@ public final class StateManager {
         private final Map<String, RenderableComponent> components = new ConcurrentHashMap<>();
         private final String sessionId;
         private final long createdAt;
+        private volatile long lastAccess;
 
         StateContext() {
             this.createdAt = System.currentTimeMillis();
-            this.sessionId = "ctx_" + createdAt + "_" + Thread.currentThread().threadId();
+            this.lastAccess = this.createdAt;
+            // Unguessable session id: the client presents this value on every
+            // event call, so it acts as a capability token. A predictable id
+            // (timestamp + thread id) would let one client target another
+            // client's context and handlers.
+            this.sessionId = "ctx_" + UUID.randomUUID();
         }
 
         /**
          * Gets the creation timestamp of this context.
-         * Used for TTL-based cleanup.
          */
         public long getCreatedAt() {
             return createdAt;
+        }
+
+        /**
+         * Gets the last time this context was accessed. Used for TTL-based
+         * cleanup so that active sessions are not evicted.
+         */
+        public long getLastAccess() {
+            return lastAccess;
+        }
+
+        /**
+         * Marks this context as accessed now, resetting its idle timer.
+         */
+        public void touch() {
+            this.lastAccess = System.currentTimeMillis();
+        }
+
+        /**
+         * Releases the resources held by this context. Called by the TTL sweep
+         * after the context has been removed from the registry. Does not touch
+         * the registry itself (the sweep owns removal) and does not disturb any
+         * thread-local binding.
+         */
+        void dispose() {
+            states.clear();
+            changedStates.clear();
+            components.clear();
         }
 
         void register(State<?> state) {

@@ -2,9 +2,9 @@ package com.osmig.Jweb.framework.state;
 
 import com.osmig.Jweb.framework.util.Json;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
@@ -29,10 +29,12 @@ import java.util.function.UnaryOperator;
  */
 public class State<T> {
 
-    private T value;
+    private volatile T value;
     private final String id;
-    private final List<Consumer<T>> subscribers = new ArrayList<>();
-    private boolean dirty = false;
+    // CopyOnWriteArrayList so notifySubscribers() can iterate safely while
+    // subscribe()/unsubscribe() run on other threads (e.g. render vs event).
+    private final List<Consumer<T>> subscribers = new CopyOnWriteArrayList<>();
+    private volatile boolean dirty = false;
 
     /**
      * Creates a new State with the given initial value.

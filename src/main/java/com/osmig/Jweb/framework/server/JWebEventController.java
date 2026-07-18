@@ -39,6 +39,7 @@ public class JWebEventController {
     @PostMapping(value = "/event",
                  consumes = MediaType.APPLICATION_JSON_VALUE,
                  produces = MediaType.APPLICATION_JSON_VALUE)
+    @SuppressWarnings("unchecked")
     public ResponseEntity<String> handleEvent(@RequestBody Map<String, Object> body) {
 
         String handlerId = (String) body.get("handler");
@@ -48,15 +49,27 @@ public class JWebEventController {
 
         if (handlerId == null) {
             return ResponseEntity.badRequest()
-                .body("{\"error\":\"Missing handler ID\"}");
+                .body("{\"success\":false,\"error\":\"Missing handler ID\"}");
         }
 
-        // Restore context if available
-        StateManager.StateContext context = null;
-        if (contextId != null) {
-            context = StateManager.getContextById(contextId);
-            if (context != null) {
-                StateManager.setContext(context);
+        // Resolve the caller's context. The contextId is an unguessable
+        // capability token; a handler is only looked up within its own
+        // session, so one client cannot invoke another client's handlers.
+        StateManager.StateContext context = contextId != null
+            ? StateManager.getContextById(contextId)
+            : null;
+        if (context == null) {
+            return ResponseEntity.ok()
+                .body("{\"success\":false,\"error\":\"Session expired\"}");
+        }
+
+        // Collect form data if this was a form submit.
+        Map<String, String> formData = null;
+        Object rawForm = body.get("formData");
+        if (rawForm instanceof Map<?, ?> m) {
+            formData = new HashMap<>();
+            for (Map.Entry<?, ?> e : m.entrySet()) {
+                formData.put(String.valueOf(e.getKey()), String.valueOf(e.getValue()));
             }
         }
 
@@ -66,25 +79,22 @@ public class JWebEventController {
             .value(value)
             .targetId((String) body.getOrDefault("targetId", ""))
             .checked(Boolean.TRUE.equals(body.get("checked")))
+            .formData(formData)
             .build();
 
-        // Execute handler
-        boolean executed = EventRegistry.execute(handlerId, event);
+        // Bind the context to this thread for the duration of the handler, and
+        // always detach in finally so a thrown handler cannot leave a stale
+        // context bound to this pooled servlet thread.
+        StateManager.setContext(context);
+        try {
+            boolean executed = EventRegistry.execute(contextId, handlerId, event);
 
-        if (!executed) {
-            StateManager.clearContext();
-            return ResponseEntity.ok()
-                .body("{\"success\":false,\"error\":\"Handler not found: " + handlerId + "\"}");
-        }
+            if (!executed) {
+                return ResponseEntity.ok()
+                    .body("{\"success\":false,\"error\":\"Handler not found\"}");
+            }
 
-        // Get updated states
-        if (context == null) {
-            context = StateManager.getContext();
-        }
-
-        StringBuilder response = new StringBuilder("{\"success\":true,\"states\":[");
-
-        if (context != null) {
+            StringBuilder response = new StringBuilder("{\"success\":true,\"states\":[");
             var changedStates = context.getChangedStates();
             boolean first = true;
             for (State<?> state : changedStates) {
@@ -93,13 +103,12 @@ public class JWebEventController {
                 first = false;
             }
             context.clearChangedStates();
+            response.append("]}");
+
+            return ResponseEntity.ok().body(response.toString());
+        } finally {
+            StateManager.detachContext();
         }
-
-        response.append("]}");
-
-        StateManager.clearContext();
-
-        return ResponseEntity.ok().body(response.toString());
     }
 
     /**

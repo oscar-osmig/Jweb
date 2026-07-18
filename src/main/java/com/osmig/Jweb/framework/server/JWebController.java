@@ -4,6 +4,7 @@ import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.core.RawContent;
 import com.osmig.Jweb.framework.hydration.HydrationData;
+import com.osmig.Jweb.framework.js.JWebRuntime;
 import com.osmig.Jweb.framework.middleware.MiddlewareStack;
 import com.osmig.Jweb.framework.performance.Prefetch;
 import com.osmig.Jweb.framework.routing.PageRegistry;
@@ -58,6 +59,9 @@ public class JWebController {
     private static final String BODY_END = "</body>";
     private static final String HTML_END = "</html>";
 
+    // Client runtime script, cached once (it is a static constant).
+    private static final String RUNTIME_SCRIPT = JWebRuntime.getScriptTag();
+
     public JWebController(JWeb jweb) {
         this.router = jweb.getRouter();
         this.middlewareStack = jweb.getMiddlewareStack();
@@ -105,8 +109,11 @@ public class JWebController {
         } catch (Exception e) {
             return handleError(e);
         } finally {
-            // Always clean up context to prevent memory leaks
-            context.clearContext();
+            // Detach this pooled thread from the context, but keep the context
+            // registered so client events referencing its contextId can resolve
+            // it. Idle contexts (and their handlers) are reclaimed by the
+            // StateManager TTL sweep.
+            StateManager.detachContext();
         }
     }
 
@@ -167,18 +174,27 @@ public class JWebController {
         // Get pre-cached prefetch script
         String prefetchScript = Prefetch.scriptTag();
 
+        // The client runtime powers event handlers (JWeb.call(...)). Inject it
+        // whenever there is hydration data, so the JWeb global that every
+        // onClick attribute references actually exists on the page. It must
+        // come after the __JWEB_DATA__ block so the runtime can read it.
+        String runtimeScript = hydrationScript.isEmpty() ? "" : RUNTIME_SCRIPT;
+
         // Fast path: if no scripts to inject, return as-is
         if (prefetchScript.isEmpty() && hydrationScript.isEmpty()) {
             return html;
         }
 
+        int extra = prefetchScript.length() + hydrationScript.length() + runtimeScript.length();
+
         // Use StringBuilder for efficient string building
         int bodyEnd = html.lastIndexOf(BODY_END);
         if (bodyEnd != -1) {
-            return new StringBuilder(html.length() + prefetchScript.length() + hydrationScript.length())
+            return new StringBuilder(html.length() + extra)
                 .append(html, 0, bodyEnd)
                 .append(prefetchScript)
                 .append(hydrationScript)
+                .append(runtimeScript)
                 .append(html, bodyEnd, html.length())
                 .toString();
         }
@@ -186,16 +202,17 @@ public class JWebController {
         // Inject before </html> if no body
         int htmlEnd = html.lastIndexOf(HTML_END);
         if (htmlEnd != -1) {
-            return new StringBuilder(html.length() + prefetchScript.length() + hydrationScript.length())
+            return new StringBuilder(html.length() + extra)
                 .append(html, 0, htmlEnd)
                 .append(prefetchScript)
                 .append(hydrationScript)
+                .append(runtimeScript)
                 .append(html, htmlEnd, html.length())
                 .toString();
         }
 
         // Append at end
-        return html + prefetchScript + hydrationScript;
+        return html + prefetchScript + hydrationScript + runtimeScript;
     }
 
     private ResponseEntity<String> handleNotFound(String path) {
@@ -246,8 +263,11 @@ public class JWebController {
         } catch (Exception e) {
             return handleError(e);
         } finally {
-            // Always clean up context to prevent memory leaks
-            context.clearContext();
+            // Detach this pooled thread from the context, but keep the context
+            // registered so client events referencing its contextId can resolve
+            // it. Idle contexts (and their handlers) are reclaimed by the
+            // StateManager TTL sweep.
+            StateManager.detachContext();
         }
     }
 

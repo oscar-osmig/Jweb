@@ -35,10 +35,30 @@ public final class EventRegistry {
      * @return the EventHandler with assigned ID
      */
     public static EventHandler register(String eventType, Consumer<Event> handler) {
+        // If a render is in progress, scope the handler to that render's
+        // session so it is isolated from other users and is evicted when the
+        // session's context is reclaimed. Only fall back to the process-global
+        // registry when there is no active context (e.g. dev/test rendering
+        // outside a request), which keeps the global map from growing under
+        // normal request traffic.
+        String sessionId = currentSessionId();
+        if (sessionId != null) {
+            return register(sessionId, eventType, handler);
+        }
         String id = "h_" + handlerIdCounter.incrementAndGet();
         EventHandler eventHandler = new EventHandler(id, eventType, handler);
         globalHandlers.put(id, eventHandler);
         return eventHandler;
+    }
+
+    /**
+     * Resolves the session id of the render currently in progress, if any.
+     * Kept as a tiny indirection so this package's only dependency on the
+     * state package is localized here.
+     */
+    private static String currentSessionId() {
+        var context = com.osmig.Jweb.framework.state.StateManager.getContext();
+        return context != null ? context.getSessionId() : null;
     }
 
     /**
