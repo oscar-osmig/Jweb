@@ -5,7 +5,10 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.0</version>
+		<!-- Keep current with Boot 4.0.x patches: 4.0.7 manages Jackson 3 at
+		     3.1.4, fixing CVE-2026-29062 (nesting-depth bypass in
+		     UTF8DataInputJsonParser, affected >=3.0.0 <3.1.0). -->
+		<version>4.0.7</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.osmig</groupId>
