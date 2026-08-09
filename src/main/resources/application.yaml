@@ -21,10 +21,16 @@ logging:
 
 jweb:
   admin:
-    # Login at /only-admin/log/in with this email + token.
-    # Env vars still win when set (e.g. in production).
-    token: ${JWEB_ADMIN_TOKEN:7643991867965a376bd14f773fb4d51e}
-    email: ${JWEB_ADMIN_EMAIL:osmig47@gmail.com}
+    # Credentials come from the environment ONLY — never commit them.
+    # A blank token disables admin login entirely.
+    #
+    #   export JWEB_ADMIN_TOKEN="$(openssl rand -hex 16)"
+    #   export JWEB_ADMIN_EMAIL="you@example.com"
+    #   ./mvnw spring-boot:run
+    #
+    # Then log in at /only-admin/log/in.
+    token: ${JWEB_ADMIN_TOKEN:}
+    email: ${JWEB_ADMIN_EMAIL:}
 
   ai:
     # Built-in AI module (framework/ai) — works with any OpenAI-compatible API.

@@ -93,8 +93,11 @@ public class Routes implements JWebRoutes {
             if (adminApi.login(ctx, ctx.formParam("email"), ctx.formParam("token"))) {
                 return Response.redirect("/only-admin/messages");
             }
+            String error = adminApi.isConfigured()
+                ? "Invalid email or token"
+                : "Admin login is not configured — set JWEB_ADMIN_TOKEN and JWEB_ADMIN_EMAIL.";
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage("Invalid email or token").render()
+                new AdminLoginPage(error).render()
             ).render());
         });
 

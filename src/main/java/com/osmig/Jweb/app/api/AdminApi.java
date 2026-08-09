@@ -35,9 +35,18 @@ public class AdminApi {
         this.messageStore = messageStore;
     }
 
+    /**
+     * True when admin credentials are configured. When false, admin login is
+     * disabled entirely (fails closed) — set JWEB_ADMIN_TOKEN/JWEB_ADMIN_EMAIL.
+     */
+    public boolean isConfigured() {
+        return adminToken != null && !adminToken.isBlank()
+            && adminEmail != null && !adminEmail.isBlank();
+    }
+
     /** Validates admin credentials and logs in if valid. Returns true on success. */
     public boolean login(Request request, String email, String token) {
-        if (adminToken == null || adminToken.isBlank()) return false;
+        if (!isConfigured()) return false;
         if (isRateLimited(request.ip())) return false;
 
         // Tolerate copy-paste whitespace and email case differences
