@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.async;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VFragment;
 import com.osmig.Jweb.framework.vdom.VNode;
 import com.osmig.Jweb.framework.vdom.VText;
@@ -228,6 +229,24 @@ public class Suspense<T> implements Element {
 
     @Override
     public VNode toVNode() {
+        // Streaming render: emit an instantly-flushed placeholder and defer
+        // the real content — it streams in when the data resolves.
+        StreamingContext streaming = StreamingContext.active();
+        if (streaming != null) {
+            CompletableFuture<String> htmlFuture = CompletableFuture.supplyAsync(() -> {
+                try {
+                    T data = dataLoader.call();
+                    return contentRenderer != null ? contentRenderer.apply(data).toHtml() : "";
+                } catch (Throwable t) {
+                    return errorElement.apply(t).toHtml();
+                }
+            }, EXECUTOR);
+            String id = streaming.register(htmlFuture);
+            return VElement.of("div",
+                java.util.Map.of("id", id),
+                java.util.List.of(loadingElement.get().toVNode()));
+        }
+
         try {
             T data;
 

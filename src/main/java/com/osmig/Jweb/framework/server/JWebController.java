@@ -129,6 +129,12 @@ public class JWebController {
                 return emitter.toResponse();
             }
 
+            // Streaming SSR: flush the shell now, stream Suspense blocks as they resolve
+            if (result instanceof com.osmig.Jweb.framework.async.Streamed streamed) {
+                streamResponse(streamed, context, request, servletResponse);
+                return null;   // response already written and committed
+            }
+
             return applyQueuedHeaders(processResult(result, context, request), request);
         } catch (Exception e) {
             return handleError(e);
@@ -310,6 +316,69 @@ public class JWebController {
             cachedPrefetchTag = tag;
         }
         return tag;
+    }
+
+    // ==================== Streaming SSR ====================
+
+    /**
+     * Renders a {@link com.osmig.Jweb.framework.async.Streamed} page: the
+     * shell (with placeholders) flushes immediately; each Suspense block's
+     * HTML is written as a chunk the moment its data resolves, replacing its
+     * placeholder via a tiny inline script.
+     */
+    private void streamResponse(com.osmig.Jweb.framework.async.Streamed streamed,
+                                StateManager.StateContext context, Request request,
+                                HttpServletResponse servletResponse) throws java.io.IOException {
+        var streaming = com.osmig.Jweb.framework.async.StreamingContext.open();
+        String html;
+        try {
+            html = streamed.page().get().toHtml();
+        } finally {
+            com.osmig.Jweb.framework.async.StreamingContext.close();
+        }
+        if (context != null) {
+            html = injectHydrationData(html, buildHydrationScript(context));
+        }
+
+        // Split so late chunks land inside <body>
+        int bodyEnd = html.lastIndexOf(BODY_END);
+        String shell = bodyEnd >= 0 ? html.substring(0, bodyEnd) : html;
+        String tail = bodyEnd >= 0 ? html.substring(bodyEnd) : "";
+        var pendings = new java.util.ArrayList<>(streaming.pendings());
+
+        servletResponse.setContentType("text/html;charset=UTF-8");
+        request.responseHeaders().forEach(servletResponse::setHeader);
+        var out = servletResponse.getWriter();
+
+        out.write(shell);
+        out.flush();   // commits the response — the shell paints immediately
+
+        while (!pendings.isEmpty()) {
+            java.util.concurrent.CompletableFuture.anyOf(
+                pendings.stream().map(p -> p.html()).toArray(java.util.concurrent.CompletableFuture[]::new)
+            ).join();
+            var it = pendings.iterator();
+            while (it.hasNext()) {
+                var pending = it.next();
+                if (pending.html().isDone()) {
+                    out.write(streamChunk(pending.placeholderId(), pending.html().join()));
+                    it.remove();
+                }
+            }
+            out.flush();
+        }
+
+        out.write(tail);
+        out.flush();
+    }
+
+    /** A streamed block: hidden template + script that swaps the placeholder. */
+    public static String streamChunk(String placeholderId, String contentHtml) {
+        String templateId = placeholderId + "-c";
+        return "<template id=\"" + templateId + "\">" + contentHtml + "</template>"
+            + "<script>(function(){var p=document.getElementById('" + placeholderId + "'),"
+            + "t=document.getElementById('" + templateId + "');"
+            + "if(p&&t){p.replaceWith(t.content.cloneNode(true));t.remove();}})()</script>";
     }
 
     private ResponseEntity<String> handleNotFound(String path) {

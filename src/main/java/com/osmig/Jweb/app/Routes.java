@@ -13,6 +13,7 @@ import com.osmig.Jweb.app.layout.Layout;
 import com.osmig.Jweb.app.pages.HomePage;
 import com.osmig.Jweb.app.pages.AboutPage;
 import com.osmig.Jweb.app.pages.ContactPage;
+import com.osmig.Jweb.app.pages.DemoStreamingPage;
 import com.osmig.Jweb.app.pages.admin.AdminLoginPage;
 import com.osmig.Jweb.app.pages.admin.AdminMessagesPage;
 import com.osmig.Jweb.app.docs.DocsPage;
@@ -71,6 +72,11 @@ public class Routes implements JWebRoutes {
 
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
+
+        // Streaming SSR demo: the shell flushes instantly, both blocks
+        // stream in as their (deliberately slow) data resolves
+        app.get("/demo/streaming", ctx -> com.osmig.Jweb.framework.async.Streamed.of(
+            () -> new Layout("Streaming Demo", DemoStreamingPage.content()).render()));
 
         // Admin login page
         app.get("/only-admin/log/in", ctx -> {

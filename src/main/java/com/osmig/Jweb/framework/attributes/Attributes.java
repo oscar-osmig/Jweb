@@ -1139,6 +1139,16 @@ public class Attributes implements TransitionReceiver {
     }
 
     /**
+     * Like {@link #swap} but morphs the target in place instead of replacing
+     * its HTML: unchanged nodes are kept, so focus, scroll position, and
+     * in-progress input survive the update. Best for lists and forms that
+     * refresh while the user interacts with them.
+     */
+    public Attributes swapMorph(String url, String targetSelector) {
+        return swap(url, targetSelector).set("data-swap-mode", "morph");
+    }
+
+    /**
      * On submit, POST this form's data and swap the returned fragment into
      * the target — progressive forms without page reloads.
      *

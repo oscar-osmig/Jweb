@@ -114,6 +114,7 @@ public final class JWebRuntime {
                     .then(function(html){
                         var apply=function(){
                             if(mode==='outer'){targetEl.outerHTML=html;}
+                            else if(mode==='morph'){self.morph(targetEl,html);}
                             else{targetEl.innerHTML=html;}
                             document.dispatchEvent(new CustomEvent('jweb:swap',{detail:{url:url,target:target}}));
                         };
@@ -322,6 +323,71 @@ public final class JWebRuntime {
                     domEvent.preventDefault();
                 }
                 this.ws.send(JSON.stringify(eventData));
+            },
+
+            morph:function(target,newHtml){
+                var tpl=document.createElement('template');
+                tpl.innerHTML=newHtml;
+                this.morphChildren(target,tpl.content);
+            },
+
+            morphNode:function(from,to){
+                if(from.nodeType===3&&to.nodeType===3){
+                    if(from.nodeValue!==to.nodeValue)from.nodeValue=to.nodeValue;
+                    return from;
+                }
+                if(from.nodeType!==1||to.nodeType!==1||from.tagName!==to.tagName){
+                    var replacement=to.cloneNode(true);
+                    from.replaceWith(replacement);
+                    return replacement;
+                }
+                // sync attributes
+                for(var i=from.attributes.length-1;i>=0;i--){
+                    var name=from.attributes[i].name;
+                    if(!to.hasAttribute(name))from.removeAttribute(name);
+                }
+                for(var i=0;i<to.attributes.length;i++){
+                    var a=to.attributes[i];
+                    if(from.getAttribute(a.name)!==a.value)from.setAttribute(a.name,a.value);
+                }
+                // preserve live input state on the focused field
+                var isField=from.tagName==='INPUT'||from.tagName==='TEXTAREA'||from.tagName==='SELECT';
+                if(isField&&from===document.activeElement)return from;
+                if(isField&&'value' in to&&from.value!==to.getAttribute('value')&&to.hasAttribute('value')){
+                    from.value=to.getAttribute('value');
+                }
+                this.morphChildren(from,to);
+                return from;
+            },
+
+            morphChildren:function(from,to){
+                var fromKids=Array.from(from.childNodes);
+                var toKids=Array.from(to.childNodes);
+                // index new element children by id for stable matching
+                var byId={};
+                toKids.forEach(function(n){if(n.nodeType===1&&n.id)byId[n.id]=n;});
+                var used=new Set();
+                for(var i=0;i<toKids.length;i++){
+                    var want=toKids[i];
+                    var have=from.childNodes[i];
+                    // id match beats positional match
+                    if(want.nodeType===1&&want.id){
+                        var existing=null;
+                        for(var j=0;j<fromKids.length;j++){
+                            if(fromKids[j].nodeType===1&&fromKids[j].id===want.id){existing=fromKids[j];break;}
+                        }
+                        if(existing&&existing!==have){
+                            from.insertBefore(existing,have||null);
+                            have=existing;
+                        }
+                    }
+                    if(!have){from.appendChild(want.cloneNode(true));}
+                    else{this.morphNode(have,want);}
+                    used.add(from.childNodes[i]);
+                }
+                while(from.childNodes.length>toKids.length){
+                    from.removeChild(from.lastChild);
+                }
             },
 
             getState:function(stateId){

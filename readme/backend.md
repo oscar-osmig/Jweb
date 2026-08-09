@@ -22,8 +22,30 @@ form(attrs().swapForm("/comments", "#comment-list"),
     Input.text("message"), button(text("Post")))
 ```
 
-`swapOuter(url, sel)` replaces the target element itself; back/forward re-swap via
-history state; a `jweb:swap` event fires after each swap.
+`swapOuter(url, sel)` replaces the target element itself; `swapMorph(url, sel)` **morphs
+the target in place** — unchanged nodes are kept, so focus, scroll position and in-progress
+input survive the update (best for lists/forms that refresh under the user). Back/forward
+re-swap via history state; a `jweb:swap` event fires after each swap.
+
+## Streaming SSR
+
+Wrap a page in `Streamed.of(() -> ...)` and the shell flushes immediately; every
+`Suspense` block renders its loading placeholder instantly and **streams its real HTML
+into the page the moment its data resolves** — blocks load in parallel, arrive in
+completion order, and no JavaScript is written:
+
+```java
+app.get("/dashboard", req -> Streamed.of(() -> new Layout("Dashboard", div(
+    header(),                                        // paints immediately
+    Suspense.of(() -> reports.slowQuery())           // streams in when ready
+        .loading(() -> spinner("Crunching numbers..."))
+        .render(data -> reportTable(data))
+)).render()));
+```
+
+Measured on the demo route (`/demo/streaming`): TTFB ~35ms, total = the slowest block.
+The page must be built inside the supplier (the element DSL evaluates eagerly).
+Outside a streamed page, `Suspense` behaves exactly as before.
 
 ## Typed Routes — compile-time checked URLs
 

@@ -36,7 +36,8 @@ JWeb is built on these core principles:
 - **Validation** — Composable `Validator<T>` plus `FormValidator`/`FieldValidator` fluent APIs
 - **OpenAPI** — Generates OpenAPI 3.0.3 spec + Swagger UI, Redoc, and Scalar doc pages
 - **Realtime** — Reactive `State<T>` with a wired browser↔server loop (WebSocket events, DOM patching), SSE from any route, `useComponent` reactive regions
-- **Fragments (server-driven UI)** — `attrs().swap(url, target)` / `swapForm(...)` fetch-and-swap HTML fragments with View Transitions and history — the HTMX pattern, built in, zero JS written
+- **Fragments (server-driven UI)** — `attrs().swap(url, target)` / `swapForm(...)` / `swapMorph(...)` fetch-and-swap HTML fragments with View Transitions, DOM morphing (focus/input state preserved), and history — the HTMX pattern, built in, zero JS written
+- **Streaming SSR** — `Streamed.of(() -> page)` flushes the shell instantly; `Suspense` blocks stream in as their data resolves, in parallel, no JS written
 - **Typed routes** — `TypedRoute.path("/users/:id", Long.class)`: handler params parsed and URLs compile-time checked
 - **Built-in AI** — `AI.ask/chat/agent` with tool-calling loops against any OpenAI-compatible API (OpenAI, Ollama, Groq...), plus a drop-in chat widget — zero dependencies
 - **SEO & performance** — `Seo` builder (OG/Twitter/canonical), on-the-fly image optimization (`/jweb/img`), immutably-cached runtime assets, gzip, startup warmup
