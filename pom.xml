@@ -222,6 +222,24 @@
 				</configuration>
 			</plugin>
 
+			<!-- Keep the DEMO APP's config out of the published library jar.
+			     application.yaml belongs to this repo's sample app (port, admin
+			     credentials, Mongo); shipping it would inject those settings —
+			     and its credential defaults — into every consuming application.
+			     Only jweb.yaml (framework defaults) is published.
+			     spring-boot:run still uses target/classes, so local dev is
+			     unaffected. -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>application.yaml</exclude>
+						<exclude>application.properties</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
 			<!-- Sources jar: JitPack/IDEs show framework source to consumers -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
