@@ -276,8 +276,9 @@ public class JWebController {
                 .toString();
         }
 
-        // Append at end
-        return html + scripts;
+        // HTML fragment (no <body>/<html>) — served for swap targets;
+        // injecting scripts would duplicate them in the page after the swap
+        return html;
     }
 
     // Cached external script tags (content is fixed after startup; the
@@ -318,6 +319,12 @@ public class JWebController {
     }
 
     private ResponseEntity<String> handleError(Exception e) {
+        // Bad typed-route parameters are client errors, not server errors
+        if (e instanceof com.osmig.Jweb.framework.routing.TypedRoute.RouteParamException) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.TEXT_HTML)
+                .body(ErrorPage.render404(e.getMessage()).toHtml());
+        }
         com.osmig.Jweb.framework.util.Log.error("Unhandled error while handling request: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.TEXT_HTML)

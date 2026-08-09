@@ -2,6 +2,69 @@
 
 # Backend
 
+## Fragments — server-driven UI (zero JavaScript)
+
+Any route can return a fragment (an Element without `html`/`body`); the framework serves
+it clean (no script injection). Declarative swap attributes fetch and insert fragments —
+wrapped in a View Transition when the browser supports it:
+
+```java
+// Server: a route returning a fragment
+app.get("/products/list", req -> productList(req.queryInt("page", 1)));
+
+// Client: no JS written — the JWeb runtime handles it
+button(attrs().swap("/products/list?page=2", "#products")
+              .swapPush("/products?page=2"),          // optional history entry
+    text("Next page"))
+
+// Progressive forms: POST + swap the response fragment
+form(attrs().swapForm("/comments", "#comment-list"),
+    Input.text("message"), button(text("Post")))
+```
+
+`swapOuter(url, sel)` replaces the target element itself; back/forward re-swap via
+history state; a `jweb:swap` event fires after each swap.
+
+## Typed Routes — compile-time checked URLs
+
+Declare a route's path and parameter types once; registration and every link are then
+type-checked (String, Integer, Long, Double, Boolean, UUID):
+
+```java
+static final TypedRoute.Path1<Long> USER = TypedRoute.path("/users/:id", Long.class);
+static final TypedRoute.Path2<String, Integer> POST =
+    TypedRoute.path("/blog/:slug/comments/:page", String.class, Integer.class);
+
+app.get(USER, (req, id) -> userPage(id));             // id is already a Long
+app.get(POST, (req, slug, page) -> comments(slug, page));
+
+a(USER.url(42L), text("Profile"))                     // "/users/42", URL-encoded
+```
+
+Bad parameter values (e.g. `/users/abc`) return 400, not 500.
+
+## SEO (`seo/Seo`)
+
+```java
+head(metaCharset(), metaViewport(),
+    Seo.of("JWeb — Java Web Framework", "Build complete web apps entirely in Java")
+        .url("https://jweb.dev/").image("https://jweb.dev/og.png").siteName("JWeb")
+        .render())
+```
+
+Emits title, meta description, canonical link, Open Graph, and Twitter card tags —
+all consistent from one declaration.
+
+## Image Optimization
+
+`GET /jweb/img?src=/static/photo.jpg&w=400` serves the image scaled to 400px wide
+(aspect kept), immutably cached, restricted to classpath `static/`/`public/` resources.
+Zero dependencies (ImageIO). Use directly in the DSL:
+
+```java
+img("/jweb/img?src=/static/hero.jpg&w=800")
+```
+
 ## REST API (`@REST` controllers)
 
 JWeb provides meta-annotations over Spring MVC for cleaner syntax:

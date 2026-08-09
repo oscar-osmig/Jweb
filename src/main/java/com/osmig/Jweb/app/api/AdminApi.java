@@ -40,13 +40,19 @@ public class AdminApi {
         if (adminToken == null || adminToken.isBlank()) return false;
         if (isRateLimited(request.ip())) return false;
 
-        if (!constantTimeEquals(adminToken, token) || !constantTimeEquals(adminEmail, email)) {
+        // Tolerate copy-paste whitespace and email case differences
+        String cleanEmail = email == null ? null : email.strip().toLowerCase();
+        String cleanToken = token == null ? null : token.strip();
+        String expectedEmail = adminEmail == null ? null : adminEmail.strip().toLowerCase();
+
+        if (!constantTimeEquals(adminToken.strip(), cleanToken)
+                || !constantTimeEquals(expectedEmail, cleanEmail)) {
             recordFailure(request.ip());
             return false;
         }
 
         failedAttempts.remove(request.ip());
-        Auth.login(request, Principal.of("admin", email, "admin"));
+        Auth.login(request, Principal.of("admin", cleanEmail, "admin"));
         return true;
     }
 

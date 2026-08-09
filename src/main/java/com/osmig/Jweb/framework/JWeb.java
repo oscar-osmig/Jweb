@@ -156,6 +156,53 @@ public class JWeb {
         return this;
     }
 
+    // ==================== Typed Routes ====================
+
+    /** GET with a typed no-param route. */
+    public JWeb get(com.osmig.Jweb.framework.routing.TypedRoute.Path0 route, RouteHandler handler) {
+        router.get(route.pattern(), handler);
+        return this;
+    }
+
+    /**
+     * GET with a one-param typed route — the handler receives the parsed value.
+     *
+     * <pre>
+     * static final TypedRoute.Path1&lt;Long&gt; USER = TypedRoute.path("/users/:id", Long.class);
+     * app.get(USER, (req, id) -&gt; userPage(id));   // id is a Long
+     * a(USER.url(42L), text("Profile"))
+     * </pre>
+     */
+    public <A> JWeb get(com.osmig.Jweb.framework.routing.TypedRoute.Path1<A> route,
+                        java.util.function.BiFunction<Request, A, Object> handler) {
+        router.get(route.pattern(), req ->
+            handler.apply(req, route.parse(req.param(route.paramNames().get(0)))));
+        return this;
+    }
+
+    /** GET with a two-param typed route. */
+    public <A, B> JWeb get(com.osmig.Jweb.framework.routing.TypedRoute.Path2<A, B> route,
+                           TriHandler<A, B> handler) {
+        router.get(route.pattern(), req -> handler.handle(req,
+            route.parseFirst(req.param(route.paramNames().get(0))),
+            route.parseSecond(req.param(route.paramNames().get(1)))));
+        return this;
+    }
+
+    /** POST with a one-param typed route. */
+    public <A> JWeb post(com.osmig.Jweb.framework.routing.TypedRoute.Path1<A> route,
+                         java.util.function.BiFunction<Request, A, Object> handler) {
+        router.post(route.pattern(), req ->
+            handler.apply(req, route.parse(req.param(route.paramNames().get(0)))));
+        return this;
+    }
+
+    /** Handler for two-param typed routes. */
+    @FunctionalInterface
+    public interface TriHandler<A, B> {
+        Object handle(Request request, A first, B second);
+    }
+
     /**
      * POST route.
      */

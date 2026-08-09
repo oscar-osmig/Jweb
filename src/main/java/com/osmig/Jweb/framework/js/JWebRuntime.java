@@ -76,6 +76,52 @@ public final class JWebRuntime {
                 this.connect();
                 this.initTransitions();
                 this.initBindings();
+                this.initSwaps();
+            },
+
+            initSwaps:function(){
+                var self=this;
+                document.addEventListener('click',function(e){
+                    var el=e.target.closest('[data-swap-get]');
+                    if(!el)return;
+                    e.preventDefault();
+                    self.swap(el.getAttribute('data-swap-get'),el);
+                });
+                document.addEventListener('submit',function(e){
+                    var form=e.target.closest('form[data-swap-post]');
+                    if(!form)return;
+                    e.preventDefault();
+                    var url=form.getAttribute('data-swap-post');
+                    self.swap(url,form,{method:'POST',body:new FormData(form)});
+                });
+                window.addEventListener('popstate',function(e){
+                    if(e.state&&e.state.jwebSwap){
+                        self.swap(e.state.jwebSwap.url,null,{target:e.state.jwebSwap.target,noPush:true});
+                    }
+                });
+            },
+
+            swap:function(url,el,opts){
+                opts=opts||{};
+                var target=opts.target||(el&&el.getAttribute('data-swap-target'));
+                var targetEl=target?document.querySelector(target):null;
+                if(!targetEl){console.warn('[JWeb] swap target not found:',target);return;}
+                var mode=(el&&el.getAttribute('data-swap-mode'))||'inner';
+                var push=!opts.noPush&&el&&el.getAttribute('data-swap-push');
+                var self=this;
+                fetch(url,{method:opts.method||'GET',body:opts.body,credentials:'same-origin'})
+                    .then(function(r){return r.text()})
+                    .then(function(html){
+                        var apply=function(){
+                            if(mode==='outer'){targetEl.outerHTML=html;}
+                            else{targetEl.innerHTML=html;}
+                            document.dispatchEvent(new CustomEvent('jweb:swap',{detail:{url:url,target:target}}));
+                        };
+                        if(document.startViewTransition){document.startViewTransition(apply);}
+                        else{apply();}
+                        if(push){history.pushState({jwebSwap:{url:url,target:target}},'',push);}
+                    })
+                    .catch(function(err){console.error('[JWeb] swap failed:',err);});
             },
 
             initBindings:function(){

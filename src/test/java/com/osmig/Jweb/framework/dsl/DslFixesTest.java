@@ -172,4 +172,38 @@ class DslFixesTest {
         assertTrue(viewport.contains("name=\"viewport\""));
         assertTrue(viewport.contains("width=device-width"));
     }
+
+    @Test
+    void swapAttributesEmitDeclarativeMarkers() {
+        String html = El.button(El.attrs()
+            .swap("/products/list?page=2", "#products")
+            .swapPush("/products?page=2"), El.text("Next")).toHtml();
+        assertTrue(html.contains("data-swap-get=\"/products/list?page=2\""));
+        assertTrue(html.contains("data-swap-target=\"#products\""));
+        assertTrue(html.contains("data-swap-push=\"/products?page=2\""));
+
+        String form = El.form(El.attrs().swapForm("/comments", "#list")).toHtml();
+        assertTrue(form.contains("data-swap-post=\"/comments\""));
+
+        String outer = El.div(El.attrs().swapOuter("/x", "#y")).toHtml();
+        assertTrue(outer.contains("data-swap-mode=\"outer\""));
+    }
+
+    @Test
+    void seoBuilderRendersFullHeadBlock() {
+        String html = com.osmig.Jweb.framework.seo.Seo
+            .of("JWeb", "Java web framework")
+            .url("https://jweb.dev/")
+            .image("https://jweb.dev/og.png")
+            .siteName("JWeb")
+            .render().toHtml();
+
+        assertTrue(html.contains("<title>JWeb</title>"));
+        assertTrue(html.contains("name=\"description\""));
+        assertTrue(html.contains("property=\"og:title\""));
+        assertTrue(html.contains("property=\"og:image\""));
+        assertTrue(html.contains("rel=\"canonical\""));
+        assertTrue(html.contains("twitter:card"));
+        assertTrue(html.contains("summary_large_image"));
+    }
 }

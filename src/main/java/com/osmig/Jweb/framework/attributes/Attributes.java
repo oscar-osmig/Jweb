@@ -1110,6 +1110,55 @@ public class Attributes implements TransitionReceiver {
     /** Sets the name attribute for iframe targeting. @param value frame name */
     public Attributes frameName(String value) { return set("name", value); }
 
+    // ==================== Fragment Swaps (server-driven UI) ====================
+
+    /**
+     * On click, fetch an HTML fragment from the server and swap it into a
+     * target element — server-driven UI without writing any JavaScript.
+     * The swap is wrapped in a View Transition when the browser supports it.
+     *
+     * <pre>
+     * // The route returns a fragment (an Element without html/body):
+     * app.get("/products/list", req -> productList(req.queryInt("page", 1)));
+     *
+     * // Any element triggers the swap declaratively:
+     * button(attrs().swap("/products/list?page=2", "#products"), text("Next page"))
+     * </pre>
+     *
+     * @param url the fragment URL to fetch
+     * @param targetSelector CSS selector of the element to fill
+     * @return this for chaining
+     */
+    public Attributes swap(String url, String targetSelector) {
+        return set("data-swap-get", url).set("data-swap-target", targetSelector);
+    }
+
+    /** Like {@link #swap} but replaces the target element itself (outerHTML). */
+    public Attributes swapOuter(String url, String targetSelector) {
+        return swap(url, targetSelector).set("data-swap-mode", "outer");
+    }
+
+    /**
+     * On submit, POST this form's data and swap the returned fragment into
+     * the target — progressive forms without page reloads.
+     *
+     * <pre>
+     * form(attrs().swapForm("/comments", "#comment-list"),
+     *     Input.text("message"), button("Post"))
+     * </pre>
+     */
+    public Attributes swapForm(String actionUrl, String targetSelector) {
+        return set("data-swap-post", actionUrl).set("data-swap-target", targetSelector);
+    }
+
+    /**
+     * Pushes a browser-history entry when the swap runs, so back/forward
+     * re-swap naturally. Pass the address-bar URL to show.
+     */
+    public Attributes swapPush(String browserUrl) {
+        return set("data-swap-push", browserUrl);
+    }
+
     // ==================== Event Handlers ====================
 
     /**

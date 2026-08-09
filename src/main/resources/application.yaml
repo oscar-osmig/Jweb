@@ -21,8 +21,10 @@ logging:
 
 jweb:
   admin:
-    token: ${JWEB_ADMIN_TOKEN:}
-    email: ${JWEB_ADMIN_EMAIL:}
+    # Login at /only-admin/log/in with this email + token.
+    # Env vars still win when set (e.g. in production).
+    token: ${JWEB_ADMIN_TOKEN:7643991867965a376bd14f773fb4d51e}
+    email: ${JWEB_ADMIN_EMAIL:osmig47@gmail.com}
 
   ai:
     # Built-in AI module (framework/ai) — works with any OpenAI-compatible API.
