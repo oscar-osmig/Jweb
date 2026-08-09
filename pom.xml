@@ -111,6 +111,9 @@
 			<optional>true</optional>
 		</dependency>
 
+		<!-- NOTE: AI integration ships built-in (framework/ai — AI.ask/chat/agent,
+		     works with any OpenAI-compatible API, no dependencies needed).
+		     The Spring AI starters below are OPTIONAL alternatives. -->
 		<!-- Spring AI OpenAI (uncomment to enable AI/LLM integration)
 		<dependency>
 			<groupId>org.springframework.ai</groupId>

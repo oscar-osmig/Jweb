@@ -31,6 +31,24 @@ public class JWebConfiguration implements WebMvcConfigurer {
     @Value("${jweb.runtime.enabled:true}")
     private boolean runtimeEnabled;
 
+    @Value("${jweb.ai.enabled:false}")
+    private boolean aiEnabled;
+
+    @Value("${jweb.ai.base-url:https://api.openai.com/v1}")
+    private String aiBaseUrl;
+
+    @Value("${jweb.ai.api-key:}")
+    private String aiApiKey;
+
+    @Value("${jweb.ai.model:gpt-4o-mini}")
+    private String aiModel;
+
+    @Value("${jweb.ai.temperature:0.7}")
+    private double aiTemperature;
+
+    @Value("${jweb.ai.timeout-seconds:60}")
+    private long aiTimeoutSeconds;
+
     @Bean
     public ApplicationRunner mongoInitializer() {
         return args -> {
@@ -45,6 +63,13 @@ public class JWebConfiguration implements WebMvcConfigurer {
         return args -> {
             com.osmig.Jweb.framework.server.ErrorPage.setDebug(devDebug);
             com.osmig.Jweb.framework.js.JWebRuntime.setEnabled(runtimeEnabled);
+            com.osmig.Jweb.framework.ai.AI.configure(new com.osmig.Jweb.framework.ai.AiConfig()
+                .enabled(aiEnabled)
+                .baseUrl(aiBaseUrl)
+                .apiKey(aiApiKey)
+                .model(aiModel)
+                .temperature(aiTemperature)
+                .timeoutSeconds(aiTimeoutSeconds));
         };
     }
 

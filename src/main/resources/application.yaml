@@ -24,6 +24,15 @@ jweb:
     token: ${JWEB_ADMIN_TOKEN:}
     email: ${JWEB_ADMIN_EMAIL:}
 
+  ai:
+    # Built-in AI module (framework/ai) — works with any OpenAI-compatible API.
+    # OpenAI:  base-url: https://api.openai.com/v1   model: gpt-4o-mini
+    # Ollama:  base-url: http://localhost:11434/v1   model: llama3.2  (no api-key)
+    enabled: false
+    base-url: ${AI_BASE_URL:https://api.openai.com/v1}
+    api-key: ${AI_API_KEY:}
+    model: ${AI_MODEL:gpt-4o-mini}
+
   markitdown:
     # Path to the markitdown CLI (project-local venv by default)
     command: ${MARKITDOWN_CMD:.tools/markitdown/bin/markitdown}

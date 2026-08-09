@@ -86,6 +86,36 @@
       "description": "Comma-separated origins allowed to open the /jweb WebSocket (blank = same-origin only)"
     },
     {
+      "name": "jweb.ai.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable the built-in AI module (chat, agents, tools) and the /jweb/ai/chat endpoint"
+    },
+    {
+      "name": "jweb.ai.base-url",
+      "type": "java.lang.String",
+      "description": "OpenAI-compatible API base URL (OpenAI, Ollama, Groq, ...)"
+    },
+    {
+      "name": "jweb.ai.api-key",
+      "type": "java.lang.String",
+      "description": "API key for the AI provider (blank for local providers like Ollama)"
+    },
+    {
+      "name": "jweb.ai.model",
+      "type": "java.lang.String",
+      "description": "Default model for AI.ask/chat/agent"
+    },
+    {
+      "name": "jweb.ai.temperature",
+      "type": "java.lang.Double",
+      "description": "Default sampling temperature"
+    },
+    {
+      "name": "jweb.ai.timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "Max seconds to wait for an AI provider response"
+    },
+    {
       "name": "jweb.markitdown.command",
       "type": "java.lang.String",
       "description": "Path to the markitdown CLI used for document-to-Markdown conversion"

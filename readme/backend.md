@@ -597,17 +597,72 @@ Note: `JWebTest.test(app, mockRequest)` exercises Router routes + middleware onl
 
 ---
 
-## AI Integration (planned — not currently shipped)
+## AI Integration (`framework/ai`)
 
-The Spring AI dependencies (`spring-ai-starter-model-openai`, `spring-ai-starter-model-ollama`)
-are present in `pom.xml` **commented out**, and there is no `framework/ai` package in the source
-tree yet. An earlier version of this document described an `AI.ask/chat/conversation` DSL —
-that API does not exist in the codebase today. When the module lands, enable the dependencies
-and configure:
+Chat completions, conversations, tools, and agent loops — **zero extra dependencies**.
+JWeb speaks the OpenAI wire format directly over its own `Fetch` client, so it works with
+OpenAI, Ollama, Groq, LM Studio, vLLM, or any OpenAI-compatible endpoint. (The Spring AI
+starters remain optional in `pom.xml` if you prefer that stack, but nothing requires them.)
+
+**Configure** (`application.yaml` — disabled by default):
 
 ```yaml
-spring:
+jweb:
   ai:
-    openai:
-      api-key: ${OPENAI_API_KEY}
+    enabled: true
+    base-url: ${AI_BASE_URL:https://api.openai.com/v1}   # Ollama: http://localhost:11434/v1
+    api-key: ${AI_API_KEY:}                              # blank for local providers
+    model: ${AI_MODEL:gpt-4o-mini}                       # Ollama: llama3.2
 ```
+
+**One-liners:**
+
+```java
+String answer = AI.ask("Summarize this: " + text);
+```
+
+**Conversations** (history kept between sends):
+
+```java
+Chat chat = AI.chat().system("You are a concise support agent");
+String a = chat.send("What is JWeb?");
+String b = chat.send("Show me an example");   // remembers the topic
+```
+
+**Agents with tools** — the model loops: reason → call your Java functions → see
+results → repeat until it has an answer:
+
+```java
+Tool weather = Tool.of("get_weather", "Get the weather for a city")
+    .param("city", "The city name")
+    .handler(args -> weatherService.lookup((String) args.get("city")));
+
+Tool search = Tool.of("search_docs", "Search the documentation")
+    .param("query", "Search terms")
+    .handler(args -> docsIndex.search((String) args.get("query")));
+
+String result = AI.agent()
+    .system("You are a support agent for this app")
+    .tools(weather, search)
+    .maxSteps(8)
+    .onStep((step, info) -> Log.info("agent step {}: {}", step, info))
+    .run("Should I pack an umbrella for Paris this weekend?");
+```
+
+Tool handlers receive the model's arguments as a `Map<String, Object>` and can return any
+object (serialized as the tool result). Errors inside a tool are reported back to the model
+as text, so the agent can recover. `maxSteps` bounds the loop (`AiException` if exceeded).
+
+**Drop-in chat UI** — a widget plus a ready endpoint (`POST /jweb/ai/chat`, active when
+`jweb.ai.enabled=true`, per-session history with a 30-minute TTL):
+
+```java
+body(
+    ...,
+    AiChatWidget.render("Ask JWeb")
+)
+```
+
+Per-call overrides: `AI.chat().model("gpt-4o").temperature(0.2)` — same on agents.
+Everything is testable without a key: see `AiModuleTest`, which scripts an
+OpenAI-compatible mock with the JDK's built-in HttpServer.
