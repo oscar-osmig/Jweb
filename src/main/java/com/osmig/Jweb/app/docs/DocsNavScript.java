@@ -52,9 +52,12 @@ final class DocsNavScript {
     }
 
     private static String updateActiveLinkFunc() {
+        // The 'active' class drives the animated gradient border
+        // (.docs-nav-link.active::before) — toggle it along with the inline styles
         return "function updateActiveLink(section){" +
             "document.querySelectorAll('.docs-nav-link').forEach(function(link){" +
-            "var a=link.dataset.section===section;link.style.color=a?'#4f46e5':'#64748b';" +
+            "var a=link.dataset.section===section;link.classList.toggle('active',a);" +
+            "link.style.color=a?'#4f46e5':'#64748b';" +
             "link.style.fontWeight=a?'600':'400';link.style.backgroundColor=a?'#eef2ff':'transparent'})}";
     }
 
