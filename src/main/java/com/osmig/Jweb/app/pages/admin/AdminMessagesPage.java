@@ -55,7 +55,7 @@ public class AdminMessagesPage implements Template {
                 .width(px(40)).height(px(40))
                 .borderRadius(ROUNDED).color(TEXT_LIGHT)
                 .textDecoration(none)
-                .prop("transition", "color 0.2s")
+                .transitionColors(s(0.2))
             .done(),
             // Logout door icon (SVG)
             svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),

@@ -6,7 +6,10 @@ import com.osmig.Jweb.framework.elements.Tag;
 import com.osmig.Jweb.framework.styles.CSSValue;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static com.osmig.Jweb.framework.styles.CSSGrid.*;
 
 /**
  * Pre-built layout patterns for common UI structures.
@@ -185,7 +188,7 @@ public final class Layout {
     public static Element wrap(CSSValue gap, Object... children) {
         return div(attrs().style()
                 .flex()
-                .flexWrap(() -> "wrap")
+                .flexWrap(wrap)
                 .gap(gap),
             children);
     }
@@ -212,8 +215,8 @@ public final class Layout {
      */
     public static Element autoGrid(CSSValue minColumnWidth, CSSValue gap, Object... children) {
         return div(attrs().style()
-                .display(() -> "grid")
-                .prop("grid-template-columns", "repeat(auto-fit, minmax(" + minColumnWidth.css() + ", 1fr))")
+                .display(grid)
+                .gridTemplateColumns(repeat(autoFit(), minmax(minColumnWidth, fr(1))))
                 .gap(gap),
             children);
     }
@@ -224,8 +227,8 @@ public final class Layout {
      */
     public static Element autoFillGrid(CSSValue minColumnWidth, CSSValue gap, Object... children) {
         return div(attrs().style()
-                .display(() -> "grid")
-                .prop("grid-template-columns", "repeat(auto-fill, minmax(" + minColumnWidth.css() + ", 1fr))")
+                .display(grid)
+                .gridTemplateColumns(repeat(autoFill(), minmax(minColumnWidth, fr(1))))
                 .gap(gap),
             children);
     }
@@ -252,8 +255,8 @@ public final class Layout {
      */
     public static Element columns(String leftWidth, String rightWidth, CSSValue gap, Object... children) {
         return div(attrs().style()
-                .display(() -> "grid")
-                .prop("grid-template-columns", leftWidth + " " + rightWidth)
+                .display(grid)
+                .gridTemplateColumns(leftWidth + " " + rightWidth)
                 .gap(gap),
             children);
     }
@@ -265,8 +268,8 @@ public final class Layout {
      */
     public static Element sidebar(CSSValue sidebarWidth, Element sidebar, Element content) {
         return div(attrs().style()
-                .display(() -> "grid")
-                .prop("grid-template-columns", sidebarWidth.css() + " 1fr")
+                .display(grid)
+                .gridTemplateColumns(sidebarWidth, fr(1))
                 .gap(rem(2)),
             sidebar, content);
     }
@@ -276,8 +279,8 @@ public final class Layout {
      */
     public static Element sidebarRight(CSSValue sidebarWidth, Element content, Element sidebar) {
         return div(attrs().style()
-                .display(() -> "grid")
-                .prop("grid-template-columns", "1fr " + sidebarWidth.css())
+                .display(grid)
+                .gridTemplateColumns(fr(1), sidebarWidth)
                 .gap(rem(2)),
             content, sidebar);
     }
@@ -317,9 +320,9 @@ public final class Layout {
     public static Element cluster(CSSValue gap, Object... children) {
         return div(attrs().style()
                 .flex()
-                .flexWrap(() -> "wrap")
+                .flexWrap(wrap)
                 .gap(gap)
-                .alignItems(() -> "center"),
+                .alignItems(center),
             children);
     }
 
@@ -337,7 +340,7 @@ public final class Layout {
      */
     public static Element aspectRatio(String ratio, Object... children) {
         return div(attrs().style()
-                .prop("aspect-ratio", ratio)
+                .aspectRatio(ratio)
                 .fullWidth(),
             children);
     }
@@ -398,7 +401,7 @@ public final class Layout {
     public static Element scrollable(CSSValue height, Object... children) {
         return div(attrs().style()
                 .height(height)
-                .overflow(() -> "auto"),
+                .overflow(auto),
             children);
     }
 
@@ -407,10 +410,10 @@ public final class Layout {
      */
     public static Element scrollX(Object... children) {
         return div(attrs().style()
-                .overflow(() -> "auto")
-                .prop("overflow-x", "auto")
-                .prop("overflow-y", "hidden")
-                .whiteSpace(() -> "nowrap"),
+                .overflow(auto)
+                .overflowX(auto)
+                .overflowY(hidden)
+                .whiteSpace(nowrap),
             children);
     }
 
@@ -423,7 +426,7 @@ public final class Layout {
         return div(attrs().style()
                 .padding(rem(1.5))
                 .rounded(px(8))
-                .backgroundColor(() -> "white")
+                .backgroundColor(white)
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)"),
             children);
     }
@@ -435,7 +438,7 @@ public final class Layout {
         return div(attrs().style()
                 .padding(padding)
                 .rounded(px(8))
-                .backgroundColor(() -> "white")
+                .backgroundColor(white)
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)"),
             children);
     }
@@ -447,9 +450,9 @@ public final class Layout {
      */
     public static Element divider() {
         return hr(attrs().style()
-                .prop("border", "none")
-                .prop("border-top", "1px solid #e5e7eb")
-                .prop("margin", rem(1).css() + " " + zero.css())
+                .border(none)
+                .borderTop(px(1), solid, hex("#e5e7eb"))
+                .margin(rem(1), zero)
             .done());
     }
 
@@ -460,7 +463,7 @@ public final class Layout {
         return div(attrs().style()
                 .width(px(1))
                 .height(height)
-                .backgroundColor(() -> "#e5e7eb"));
+                .backgroundColor(hex("#e5e7eb")));
     }
 
     // ==================== Spacer ====================
@@ -485,16 +488,6 @@ public final class Layout {
      * Creates a visually hidden element (for screen readers).
      */
     public static Element visuallyHidden(Object... children) {
-        return span(attrs().style()
-                .position(() -> "absolute")
-                .width(px(1))
-                .height(px(1))
-                .padding(zero)
-                .margin(px(-1))
-                .overflow(() -> "hidden")
-                .prop("clip", "rect(0, 0, 0, 0)")
-                .whiteSpace(() -> "nowrap")
-                .prop("border", "0"),
-            children);
+        return span(attrs().style().srOnly(), children);
     }
 }

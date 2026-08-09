@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
@@ -21,18 +22,13 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;
  * )
  * </pre>
  *
- * <p>Show toasts from JavaScript:</p>
+ * <p>Show toasts — typed actions, no raw JS:</p>
  * <pre>
- * // From Java-generated JS
- * button(attrs().set("onclick", "Toast.success('Item saved!')"), text("Save"))
+ * button(attrs().onClick(Toast.success("Item saved!")), text("Save"))
+ * button(attrs().onClick(Toast.error("Something went wrong")), text("Fail"))
  *
- * // Different types
+ * // Raw JS string forms (for composing into larger scripts):
  * Toast.showJs("success", "Operation completed!")
- * Toast.showJs("error", "Something went wrong")
- * Toast.showJs("warning", "Please check your input")
- * Toast.showJs("info", "New update available")
- *
- * // With options
  * Toast.showJs("success", "Saved!", 5000)  // 5 second duration
  * </pre>
  *
@@ -98,10 +94,10 @@ public final class Toast {
         String[] parts = position.css.split(";");
         var containerAttrs = attrs().id("toast-container");
         var style = containerAttrs.style()
-                .position(() -> "fixed")
-                .prop("z-index", "9999")
+                .position(fixed)
+                .zIndex(9999)
                 .flex()
-                .flexDirection(() -> "column")
+                .flexDirection(column)
                 .gap(rem(0.5));
 
         for (String part : parts) {
@@ -210,6 +206,30 @@ public final class Toast {
      */
     public static String showJs(String type, String message) {
         return "Toast." + type + "('" + escapeJs(message) + "')";
+    }
+
+    // ==================== Typed Actions ====================
+    // Compose with the Actions DSL and event attributes — no raw JS strings:
+    //   button(attrs().onClick(Toast.success("Saved!")), text("Save"))
+
+    /** Action that shows a success toast. */
+    public static com.osmig.Jweb.framework.js.Actions.Action success(String message) {
+        return () -> showJs("success", message);
+    }
+
+    /** Action that shows an error toast. */
+    public static com.osmig.Jweb.framework.js.Actions.Action error(String message) {
+        return () -> showJs("error", message);
+    }
+
+    /** Action that shows a warning toast. */
+    public static com.osmig.Jweb.framework.js.Actions.Action warning(String message) {
+        return () -> showJs("warning", message);
+    }
+
+    /** Action that shows an info toast. */
+    public static com.osmig.Jweb.framework.js.Actions.Action info(String message) {
+        return () -> showJs("info", message);
     }
 
     /**

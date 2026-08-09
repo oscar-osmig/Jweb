@@ -128,6 +128,44 @@ class DslFixesTest {
     }
 
     @Test
+    void transitionShorthands() {
+        var css = com.osmig.Jweb.framework.styles.CSS.style()
+            .transitionAll(com.osmig.Jweb.framework.styles.CSSUnits.s(0.2)).css();
+        assertTrue(css.contains("transition: all 0.2s;"));
+
+        var colors = com.osmig.Jweb.framework.styles.CSS.style()
+            .transitionColors(com.osmig.Jweb.framework.styles.CSSUnits.s(0.15)).css();
+        assertTrue(colors.contains("color 0.15s"));
+        assertTrue(colors.contains("background-color 0.15s"));
+        assertTrue(colors.contains("border-color 0.15s"));
+    }
+
+    @Test
+    void srOnlyEmitsFullPattern() {
+        String css = com.osmig.Jweb.framework.styles.CSS.style().srOnly().css();
+        assertTrue(css.contains("position: absolute;"));
+        assertTrue(css.contains("clip: rect(0, 0, 0, 0);"));
+        assertTrue(css.contains("white-space: nowrap;"));
+    }
+
+    @Test
+    void backdropFilterEmitsWebkitPrefix() {
+        String css = com.osmig.Jweb.framework.styles.CSS.style()
+            .backdropFilter(com.osmig.Jweb.framework.styles.CSS.blur(
+                com.osmig.Jweb.framework.styles.CSSUnits.px(10))).css();
+        assertTrue(css.contains("backdrop-filter: blur(10px);"));
+        assertTrue(css.contains("-webkit-backdrop-filter: blur(10px);"));
+    }
+
+    @Test
+    void toastActionsBuildJs() {
+        String html = El.button(El.attrs().onClick(
+            com.osmig.Jweb.framework.ui.Toast.success("Saved!")), El.text("Save")).toHtml();
+        assertTrue(html.contains("Toast.success("), html);
+        assertTrue(html.contains("Saved!"), html);
+    }
+
+    @Test
     void metaHelpers() {
         assertTrue(El.metaCharset().toHtml().contains("charset=\"UTF-8\""));
         String viewport = El.metaViewport().toHtml();

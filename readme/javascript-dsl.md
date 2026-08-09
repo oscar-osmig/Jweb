@@ -23,6 +23,14 @@
 `fmtDate()`); `build()` detects their use and prepends the definitions automatically, so
 `withHelpers()` is now optional (calling it explicitly is still fine and never duplicates).
 
+**Actions plug into event attributes directly** — no raw JS strings:
+
+```java
+button(attrs().onClick(reload()), text("Retry"))
+button(attrs().onClick(toggle("panel")), text("Menu"))
+button(attrs().onClick(Toast.success("Saved!")), text("Save"))   // typed Toast actions
+```
+
 Also: `JS.*` and `Actions.*` share many static names (`script`, `query`, `queryAll`, `call`,
 `fetch`, `sleep`, `promiseAll`, `pushState`, ...). **Wildcard-importing both into one file causes
 ambiguous-reference compile errors.** Convention: import `Actions.*` in page code; qualify

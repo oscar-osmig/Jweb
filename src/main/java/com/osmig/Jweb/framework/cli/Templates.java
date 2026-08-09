@@ -20,7 +20,9 @@ final class Templates {
             import com.osmig.Jweb.framework.template.Template;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
             /**
              * %s page.
@@ -87,7 +89,9 @@ final class Templates {
             import com.osmig.Jweb.framework.template.Template;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
             /**
              * %s component.
@@ -99,7 +103,7 @@ final class Templates {
                     return div(attrs().style()
                             .padding(rem(1))
                             .rounded(px(8))
-                            .prop("border", "1px solid #e5e7eb"),
+                            .border(px(1), solid, hex("#e5e7eb")),
             %s
                     );
                 }
@@ -119,7 +123,9 @@ final class Templates {
             import com.osmig.Jweb.framework.core.Element;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
             /**
              * %s layout.
@@ -136,36 +142,36 @@ final class Templates {
                             title(text("JWeb App"))
                         ),
                         body(attrs().style()
-                                .margin(() -> "0")
+                                .margin(zero)
                                 .fontFamily("system-ui, sans-serif"),
                             // Header
                             header(attrs().style()
-                                    .backgroundColor(() -> "white")
-                                    .prop("border-bottom", "1px solid #e5e7eb")
+                                    .backgroundColor(white)
+                                    .borderBottom(px(1), solid, hex("#e5e7eb"))
                                     .padding(rem(1), rem(2)),
                                 nav(attrs().style()
                                         .maxWidth(px(1200))
-                                        .margin(() -> "0", () -> "auto")
+                                        .margin(zero, auto)
                                         .flex()
-                                        .justifyContent(() -> "space-between")
-                                        .alignItems(() -> "center"),
+                                        .justifyContent(spaceBetween)
+                                        .alignItems(center),
                                     a(attrs().href("/").style()
                                             .fontWeight(700)
                                             .fontSize(rem(1.25))
-                                            .color(() -> "#111")
-                                            .textDecoration(() -> "none"),
+                                            .color(hex("#111"))
+                                            .textDecoration(none),
                                         text("JWeb")))),
                             // Main content
                             main(attrs().style()
                                     .maxWidth(px(1200))
-                                    .margin(() -> "0", () -> "auto")
+                                    .margin(zero, auto)
                                     .padding(rem(2)),
                                 content),
                             // Footer
                             footer(attrs().style()
                                     .textCenter()
                                     .padding(rem(2))
-                                    .color(() -> "#6b7280")
+                                    .color(hex("#6b7280"))
                                     .fontSize(rem(0.875)),
                                 text("Built with JWeb")))
                     );
@@ -344,7 +350,9 @@ final class Templates {
             import java.util.List;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
             import static com.osmig.Jweb.framework.ui.UI.*;
 
             public class %sListPage implements Template {
@@ -359,16 +367,16 @@ final class Templates {
                     return div(attrs().style().padding(rem(2)),
                         div(attrs().style()
                                 .flex()
-                                .justifyContent(() -> "space-between")
-                                .alignItems(() -> "center")
+                                .justifyContent(spaceBetween)
+                                .alignItems(center)
                                 .marginBottom(rem(2)),
                             h1(text("%ss")),
                             a(attrs().href("/%ss/new").style()
-                                    .backgroundColor(() -> "#6366f1")
-                                    .color(() -> "white")
+                                    .backgroundColor(hex("#6366f1"))
+                                    .color(white)
                                     .padding(rem(0.5), rem(1))
                                     .rounded(px(6))
-                                    .textDecoration(() -> "none"),
+                                    .textDecoration(none),
                                 text("Add New"))),
                         UI.DataTable.<%s>create()
             %s                .data(items)
@@ -397,7 +405,9 @@ final class Templates {
             import org.springframework.beans.factory.annotation.Autowired;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
             public class %sFormPage implements Template {
 

@@ -54,9 +54,9 @@ public class Head implements Template {
             .rule("a:hover", style()
                 .color(PRIMARY_DARK))
             .keyframes(keyframes("gradientShift")
-                .at(0, style().backgroundPosition(() -> "0% 50%"))
-                .at(50, style().backgroundPosition(() -> "100% 50%"))
-                .at(100, style().backgroundPosition(() -> "0% 50%")))
+                .at(0, style().backgroundPosition(percent(0), percent(50)))
+                .at(50, style().backgroundPosition(percent(100), percent(50)))
+                .at(100, style().backgroundPosition(percent(0), percent(50))))
             .build();
     }
 }

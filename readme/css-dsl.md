@@ -86,7 +86,21 @@ style().borderMask()     // mask so only the padding ring shows — gradient bor
 style().position(absolute).inset(zero)
        .borderRadius(px(12)).padding(px(2))     // 2px border thickness
        .apply(brandFlow()).borderMask()
+
+// Transition shorthands (Tailwind-style)
+style().transitionAll(s(0.2))          // transition: all 0.2s
+style().transitionColors(s(0.15))      // color + background-color + border-color
+style().transitionBackground(s(0.2))   // also: transitionTransform, transitionOpacity
+
+// Accessibility + cross-browser
+style().srOnly()                       // full screen-reader-only pattern (9 props)
+style().backdropFilter(blur(px(10)))   // emits -webkit- prefix automatically
+style().backgroundPosition(percent(0), percent(50))
 ```
+
+Every keyword is a constant — never write `() -> "center"` or `prop("border", "none")`:
+`display(flex)`, `border(none)`, `alignItems(center)`, `justifyContent(spaceBetween)`,
+`border(px(1), solid, hex("#e5e7eb"))`, `gridTemplateColumns(repeat(autoFit(), minmax(px(250), fr(1))))`.
 
 ## CSS Rules and Stylesheets
 

@@ -2,6 +2,7 @@ package com.osmig.Jweb.framework.ui;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.events.Event;
+import com.osmig.Jweb.framework.styles.CSS;
 import com.osmig.Jweb.framework.styles.CSSValue;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
@@ -56,11 +58,11 @@ public final class UI {
                 .color(white)
                 .padding(rem(0.5), rem(1))
                 .rounded(px(6))
-                .prop("border", "none")
+                .border(none)
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
-                .transition(() -> "background-color 0.2s")
+                .transitionBackground(s(0.2))
             .onClick(onClick),
             text(btnText));
     }
@@ -70,15 +72,15 @@ public final class UI {
      */
     public static Element secondaryButton(String btnText, Consumer<Event> onClick) {
         return button(attrs().style()
-                .backgroundColor(() -> "transparent")
+                .backgroundColor(transparent)
                 .color(hex("#6366f1"))
                 .padding(rem(0.5), rem(1))
                 .rounded(px(6))
-                .prop("border", "1px solid #6366f1")
+                .border(px(1), solid, hex("#6366f1"))
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
-                .transition(() -> "all 0.2s")
+                .transitionAll(s(0.2))
             .onClick(onClick),
             text(btnText));
     }
@@ -92,11 +94,11 @@ public final class UI {
                 .color(white)
                 .padding(rem(0.5), rem(1))
                 .rounded(px(6))
-                .prop("border", "none")
+                .border(none)
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
-                .transition(() -> "background-color 0.2s")
+                .transitionBackground(s(0.2))
             .onClick(onClick),
             text(btnText));
     }
@@ -106,15 +108,15 @@ public final class UI {
      */
     public static Element ghostButton(String btnText, Consumer<Event> onClick) {
         return button(attrs().style()
-                .backgroundColor(() -> "transparent")
+                .backgroundColor(transparent)
                 .color(hex("#374151"))
                 .padding(rem(0.5), rem(1))
                 .rounded(px(6))
-                .prop("border", "none")
+                .border(none)
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
-                .transition(() -> "background-color 0.2s")
+                .transitionBackground(s(0.2))
             .onClick(onClick),
             text(btnText));
     }
@@ -124,13 +126,13 @@ public final class UI {
      */
     public static Element linkButton(String btnText, Consumer<Event> onClick) {
         return button(attrs().style()
-                .backgroundColor(() -> "transparent")
+                .backgroundColor(transparent)
                 .color(hex("#6366f1"))
                 .padding(zero)
-                .prop("border", "none")
+                .border(none)
                 .fontSize(rem(0.875))
                 .clickable()
-                .textDecoration(() -> "underline")
+                .textDecoration(underline)
             .onClick(onClick),
             text(btnText));
     }
@@ -144,12 +146,12 @@ public final class UI {
                 .color(white)
                 .padding(rem(0.5), rem(1))
                 .rounded(px(6))
-                .prop("border", "none")
+                .border(none)
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
                 .flex()
-                .alignItems(() -> "center")
+                .alignItems(center)
                 .gap(rem(0.5))
             .onClick(onClick),
             span(text(icon)),
@@ -209,12 +211,12 @@ public final class UI {
                 .rounded(px(4))
                 .fontSize(rem(0.875))
                 .flex()
-                .alignItems(() -> "center")
+                .alignItems(center)
                 .gap(rem(0.5)),
             text(tagText),
             onRemove != null ? span(attrs().style()
                     .clickable()
-                    .prop("opacity", "0.6")
+                    .opacity(0.6)
                 .onClick(onRemove),
                 text("\u00D7")) : null);
     }
@@ -252,7 +254,7 @@ public final class UI {
         return div(attrs().style()
                 .backgroundColor(hex(variant.bgColor))
                 .color(hex(variant.textColor))
-                .prop("border-left", "4px solid " + variant.borderColor)
+                .borderLeft(px(4), solid, hex(variant.borderColor))
                 .padding(rem(1))
                 .rounded(px(4))
                 .fontSize(rem(0.875)),
@@ -266,10 +268,10 @@ public final class UI {
         return div(attrs().style()
                 .backgroundColor(hex(variant.bgColor))
                 .color(hex(variant.textColor))
-                .prop("border-left", "4px solid " + variant.borderColor)
+                .borderLeft(px(4), solid, hex(variant.borderColor))
                 .padding(rem(1))
                 .rounded(px(4)),
-            strong(attrs().style().fontSize(rem(0.875)).display(() -> "block").marginBottom(rem(0.25)),
+            strong(attrs().style().fontSize(rem(0.875)).display(block).marginBottom(rem(0.25)),
                 text(alertTitle)),
             span(attrs().style().fontSize(rem(0.875)),
                 text(message)));
@@ -313,10 +315,10 @@ public final class UI {
                 .backgroundColor(white)
                 .rounded(px(8))
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)")
-                .overflow(() -> "hidden"),
+                .overflow(hidden),
             div(attrs().style()
                     .padding(rem(1.5))
-                    .prop("border-bottom", "1px solid #e5e7eb"),
+                    .borderBottom(px(1), solid, hex("#e5e7eb")),
                 h3(attrs().style()
                         .fontSize(rem(1.125))
                         .fontWeight(600)
@@ -346,16 +348,16 @@ public final class UI {
                 .backgroundColor(white)
                 .rounded(px(8))
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)")
-                .overflow(() -> "hidden"),
+                .overflow(hidden),
             div(attrs().style()
                     .padding(rem(1))
-                    .prop("border-bottom", "1px solid #e5e7eb"),
+                    .borderBottom(px(1), solid, hex("#e5e7eb")),
                 header),
             div(attrs().style().padding(rem(1.5)),
                 body),
             div(attrs().style()
                     .padding(rem(1))
-                    .prop("border-top", "1px solid #e5e7eb")
+                    .borderTop(px(1), solid, hex("#e5e7eb"))
                     .backgroundColor(hex("#f9fafb")),
                 footer));
     }
@@ -402,7 +404,7 @@ public final class UI {
                 .width(size)
                 .height(size)
                 .rounded(px(9999))
-                .prop("object-fit", "cover")
+                .objectFit(cover)
             .src(src).alt(alt));
     }
 
@@ -433,12 +435,12 @@ public final class UI {
                 .backgroundColor(hex("#e5e7eb"))
                 .rounded(px(9999))
                 .height(px(8))
-                .overflow(() -> "hidden"),
+                .overflow(hidden),
             div(attrs().style()
                 .backgroundColor(color)
                 .height(percent(100))
                 .width(percent(clamped))
-                .transition(() -> "width 0.3s ease")));
+                .transitionAll(s(0.3))));
     }
 
     // ==================== Spinner ====================
@@ -457,10 +459,10 @@ public final class UI {
         return div(attrs().style()
                 .width(size)
                 .height(size)
-                .prop("border", "2px solid #e5e7eb")
-                .prop("border-top", "2px solid #6366f1")
+                .border(px(2), solid, hex("#e5e7eb"))
+                .borderTop(px(2), solid, hex("#6366f1"))
                 .rounded(px(9999))
-                .prop("animation", "spin 1s linear infinite"));
+                .animation(anim("spin"), s(1), linear, s(0), infinite));
     }
 
     // ==================== Tooltip (wrapper) ====================
@@ -471,8 +473,8 @@ public final class UI {
      */
     public static Element tooltip(String text, Object... content) {
         return span(attrs().style()
-                .position(() -> "relative")
-                .display(() -> "inline-block")
+                .position(relative)
+                .display(inlineBlock)
             .title(text),
             content);
     }
@@ -485,7 +487,7 @@ public final class UI {
     public static Element divider(String dividerText) {
         return div(attrs().style()
                 .flex()
-                .alignItems(() -> "center")
+                .alignItems(center)
                 .gap(rem(1)),
             div(attrs().style().flexGrow(1).height(px(1)).backgroundColor(hex("#e5e7eb"))),
             span(attrs().style()
@@ -500,9 +502,9 @@ public final class UI {
      */
     public static Element divider() {
         return hr(attrs().style()
-                .prop("border", "none")
-                .prop("border-top", "1px solid #e5e7eb")
-                .prop("margin", rem(1).css() + " " + zero.css())
+                .border(none)
+                .borderTop(px(1), solid, hex("#e5e7eb"))
+                .margin(rem(1), zero)
             .done());
     }
 
@@ -517,7 +519,7 @@ public final class UI {
                 .height(skHeight)
                 .backgroundColor(hex("#e5e7eb"))
                 .rounded(px(4))
-                .prop("animation", "pulse 2s ease-in-out infinite"));
+                .animation(anim("pulse"), s(2), easeInOut, s(0), infinite));
     }
 
     /**
@@ -536,7 +538,7 @@ public final class UI {
                 .height(size)
                 .backgroundColor(hex("#e5e7eb"))
                 .rounded(px(9999))
-                .prop("animation", "pulse 2s ease-in-out infinite"));
+                .animation(anim("pulse"), s(2), easeInOut, s(0), infinite));
     }
 
     // ==================== Empty State ====================
@@ -616,7 +618,7 @@ public final class UI {
         }
         return nav(attrs().style()
                 .flex()
-                .alignItems(() -> "center"),
+                .alignItems(center),
             elements);
     }
 
@@ -628,8 +630,8 @@ public final class UI {
     public static Element kbd(String key) {
         return span(attrs().style()
                 .backgroundColor(hex("#f3f4f6"))
-                .prop("border", "1px solid #d1d5db")
-                .prop("border-bottom", "2px solid #d1d5db")
+                .border(px(1), solid, hex("#d1d5db"))
+                .borderBottom(px(2), solid, hex("#d1d5db"))
                 .rounded(px(4))
                 .padding(rem(0.125), rem(0.375))
                 .fontSize(rem(0.75))
@@ -662,7 +664,7 @@ public final class UI {
                 .color(hex("#f9fafb"))
                 .padding(rem(1))
                 .rounded(px(8))
-                .overflow(() -> "auto")
+                .overflow(auto)
                 .fontSize(rem(0.875))
                 .fontFamily("monospace")
                 .lineHeight(1.5),
@@ -722,8 +724,8 @@ public final class UI {
             }
             if (closable) {
                 headerElements.add(button(attrs().style()
-                        .backgroundColor(() -> "transparent")
-                        .prop("border", "none")
+                        .backgroundColor(transparent)
+                        .border(none)
                         .fontSize(rem(1.5))
                         .clickable()
                         .color(hex("#6b7280"))
@@ -737,10 +739,10 @@ public final class UI {
             if (!headerElements.isEmpty()) {
                 content.add(div(attrs().style()
                         .flex()
-                        .justifyContent(() -> "space-between")
-                        .alignItems(() -> "center")
+                        .justifyContent(spaceBetween)
+                        .alignItems(center)
                         .padding(rem(1), rem(1.5))
-                        .prop("border-bottom", "1px solid #e5e7eb"),
+                        .borderBottom(px(1), solid, hex("#e5e7eb")),
                     headerElements.toArray()));
             }
 
@@ -753,10 +755,10 @@ public final class UI {
             if (footer != null && footer.length > 0) {
                 content.add(div(attrs().style()
                         .flex()
-                        .justifyContent(() -> "flex-end")
+                        .justifyContent(flexEnd)
                         .gap(rem(0.5))
                         .padding(rem(1), rem(1.5))
-                        .prop("border-top", "1px solid #e5e7eb")
+                        .borderTop(px(1), solid, hex("#e5e7eb"))
                         .backgroundColor(hex("#f9fafb")),
                     footer));
             }
@@ -768,19 +770,19 @@ public final class UI {
                     .boxShadow("0 25px 50px -12px rgba(0,0,0,0.25)")
                     .width(width)
                     .maxWidth(percent(90))
-                    .maxHeight(() -> "90vh")
-                    .overflow(() -> "auto")
+                    .maxHeight(vh(90))
+                    .overflow(auto)
                 .data("modal-content", id),
                 content.toArray());
 
             // Overlay
             return div(attrs().style()
-                    .position(() -> "fixed")
-                    .prop("inset", "0")
-                    .backgroundColor(() -> "rgba(0,0,0,0.5)")
+                    .position(fixed)
+                    .inset(zero)
+                    .backgroundColor(rgba(0, 0, 0, 0.5))
                     .flexCenter()
-                    .prop("z-index", "1000")
-                    .display(() -> "none")
+                    .zIndex(1000)
+                    .display(none)
                 .id(id)
                 .data("modal-overlay", closeOnOverlay ? "close" : ""),
                 modal);
@@ -827,7 +829,7 @@ public final class UI {
                 .color(white)
                 .padding(rem(0.5), rem(1))
                 .rounded(px(6))
-                .prop("border", "none")
+                .border(none)
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
@@ -897,15 +899,15 @@ public final class UI {
                 Element btn;
                 if (style == TabStyle.PILLS) {
                     btn = button(attrs().style()
-                            .backgroundColor(isDefault ? hex("#6366f1") : () -> "transparent")
+                            .backgroundColor(isDefault ? hex("#6366f1") : transparent)
                             .color(isDefault ? white : hex("#6b7280"))
                             .padding(rem(0.5), rem(1))
                             .rounded(px(6))
-                            .prop("border", "none")
+                            .border(none)
                             .fontSize(rem(0.875))
                             .fontWeight(500)
                             .clickable()
-                            .transition(() -> "all 0.2s")
+                            .transitionAll(s(0.2))
                         .data("tab", tab.id)
                         .data("tab-group", id),
                         tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
@@ -915,9 +917,9 @@ public final class UI {
                             .backgroundColor(isDefault ? white : hex("#f3f4f6"))
                             .color(isDefault ? hex("#6366f1") : hex("#6b7280"))
                             .padding(rem(0.75), rem(1.25))
-                            .prop("border", isDefault ? "1px solid #e5e7eb" : "1px solid transparent")
-                            .prop("border-bottom", isDefault ? "1px solid white" : "1px solid #e5e7eb")
-                            .prop("margin-bottom", "-1px")
+                            .border(px(1), solid, isDefault ? hex("#e5e7eb") : transparent)
+                            .borderBottom(px(1), solid, isDefault ? white : hex("#e5e7eb"))
+                            .marginBottom(px(-1))
                             .fontSize(rem(0.875))
                             .fontWeight(500)
                             .clickable()
@@ -927,15 +929,15 @@ public final class UI {
                         text(tab.label));
                 } else { // LINE (default)
                     btn = button(attrs().style()
-                            .backgroundColor(() -> "transparent")
+                            .backgroundColor(transparent)
                             .color(isDefault ? hex("#6366f1") : hex("#6b7280"))
                             .padding(rem(0.75), rem(1))
-                            .prop("border", "none")
-                            .prop("border-bottom", isDefault ? "2px solid #6366f1" : "2px solid transparent")
+                            .border(none)
+                            .borderBottom(px(2), solid, isDefault ? hex("#6366f1") : transparent)
                             .fontSize(rem(0.875))
                             .fontWeight(isDefault ? 600 : 500)
                             .clickable()
-                            .transition(() -> "all 0.2s")
+                            .transitionAll(s(0.2))
                         .data("tab", tab.id)
                         .data("tab-group", id),
                         tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
@@ -945,7 +947,7 @@ public final class UI {
 
                 // Tab panel
                 tabPanels.add(div(attrs().style()
-                        .display(isDefault ? () -> "block" : () -> "none")
+                        .display(isDefault ? block : none)
                         .padding(rem(1))
                     .data("tab-panel", tab.id)
                     .data("tab-group", id),
@@ -956,7 +958,7 @@ public final class UI {
             Element tabList = div(attrs().style()
                     .flex()
                     .gap(style == TabStyle.LINE ? zero : rem(0.5))
-                    .prop("border-bottom", style == TabStyle.LINE ? "1px solid #e5e7eb" : "none"),
+                    .borderBottom(px(1), solid, style == TabStyle.LINE ? hex("#e5e7eb") : transparent),
                 tabButtons.toArray());
 
             return div(attrs().id(id),
@@ -1027,11 +1029,11 @@ public final class UI {
                     .color(hex("#374151"))
                     .padding(rem(0.5), rem(1))
                     .rounded(px(6))
-                    .prop("border", "1px solid #d1d5db")
+                    .border(px(1), solid, hex("#d1d5db"))
                     .fontSize(rem(0.875))
                     .clickable()
                     .flex()
-                    .alignItems(() -> "center")
+                    .alignItems(center)
                     .gap(rem(0.5)),
                 text(buttonText),
                 span(text("\u25BC"))); // down arrow
@@ -1068,24 +1070,24 @@ public final class UI {
             for (DropdownItem item : items) {
                 if (item.isDivider) {
                     menuItems.add(hr(attrs().style()
-                        .prop("border", "none")
-                        .prop("border-top", "1px solid #e5e7eb")
+                        .border(none)
+                        .borderTop(px(1), solid, hex("#e5e7eb"))
                         .margin(rem(0.25), zero)
                         .done()));
                 } else {
                     Element menuItem = button(attrs().style()
-                            .display(() -> "flex")
+                            .display(flex)
                             .width(percent(100))
-                            .alignItems(() -> "center")
+                            .alignItems(center)
                             .gap(rem(0.5))
-                            .backgroundColor(() -> "transparent")
+                            .backgroundColor(transparent)
                             .color(item.disabled ? hex("#9ca3af") : hex("#374151"))
                             .padding(rem(0.5), rem(0.75))
-                            .prop("border", "none")
-                            .textAlign(() -> "left")
+                            .border(none)
+                            .textAlign(left)
                             .fontSize(rem(0.875))
                             .clickable()
-                            .transition(() -> "background-color 0.15s")
+                            .transitionBackground(s(0.15))
                         .data("dropdown-item", id)
                         .onClick(item.onClick),
                         item.icon != null ? span(text(item.icon)) : null,
@@ -1101,18 +1103,18 @@ public final class UI {
                 ? "right:0" : "left:0";
 
             Element menu = div(attrs().style()
-                    .position(() -> "absolute")
+                    .position(absolute)
                     .prop(topBottom.split(":")[0], topBottom.split(":")[1])
                     .prop(leftRight.split(":")[0], leftRight.split(":")[1])
                     .marginTop(rem(0.25))
                     .backgroundColor(white)
                     .rounded(px(6))
                     .boxShadow("0 10px 15px -3px rgba(0,0,0,0.1)")
-                    .prop("border", "1px solid #e5e7eb")
+                    .border(px(1), solid, hex("#e5e7eb"))
                     .width(width)
                     .padding(rem(0.25))
-                    .prop("z-index", "50")
-                    .display(() -> "none")
+                    .zIndex(50)
+                    .display(none)
                 .data("dropdown-menu", id),
                 menuItems.toArray());
 
@@ -1121,8 +1123,8 @@ public final class UI {
                 trigger);
 
             return div(attrs().style()
-                    .position(() -> "relative")
-                    .display(() -> "inline-block")
+                    .position(relative)
+                    .display(inlineBlock)
                 .id(id),
                 triggerWrapper,
                 menu);
@@ -1207,34 +1209,34 @@ public final class UI {
                 boolean isOpen = item.id.equals(defaultOpen);
 
                 Element header = button(attrs().style()
-                        .display(() -> "flex")
+                        .display(flex)
                         .width(percent(100))
-                        .justifyContent(() -> "space-between")
-                        .alignItems(() -> "center")
+                        .justifyContent(spaceBetween)
+                        .alignItems(center)
                         .backgroundColor(hex("#f9fafb"))
                         .color(hex("#374151"))
                         .padding(rem(1))
-                        .prop("border", "none")
-                        .prop("border-bottom", "1px solid #e5e7eb")
+                        .border(none)
+                        .borderBottom(px(1), solid, hex("#e5e7eb"))
                         .fontSize(rem(0.9375))
                         .fontWeight(500)
-                        .textAlign(() -> "left")
+                        .textAlign(left)
                         .clickable()
                     .data("accordion-trigger", item.id)
                     .data("accordion-group", id)
                     .data("accordion-multiple", String.valueOf(allowMultiple)),
                     text(item.title),
                     span(attrs().style()
-                            .transition(() -> "transform 0.2s")
-                            .prop("transform", isOpen ? "rotate(180deg)" : "rotate(0)")
+                            .transitionTransform(s(0.2))
+                            .transform(rotate(deg(isOpen ? 180 : 0)))
                         .data("accordion-icon", item.id),
                         text("\u25BC")));
 
                 Element content = div(attrs().style()
-                        .display(isOpen ? () -> "block" : () -> "none")
+                        .display(isOpen ? block : none)
                         .padding(rem(1))
                         .backgroundColor(white)
-                        .prop("border-bottom", "1px solid #e5e7eb")
+                        .borderBottom(px(1), solid, hex("#e5e7eb"))
                     .data("accordion-content", item.id),
                     item.content);
 
@@ -1242,9 +1244,9 @@ public final class UI {
             }
 
             return div(attrs().style()
-                    .prop("border", "1px solid #e5e7eb")
+                    .border(px(1), solid, hex("#e5e7eb"))
                     .rounded(px(8))
-                    .overflow(() -> "hidden")
+                    .overflow(hidden)
                 .id(id),
                 sections.toArray());
         }
@@ -1315,7 +1317,7 @@ public final class UI {
                     .fontSize(rem(1.25))
                     .fontWeight(700)
                     .color(hex("#111827"))
-                    .textDecoration(() -> "none")
+                    .textDecoration(none)
                 .href(href),
                 text(name));
             return this;
@@ -1352,9 +1354,9 @@ public final class UI {
                         .color(link.active ? hex("#6366f1") : hex("#6b7280"))
                         .fontSize(rem(0.875))
                         .fontWeight(link.active ? 600 : 500)
-                        .textDecoration(() -> "none")
+                        .textDecoration(none)
                         .padding(rem(0.5), rem(0.75))
-                        .transition(() -> "color 0.15s")
+                        .transitionColors(s(0.15))
                     .href(link.href),
                     text(link.label)));
             }
@@ -1362,7 +1364,7 @@ public final class UI {
             // Main nav content
             Element leftSection = div(attrs().style()
                     .flex()
-                    .alignItems(() -> "center")
+                    .alignItems(center)
                     .gap(rem(2)),
                 brand,
                 navLinks.isEmpty() ? null : nav(attrs().style()
@@ -1373,26 +1375,25 @@ public final class UI {
             Element rightSection = rightElements != null && rightElements.length > 0
                 ? div(attrs().style()
                         .flex()
-                        .alignItems(() -> "center")
+                        .alignItems(center)
                         .gap(rem(0.75)),
                     rightElements)
                 : null;
 
             return header(attrs().style()
                     .backgroundColor(white)
-                    .prop("border-bottom", "1px solid #e5e7eb")
+                    .borderBottom(px(1), solid, hex("#e5e7eb"))
                     .height(height)
-                    .position(sticky ? () -> "sticky" : () -> "relative")
-                    .prop("top", sticky ? "0" : "")
-                    .prop("z-index", sticky ? "100" : ""),
+                    .position(sticky ? CSS.sticky : relative)
+                    .apply(sticky ? style().top(zero).zIndex(100) : style()),
                 div(attrs().style()
                         .maxWidth(px(1280))
-                        .margin(zero, () -> "auto")
+                        .margin(zero, auto)
                         .padding(zero, rem(1.5))
                         .height(percent(100))
                         .flex()
-                        .justifyContent(() -> "space-between")
-                        .alignItems(() -> "center"),
+                        .justifyContent(spaceBetween)
+                        .alignItems(center),
                     leftSection,
                     rightSection));
         }
@@ -1446,7 +1447,7 @@ public final class UI {
             if (header != null) {
                 content.add(div(attrs().style()
                         .padding(rem(1.25))
-                        .prop("border-bottom", "1px solid #e5e7eb"),
+                        .borderBottom(px(1), solid, hex("#e5e7eb")),
                     header));
             }
 
@@ -1457,8 +1458,8 @@ public final class UI {
                         .fontSize(rem(0.75))
                         .fontWeight(600)
                         .color(hex("#6b7280"))
-                        .textTransform(() -> "uppercase")
-                        .letterSpacing(() -> "0.05em")
+                        .textTransform(uppercase)
+                        .letterSpacing(em(0.05))
                         .padding(rem(0.75), rem(1.25)),
                     text(section.title)));
 
@@ -1473,9 +1474,9 @@ public final class UI {
             // Footer
             if (footer != null) {
                 content.add(div(attrs().style()
-                        .prop("margin-top", "auto")
+                        .marginTop(auto)
                         .padding(rem(1))
-                        .prop("border-top", "1px solid #e5e7eb")
+                        .borderTop(px(1), solid, hex("#e5e7eb"))
                         .fontSize(rem(0.75))
                         .color(hex("#9ca3af")),
                     footer));
@@ -1483,12 +1484,12 @@ public final class UI {
 
             return aside(attrs().style()
                     .width(width)
-                    .height(() -> "100vh")
+                    .height(vh(100))
                     .backgroundColor(white)
-                    .prop("border-right", "1px solid #e5e7eb")
+                    .borderRight(px(1), solid, hex("#e5e7eb"))
                     .flex()
-                    .flexDirection(() -> "column")
-                    .overflow(() -> "auto"),
+                    .flexDirection(column)
+                    .overflow(auto),
                 content.toArray());
         }
 
@@ -1507,14 +1508,14 @@ public final class UI {
      */
     public static Element sidebarLink(String label, String href, boolean active) {
         return a(attrs().style()
-                .display(() -> "block")
+                .display(block)
                 .color(active ? hex("#6366f1") : hex("#374151"))
-                .backgroundColor(active ? hex("#eef2ff") : () -> "transparent")
+                .backgroundColor(active ? hex("#eef2ff") : transparent)
                 .fontSize(rem(0.875))
                 .fontWeight(active ? 500 : 400)
                 .padding(rem(0.5), rem(1.25))
-                .textDecoration(() -> "none")
-                .transition(() -> "all 0.15s")
+                .textDecoration(none)
+                .transitionAll(s(0.15))
             .href(href),
             text(label));
     }
@@ -1524,16 +1525,16 @@ public final class UI {
      */
     public static Element sidebarLink(String icon, String label, String href, boolean active) {
         return a(attrs().style()
-                .display(() -> "flex")
-                .alignItems(() -> "center")
+                .display(flex)
+                .alignItems(center)
                 .gap(rem(0.75))
                 .color(active ? hex("#6366f1") : hex("#374151"))
-                .backgroundColor(active ? hex("#eef2ff") : () -> "transparent")
+                .backgroundColor(active ? hex("#eef2ff") : transparent)
                 .fontSize(rem(0.875))
                 .fontWeight(active ? 500 : 400)
                 .padding(rem(0.5), rem(1.25))
-                .textDecoration(() -> "none")
-                .transition(() -> "all 0.15s")
+                .textDecoration(none)
+                .transitionAll(s(0.15))
             .href(href),
             span(text(icon)),
             text(label));
@@ -1607,16 +1608,16 @@ public final class UI {
             List<Element> headerCells = new ArrayList<>();
             for (Column<T> col : columns) {
                 Element headerCell = th(attrs().style()
-                        .textAlign(() -> "left")
+                        .textAlign(left)
                         .padding(compact ? rem(0.5) : rem(0.75), rem(1))
                         .fontSize(rem(0.75))
                         .fontWeight(600)
                         .color(hex("#6b7280"))
-                        .textTransform(() -> "uppercase")
-                        .letterSpacing(() -> "0.05em")
+                        .textTransform(uppercase)
+                        .letterSpacing(em(0.05))
                         .backgroundColor(hex("#f9fafb"))
-                        .prop("border-bottom", "1px solid #e5e7eb")
-                        .width(col.width != null ? col.width : () -> "auto"),
+                        .borderBottom(px(1), solid, hex("#e5e7eb"))
+                        .width(col.width != null ? col.width : auto),
                     text(col.header));
                 headerCells.add(headerCell);
             }
@@ -1640,7 +1641,7 @@ public final class UI {
                     for (Column<T> col : columns) {
                         Element cell = td(attrs().style()
                                 .padding(compact ? rem(0.5) : rem(0.75), rem(1))
-                                .prop("border-bottom", "1px solid #e5e7eb")
+                                .borderBottom(px(1), solid, hex("#e5e7eb"))
                                 .fontSize(rem(0.875)),
                             col.renderer.apply(item));
                         cells.add(cell);
@@ -1649,7 +1650,7 @@ public final class UI {
                     final int idx = rowIndex;
                     Element row = tr(attrs().style()
                             .backgroundColor(striped && idx % 2 == 1 ? hex("#f9fafb") : white)
-                            .transition(hoverable ? () -> "background-color 0.15s" : () -> "none"),
+                            .apply(hoverable ? style().transitionBackground(s(0.15)) : style()),
                         cells.toArray());
                     bodyRows.add(row);
                     rowIndex++;
@@ -1657,12 +1658,12 @@ public final class UI {
             }
 
             return div(attrs().style()
-                    .overflow(() -> "auto")
+                    .overflow(auto)
                     .rounded(px(8))
-                    .prop("border", bordered ? "1px solid #e5e7eb" : "none"),
+                    .border(px(1), solid, bordered ? hex("#e5e7eb") : transparent),
                 table(attrs().style()
                         .width(percent(100))
-                        .prop("border-collapse", "collapse"),
+                        .borderCollapse(collapse),
                     thead(headerRow),
                     tbody(bodyRows.toArray())));
         }
@@ -1689,7 +1690,7 @@ public final class UI {
                 .backgroundColor(currentPage == 1 ? hex("#f3f4f6") : white)
                 .color(currentPage == 1 ? hex("#9ca3af") : hex("#374151"))
                 .padding(rem(0.5), rem(0.75))
-                .prop("border", "1px solid #d1d5db")
+                .border(px(1), solid, hex("#d1d5db"))
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .clickable()
@@ -1730,7 +1731,7 @@ public final class UI {
                 .backgroundColor(currentPage == totalPages ? hex("#f3f4f6") : white)
                 .color(currentPage == totalPages ? hex("#9ca3af") : hex("#374151"))
                 .padding(rem(0.5), rem(0.75))
-                .prop("border", "1px solid #d1d5db")
+                .border(px(1), solid, hex("#d1d5db"))
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .clickable()
@@ -1740,7 +1741,7 @@ public final class UI {
 
         return nav(attrs().style()
                 .flex()
-                .alignItems(() -> "center")
+                .alignItems(center)
                 .gap(rem(0.25)),
             items.toArray());
     }
@@ -1751,7 +1752,7 @@ public final class UI {
                 .backgroundColor(isCurrent ? hex("#6366f1") : white)
                 .color(isCurrent ? white : hex("#374151"))
                 .padding(rem(0.5), rem(0.75))
-                .prop("border", isCurrent ? "1px solid #6366f1" : "1px solid #d1d5db")
+                .border(px(1), solid, isCurrent ? hex("#6366f1") : hex("#d1d5db"))
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .fontWeight(isCurrent ? 600 : 400)

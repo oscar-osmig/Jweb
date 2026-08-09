@@ -346,6 +346,9 @@ public class Style<T extends Style<T>> implements CSSValue {
         return prop("background-size", width.css() + " " + height.css());
     }
     public T backgroundPosition(CSSValue value) { return prop("background-position", value); }
+    public T backgroundPosition(CSSValue x, CSSValue y) {
+        return prop("background-position", x.css() + " " + y.css());
+    }
     public T backgroundRepeat(CSSValue value) { return prop("background-repeat", value); }
     public T backgroundAttachment(CSSValue value) { return prop("background-attachment", value); }
 
@@ -654,6 +657,33 @@ public class Style<T extends Style<T>> implements CSSValue {
     }
 
     public T transition(CSSValue value) { return prop("transition", value); }
+
+    /** {@code transition: all <duration>} — animate every animatable property. */
+    public T transitionAll(CSSValue duration) {
+        return prop("transition", "all " + duration.css());
+    }
+
+    /** Transition color, background-color and border-color together. */
+    public T transitionColors(CSSValue duration) {
+        String d = duration.css();
+        return prop("transition", "color " + d + ", background-color " + d + ", border-color " + d);
+    }
+
+    /** {@code transition: background-color <duration>} */
+    public T transitionBackground(CSSValue duration) {
+        return prop("transition", "background-color " + duration.css());
+    }
+
+    /** {@code transition: transform <duration>} */
+    public T transitionTransform(CSSValue duration) {
+        return prop("transition", "transform " + duration.css());
+    }
+
+    /** {@code transition: opacity <duration>} */
+    public T transitionOpacity(CSSValue duration) {
+        return prop("transition", "opacity " + duration.css());
+    }
+
     public T transitionProperty(CSSValue value) { return prop("transition-property", value); }
     public T transitionDuration(CSSValue value) { return prop("transition-duration", value); }
     public T transitionTimingFunction(CSSValue value) { return prop("transition-timing-function", value); }
@@ -802,6 +832,8 @@ public class Style<T extends Style<T>> implements CSSValue {
             if (i > 0) sb.append(" ");
             sb.append(filters[i].css());
         }
+        // Safari still needs the -webkit- prefix
+        properties.put("-webkit-backdrop-filter", sb.toString());
         return prop("backdrop-filter", sb.toString());
     }
 
@@ -1984,6 +2016,23 @@ public class Style<T extends Style<T>> implements CSSValue {
     }
 
     // ==================== Pseudo-element / Mask Helpers ====================
+
+    /**
+     * Visually hides an element while keeping it readable by screen readers
+     * (the standard "sr-only" pattern).
+     */
+    public T srOnly() {
+        properties.put("position", "absolute");
+        properties.put("width", "1px");
+        properties.put("height", "1px");
+        properties.put("padding", "0");
+        properties.put("margin", "-1px");
+        properties.put("overflow", "hidden");
+        properties.put("clip", "rect(0, 0, 0, 0)");
+        properties.put("white-space", "nowrap");
+        properties.put("border", "0");
+        return self();
+    }
 
     /** Sets {@code content: ''} — required for ::before/::after pseudo-elements. */
     public T content() {

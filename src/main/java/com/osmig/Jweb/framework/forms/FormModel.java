@@ -18,6 +18,9 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
 /**
  * Form model binding system for auto-generating forms from POJOs.
@@ -305,12 +308,12 @@ public final class FormModel {
             // Buttons
             List<Element> buttons = new ArrayList<>();
             buttons.add(button(attrs().type("submit").style()
-                    .backgroundColor(() -> "#6366f1")
-                    .color(() -> "white")
-                    .padding(() -> "0.5rem", () -> "1rem")
-                    .prop("border", "none")
-                    .prop("border-radius", "6px")
-                    .fontSize(() -> "0.875rem")
+                    .backgroundColor(hex("#6366f1"))
+                    .color(white)
+                    .padding(rem(0.5), rem(1))
+                    .border(none)
+                    .borderRadius(px(6))
+                    .fontSize(rem(0.875))
                     .fontWeight(500)
                     .clickable(),
                 text(submitLabel)));
@@ -318,19 +321,19 @@ public final class FormModel {
             if (cancelLabel != null) {
                 if (cancelHref != null) {
                     buttons.add(a(attrs().href(cancelHref).style()
-                            .color(() -> "#6b7280")
-                            .padding(() -> "0.5rem", () -> "1rem")
-                            .fontSize(() -> "0.875rem")
-                            .textDecoration(() -> "none"),
+                            .color(hex("#6b7280"))
+                            .padding(rem(0.5), rem(1))
+                            .fontSize(rem(0.875))
+                            .textDecoration(none),
                         text(cancelLabel)));
                 } else {
                     buttons.add(button(attrs().type("button").style()
-                            .backgroundColor(() -> "transparent")
-                            .color(() -> "#6b7280")
-                            .padding(() -> "0.5rem", () -> "1rem")
-                            .prop("border", "1px solid #d1d5db")
-                            .prop("border-radius", "6px")
-                            .fontSize(() -> "0.875rem")
+                            .backgroundColor(transparent)
+                            .color(hex("#6b7280"))
+                            .padding(rem(0.5), rem(1))
+                            .border(px(1), solid, hex("#d1d5db"))
+                            .borderRadius(px(6))
+                            .fontSize(rem(0.875))
                             .clickable(),
                         text(cancelLabel)));
                 }
@@ -338,8 +341,8 @@ public final class FormModel {
 
             formElements.add(div(attrs().style()
                     .flex()
-                    .gap(() -> "0.75rem")
-                    .marginTop(() -> "1.5rem"),
+                    .gap(rem(0.75))
+                    .marginTop(rem(1.5)),
                 buttons.toArray()));
 
             // Form element
@@ -358,8 +361,8 @@ public final class FormModel {
             } else {
                 formAttrs.style()
                     .flex()
-                    .flexDirection(() -> "column")
-                    .gap(() -> "1rem");
+                    .flexDirection(column)
+                    .gap(rem(1));
             }
 
             return form(formAttrs, formElements.toArray());
@@ -381,11 +384,11 @@ public final class FormModel {
                     labelAttrs = labelAttrs.style(s.build());
                 } else {
                     labelAttrs = labelAttrs.style()
-                        .fontSize(() -> "0.875rem")
+                        .fontSize(rem(0.875))
                         .fontWeight(500)
-                        .color(() -> "#374151")
-                        .marginBottom(() -> "0.25rem")
-                        .display(() -> "block")
+                        .color(hex("#374151"))
+                        .marginBottom(rem(0.25))
+                        .display(block)
                         .done();
                 }
                 String labelText = field.label + (field.required ? " *" : "");
@@ -405,10 +408,10 @@ public final class FormModel {
             // Help text
             if (field.help != null && !field.help.isEmpty()) {
                 fieldParts.add(small(attrs().style()
-                        .color(() -> "#6b7280")
-                        .fontSize(() -> "0.75rem")
-                        .marginTop(() -> "0.25rem")
-                        .display(() -> "block"),
+                        .color(hex("#6b7280"))
+                        .fontSize(rem(0.75))
+                        .marginTop(rem(0.25))
+                        .display(block),
                     text(field.help)));
             }
 
@@ -421,8 +424,8 @@ public final class FormModel {
             } else if (horizontal && field.type != FieldType.CHECKBOX) {
                 wrapperAttrs.style()
                     .flex()
-                    .alignItems(() -> "center")
-                    .gap(() -> "1rem");
+                    .alignItems(center)
+                    .gap(rem(1));
             }
 
             return div(wrapperAttrs, fieldParts.toArray());
@@ -471,11 +474,11 @@ public final class FormModel {
                 inputAttrs.style(s.build());
             } else {
                 inputAttrs.style()
-                    .width(() -> "100%")
-                    .padding(() -> "0.5rem", () -> "0.75rem")
-                    .prop("border", "1px solid #d1d5db")
-                    .prop("border-radius", "6px")
-                    .fontSize(() -> "0.875rem");
+                    .width(percent(100))
+                    .padding(rem(0.5), rem(0.75))
+                    .border(px(1), solid, hex("#d1d5db"))
+                    .borderRadius(px(6))
+                    .fontSize(rem(0.875));
             }
 
             return input(inputAttrs);
@@ -500,12 +503,12 @@ public final class FormModel {
                 textareaAttrs.style(s.build());
             } else {
                 textareaAttrs.style()
-                    .width(() -> "100%")
-                    .padding(() -> "0.5rem", () -> "0.75rem")
-                    .prop("border", "1px solid #d1d5db")
-                    .prop("border-radius", "6px")
-                    .fontSize(() -> "0.875rem")
-                    .prop("resize", "vertical");
+                    .width(percent(100))
+                    .padding(rem(0.5), rem(0.75))
+                    .border(px(1), solid, hex("#d1d5db"))
+                    .borderRadius(px(6))
+                    .fontSize(rem(0.875))
+                    .resize(vertical);
             }
 
             String value = field.value != null ? field.value.toString() : "";
@@ -526,12 +529,12 @@ public final class FormModel {
                 selectAttrs.style(s.build());
             } else {
                 selectAttrs.style()
-                    .width(() -> "100%")
-                    .padding(() -> "0.5rem", () -> "0.75rem")
-                    .prop("border", "1px solid #d1d5db")
-                    .prop("border-radius", "6px")
-                    .fontSize(() -> "0.875rem")
-                    .backgroundColor(() -> "white");
+                    .width(percent(100))
+                    .padding(rem(0.5), rem(0.75))
+                    .border(px(1), solid, hex("#d1d5db"))
+                    .borderRadius(px(6))
+                    .fontSize(rem(0.875))
+                    .backgroundColor(white);
             }
 
             List<Element> options = new ArrayList<>();
@@ -577,19 +580,19 @@ public final class FormModel {
 
                 radios.add(div(attrs().style()
                         .flex()
-                        .alignItems(() -> "center")
-                        .gap(() -> "0.5rem").done(),
+                        .alignItems(center)
+                        .gap(rem(0.5)).done(),
                     input(radioAttrs),
                     tag("label", attrs().for_(optId).style()
-                            .fontSize(() -> "0.875rem")
-                            .color(() -> "#374151").done(),
+                            .fontSize(rem(0.875))
+                            .color(hex("#374151")).done(),
                         text(optLabel))));
             }
 
             return div(attrs().style()
                     .flex()
-                    .flexDirection(() -> "column")
-                    .gap(() -> "0.5rem").done(),
+                    .flexDirection(column)
+                    .gap(rem(0.5)).done(),
                 radios.toArray());
         }
 
@@ -614,12 +617,12 @@ public final class FormModel {
 
             return div(attrs().style()
                     .flex()
-                    .alignItems(() -> "center")
-                    .gap(() -> "0.5rem").done(),
+                    .alignItems(center)
+                    .gap(rem(0.5)).done(),
                 input(checkboxAttrs),
                 tag("label", attrs().for_(field.name).style()
-                        .fontSize(() -> "0.875rem")
-                        .color(() -> "#374151").done(),
+                        .fontSize(rem(0.875))
+                        .color(hex("#374151")).done(),
                     text(field.label)));
         }
 

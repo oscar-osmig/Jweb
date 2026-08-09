@@ -411,7 +411,9 @@ public class JWebCli {
             import %s.layouts.MainLayout;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
             public class HomePage implements Template {
 
@@ -428,18 +430,18 @@ public class JWebCli {
                                 text("Welcome to %s")),
                             p(attrs().style()
                                     .fontSize(rem(1.25))
-                                    .color(() -> "#6b7280")
+                                    .color(hex("#6b7280"))
                                     .marginBottom(rem(2)),
                                 text("Built with JWeb - Java Web Framework")),
                             a(attrs()
                                     .href("https://github.com/osmig/jweb")
                                     .style()
-                                    .display(() -> "inline-block")
-                                    .backgroundColor(() -> "#6366f1")
-                                    .color(() -> "white")
+                                    .display(inlineBlock)
+                                    .backgroundColor(hex("#6366f1"))
+                                    .color(white)
                                     .padding(rem(0.75), rem(1.5))
                                     .rounded(px(8))
-                                    .textDecoration(() -> "none")
+                                    .textDecoration(none)
                                     .fontWeight(500),
                                 text("Get Started")))
                     );
@@ -455,7 +457,9 @@ public class JWebCli {
             import com.osmig.Jweb.framework.core.Element;
 
             import static com.osmig.Jweb.framework.elements.Elements.*;
+            import static com.osmig.Jweb.framework.styles.CSS.*;
             import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+            import static com.osmig.Jweb.framework.styles.CSSColors.*;
 
             public class MainLayout {
 
@@ -470,10 +474,10 @@ public class JWebCli {
                             style(text(globalStyles()))
                         ),
                         body(attrs().style()
-                                .margin(() -> "0")
+                                .margin(zero)
                                 .fontFamily("system-ui, -apple-system, sans-serif")
-                                .minHeight(() -> "100vh")
-                                .backgroundColor(() -> "#f9fafb"),
+                                .minHeight(vh(100))
+                                .backgroundColor(hex("#f9fafb")),
                             content)
                     );
                 }
