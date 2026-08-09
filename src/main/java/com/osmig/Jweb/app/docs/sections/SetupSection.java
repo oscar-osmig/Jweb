@@ -26,12 +26,12 @@ public final class SetupSection {
                     <dependency>
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
-                        <version>v1.0.3</version>
+                        <version>v1.0.4</version>
                     </dependency>"""),
             para("Gradle:"),
             codeBlock("""
                     repositories { maven { url 'https://jitpack.io' } }
-                    dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.3' }"""),
+                    dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.4' }"""),
             docTip("Requires Java 21+. Spring Boot's web starter comes transitively — you "
                    + "don't need to add it. Use main-SNAPSHOT to track the latest commit."),
 

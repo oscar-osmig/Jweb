@@ -103,7 +103,7 @@ public class JWebCli {
         System.out.println("""
 
             Build complete.
-              Run locally:   java -jar target/*-exec.jar
+              Run locally:   java -jar target/*.jar
               Build image:   docker build -t myapp .
               Run container: docker run -p 8085:8085 myapp
             """);
@@ -123,7 +123,7 @@ public class JWebCli {
             # Runtime stage
             FROM eclipse-temurin:21-jre-alpine
             WORKDIR /app
-            COPY --from=build /app/target/*-exec.jar app.jar
+            COPY --from=build /app/target/*.jar app.jar
             EXPOSE 8085
             ENTRYPOINT ["java", "-jar", "app.jar"]
             """;
@@ -419,7 +419,7 @@ public class JWebCli {
                     <dependency>
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
-                        <version>v1.0.3</version>
+                        <version>v1.0.4</version>
                     </dependency>
                 </dependencies>
 
