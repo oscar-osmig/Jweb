@@ -31,6 +31,7 @@ import java.util.Map;
  * }</pre>
  */
 @Configuration
+@org.springframework.context.annotation.ComponentScan("com.osmig.Jweb.framework")
 public class JWebAutoConfiguration {
 
     @Autowired

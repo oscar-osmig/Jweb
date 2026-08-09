@@ -13,7 +13,19 @@
 	<version>1.0.0</version>
 	<name>Jweb</name>
 	<description>JWeb - Build web apps in pure Java</description>
-	<url>https://github.com/osmig/jweb</url>
+	<url>https://github.com/oscar-osmig/Jweb</url>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/oscar-osmig/Jweb</url>
+		<connection>scm:git:https://github.com/oscar-osmig/Jweb.git</connection>
+	</scm>
 
 	<properties>
 		<java.version>21</java.version>
@@ -198,11 +210,30 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
 					<mainClass>com.osmig.Jweb.app.App</mainClass>
+					<!-- Publish as a LIBRARY: the plain jar stays the main artifact
+					     (usable as a dependency) and the runnable fat jar becomes
+					     Jweb-<version>-exec.jar. Without this, repackage rewrites the
+					     main jar into BOOT-INF/classes and consumers get no classes. -->
+					<classifier>exec</classifier>
 					<jvmArguments>
 						--add-opens java.base/sun.misc=ALL-UNNAMED
 						--add-opens java.base/java.nio=ALL-UNNAMED
 					</jvmArguments>
 				</configuration>
+			</plugin>
+
+			<!-- Sources jar: JitPack/IDEs show framework source to consumers -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

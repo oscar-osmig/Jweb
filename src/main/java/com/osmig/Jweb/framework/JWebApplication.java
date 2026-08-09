@@ -2,7 +2,6 @@ package com.osmig.Jweb.framework;
 
 import com.osmig.Jweb.framework.util.YamlPropertySourceFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
 
 import java.lang.annotation.*;
@@ -11,7 +10,7 @@ import java.lang.annotation.*;
  * Main annotation for JWeb applications.
  *
  * Use this instead of @SpringBootApplication to get automatic
- * framework configuration including component scanning and
+ * framework configuration (the framework beans arrive via auto-configuration) and
  * jweb.yaml loading.
  *
  * <pre>
@@ -27,7 +26,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @SpringBootApplication
-@ComponentScan(basePackages = "com.osmig.Jweb")
 @PropertySource(value = "classpath:jweb.yaml", factory = YamlPropertySourceFactory.class)
 public @interface JWebApplication {
 }

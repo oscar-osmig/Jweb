@@ -1,1 +1,3 @@
-# JWeb auto-configurations (none currently — JWebConfiguration is picked up via component scan)
+# Registers the framework's beans (controllers, WebSocket, config, dev tools)
+# in any consuming application — so apps only component-scan their own package.
+com.osmig.Jweb.framework.JWebAutoConfiguration

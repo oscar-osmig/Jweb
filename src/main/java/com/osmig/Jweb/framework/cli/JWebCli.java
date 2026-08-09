@@ -103,7 +103,7 @@ public class JWebCli {
         System.out.println("""
 
             Build complete.
-              Run locally:   java -jar target/*.jar
+              Run locally:   java -jar target/*-exec.jar
               Build image:   docker build -t myapp .
               Run container: docker run -p 8085:8085 myapp
             """);
@@ -123,7 +123,7 @@ public class JWebCli {
             # Runtime stage
             FROM eclipse-temurin:21-jre-alpine
             WORKDIR /app
-            COPY --from=build /app/target/*.jar app.jar
+            COPY --from=build /app/target/*-exec.jar app.jar
             EXPOSE 8085
             ENTRYPOINT ["java", "-jar", "app.jar"]
             """;
@@ -401,15 +401,26 @@ public class JWebCli {
                 <name>%s</name>
 
                 <properties>
-                    <java.version>17</java.version>
+                    <java.version>21</java.version>
                 </properties>
+
+                <repositories>
+                    <repository>
+                        <id>jitpack.io</id>
+                        <url>https://jitpack.io</url>
+                    </repository>
+                </repositories>
 
                 <dependencies>
                     <dependency>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-starter-web</artifactId>
                     </dependency>
-                    <!-- Add JWeb dependency here -->
+                    <dependency>
+                        <groupId>com.github.oscar-osmig</groupId>
+                        <artifactId>Jweb</artifactId>
+                        <version>v1.0.0</version>
+                    </dependency>
                 </dependencies>
 
                 <build>

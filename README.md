@@ -46,6 +46,49 @@ JWeb is built on these core principles:
 
 ---
 
+## Install
+
+JWeb is published via [JitPack](https://jitpack.io/#oscar-osmig/Jweb). Add the repository
+and the dependency:
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.oscar-osmig</groupId>
+    <artifactId>Jweb</artifactId>
+    <version>v1.0.0</version>
+</dependency>
+```
+
+Gradle:
+
+```groovy
+repositories { maven { url 'https://jitpack.io' } }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.0' }
+```
+
+Then annotate your application class — the framework's beans arrive through Spring Boot
+auto-configuration, so you only component-scan your own package:
+
+```java
+@JWebApplication
+public class App {
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
+    }
+}
+```
+
+Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest commit.
+
+---
+
 ## Quick Start
 
 ```java
