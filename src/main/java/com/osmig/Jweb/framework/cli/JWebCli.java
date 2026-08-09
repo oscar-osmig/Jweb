@@ -419,7 +419,7 @@ public class JWebCli {
                     <dependency>
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
-                        <version>v1.0.5</version>
+                        <version>v1.0.6</version>
                     </dependency>
                 </dependencies>
 
