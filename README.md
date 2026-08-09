@@ -128,6 +128,7 @@ see [JavaScript DSL](./readme/javascript-dsl.md).
 | [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
+| [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |
 
 Additional internal reference docs ship with the framework source at
 `src/main/java/com/osmig/Jweb/framework/docs/` (15 topic files) and are copied into the jar

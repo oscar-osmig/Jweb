@@ -13,11 +13,11 @@ public final class ContactStatus {
     private ContactStatus() {}
 
     public static Element success(String message) {
-        return box(message, hex("#f0fdf4"), hex("#16a34a"));
+        return box(message, hex("#f0fdf4"), hex("#15803d"));
     }
 
     public static Element error(String message) {
-        return box(message, hex("#fef2f2"), hex("#dc2626"));
+        return box(message, hex("#fef2f2"), hex("#b91c1c"));
     }
 
     private static Element box(String message, com.osmig.Jweb.framework.styles.CSSValue bg,

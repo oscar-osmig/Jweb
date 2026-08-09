@@ -40,6 +40,10 @@ build/
 ### Claude ###
 .claude/
 CLAUDE.md
+
+### Impeccable (design tooling) ###
+# Shared detector config (.impeccable/config.json) stays tracked; this one is per-developer.
+.impeccable/config.local.json
 # Note: prompt.md, PLAN.md, JWEB_EXAMPLES.md and dsl-todos.md are already
 # tracked, so ignore rules for them would be inert. Run
 # `git rm --cached <file>` first if you want them ignored.

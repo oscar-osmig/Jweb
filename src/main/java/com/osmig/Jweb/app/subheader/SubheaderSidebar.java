@@ -29,7 +29,7 @@ public class SubheaderSidebar implements Template {
                 .overflowY(hidden)
                 .display(none)
             .done(),
-            h4(style()
+            h2(style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_4).textTransform(uppercase)
                 .letterSpacing(em(0.05)),

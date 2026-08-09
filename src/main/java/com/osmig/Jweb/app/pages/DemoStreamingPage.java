@@ -28,7 +28,7 @@ public final class DemoStreamingPage {
 
     private static Element block(String label, long delayMs) {
         return div(style().marginTop(SP_6),
-            h3(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), text(label)),
+            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), text(label)),
             Suspense.of((java.util.concurrent.Callable<String>) () -> {
                 Thread.sleep(delayMs);
                 return "Data loaded after " + delayMs + "ms";
@@ -36,7 +36,7 @@ public final class DemoStreamingPage {
             .loading(() -> p(style().color(TEXT_LIGHT), text("Loading...")))
             .render(data -> p(
                 style().padding(SP_3).borderRadius(ROUNDED)
-                       .backgroundColor(hex("#f0fdf4")).color(hex("#16a34a")),
+                       .backgroundColor(hex("#f0fdf4")).color(hex("#15803d")),
                 text(data)))
         );
     }

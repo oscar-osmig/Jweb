@@ -58,7 +58,7 @@ public class DocSidebar implements Template {
 
     private Element navSection(String title, Element... links) {
         return div(style().marginBottom(SP_6),
-            h4(style()
+            h2(style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), text(title)),

@@ -16,8 +16,10 @@ public final class Theme {
     private Theme() {}
 
     // Colors
-    public static final CSSValue PRIMARY = hex("#6366f1");
-    public static final CSSValue PRIMARY_DARK = hex("#4f46e5");
+    // PRIMARY is used both as text on white/#eef2ff and as a fill behind white text,
+    // so it has to clear WCAG AA (4.5:1) in both directions. #6366f1 only reached 4.47:1.
+    public static final CSSValue PRIMARY = hex("#4f46e5");
+    public static final CSSValue PRIMARY_DARK = hex("#4338ca");
     public static final CSSValue TEXT = hex("#1e293b");
     public static final CSSValue TEXT_LIGHT = hex("#64748b");
     public static final CSSValue BG = hex("#ffffff");
@@ -46,10 +48,12 @@ public final class Theme {
     public static final CSSValue ROUNDED = px(6);
     public static final CSSValue ROUNDED_LG = px(12);
 
-    // Brand gradient (loops back to the first color for seamless animation)
+    // Brand gradient (loops back to the first color for seamless animation).
+    // Every stop carries white text somewhere, so each one clears 4.5:1 against white;
+    // the lightest stop here is #db2777 at 4.60:1.
     public static final CSSValue BRAND_GRADIENT = linearGradient("90deg",
-        hex("#6366f1"), hex("#8b5cf6"), hex("#a855f7"),
-        hex("#ec4899"), hex("#8b5cf6"), hex("#6366f1"));
+        hex("#4f46e5"), hex("#7c3aed"), hex("#9333ea"),
+        hex("#db2777"), hex("#7c3aed"), hex("#4f46e5"));
 
     /**
      * The animated flowing brand gradient as a reusable style fragment.

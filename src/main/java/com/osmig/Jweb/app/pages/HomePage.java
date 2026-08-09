@@ -59,7 +59,7 @@ public class HomePage implements Template {
                 .overflow(hidden),
             brandBorder(ROUNDED_LG),
             div(style().position(relative).zIndex(1),
-                h3(style().fontSize(TEXT_LG).fontWeight(600).color(PRIMARY),
+                h2(style().fontSize(TEXT_LG).fontWeight(600).color(PRIMARY),
                     text(title)),
                 p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_2),
                     text(desc))

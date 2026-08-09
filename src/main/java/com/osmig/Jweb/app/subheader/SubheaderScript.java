@@ -68,7 +68,7 @@ public final class SubheaderScript {
                         });
 
                         link.addEventListener('mouseenter', function() {
-                            this.style.color = '#6366f1';
+                            this.style.color = '#4f46e5';
                             this.style.backgroundColor = '#eef2ff';
                         });
                         link.addEventListener('mouseleave', function() {
@@ -110,7 +110,7 @@ public final class SubheaderScript {
                     const activeLink = links[index];
                     if (activeLink) {
                         activeLink.classList.add('active');
-                        activeLink.style.color = '#6366f1';
+                        activeLink.style.color = '#4f46e5';
                         activeLink.style.backgroundColor = '#eef2ff';
                         activeLink.style.fontWeight = '600';
                         activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
