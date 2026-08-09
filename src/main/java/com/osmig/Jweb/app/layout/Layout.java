@@ -27,7 +27,7 @@ public class Layout implements Template {
             body(style()
                     .display(flex).flexDirection(column).height(vh(100)).overflow(hidden),
                 new Nav().render(),
-                main(style().flex(num(1)).display(flex).minHeight(num(0)), content),
+                main(style().flex(1).display(flex).minHeight(num(0)), content),
                 new Footer().render(),
                 DevServer.script() // Hot reload - only active when jweb.dev.hot-reload=true
             )

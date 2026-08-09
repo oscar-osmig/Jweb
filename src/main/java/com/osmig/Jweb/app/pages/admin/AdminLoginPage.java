@@ -21,7 +21,7 @@ public class AdminLoginPage implements Template {
     public Element render() {
         return div(style()
                 .display(flex).justifyContent(center).alignItems(center)
-                .flex(num(1)).padding(SP_8),
+                .flex(1).padding(SP_8),
             loginCard()
         );
     }

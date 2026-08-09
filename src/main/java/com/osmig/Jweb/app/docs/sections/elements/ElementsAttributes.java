@@ -239,8 +239,8 @@ picture(
             para("Attach JavaScript event handlers."),
             codeBlock("""
 // Click handlers
-button(attrs().onclick("handleClick()"), "Click")
-button(attrs().onclick("deleteItem(" + id + ")"), "Delete")
+button(attrs().onClick(call("handleClick")), "Click")
+button(attrs().onClick(call("deleteItem", id)), "Delete")
 
 // Form events
 form(attrs().onsubmit("return handleSubmit(event)"))
@@ -262,9 +262,9 @@ input(attrs().onkeyup("handleKeyUp(event)"))
 // Using JS DSL actions
 import static com.osmig.Jweb.framework.js.Actions.*;
 
-button(attrs().onclick(show("panel")), "Show")
-button(attrs().onclick(hide("modal")), "Close")
-button(attrs().onclick(toggle("dropdown")), "Toggle")"""),
+button(attrs().onClick(show("panel")), "Show")
+button(attrs().onClick(hide("modal")), "Close")
+button(attrs().onClick(toggle("dropdown")), "Toggle")"""),
 
             h3Title("Custom Attributes"),
             para("Set any attribute not in the API."),

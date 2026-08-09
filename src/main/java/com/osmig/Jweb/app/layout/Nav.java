@@ -21,10 +21,9 @@ public class Nav implements Template {
                 .apply(brandFlow())
                 .padding(rem(0.75), rem(2))
                 .display(flex).alignItems(center).justifyContent(spaceBetween),
-            a(attrs().href("/").style()
+            a(href("/"), style()
                 .color(white).fontSize(rem(1.25)).fontWeight(700)
-                .textDecoration(none)
-            .done(), text("JWeb")),
+                .textDecoration(none), text("JWeb")),
             div(style().display(flex).gap(rem(1.5)).alignItems(center),
                 link("/docs", "Documentation"),
                 link("/about", "About"),
@@ -34,9 +33,8 @@ public class Nav implements Template {
     }
 
     private Element link(String href, String label) {
-        return a(attrs().href(href).style()
+        return a(href(href), style()
             .color(rgba(255, 255, 255, 0.9)).fontSize(rem(0.9))
-            .textDecoration(none).fontWeight(500)
-        .done(), text(label));
+            .textDecoration(none).fontWeight(500), text(label));
     }
 }

@@ -65,25 +65,25 @@ public final class FormComponents {
 
     /** Creates a status message box. */
     public static Element statusBox(String id) {
-        return div(attrs().id(id).style().display(none).padding(SP_3).borderRadius(ROUNDED)
-            .fontSize(TEXT_SM).done());
+        return div(attrs().id(id), style().display(none).padding(SP_3).borderRadius(ROUNDED)
+            .fontSize(TEXT_SM));
     }
 
     /** Creates a status message box with default text. */
     public static Element statusBox(String id, String defaultText) {
-        return div(attrs().id(id).style().padding(SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
-            .backgroundColor(hex("#f3f4f6")).color(TEXT_LIGHT).done(), text(defaultText));
+        return div(attrs().id(id), style().padding(SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
+            .backgroundColor(hex("#f3f4f6")).color(TEXT_LIGHT), text(defaultText));
     }
 
     /** Creates an error message box (hidden by default). */
     public static Element errorBox(String id) {
-        return div(attrs().id(id).style().display(none).padding(SP_3).borderRadius(ROUNDED)
-            .fontSize(TEXT_SM).backgroundColor(hex("#fee2e2")).color(hex("#991b1b")).done());
+        return div(attrs().id(id), style().display(none).padding(SP_3).borderRadius(ROUNDED)
+            .fontSize(TEXT_SM).backgroundColor(hex("#fee2e2")).color(hex("#991b1b")));
     }
 
     /** Creates a success message box (hidden by default). */
     public static Element successBox(String id) {
-        return div(attrs().id(id).style().display(none).padding(SP_3).borderRadius(ROUNDED)
-            .fontSize(TEXT_SM).backgroundColor(hex("#dcfce7")).color(hex("#166534")).done());
+        return div(attrs().id(id), style().display(none).padding(SP_3).borderRadius(ROUNDED)
+            .fontSize(TEXT_SM).backgroundColor(hex("#dcfce7")).color(hex("#166534")));
     }
 }

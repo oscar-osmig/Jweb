@@ -69,6 +69,7 @@ public final class El {
     public static Tag em(Object... c) { return TextElements.em(c); }
     public static Tag a(String h, Object... c) { return TextElements.a(h, c); }
     public static Tag a(Attributes a, Object... c) { return TextElements.a(a, c); }
+    public static Tag a(Object... c) { return TextElements.a(c); }
     public static Tag small(Object... c) { return TextElements.small(c); }
     public static Tag code(Object... c) { return TextElements.code(c); }
     public static Tag pre(Object... c) { return TextElements.pre(c); }

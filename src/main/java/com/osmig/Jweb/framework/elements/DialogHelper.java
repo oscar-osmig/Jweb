@@ -7,7 +7,7 @@ package com.osmig.Jweb.framework.elements;
  * - showModal() - Show dialog as modal (with backdrop)
  * - show() - Show dialog as non-modal
  * - close() - Close dialog
- * - close(returnValue) - Close dialog with return value
+ * - close(returnValue) - Close dialog with a return value
  *
  * <p>Example usage:</p>
  * <pre>
@@ -30,30 +30,30 @@ public final class DialogHelper {
      * Generates JavaScript to show a dialog as a modal (with backdrop).
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript code to show the dialog
+     * @return an Action: JavaScript code to show the dialog
      */
-    public static String showModal(String dialogId) {
-        return String.format("document.getElementById('%s').showModal()", escapeId(dialogId));
+    public static com.osmig.Jweb.framework.js.Actions.Action showModal(String dialogId) {
+        return () -> String.format("document.getElementById('%s').showModal()", escapeId(dialogId));
     }
 
     /**
      * Generates JavaScript to show a dialog as non-modal (without backdrop).
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript code to show the dialog
+     * @return an Action: JavaScript code to show the dialog
      */
-    public static String show(String dialogId) {
-        return String.format("document.getElementById('%s').show()", escapeId(dialogId));
+    public static com.osmig.Jweb.framework.js.Actions.Action show(String dialogId) {
+        return () -> String.format("document.getElementById('%s').show()", escapeId(dialogId));
     }
 
     /**
      * Generates JavaScript to close a dialog.
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript code to close the dialog
+     * @return an Action: JavaScript code to close the dialog
      */
-    public static String close(String dialogId) {
-        return String.format("document.getElementById('%s').close()", escapeId(dialogId));
+    public static com.osmig.Jweb.framework.js.Actions.Action close(String dialogId) {
+        return () -> String.format("document.getElementById('%s').close()", escapeId(dialogId));
     }
 
     /**
@@ -62,10 +62,10 @@ public final class DialogHelper {
      *
      * @param dialogId the ID of the dialog element
      * @param returnValue the return value to set
-     * @return JavaScript code to close the dialog with return value
+     * @return an Action: JavaScript code to close the dialog with return value
      */
-    public static String close(String dialogId, String returnValue) {
-        return String.format("document.getElementById('%s').close('%s')",
+    public static com.osmig.Jweb.framework.js.Actions.Action close(String dialogId, String returnValue) {
+        return () -> String.format("document.getElementById('%s').close('%s')",
             escapeId(dialogId), escapeValue(returnValue));
     }
 
@@ -74,10 +74,10 @@ public final class DialogHelper {
      * Opens if closed, closes if open.
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript code to toggle the dialog
+     * @return an Action: JavaScript code to toggle the dialog
      */
-    public static String toggle(String dialogId) {
-        return String.format(
+    public static com.osmig.Jweb.framework.js.Actions.Action toggle(String dialogId) {
+        return () -> String.format(
             "(function(d){d.open?d.close():d.showModal()})(document.getElementById('%s'))",
             escapeId(dialogId)
         );
@@ -88,10 +88,10 @@ public final class DialogHelper {
      * Attach this to the dialog's onclick event.
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript code to close on backdrop click
+     * @return an Action: JavaScript code to close on backdrop click
      */
-    public static String closeOnBackdropClick(String dialogId) {
-        return String.format(
+    public static com.osmig.Jweb.framework.js.Actions.Action closeOnBackdropClick(String dialogId) {
+        return () -> String.format(
             "if(event.target.id==='%s')this.close()",
             escapeId(dialogId)
         );
@@ -101,20 +101,20 @@ public final class DialogHelper {
      * Generates JavaScript to get the dialog's return value.
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript expression that evaluates to the return value
+     * @return an Action: JavaScript expression that evaluates to the return value
      */
-    public static String getReturnValue(String dialogId) {
-        return String.format("document.getElementById('%s').returnValue", escapeId(dialogId));
+    public static com.osmig.Jweb.framework.js.Actions.Action getReturnValue(String dialogId) {
+        return () -> String.format("document.getElementById('%s').returnValue", escapeId(dialogId));
     }
 
     /**
      * Generates JavaScript to check if a dialog is open.
      *
      * @param dialogId the ID of the dialog element
-     * @return JavaScript expression that evaluates to true if dialog is open
+     * @return an Action: JavaScript expression that evaluates to true if dialog is open
      */
-    public static String isOpen(String dialogId) {
-        return String.format("document.getElementById('%s').open", escapeId(dialogId));
+    public static com.osmig.Jweb.framework.js.Actions.Action isOpen(String dialogId) {
+        return () -> String.format("document.getElementById('%s').open", escapeId(dialogId));
     }
 
     // ==================== Utility Methods ====================

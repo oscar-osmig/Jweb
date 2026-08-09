@@ -43,6 +43,11 @@ public final class TextElements {
     public static Tag h6(Object... children) { return Tag.create("h6", children); }
 
     // Links
+    /** Anchor from mixed Attr/style/children: {@code a(href("/x"), style()..., text("Go"))}. */
+    public static Tag a(Object... children) {
+        return Tag.create("a", children);
+    }
+
     public static Tag a(String href, Object... children) {
         return new Tag("a", new Attributes().href(href), Tag.toVNodes(children));
     }

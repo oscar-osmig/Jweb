@@ -228,7 +228,7 @@ public final class DocExamples {
                                     .display(flex).flexDirection(column)
                                     .minHeight(vh(100)),
                                 new Nav().render(),
-                                main(style().flex(num(1)),
+                                main(style().flex(1),
                                     content),
                                 new Footer().render()
                             )

@@ -53,7 +53,7 @@ public final class AiChatWidget {
                 .done(),
                 input(attrs().id("jweb-ai-input").type("text").name("message")
                     .placeholder("Ask anything...")
-                    .style().flex(num(1)).padding(rem(0.5))
+                    .style().flex(1).padding(rem(0.5))
                     .border(px(1), solid, hex("#d1d5db")).borderRadius(px(6))
                     .done()),
                 button(attrs().type("submit").style()

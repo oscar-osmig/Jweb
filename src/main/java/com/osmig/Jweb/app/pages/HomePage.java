@@ -16,7 +16,7 @@ public class HomePage implements Template {
     public Element render() {
         return div(style()
                 .display(flex).flexDirection(column).justifyContent(center).alignItems(center)
-                .flex(num(1)).padding(SP_8),
+                .flex(1).padding(SP_8),
             hero(),
             features()
         );
@@ -31,11 +31,10 @@ public class HomePage implements Template {
                 .maxWidth(px(600)).margin(rem(1.5), auto, zero),
                 text("Build complete web applications entirely in Java. " +
                      "Type-safe components, fluent DSL, and zero frontend tooling required.")),
-            a(attrs().href("/docs").style()
+            a(href("/docs"), style()
                 .display(inlineBlock).marginTop(SP_6).padding(SP_3, SP_6)
                 .apply(brandFlow())
-                .color(white).borderRadius(ROUNDED).fontWeight(600).textDecoration(none)
-            .done(), text("Get Started"))
+                .color(white).borderRadius(ROUNDED).fontWeight(600).textDecoration(none), text("Get Started"))
         );
     }
 

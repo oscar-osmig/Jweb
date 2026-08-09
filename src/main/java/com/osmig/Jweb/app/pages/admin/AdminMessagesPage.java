@@ -26,7 +26,7 @@ public class AdminMessagesPage implements Template {
     @Override
     public Element render() {
         return div(style()
-                .flex(num(1)).padding(SP_8)
+                .flex(1).padding(SP_8)
                 .maxWidth(px(900)).margin(zero, auto).width(percent(100)),
             topBar(),
             messagesGrid()

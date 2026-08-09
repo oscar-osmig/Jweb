@@ -18,14 +18,13 @@ public class DocSidebar implements Template {
 
     @Override
     public Element render() {
-        return aside(attrs().class_("docs-sidebar").style()
+        return aside(class_("docs-sidebar"), style()
                 .width(px(220))
                 .padding(SP_6)
                 .borderRight(px(1), solid, BORDER)
                 .backgroundColor(hex("#fafafa"))
                 .overflowY(auto)
-                .flexShrink(0)
-            .done(),
+                .flexShrink(0),
             div(
                 navSection("Basics",
                     link("intro", "Introduction"),

@@ -21,19 +21,19 @@ dialog(attrs().id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure you want to proceed?"),
     div(class_("dialog-actions"),
-        button(attrs().onclick(close("confirm-dialog")), "Cancel"),
-        button(attrs().onclick(close("confirm-dialog", "confirmed")), "Confirm")
+        button(attrs().onClick(close("confirm-dialog")), "Cancel"),
+        button(attrs().onClick(close("confirm-dialog", "confirmed")), "Confirm")
     )
 )
 
 // Open as modal (with backdrop)
-button(attrs().onclick(showModal("confirm-dialog")), "Open Modal")
+button(attrs().onClick(showModal("confirm-dialog")), "Open Modal")
 
 // Open as non-modal
-button(attrs().onclick(show("confirm-dialog")), "Open Non-Modal")
+button(attrs().onClick(show("confirm-dialog")), "Open Non-Modal")
 
 // Toggle
-button(attrs().onclick(toggle("confirm-dialog")), "Toggle")
+button(attrs().onClick(toggle("confirm-dialog")), "Toggle")
 
 // Close on backdrop click
 dialog(attrs()
@@ -79,9 +79,9 @@ div(class_("faq"),
 )
 
 // Control with JavaScript helpers
-button(attrs().onclick(openAll("faq")), "Expand All")
-button(attrs().onclick(closeAll("faq")), "Collapse All")
-button(attrs().onclick(openExclusive("faq-1", "faq")), "Open First Only")"""),
+button(attrs().onClick(openAll("faq")), "Expand All")
+button(attrs().onClick(closeAll("faq")), "Collapse All")
+button(attrs().onClick(openExclusive("faq-1", "faq")), "Open First Only")"""),
 
             h3Title("Progress Bar"),
             para("Display progress of a task."),

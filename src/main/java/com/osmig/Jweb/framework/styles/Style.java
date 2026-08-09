@@ -392,6 +392,10 @@ public class Style<T extends Style<T>> implements CSSValue {
     public T alignSelf(CSSValue value) { return prop("align-self", value); }
 
     public T flex(CSSValue value) { return prop("flex", value); }
+    /** {@code flex: <n>} from a number: {@code .flex(1)}. */
+    public T flex(double value) {
+        return prop("flex", value == Math.floor(value) ? String.valueOf((long) value) : String.valueOf(value));
+    }
     public T flex(int grow, int shrink, CSSValue basis) {
         return prop("flex", grow + " " + shrink + " " + basis.css());
     }
