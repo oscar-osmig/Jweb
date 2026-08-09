@@ -138,6 +138,28 @@ public class DevServer {
     }
 
     /**
+     * State-preserving reload: fetches the current page and morphs the DOM
+     * in place via the JWeb runtime — scroll position, focus, and open UI
+     * state survive the update. Falls back to location.reload() when the
+     * runtime isn't present or the morph fails.
+     */
+    static String softReloadJs() {
+        return "window.__jwebSoftReload=window.__jwebSoftReload||function(){" +
+            "if(!window.JWeb||!JWeb.morphChildren){location.reload();return;}" +
+            "fetch(location.href,{cache:'no-store'})" +
+            ".then(function(r){return r.text()})" +
+            ".then(function(html){" +
+            "var doc=new DOMParser().parseFromString(html,'text/html');" +
+            "document.title=doc.title;" +
+            "var os=document.head.querySelectorAll('style'),ns=doc.head.querySelectorAll('style');" +
+            "if(os.length===ns.length){for(var i=0;i<os.length;i++){" +
+            "if(os[i].textContent!==ns[i].textContent)os[i].textContent=ns[i].textContent;}}" +
+            "JWeb.morphChildren(document.body,doc.body);" +
+            "console.log('[JWeb] hot-morphed (state preserved)');" +
+            "}).catch(function(){location.reload()});};";
+    }
+
+    /**
      * Returns a script that uses Spring DevTools LiveReload for instant refresh.
      * LiveReload is faster than SSE for static changes.
      * Combines LiveReload with SSE for comprehensive coverage.
@@ -158,11 +180,12 @@ public class DevServer {
             "(function(){" +
             "if(window.__jwebLR)return;" +
             "window.__jwebLR=true;" +
+            softReloadJs() +
             "var ws=new WebSocket('ws://'+location.hostname+':" + port + "/livereload');" +
             "ws.onopen=function(){console.log('[JWeb] LiveReload connected')};" +
             "ws.onmessage=function(e){" +
             "var msg=JSON.parse(e.data);" +
-            "if(msg.command==='reload'){location.reload()}};" +
+            "if(msg.command==='reload'){window.__jwebSoftReload()}};" +
             "ws.onclose=function(){" +
             // Reconnect on disconnect
             "setTimeout(function(){" +
@@ -203,6 +226,7 @@ public class DevServer {
         return "(function(){" +
             "if(window.__jwebHR)return;" +
             "window.__jwebHR=true;" +
+            softReloadJs() +
             "var lastVersion=null;" +
             "var connect=function(){" +
             "var es=new EventSource('/__jweb_dev/events');" +
@@ -210,7 +234,7 @@ public class DevServer {
             "var data=JSON.parse(e.data);" +
             "if(lastVersion&&data.version!==lastVersion){" +
             reloadLog +
-            "location.reload()}" +
+            "window.__jwebSoftReload()}" +
             "lastVersion=data.version};" +
             "es.onerror=function(){" +
             "es.close();" +
@@ -218,7 +242,7 @@ public class DevServer {
             // Fast polling to detect server restart (50ms intervals)
             "var poll=function(){" +
             "fetch('/__jweb_dev/status',{cache:'no-store'})" +
-            ".then(function(r){if(r.ok){location.reload()}})" +
+            ".then(function(r){if(r.ok){window.__jwebSoftReload()}})" +
             ".catch(function(){setTimeout(poll,50)})};" +
             "poll()}};" +
             "connect();" +

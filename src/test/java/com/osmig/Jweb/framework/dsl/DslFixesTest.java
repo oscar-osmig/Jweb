@@ -190,6 +190,54 @@ class DslFixesTest {
     }
 
     @Test
+    void bareStyleAsElementArgument() {
+        // style() passed directly — no attrs().style()....done() ceremony
+        String html = El.div(
+            com.osmig.Jweb.framework.styles.CSS.style()
+                .prop("padding", "1rem").prop("color", "red"),
+            El.text("hi")).toHtml();
+        assertTrue(html.contains("style=\"padding: 1rem; color: red;\""), html);
+        assertTrue(html.contains(">hi<"));
+        // style must not leak into children
+        assertFalse(html.contains("padding: 1rem;</"));
+    }
+
+    @Test
+    void bareStyleComposesWithAttrShortcuts() {
+        String html = El.div(
+            El.class_("card"), El.id("hero"),
+            com.osmig.Jweb.framework.styles.CSS.style().prop("margin", "0"),
+            El.p("content")).toHtml();
+        assertTrue(html.contains("class=\"card\""));
+        assertTrue(html.contains("id=\"hero\""));
+        assertTrue(html.contains("style=\"margin: 0;\""));
+        assertTrue(html.contains("content"));
+    }
+
+    @Test
+    void typedQueryParams() {
+        var page = com.osmig.Jweb.framework.routing.Query.of("page", Integer.class).orElse(1);
+        var user = com.osmig.Jweb.framework.routing.Query.of("userId", Long.class).required();
+
+        var req = new com.osmig.Jweb.framework.server.Request(
+            new org.springframework.mock.web.MockHttpServletRequest("GET", "/x"));
+        assertEquals(1, page.from(req));                       // absent → default
+        assertThrows(com.osmig.Jweb.framework.routing.TypedRoute.RouteParamException.class,
+            () -> user.from(req));                             // absent + required → throws
+
+        var mock = new org.springframework.mock.web.MockHttpServletRequest("GET", "/x");
+        mock.setParameter("page", "7");
+        mock.setParameter("userId", "42");
+        var req2 = new com.osmig.Jweb.framework.server.Request(mock);
+        assertEquals(7, page.from(req2));
+        assertEquals(42L, user.from(req2));
+
+        var bad = new org.springframework.mock.web.MockHttpServletRequest("GET", "/x");
+        bad.setParameter("page", "not-a-number");
+        assertEquals(1, page.from(new com.osmig.Jweb.framework.server.Request(bad)));  // invalid → default
+    }
+
+    @Test
     void seoBuilderRendersFullHeadBlock() {
         String html = com.osmig.Jweb.framework.seo.Seo
             .of("JWeb", "Java web framework")

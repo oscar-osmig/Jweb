@@ -57,6 +57,7 @@ public class JWebCli {
             switch (command) {
                 case "new", "create" -> createProject(args);
                 case "generate", "g" -> generate(args);
+                case "build" -> buildProject();
                 case "help", "-h", "--help" -> printHelp();
                 case "version", "-v", "--version" -> System.out.println("JWeb CLI v" + VERSION);
                 default -> {
@@ -68,6 +69,64 @@ public class JWebCli {
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
         }
+    }
+
+    // ==================== Build ====================
+
+    /**
+     * Production build: packages the runnable jar and ensures a multi-stage
+     * Dockerfile and .dockerignore exist (never overwrites your own).
+     */
+    private static void buildProject() throws IOException, InterruptedException {
+        java.nio.file.Path here = java.nio.file.Path.of("");
+
+        java.nio.file.Path dockerfile = here.resolve("Dockerfile");
+        if (!java.nio.file.Files.exists(dockerfile)) {
+            writeFile(dockerfile, dockerfileTemplate());
+            System.out.println("  created Dockerfile (multi-stage, JRE runtime)");
+        }
+        java.nio.file.Path dockerignore = here.resolve(".dockerignore");
+        if (!java.nio.file.Files.exists(dockerignore)) {
+            writeFile(dockerignore, "target/\n.git/\n.idea/\n*.iml\n.tools/\n");
+            System.out.println("  created .dockerignore");
+        }
+
+        System.out.println("  packaging (mvn package -DskipTests)...");
+        String mvn = java.nio.file.Files.exists(here.resolve("mvnw")) ? "./mvnw" : "mvn";
+        Process process = new ProcessBuilder(mvn, "package", "-DskipTests", "-q")
+            .inheritIO()
+            .start();
+        if (process.waitFor() != 0) {
+            throw new IllegalStateException("Build failed (mvn exit " + process.exitValue() + ")");
+        }
+
+        System.out.println("""
+
+            Build complete.
+              Run locally:   java -jar target/*.jar
+              Build image:   docker build -t myapp .
+              Run container: docker run -p 8085:8085 myapp
+            """);
+    }
+
+    private static String dockerfileTemplate() {
+        return """
+            # Build stage
+            FROM eclipse-temurin:21-jdk-alpine AS build
+            WORKDIR /app
+            COPY .mvn/ .mvn/
+            COPY mvnw pom.xml ./
+            RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+            COPY src/ src/
+            RUN ./mvnw package -DskipTests -B
+
+            # Runtime stage
+            FROM eclipse-temurin:21-jre-alpine
+            WORKDIR /app
+            COPY --from=build /app/target/*.jar app.jar
+            EXPOSE 8085
+            ENTRYPOINT ["java", "-jar", "app.jar"]
+            """;
     }
 
     // ==================== Project Creation ====================
@@ -300,6 +359,7 @@ public class JWebCli {
             Commands:
               new <name>              Create a new JWeb project
               generate <type> <name>  Generate code (page, component, layout, form, crud, api)
+              build                   Package for production (jar + Dockerfile/.dockerignore)
               help                    Show this help message
               version                 Show version
 

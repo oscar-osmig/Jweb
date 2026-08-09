@@ -22,12 +22,9 @@ public final class ContactStatus {
 
     private static Element box(String message, com.osmig.Jweb.framework.styles.CSSValue bg,
                                com.osmig.Jweb.framework.styles.CSSValue fg) {
-        return div(attrs().style()
-                .padding(rem(0.75), rem(1))
-                .borderRadius(px(6))
-                .backgroundColor(bg).color(fg)
-                .fontSize(rem(0.875))
-            .done(),
+        return div(
+            style().padding(rem(0.75), rem(1)).borderRadius(px(6))
+                   .backgroundColor(bg).color(fg).fontSize(rem(0.875)),
             text(message));
     }
 }

@@ -119,6 +119,7 @@ see [JavaScript DSL](./readme/javascript-dsl.md).
 
 | Topic | Description |
 |-------|-------------|
+| [Why JWeb?](./readme/why-jweb.md) | Feature comparison with React/Next, HTMX, Astro & co — and the honest trade-offs |
 | [Architecture](./readme/architecture.md) | Rendering pipeline, request flow, routing systems, middleware, Request/Response APIs |
 | [HTML DSL](./readme/html-dsl.md) | Elements, attributes, modern HTML5, popover, forms, conditionals, fluent builders |
 | [CSS DSL](./readme/css-dsl.md) | Inline styles, rules, units, colors, animations, at-rules, themes, utilities |

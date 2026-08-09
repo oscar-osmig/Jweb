@@ -396,10 +396,13 @@ public class Tag implements Element {
             if (child instanceof Attr) continue;
             if (child instanceof Attributes) continue;
             if (child instanceof InlineStyle) continue;
+            if (child instanceof com.osmig.Jweb.framework.styles.Style) continue;
 
             if (child instanceof Iterable<?> iterable) {
                 for (Object item : iterable) {
-                    if (!(item instanceof Attr) && !(item instanceof Attributes) && !(item instanceof InlineStyle)) {
+                    if (!(item instanceof Attr) && !(item instanceof Attributes)
+                            && !(item instanceof InlineStyle)
+                            && !(item instanceof com.osmig.Jweb.framework.styles.Style)) {
                         nodes.add(toVNode(item));
                     }
                 }
@@ -419,6 +422,10 @@ public class Tag implements Element {
                 attrs.putAll(attributes.toMap());
             } else if (item instanceof InlineStyle inlineStyle) {
                 attrs.putAll(inlineStyle.toMap());
+            } else if (item instanceof com.osmig.Jweb.framework.styles.Style<?> style) {
+                // A bare style() builder as an argument becomes the style
+                // attribute: div(style().padding(px(4)), text("hi"))
+                attrs.put("style", style.build());
             } else if (item instanceof Iterable<?> iterable) {
                 for (Object subItem : iterable) {
                     if (subItem instanceof Attr attr) {

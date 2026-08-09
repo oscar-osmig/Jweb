@@ -102,6 +102,22 @@ Every keyword is a constant — never write `() -> "center"` or `prop("border", 
 `display(flex)`, `border(none)`, `alignItems(center)`, `justifyContent(spaceBetween)`,
 `border(px(1), solid, hex("#e5e7eb"))`, `gridTemplateColumns(repeat(autoFit(), minmax(px(250), fr(1))))`.
 
+### Bare styles as element arguments
+
+When an element only needs styling, pass `style()` directly — no
+`attrs().style()....done()` ceremony, and it composes with `Attr` shortcuts:
+
+```java
+// Before
+div(attrs().style().padding(SP_4).color(TEXT).done(), text("hi"))
+
+// After
+div(style().padding(SP_4).color(TEXT), text("hi"))
+div(class_("card"), id("hero"), style().margin(zero), p("content"))
+```
+
+Use `attrs()` when you need chained event handlers or many attributes.
+
 ## CSS Rules and Stylesheets
 
 Three mechanisms, from ad-hoc to global:

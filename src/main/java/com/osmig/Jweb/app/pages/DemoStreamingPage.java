@@ -15,10 +15,10 @@ public final class DemoStreamingPage {
     private DemoStreamingPage() {}
 
     public static Element content() {
-        return div(attrs().style().maxWidth(px(700)).margin(zero, auto).padding(rem(3), SP_8).done(),
-            h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).done(),
+        return div(style().maxWidth(px(700)).margin(zero, auto).padding(rem(3), SP_8),
+            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
                 text("Streaming SSR")),
-            p(attrs().style().marginTop(SP_2).color(TEXT_LIGHT).done(),
+            p(style().marginTop(SP_2).color(TEXT_LIGHT),
                 text("This shell arrived instantly. The two blocks below streamed in "
                     + "when their data was ready — no JavaScript written.")),
             block("Fast query (400ms)", 400),
@@ -27,17 +27,16 @@ public final class DemoStreamingPage {
     }
 
     private static Element block(String label, long delayMs) {
-        return div(attrs().style().marginTop(SP_6).done(),
-            h3(attrs().style().fontSize(TEXT_LG).fontWeight(600).color(TEXT).done(), text(label)),
+        return div(style().marginTop(SP_6),
+            h3(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), text(label)),
             Suspense.of((java.util.concurrent.Callable<String>) () -> {
                 Thread.sleep(delayMs);
                 return "Data loaded after " + delayMs + "ms";
             })
-            .loading(() -> p(attrs().style().color(TEXT_LIGHT).done(), text("Loading...")))
-            .render(data -> p(attrs().style()
-                    .padding(SP_3).borderRadius(ROUNDED)
-                    .backgroundColor(hex("#f0fdf4")).color(hex("#16a34a"))
-                .done(),
+            .loading(() -> p(style().color(TEXT_LIGHT), text("Loading...")))
+            .render(data -> p(
+                style().padding(SP_3).borderRadius(ROUNDED)
+                       .backgroundColor(hex("#f0fdf4")).color(hex("#16a34a")),
                 text(data)))
         );
     }
