@@ -14,9 +14,12 @@ public class DocContent {
             case "components" -> ComponentsSection.render();
             case "javascript" -> JavaScriptSection.render();
             case "routing" -> RoutingSection.render();
+            case "fragments" -> FragmentsSection.render();
+            case "streaming" -> StreamingSection.render();
             case "state" -> StateSection.render();
             case "forms" -> FormsSection.render();
             case "layouts" -> LayoutsSection.render();
+            case "ai" -> AiSection.render();
             case "api" -> ApiSection.render();
             case "security" -> SecuritySection.render();
             case "ui" -> UIComponentsSection.render();

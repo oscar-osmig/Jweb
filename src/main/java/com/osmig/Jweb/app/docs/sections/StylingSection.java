@@ -24,6 +24,38 @@ import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 // Colors (named colors, rgb, hex, etc.)
 import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
 
+            docSubtitle("Bare Styles — the concise form"),
+            para("When an element only needs styling, pass style() directly as an " +
+                 "argument — no attrs() ceremony. It composes with Attr shortcuts like " +
+                 "class_() and id()."),
+            codeBlock("""
+                    div(style().padding(SP_4).color(TEXT), text("hi"))
+
+                    div(class_("card"), id("hero"),
+                        style().margin(zero).borderRadius(px(12)),
+                        p("content"))"""),
+
+            docSubtitle("Composing Style Fragments"),
+            para("Define a style once, reuse it everywhere with apply() — the " +
+                 "composition primitive for design systems."),
+            codeBlock("""
+                    // In your Theme:
+                    public static Style<?> brandFlow() {
+                        return style().background(BRAND_GRADIENT)
+                                      .backgroundSize(percent(300), percent(100))
+                                      .animation(anim("gradientShift"), s(3), linear, s(0), infinite);
+                    }
+
+                    // Anywhere:
+                    button(style().padding(SP_3).apply(brandFlow()).color(white), ...)
+
+                    // Handy helpers that replace prop("...") strings:
+                    style().content()                      // content: '' for ::before/::after
+                    style().borderMask()                   // gradient-border mask trick
+                    style().srOnly()                       // screen-reader-only pattern
+                    style().transitionAll(s(0.2))          // also transitionColors/Background/...
+                    style().backdropFilter(blur(px(10)))   // emits -webkit- prefix too"""),
+
             docSubtitle("Inline Styles"),
             para("Apply styles directly to elements using the style builder."),
             codeBlock("""
