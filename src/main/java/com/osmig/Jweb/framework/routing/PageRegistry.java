@@ -26,10 +26,20 @@ public class PageRegistry {
     private static final Map<Class<?>, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
 
     /**
-     * Sets the default layout for all pages.
+     * Sets the default layout for all pages. Also applies to pages that were
+     * registered before this call (unless they already have a layout), so
+     * `layout(...)` and `pages(...)` can be called in either order.
      */
     public void setDefaultLayout(Class<? extends Template> layoutClass) {
         this.defaultLayout = layoutClass;
+        for (int i = 0; i < routes.size(); i++) {
+            PageRoute route = routes.get(i);
+            if (route.layoutClass() == null) {
+                PageRoute updated = new PageRoute(route.path(), route.title(), route.pageSupplier(), layoutClass);
+                routes.set(i, updated);
+                routeIndex.put(updated.path(), updated);
+            }
+        }
     }
 
     public Class<? extends Template> getDefaultLayout() {

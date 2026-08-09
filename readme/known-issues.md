@@ -13,34 +13,42 @@ Legend: ✅ fixed 2026-08-09 · 🟡 remaining pitfall (by design or deferred)
 
 ## Remaining sharp edges (🟡)
 
+By design (know them, don't "fix" them):
+
 - **Paths starting with `/api/v` are hard-excluded from the JWeb router** (reserved for Spring
-  MVC `@REST` controllers). `app.get("/api/v1/x", ...)` will never be reached. This is by
-  design — keep REST controllers under `/api/v*` and router/page routes elsewhere.
+  MVC `@REST` controllers). `app.get("/api/v1/x", ...)` will never be reached — keep REST
+  controllers under `/api/v*` and router/page routes elsewhere.
 - **Page routes are exact-match only** — no `:param` support (use Router routes for that).
-  They are GET/HEAD-only now (other methods get a 405).
-- **`app.layout(...)` must be called before `.pages(...)`** — the layout is captured at
-  registration time.
-- **Multiple `JWebRoutes` beans are configured in unspecified order** — keep one `Routes`
-  class per app.
+  They are GET/HEAD-only (other methods get a 405).
 - **`JS.*` and `Actions.*` wildcard imports collide** (`script`, `query`, `fetch`, ...), and
   `CSSColors.*` + `CSSUnits.*` collide on `lightDark`/`colorMix`. Import one wildcard and
   qualify the other.
-- **`Actions` handlers require `script().withHelpers()`** (the `$_` helper) — without it the
-  generated code throws `ReferenceError` in the browser.
-- **`Actions.promiseAll(...)` is sequential and has no `.ok()`** — use `Async.promiseAll`.
 - **Single-`String` calls to `q`/`abbr`/`blockquote`** resolve to the varargs (child)
   overload, not the `(citeUrl, ...)` overload — pass `Attributes` explicitly when you need
   the cite URL.
 - **Typed input helpers stay in `Input.*`** (`Input.text("name")`, `Input.email(...)`) — they
   can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
-- **`showMessage(...)` hardcodes inline colors** (not themeable).
-- **`JWebTest.test(...)` exercises Router + middleware only** — page routes still need an
-  integration test through `JWebController`.
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
-- **`sse/SseBroadcaster` / `SseEmitter`** are functional but only reachable from Spring
-  controllers (the JWeb router can't return emitters).
 - The AI/Spring AI integration is still planned, not shipped (deps commented out in pom.xml).
+
+Fixed in the 2026-08-09 follow-up pass:
+
+- ✅ `app.layout(...)` can now be called before **or after** `.pages(...)` — setting the
+  default layout retroactively applies to already-registered pages without one.
+- ✅ Multiple `JWebRoutes` beans configure in a **deterministic order**: `@Order`/`Ordered`
+  first, then alphabetical by bean name.
+- ✅ `Actions` script `build()` **auto-injects the helpers** (`$_`, `esc`, `fmtDate`) when the
+  generated code uses them — `withHelpers()` is optional (and idempotent).
+- ✅ `Actions.promiseAll(...)` emits a true parallel `Promise.all` (strips leading `await`
+  from each action); new `Actions.promiseAllThen(...)` returns a chainable
+  `Async.PromiseBuilder` for `.then(...)`.
+- ✅ `showMessage(...)` is themeable: it sets `jweb-msg-<type>` classes and reads
+  `--jweb-msg-<type>-bg`/`-fg` CSS variables (with the old colors as fallbacks).
+- ✅ `JWebTest.test(...)` exercises **page routes** too (through the middleware stack, with
+  lifecycle hooks), and returns 405 for method mismatches like production dispatch.
+- ✅ JWeb router handlers can **return SSE emitters** (JWeb's `SseEmitter` or Spring's) — the
+  controller streams them through Spring MVC.
 
 ---
 
@@ -159,8 +167,11 @@ works end-to-end:
   (context lifetime, scoped handlers, `useComponent`), Schema validation, and the DSL fixes
   (30 tests).
 
-## Stale companion documents (partially addressed)
+## Companion documents (cleaned 2026-08-09)
 
-- `readme/` docs updated where fixes changed behavior; `dsl-todos.md`, `JWEB_EXAMPLES.md`,
-  `prompt.md`, and `framework/MODERN_ELEMENTS.md` remain stale and are candidates for
-  deletion or rewrite.
+- `dsl-todos.md` — the 12 shipped modules (6 CSS, 6 HTML) checked off with their commit.
+- `JWEB_EXAMPLES.md` — imports switched to the `El` facade (matching app code); broken
+  inline-image heading removed.
+- `prompt.md` — file-size limit aligned with STANDARD.md (100–200 lines).
+- `framework/MODERN_ELEMENTS.md` — phantom `attrs().onclick(...)`/`oninput(...)` calls
+  replaced with the real `attrs().set("onclick", ...)` API.

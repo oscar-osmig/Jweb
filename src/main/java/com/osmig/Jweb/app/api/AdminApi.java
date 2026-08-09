@@ -1,7 +1,6 @@
 package com.osmig.Jweb.app.api;
 
 import com.osmig.Jweb.framework.db.mongo.Doc;
-import com.osmig.Jweb.framework.db.mongo.Mongo;
 import com.osmig.Jweb.framework.security.Auth;
 import com.osmig.Jweb.framework.security.Principal;
 import com.osmig.Jweb.framework.server.Request;
@@ -29,6 +28,12 @@ public class AdminApi {
 
     // Per-IP failed-login tracking (windowStart, count)
     private final Map<String, long[]> failedAttempts = new ConcurrentHashMap<>();
+
+    private final MessageStore messageStore;
+
+    public AdminApi(MessageStore messageStore) {
+        this.messageStore = messageStore;
+    }
 
     /** Validates admin credentials and logs in if valid. Returns true on success. */
     public boolean login(Request request, String email, String token) {
@@ -91,8 +96,6 @@ public class AdminApi {
 
     /** Retrieves all contact messages, newest first. */
     public List<Doc> getMessages() {
-        return Mongo.find("contacts")
-            .orderByDesc("_id")
-            .toList();
+        return messageStore.findAll();
     }
 }

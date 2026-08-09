@@ -414,6 +414,11 @@ public class Mongo {
 
     // ==================== Helpers ====================
 
+    /** True when a database connection is active. */
+    public static boolean isConnected() {
+        return database != null;
+    }
+
     private static void ensureConnected() {
         if (database == null) {
             throw new IllegalStateException(

@@ -385,39 +385,39 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 
 #### New CSS Features
 
-- [ ] **CSSAnchorPositioning.java** - CSS Anchor Positioning
+- [x] **CSSAnchorPositioning.java** (shipped, commit a838e7b) - CSS Anchor Positioning
   - anchor() function
   - anchor-name property
   - position-area property
   - Fallback positioning
   - Inset area helpers
 
-- [ ] **CSSScrollSnap.java** - Enhanced Scroll Snap
+- [x] **CSSScrollSnap.java** (shipped, commit a838e7b) - Enhanced Scroll Snap
   - scroll-snap-type (mandatory, proximity)
   - scroll-snap-align
   - scroll-snap-stop
   - scroll-padding
   - Snap point helpers
 
-- [ ] **CSSTextWrap.java** - Modern Text Wrapping
+- [x] **CSSTextWrap.java** (shipped, commit a838e7b) - Modern Text Wrapping
   - text-wrap: balance
   - text-wrap: pretty
   - white-space-collapse
   - word-break enhancements
 
-- [ ] **CSSSubgrid.java** - CSS Subgrid Support
+- [x] **CSSSubgrid.java** (shipped, commit a838e7b) - CSS Subgrid Support
   - subgrid value for grid-template-columns/rows
   - Named line references
   - Alignment inheritance
 
-- [ ] **CSSMasking.java** - CSS Masking and Clipping
+- [x] **CSSMasking.java** (shipped, commit a838e7b) - CSS Masking and Clipping
   - mask-image
   - mask-mode
   - mask-position, mask-size
   - mask-composite
   - clip-path enhancements
 
-- [ ] **CSSLogicalProperties.java** - Logical Properties
+- [x] **CSSLogicalProperties.java** (shipped, commit a838e7b) - Logical Properties
   - inline-size, block-size
   - margin-inline, margin-block
   - padding-inline, padding-block
@@ -463,29 +463,29 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
 
 #### New HTML Elements
 
-- [ ] **PopoverElements.java** - Popover API
+- [x] **PopoverElements.java** (shipped, commit a838e7b) - Popover API
   - popover attribute (auto, manual)
   - popovertarget attribute
   - popovertargetaction attribute
   - Popover events (toggle, beforetoggle)
   - Popover positioning helpers
 
-- [ ] **PictureElements.java** - Responsive Images
+- [x] **PictureElements.java** (shipped, commit a838e7b) - Responsive Images
   - picture element
   - source element with srcset and media
   - Art direction patterns
   - Lazy loading helpers
 
-- [ ] **FigureElements.java** - Figure and Caption
+- [x] **FigureElements.java** (shipped, commit a838e7b) - Figure and Caption
   - figure element
   - figcaption element
   - Semantic grouping helpers
 
-- [ ] **DefinitionElements.java** - Definition Lists
+- [x] **DefinitionElements.java** (shipped, commit a838e7b) - Definition Lists
   - dl, dt, dd elements
   - Term/definition grouping
 
-- [ ] **InteractiveElements.java** - Interactive Elements
+- [x] **InteractiveElements.java** (shipped, commit a838e7b) - Interactive Elements
   - abbr (abbreviation)
   - dfn (definition)
   - cite (citation)
@@ -493,7 +493,7 @@ This document tracks completed improvements and remaining tasks for the JWeb fra
   - blockquote improvements
   - kbd, samp, var elements
 
-- [ ] **FormEnhancements.java** - Modern Form Features
+- [x] **FormEnhancements.java** (shipped, commit a838e7b) - Modern Form Features
   - datalist element for autocomplete
   - optgroup for option grouping
   - fieldset/legend improvements

@@ -35,6 +35,13 @@ public class JWebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        // The WebSocket handler mapping defaults to order 1, which loses to
+        // JWebController's @RequestMapping("/**") at order 0 — the upgrade
+        // request would get an empty 200 instead of a 101. Run first.
+        if (registry instanceof org.springframework.web.socket.config.annotation.ServletWebSocketHandlerRegistry servletRegistry) {
+            servletRegistry.setOrder(-1);
+        }
+
         var registration = registry.addHandler(webSocketHandler, "/jweb");
         if (allowedOrigins != null && !allowedOrigins.isBlank()) {
             registration.setAllowedOrigins(allowedOrigins.split("\\s*,\\s*"));

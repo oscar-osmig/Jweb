@@ -1,8 +1,13 @@
 # JWeb DSL Examples: Simple to Advanced
 
 ## Required Imports
+
+App code conventionally uses the `El` facade (what the sample pages import).
+`Elements.*` also works — `El` is a curated subset of it; don't wildcard-import
+both into one file (they share many names).
+
 ```java
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
@@ -14,7 +19,7 @@ import static com.osmig.Jweb.framework.js.Actions.*;
 
 ---
 
-## Level 1: Basic Elements![img.png](img.png)
+## Level 1: Basic Elements
 
 ```java
 // Plain text

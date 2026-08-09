@@ -795,7 +795,7 @@ public final class Async {
         private final String base;
         private final List<String> chain = new ArrayList<>();
 
-        PromiseBuilder(String base) {
+        public PromiseBuilder(String base) {
             this.base = base;
         }
 

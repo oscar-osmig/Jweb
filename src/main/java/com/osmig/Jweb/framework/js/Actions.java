@@ -608,7 +608,7 @@ public final class Actions {
                 String code = a.build();
                 if (!code.isEmpty()) {
                     sb.append(code);
-                    if (!code.endsWith(";") && !code.endsWith("}")) sb.append(";");
+                    if (!code.endsWith(";")) sb.append(";");
                 }
             }
             return sb.toString();
@@ -1091,7 +1091,7 @@ public final class Actions {
             StringBuilder sb = new StringBuilder();
             for (Action a : actions) {
                 sb.append(a.build());
-                if (!a.build().endsWith(";") && !a.build().endsWith("}")) sb.append(";");
+                if (!a.build().endsWith(";")) sb.append(";");
             }
             return sb.toString();
         }
@@ -1173,13 +1173,23 @@ public final class Actions {
             // Show element
             sb.append("_el.style.display='block';");
 
-            // Apply type styling
-            if ("success".equals(type)) {
-                sb.append("_el.style.backgroundColor='#d1fae5';_el.style.color='#065f46';");
-            } else if ("error".equals(type)) {
-                sb.append("_el.style.backgroundColor='#fee2e2';_el.style.color='#991b1b';");
-            } else if ("warning".equals(type)) {
-                sb.append("_el.style.backgroundColor='#fef3c7';_el.style.color='#92400e';");
+            // Apply type styling via classes + themeable CSS variables
+            // (--jweb-msg-<type>-bg / --jweb-msg-<type>-fg override the defaults)
+            if (type != null) {
+                String defaultBg = switch (type) {
+                    case "success" -> "#d1fae5";
+                    case "error" -> "#fee2e2";
+                    default -> "#fef3c7";
+                };
+                String defaultFg = switch (type) {
+                    case "success" -> "#065f46";
+                    case "error" -> "#991b1b";
+                    default -> "#92400e";
+                };
+                sb.append("_el.classList.remove('jweb-msg-success','jweb-msg-error','jweb-msg-warning');");
+                sb.append("_el.classList.add('jweb-msg-" + type + "');");
+                sb.append("_el.style.backgroundColor='var(--jweb-msg-" + type + "-bg, " + defaultBg + ")';");
+                sb.append("_el.style.color='var(--jweb-msg-" + type + "-fg, " + defaultFg + ")';");
             }
 
             sb.append("}");
@@ -1385,7 +1395,7 @@ public final class Actions {
             sb.append("function " + name + "(" + String.join(",", params) + "){");
             for (String s : body) {
                 sb.append(s);
-                if (!s.endsWith(";") && !s.endsWith("}")) sb.append(";");
+                if (!s.endsWith(";")) sb.append(";");
             }
             sb.append("}");
             return sb.toString();
@@ -1449,7 +1459,7 @@ public final class Actions {
             for (Action a : actions) {
                 sb.append(a.build());
                 String built = a.build();
-                if (!built.endsWith(";") && !built.endsWith("}")) {
+                if (!built.endsWith(";")) {
                     sb.append(";");
                 }
             }
@@ -1518,7 +1528,7 @@ public final class Actions {
             for (Action a : tryActions) {
                 sb.append(a.build());
                 String built = a.build();
-                if (!built.endsWith(";") && !built.endsWith("}")) {
+                if (!built.endsWith(";")) {
                     sb.append(";");
                 }
             }
@@ -1527,7 +1537,7 @@ public final class Actions {
                 sb.append("catch(_err){");
                 sb.append(catchAction.build());
                 String built = catchAction.build();
-                if (!built.endsWith(";") && !built.endsWith("}")) {
+                if (!built.endsWith(";")) {
                     sb.append(";");
                 }
                 sb.append("}");
@@ -1536,7 +1546,7 @@ public final class Actions {
                 sb.append("finally{");
                 sb.append(finallyAction.build());
                 String built = finallyAction.build();
-                if (!built.endsWith(";") && !built.endsWith("}")) {
+                if (!built.endsWith(";")) {
                     sb.append(";");
                 }
                 sb.append("}");
@@ -1548,6 +1558,10 @@ public final class Actions {
     /**
      * Creates a Promise.all() call for parallel async operations.
      *
+     * <p>Actions that build {@code await ...} expressions have the await
+     * stripped inside the array — otherwise each would resolve sequentially
+     * before Promise.all ever saw it.</p>
+     *
      * <p>Example:</p>
      * <pre>
      * promiseAll(
@@ -1557,19 +1571,42 @@ public final class Actions {
      * // Output: Promise.all([fetch('/api/users'),fetch('/api/posts')])
      * </pre>
      *
+     * <p>To consume the results, chain with {@link #promiseAllThen}:</p>
+     * <pre>
+     * promiseAllThen(new Action[]{fetch_("/a"), fetch_("/b")})
+     *     .then(callback("results").log("done"))
+     * </pre>
+     *
      * @param actions the promises to run in parallel
      * @return an Action for Promise.all
      */
     public static Action promiseAll(Action... actions) {
-        return () -> {
-            StringBuilder sb = new StringBuilder("Promise.all([");
-            for (int i = 0; i < actions.length; i++) {
-                if (i > 0) sb.append(",");
-                sb.append(actions[i].build());
-            }
-            sb.append("])");
-            return sb.toString();
-        };
+        return () -> promiseAllJs(actions);
+    }
+
+    /**
+     * Like {@link #promiseAll(Action...)} but returns an
+     * {@link Async.PromiseBuilder} so results can be consumed with
+     * {@code .then(...)}/{@code .catch_(...)}.
+     *
+     * @param actions the promises to run in parallel
+     * @return a chainable promise builder
+     */
+    public static Async.PromiseBuilder promiseAllThen(Action... actions) {
+        return new Async.PromiseBuilder(promiseAllJs(actions));
+    }
+
+    private static String promiseAllJs(Action[] actions) {
+        StringBuilder sb = new StringBuilder("Promise.all([");
+        for (int i = 0; i < actions.length; i++) {
+            if (i > 0) sb.append(",");
+            String js = actions[i].build().strip();
+            // "await x" inside the array would serialize the calls
+            if (js.startsWith("await ")) js = js.substring("await ".length());
+            sb.append(js);
+        }
+        sb.append("])");
+        return sb.toString();
     }
 
     /**
@@ -2595,7 +2632,7 @@ public final class Actions {
             }
             for (String s : body) {
                 sb.append(s);
-                if (!s.endsWith(";") && !s.endsWith("}")) sb.append(";");
+                if (!s.endsWith(";")) sb.append(";");
             }
             sb.append("}");
             return sb.toString();
@@ -2825,17 +2862,17 @@ public final class Actions {
             sb.append("(").append(String.join(",", args)).append(");");
             if (onSuccess != null) {
                 sb.append(onSuccess.build());
-                if (!onSuccess.build().endsWith(";") && !onSuccess.build().endsWith("}")) sb.append(";");
+                if (!onSuccess.build().endsWith(";")) sb.append(";");
             }
             sb.append("}catch(_err){");
             if (onError != null) {
                 sb.append(onError.build());
-                if (!onError.build().endsWith(";") && !onError.build().endsWith("}")) sb.append(";");
+                if (!onError.build().endsWith(";")) sb.append(";");
             }
             sb.append("}}else{");
             if (onNotAvailable != null) {
                 sb.append(onNotAvailable.build());
-                if (!onNotAvailable.build().endsWith(";") && !onNotAvailable.build().endsWith("}")) sb.append(";");
+                if (!onNotAvailable.build().endsWith(";")) sb.append(";");
             }
             sb.append("}");
             return sb.toString();
@@ -2927,17 +2964,17 @@ public final class Actions {
             sb.append(");");
             if (okAction != null) {
                 sb.append(okAction.build());
-                if (!okAction.build().endsWith(";") && !okAction.build().endsWith("}")) sb.append(";");
+                if (!okAction.build().endsWith(";")) sb.append(";");
             }
             sb.append("}catch(_err){");
             if (failAction != null) {
                 sb.append(failAction.build());
-                if (!failAction.build().endsWith(";") && !failAction.build().endsWith("}")) sb.append(";");
+                if (!failAction.build().endsWith(";")) sb.append(";");
             }
             sb.append("}}else{");
             if (notAvailableAction != null) {
                 sb.append(notAvailableAction.build());
-                if (!notAvailableAction.build().endsWith(";") && !notAvailableAction.build().endsWith("}")) {
+                if (!notAvailableAction.build().endsWith(";")) {
                     sb.append(";");
                 }
             }
@@ -2987,18 +3024,18 @@ public final class Actions {
             sb.append("try{");
             if (tryAction != null) {
                 sb.append(tryAction.build());
-                if (!tryAction.build().endsWith(";") && !tryAction.build().endsWith("}")) sb.append(";");
+                if (!tryAction.build().endsWith(";")) sb.append(";");
             }
             sb.append("}catch(_err){");
             if (catchAction != null) {
                 sb.append(catchAction.build());
-                if (!catchAction.build().endsWith(";") && !catchAction.build().endsWith("}")) sb.append(";");
+                if (!catchAction.build().endsWith(";")) sb.append(";");
             }
             sb.append("}");
             if (finallyAction != null) {
                 sb.append("finally{");
                 sb.append(finallyAction.build());
-                if (!finallyAction.build().endsWith(";") && !finallyAction.build().endsWith("}")) sb.append(";");
+                if (!finallyAction.build().endsWith(";")) sb.append(";");
                 sb.append("}");
             }
             return sb.toString();
@@ -3324,7 +3361,7 @@ public final class Actions {
             sb.append("function(").append(String.join(",", params)).append("){");
             for (String s : body) {
                 sb.append(s);
-                if (!s.endsWith(";") && !s.endsWith("}")) sb.append(";");
+                if (!s.endsWith(";")) sb.append(";");
             }
             sb.append("}");
             return sb.toString();
@@ -3334,13 +3371,23 @@ public final class Actions {
     // ==================== Script Builder ====================
 
     public static class ScriptBuilder {
-        private final List<String> parts = new ArrayList<>();
+        private static final String HELPERS =
+            "const $_=id=>document.getElementById(id);" +
+            "function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML};" +
+            "function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}";
 
-        /** Add helper functions (getElementById, escape, date formatting). */
+        private final List<String> parts = new ArrayList<>();
+        private boolean helpersAdded = false;
+
+        /**
+         * Add helper functions ($_, esc, fmtDate). Optional — build() detects
+         * generated code that uses the helpers and prepends them automatically.
+         */
         public ScriptBuilder withHelpers() {
-            parts.add("const $_=id=>document.getElementById(id)");
-            parts.add("function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML}");
-            parts.add("function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}");
+            if (!helpersAdded) {
+                parts.add(HELPERS);
+                helpersAdded = true;
+            }
             return this;
         }
 
@@ -3423,14 +3470,24 @@ public final class Actions {
         /** Build the complete script wrapped in IIFE. */
         public String build() {
             StringBuilder sb = new StringBuilder();
-            sb.append("(function(){");
             for (String part : parts) {
                 sb.append(part);
                 // Always add semicolon for safety - JS ASI can fail with minified code
                 if (!part.endsWith(";")) sb.append(";");
             }
-            sb.append("})()");
-            return sb.toString();
+            String body = sb.toString();
+
+            // Safety net: if generated code references the helpers but
+            // withHelpers() wasn't called, prepend them so the script
+            // doesn't throw ReferenceError in the browser.
+            if (!helpersAdded && usesHelpers(body)) {
+                body = HELPERS + ";" + body;
+            }
+            return "(function(){" + body + "})()";
+        }
+
+        private static boolean usesHelpers(String js) {
+            return js.contains("$_(") || js.contains("esc(") || js.contains("fmtDate(");
         }
     }
 
@@ -3982,13 +4039,13 @@ public final class Actions {
             sb.append("if(").append(condition).append("){");
             if (thenAction != null) {
                 sb.append(thenAction.build());
-                if (!thenAction.build().endsWith(";") && !thenAction.build().endsWith("}")) sb.append(";");
+                if (!thenAction.build().endsWith(";")) sb.append(";");
             }
             sb.append("}");
             if (elseAction != null) {
                 sb.append("else{");
                 sb.append(elseAction.build());
-                if (!elseAction.build().endsWith(";") && !elseAction.build().endsWith("}")) sb.append(";");
+                if (!elseAction.build().endsWith(";")) sb.append(";");
                 sb.append("}");
             }
             return sb.toString();

@@ -34,16 +34,16 @@ dialog(attrs().id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure you want to proceed?"),
     div(
-        button(attrs().onclick(close("confirm-dialog")), "Cancel"),
+        button(attrs().set("onclick", close("confirm-dialog")), "Cancel"),
         button(attrs()
-            .onclick(close("confirm-dialog", "confirmed"))
+            .set("onclick", close("confirm-dialog", "confirmed"))
             .class_("primary"),
             "Confirm")
     )
 )
 
 // Button to open dialog
-button(attrs().onclick(showModal("confirm-dialog")), "Open Dialog")
+button(attrs().set("onclick", showModal("confirm-dialog")), "Open Dialog")
 ```
 
 ### Dialog with Return Value
@@ -56,7 +56,7 @@ dialog(attrs().id("input-dialog").onClose(e -> {
 }),
     h3("Enter Value"),
     input(attrs().id("dialog-input").type("text")),
-    button(attrs().onclick(close("input-dialog", "submitted")), "Submit")
+    button(attrs().set("onclick", close("input-dialog", "submitted")), "Submit")
 )
 ```
 
@@ -65,7 +65,7 @@ dialog(attrs().id("input-dialog").onClose(e -> {
 ```java
 dialog(attrs()
     .id("modal")
-    .onclick(closeOnBackdropClick("modal")),
+    .set("onclick", closeOnBackdropClick("modal")),
     div(class_("dialog-content"),
         h2("Modal Dialog"),
         p("Click outside to close")
@@ -122,9 +122,9 @@ details(attrs().id("faq-1"),
 )
 
 // Control buttons
-button(attrs().onclick(open("faq-1")), "Expand")
-button(attrs().onclick(close("faq-1")), "Collapse")
-button(attrs().onclick(toggle("faq-1")), "Toggle")
+button(attrs().set("onclick", open("faq-1")), "Expand")
+button(attrs().set("onclick", close("faq-1")), "Collapse")
+button(attrs().set("onclick", toggle("faq-1")), "Toggle")
 ```
 
 ### Exclusive Accordion
@@ -147,8 +147,8 @@ details(attrs().id("faq-3").name("faq"),
 )
 
 // Control all
-button(attrs().onclick(closeAll("faq")), "Collapse All")
-button(attrs().onclick(openAll("faq")), "Expand All")
+button(attrs().set("onclick", closeAll("faq")), "Collapse All")
+button(attrs().set("onclick", openAll("faq")), "Expand All")
 ```
 
 ### Toggle Event
@@ -255,7 +255,7 @@ progress(attrs()
     .value(0)
     .max(100))
 
-button(attrs().onclick("document.getElementById('task-progress').value += 10"),
+button(attrs().set("onclick", "document.getElementById('task-progress').value += 10"),
     "Increment")
 ```
 
@@ -352,7 +352,7 @@ Represents the result of a calculation or user action.
 ```java
 import static com.osmig.Jweb.framework.elements.El.*;
 
-form(attrs().oninput("result.value = parseInt(a.value) + parseInt(b.value)"),
+form(attrs().set("oninput", "result.value = parseInt(a.value) + parseInt(b.value)"),
     input(attrs().type("number").id("a").name("a").value("0")),
     text(" + "),
     input(attrs().type("number").id("b").name("b").value("0")),
@@ -501,11 +501,11 @@ public class ModernElementsDemo implements Template {
             // Dialog Section
             section(
                 h2("Dialog"),
-                button(attrs().onclick(showModal("demo-dialog")), "Open Dialog"),
+                button(attrs().set("onclick", showModal("demo-dialog")), "Open Dialog"),
                 dialog(attrs().id("demo-dialog"),
                     h3("Modal Dialog"),
                     p("This is a modal dialog with backdrop"),
-                    button(attrs().onclick(close("demo-dialog")), "Close")
+                    button(attrs().set("onclick", close("demo-dialog")), "Close")
                 )
             ),
 
@@ -520,7 +520,7 @@ public class ModernElementsDemo implements Template {
                     summary("Section 2"),
                     p("Content of section 2")
                 ),
-                button(attrs().onclick(closeAll("demo-accordion")), "Collapse All")
+                button(attrs().set("onclick", closeAll("demo-accordion")), "Collapse All")
             ),
 
             // Progress Section

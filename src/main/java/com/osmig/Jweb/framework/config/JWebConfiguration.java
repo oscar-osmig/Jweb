@@ -48,6 +48,32 @@ public class JWebConfiguration implements WebMvcConfigurer {
         };
     }
 
+    /**
+     * Warms the rendering pipeline in the background right after startup:
+     * pre-renders every registered page route once (DSL static init, JIT,
+     * lazy beans) so the first real request doesn't pay that cost. With
+     * spring.main.lazy-initialization=true this is what makes the first
+     * page view fast instead of taking seconds.
+     */
+    @Bean
+    public ApplicationRunner jwebWarmup(JWeb jweb) {
+        return args -> {
+            Thread warmup = new Thread(() -> {
+                for (var route : jweb.getPageRegistry().getRoutes()) {
+                    try {
+                        com.osmig.Jweb.framework.state.StateManager.withContext(
+                            () -> route.pageSupplier().get().render().toHtml());
+                    } catch (Exception e) {
+                        com.osmig.Jweb.framework.util.Log.debug(
+                            "Warmup skipped {}: {}", route.path(), e.getMessage());
+                    }
+                }
+            }, "jweb-warmup");
+            warmup.setDaemon(true);
+            warmup.start();
+        };
+    }
+
     @Bean
     public Router jwebRouter(JWeb jweb) {
         return jweb.getRouter();

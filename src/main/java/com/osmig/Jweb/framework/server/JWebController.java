@@ -65,7 +65,7 @@ public class JWebController {
     }
 
     @RequestMapping(value = "/**")
-    public ResponseEntity<String> handleRequest(
+    public Object handleRequest(
             HttpServletRequest servletRequest,
             HttpServletResponse servletResponse) {
 
@@ -120,6 +120,14 @@ public class JWebController {
 
             // Execute through middleware stack
             Object result = middlewareStack.execute(request, () -> match.get().handle(request));
+
+            // SSE emitters stream through Spring MVC directly
+            if (result instanceof org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter) {
+                return emitter;
+            }
+            if (result instanceof com.osmig.Jweb.framework.sse.SseEmitter emitter) {
+                return emitter.toResponse();
+            }
 
             return applyQueuedHeaders(processResult(result, context, request), request);
         } catch (Exception e) {
@@ -202,7 +210,9 @@ public class JWebController {
                 html = injectHydrationData(html, hydrationScript);
             }
 
+            // Short private cache so back/forward and quick revisits are free
             return ResponseEntity.ok()
+                .cacheControl(NAVIGATION_CACHE)
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
         }
@@ -232,19 +242,18 @@ public class JWebController {
     }
 
     private String injectHydrationData(String html, String hydrationScript) {
-        // Get pre-cached prefetch script
-        String prefetchScript = Prefetch.scriptTag();
-
-        // Client runtime (defines the JWeb global used by rendered event
-        // attributes). Injected after the hydration data so JWeb.init() can
-        // read __JWEB_DATA__ immediately.
-        String runtimeScript = com.osmig.Jweb.framework.js.JWebRuntime.getScriptTag();
+        // External, immutably-cached script references (the browser caches
+        // them across navigations; the ?v= content hash busts on change).
+        // Only the per-request hydration data stays inline.
+        String prefetchScript = externalPrefetchTag();
+        String runtimeScript = externalRuntimeTag();
 
         // Fast path: if no scripts to inject, return as-is
         if (prefetchScript.isEmpty() && hydrationScript.isEmpty() && runtimeScript.isEmpty()) {
             return html;
         }
 
+        // Order: hydration data first so JWeb.init() can read __JWEB_DATA__
         String scripts = prefetchScript + hydrationScript + runtimeScript;
 
         // Use StringBuilder for efficient string building
@@ -269,6 +278,37 @@ public class JWebController {
 
         // Append at end
         return html + scripts;
+    }
+
+    // Cached external script tags (content is fixed after startup; the
+    // version hash makes the immutable caching safe)
+    private static volatile String cachedRuntimeTag;
+    private static volatile String cachedPrefetchTag;
+
+    private static String externalRuntimeTag() {
+        String tag = cachedRuntimeTag;
+        if (tag == null) {
+            if (!com.osmig.Jweb.framework.js.JWebRuntime.isEnabled()) {
+                tag = "";
+            } else {
+                String script = com.osmig.Jweb.framework.js.JWebRuntime.getScript();
+                tag = "<script src=\"/jweb/runtime.js?v=" + JWebAssetsController.versionOf(script) + "\"></script>";
+            }
+            cachedRuntimeTag = tag;
+        }
+        return tag;
+    }
+
+    private static String externalPrefetchTag() {
+        String tag = cachedPrefetchTag;
+        if (tag == null) {
+            String script = Prefetch.clientScript();
+            tag = (script == null || script.isEmpty())
+                ? ""
+                : "<script src=\"/jweb/prefetch.js?v=" + JWebAssetsController.versionOf(script) + "\"></script>";
+            cachedPrefetchTag = tag;
+        }
+        return tag;
     }
 
     private ResponseEntity<String> handleNotFound(String path) {

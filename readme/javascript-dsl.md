@@ -19,9 +19,9 @@
 | `withHelpers()` | ❌ not available | ✅ available |
 | Accepts | `var_/let_/const_`, `Func`, `AsyncFunc`, raw | handlers (`onSubmit`/`onClick`/...), `state()`, `onLoad()`, raw |
 
-**`withHelpers()` is mandatory when using Actions handlers.** Every generated handler references
-`$_('id')` — a helper that `withHelpers()` defines (along with `esc()` and `fmtDate()`).
-Without it the browser throws `ReferenceError: $_ is not defined`.
+**Helpers are auto-injected.** Generated handlers reference `$_('id')` (plus `esc()` and
+`fmtDate()`); `build()` detects their use and prepends the definitions automatically, so
+`withHelpers()` is now optional (calling it explicitly is still fine and never duplicates).
 
 Also: `JS.*` and `Actions.*` share many static names (`script`, `query`, `queryAll`, `call`,
 `fetch`, `sleep`, `promiseAll`, `pushState`, ...). **Wildcard-importing both into one file causes
@@ -145,8 +145,10 @@ Full chain: `get/post/put/patch/delete/fetch(method, url)`, `.urlFromVar`, `.app
 `.json/.jsonExpr/.formData/.urlEncoded/.body`, `.header/.headerExpr/.bearer/.credentials/.mode`,
 `.onStatus(...)` + named variants, `.ok/.fail/.then`.
 
-> ⚠️ `Actions.promiseAll(actions...)` returns a plain sequential `Action` — it has **no
-> `.ok(...)`**. For true `Promise.all` semantics use `Async.promiseAll(vals...).then(...)`.
+> `Actions.promiseAll(actions...)` emits a true parallel `Promise.all([...])` (stripping any
+> leading `await` from each action so calls don't serialize). To consume results, use
+> `Actions.promiseAllThen(actions...)` which returns a chainable `Async.PromiseBuilder`
+> (`.then(...)`/`.catch_(...)`), or `Async.promiseAll(vals...)`.
 
 ## DOM Query Builder (`Actions`)
 

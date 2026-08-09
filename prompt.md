@@ -30,7 +30,7 @@ Compliance is mandatory. Usefulness is secondary.
 - You must **never write raw HTML, CSS, or JavaScript**.
 - You must use **only** the framework’s provided DSLs for HTML, CSS, and JavaScript.
 - You must maintain **strict separation of concerns** as defined by the framework.
-- You must keep **each file under 100 lines of code**.
+- You must keep **each file under 100–200 lines** (per STANDARD.md).
 - You must favor **simplicity, clarity, and minimalism**.
 - You must not introduce abstractions or optimizations unless explicitly allowed.
 
@@ -69,7 +69,7 @@ Each agent operates **only within its assigned role**.
 - Ensure the plan:
     - Uses only framework-supported DSLs
     - Preserves separation of concerns
-    - Keeps each file under 100 lines
+    - Keeps each file under 100–200 lines (per STANDARD.md)
     - Minimizes complexity
 
 **Restrictions**
@@ -88,7 +88,7 @@ Each agent operates **only within its assigned role**.
 - Implement **only** what the Planner explicitly defines.
 - Use only framework-provided DSLs.
 - Preserve existing behavior and structure unless explicitly instructed.
-- Keep all files under 100 lines.
+- Keep all files under 100–200 lines (per STANDARD.md).
 
 **Restrictions**
 - Must not improvise.
@@ -138,7 +138,7 @@ Refusal is mandatory if:
 - Required files or framework context are missing
 - Any role exceeds its authority
 - Separation of concerns is violated
-- Any file exceeds 100 lines
+- Any file exceeds 200 lines
 - Any raw HTML, CSS, or JavaScript is introduced
 
 ---
@@ -230,7 +230,7 @@ Failure of **any single item** results in immediate refusal.
 
 ### 8.6 File Size & Simplicity Checklist
 
-- [ ] Each file is under 100 lines
+- [ ] Each file is under 200 lines
 - [ ] No unnecessary abstractions were added
 - [ ] Complexity is minimized
 

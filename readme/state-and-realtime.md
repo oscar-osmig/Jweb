@@ -156,22 +156,17 @@ broadcaster.broadcastIf(em -> someCondition, event);
 broadcaster.getSubscriberCount(); broadcaster.shutdown();
 ```
 
-> ⚠️ **Serving the stream:** `JWebController.processResult` has no branch for SSE emitters, so
-> you cannot return `emitter.toResponse()` from a JWeb router handler. Serve SSE from a Spring
-> controller instead (this is what the dev server does):
+> **Serving the stream:** JWeb router handlers can return the emitter directly — the
+> controller passes SSE emitters (JWeb's `SseEmitter` or Spring's) through to Spring MVC for
+> streaming. Spring `@RestController`s work too.
 
 ```java
-@RestController
-public class EventsController {
-    private final SseBroadcaster broadcaster = new SseBroadcaster();
-
-    @GetMapping("/api/v1/events")
-    public org.springframework.web.servlet.mvc.method.annotation.SseEmitter stream() {
-        SseEmitter emitter = SseEmitter.create(0);   // 0 = no timeout
-        broadcaster.subscribe(emitter);
-        return emitter.toResponse();
-    }
-}
+// JWeb router route
+app.get("/events", req -> {
+    SseEmitter emitter = SseEmitter.create(0);   // 0 = no timeout
+    broadcaster.subscribe(emitter);
+    return emitter;                              // or emitter.toResponse()
+});
 ```
 
 Client side, use `Events.sse("/api/v1/events").onMessage(...).build()` from the JS DSL.

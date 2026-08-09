@@ -73,7 +73,10 @@ public final class Runtime {
             StringBuilder sb = new StringBuilder("(function(){");
             for (String p : parts) {
                 sb.append(p);
-                if (!p.endsWith("}") && !p.endsWith(";")) sb.append(";");
+                // Always separate statements: expressions ending in "}" (e.g.
+                // "x=y||{}") would otherwise merge with the next part. An
+                // extra ";" after a block is a harmless empty statement.
+                if (!p.endsWith(";")) sb.append(";");
             }
             return new Val(sb.append("})()").toString());
         }
@@ -133,7 +136,8 @@ public final class Runtime {
             sb.append("if(window.").append(varName).append(")return;window.").append(varName).append("=true;");
             for (String p : parts) {
                 sb.append(p);
-                if (!p.endsWith("}") && !p.endsWith(";")) sb.append(";");
+                // See IIFE.toVal — expressions ending in "}" need the separator
+                if (!p.endsWith(";")) sb.append(";");
             }
             return new Val(sb.toString());
         }

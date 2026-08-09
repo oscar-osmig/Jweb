@@ -41,11 +41,14 @@ public class JWebAutoConfiguration {
     public JWeb jweb() {
         JWeb app = JWeb.create();
 
-        // Configure routes from all JWebRoutes beans
+        // Configure routes from all JWebRoutes beans, in a deterministic
+        // order: @Order/Ordered first, then alphabetical by bean name.
         Map<String, JWebRoutes> routesBeans = context.getBeansOfType(JWebRoutes.class);
-        for (JWebRoutes routes : routesBeans.values()) {
-            routes.configure(app);
-        }
+        routesBeans.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .map(Map.Entry::getValue)
+            .sorted(org.springframework.core.annotation.AnnotationAwareOrderComparator.INSTANCE)
+            .forEach(routes -> routes.configure(app));
 
         return app;
     }

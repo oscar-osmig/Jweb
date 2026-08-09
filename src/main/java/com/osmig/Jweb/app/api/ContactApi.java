@@ -1,16 +1,19 @@
 package com.osmig.Jweb.app.api;
 
 import com.osmig.Jweb.framework.api.*;
-import com.osmig.Jweb.framework.db.mongo.Doc;
-import com.osmig.Jweb.framework.db.mongo.Mongo;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import java.util.Date;
 import java.util.Map;
 
-/** Contact form API - saves submissions to MongoDB. */
+/** Contact form API - saves submissions via MessageStore (Mongo or in-memory). */
 @REST("/api/v1/contact")
 public class ContactApi {
+
+    private final MessageStore messageStore;
+
+    public ContactApi(MessageStore messageStore) {
+        this.messageStore = messageStore;
+    }
 
     @POST
     public Map<String, Object> submit(@RequestBody Map<String, String> data) {
@@ -23,12 +26,7 @@ public class ContactApi {
             return Map.of("error", "All fields are required");
         }
 
-        Doc contact = Doc.of("contacts")
-            .set("name", name.trim())
-            .set("email", email.trim())
-            .set("message", message.trim())
-            .set("createdAt", new Date());
-        Mongo.save(contact);
+        messageStore.save(name.trim(), email.trim(), message.trim());
 
         return Map.of("status", "ok");
     }

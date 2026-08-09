@@ -69,15 +69,41 @@ public final class JWebTest {
     // ========== Route Testing ==========
 
     /**
-     * Tests a route on the JWeb app.
+     * Tests a route on the JWeb app. Page routes (registered via
+     * {@code app.pages(...)}) and Router routes are both supported; the
+     * middleware stack runs in each case, matching production dispatch.
      */
     public static TestResult test(JWeb app, MockRequest mockRequest) {
         Request request = mockRequest.build();
         String path = request.path();
         String method = request.method();
 
+        // Page routes first, mirroring JWebController's dispatch order
+        var pageMatch = app.getPageRegistry().findByPath(path);
+        if (pageMatch.isPresent()) {
+            if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
+                return new TestResult(405, null, "Method not allowed: " + method + " " + path);
+            }
+            try {
+                var route = pageMatch.get();
+                Object result = app.getMiddlewareStack().execute(request, () -> {
+                    var page = route.pageSupplier().get();
+                    page.beforeRender(request);
+                    Element content = page.render();
+                    page.afterRender(request);
+                    return content;
+                });
+                return TestResult.from(result);
+            } catch (Exception e) {
+                return new TestResult(500, null, e.getMessage());
+            }
+        }
+
         var match = app.getRouter().match(method, path);
         if (match.isEmpty()) {
+            if (!app.getRouter().allowedMethods(path).isEmpty()) {
+                return new TestResult(405, null, "Method not allowed: " + method + " " + path);
+            }
             return new TestResult(404, null, "Route not found: " + method + " " + path);
         }
 
