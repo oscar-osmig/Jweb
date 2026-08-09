@@ -34,7 +34,7 @@ public class Nav implements Template {
 
     private Element link(String href, String label) {
         return a(href(href), style()
-            .color(rgba(255, 255, 255, 0.9)).fontSize(rem(0.9))
+            .color(rgba(255, 255, 255, 0.9)).fontSize(TEXT_SM)
             .textDecoration(none).fontWeight(500), text(label));
     }
 }

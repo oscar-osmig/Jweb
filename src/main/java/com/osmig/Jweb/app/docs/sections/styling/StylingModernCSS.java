@@ -9,7 +9,7 @@ public final class StylingModernCSS {
     public static Element render() {
         return section(
             h3Title("Modern CSS Features"),
-            para("Cutting-edge CSS features for positioning, scrolling, text, grids, masking, and logical layout."),
+            para("Anchor positioning, scroll snap, text wrapping, subgrid, masking, and logical properties — each as typed builders."),
 
             h3Title("Anchor Positioning"),
             para("Position elements relative to an anchor element without JavaScript."),

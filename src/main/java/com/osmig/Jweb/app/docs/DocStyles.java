@@ -44,12 +44,12 @@ public final class DocStyles {
     }
 
     public static Style tip() {
-        return style().backgroundColor(hex("#ecfdf5")).borderLeft(px(4), solid, hex("#10b981"))
+        return style().backgroundColor(hex("#ecfdf5")).border(px(1), solid, hex("#a7f3d0"))
             .padding(SP_4).marginBottom(SP_6).borderRadius(px(0), ROUNDED, ROUNDED, px(0));
     }
 
     public static Style warning() {
-        return style().backgroundColor(hex("#fef3c7")).borderLeft(px(4), solid, hex("#f59e0b"))
+        return style().backgroundColor(hex("#fef3c7")).border(px(1), solid, hex("#fcd34d"))
             .padding(SP_4).marginBottom(SP_6).borderRadius(px(0), ROUNDED, ROUNDED, px(0));
     }
 }
