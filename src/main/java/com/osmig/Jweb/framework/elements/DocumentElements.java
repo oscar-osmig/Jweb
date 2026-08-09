@@ -44,6 +44,17 @@ public final class DocumentElements {
         return new Tag("meta", new Attributes().name(name).set("content", content));
     }
 
+    /** {@code <meta charset="UTF-8">} */
+    public static Tag metaCharset() {
+        return new Tag("meta", new Attributes().set("charset", "UTF-8"));
+    }
+
+    /** The standard responsive viewport meta tag. */
+    public static Tag metaViewport() {
+        return new Tag("meta", new Attributes()
+            .name("viewport").set("content", "width=device-width, initial-scale=1.0"));
+    }
+
     public static Tag link(Object... attrs) {
         return Tag.create("link", attrs);
     }

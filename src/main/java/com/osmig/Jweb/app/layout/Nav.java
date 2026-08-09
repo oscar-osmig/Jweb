@@ -7,6 +7,7 @@ import static com.osmig.Jweb.framework.elements.El.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 import static com.osmig.Jweb.framework.styles.CSS.*;
+import static com.osmig.Jweb.app.layout.Theme.*;
 
 /**
  * Navigation bar.
@@ -17,15 +18,7 @@ public class Nav implements Template {
     public Element render() {
         return nav(attrs().style()
                 .position(sticky).top(zero).zIndex(1000)
-                .background(linearGradient("90deg",
-                    hex("#6366f1"),
-                    hex("#8b5cf6"),
-                    hex("#a855f7"),
-                    hex("#ec4899"),
-                    hex("#8b5cf6"),
-                    hex("#6366f1")))
-                .backgroundSize(() -> "300% 100%")
-                .animation(anim("gradientShift"), s(3), linear, s(0), infinite)
+                .apply(brandFlow())
                 .padding(rem(0.75), rem(2))
                 .display(flex).alignItems(center).justifyContent(spaceBetween)
             .done(),

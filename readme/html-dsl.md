@@ -172,6 +172,21 @@ Available on `Attributes` for both forms: `onClick`, `onChange`, `onInput`, `onS
 `onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`, mouse/drag/touch/scroll/animation events, and the
 generic `on(type, handler)`.
 
+### Builder shortcuts that replace quoted strings
+
+```java
+// Document head
+metaCharset()                      // <meta charset="UTF-8">
+metaViewport()                     // the standard responsive viewport tag
+
+// SVG line icons (viewBox from ints; lineIcon = no fill, currentColor
+// stroke, rounded caps/joins)
+svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
+    path(attrs().d("M9 21H5a2...")))
+
+// Also: strokeWidth(int), strokeRound(), width(int), height(int)
+```
+
 ## Fluent builders: `Input`, `Button`, `Form`
 
 Beyond `input(attrs()...)`, dedicated builders exist:

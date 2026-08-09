@@ -35,11 +35,7 @@ public class HomePage implements Template {
                      "Type-safe components, fluent DSL, and zero frontend tooling required.")),
             a(attrs().href("/docs").style()
                 .display(inlineBlock).marginTop(SP_6).padding(SP_3, SP_6)
-                .background(linearGradient("90deg",
-                    hex("#6366f1"), hex("#8b5cf6"), hex("#a855f7"),
-                    hex("#ec4899"), hex("#8b5cf6"), hex("#6366f1")))
-                .backgroundSize(() -> "300% 100%")
-                .animation(anim("gradientShift"), s(3), linear, s(0), infinite)
+                .apply(brandFlow())
                 .color(white).borderRadius(ROUNDED).fontWeight(600).textDecoration(none)
             .done(), text("Get Started"))
         );
@@ -64,22 +60,7 @@ public class HomePage implements Template {
                 .textAlign(center)
                 .overflow(hidden)
             .done(),
-            // Gradient border using pseudo-element technique via wrapper
-            div(attrs().style()
-                .position(absolute).top(zero).left(zero).right(zero).bottom(zero)
-                .borderRadius(ROUNDED_LG)
-                .padding(px(2))
-                .background(linearGradient("90deg",
-                    hex("#6366f1"), hex("#8b5cf6"), hex("#a855f7"),
-                    hex("#ec4899"), hex("#8b5cf6"), hex("#6366f1")))
-                .backgroundSize(() -> "300% 100%")
-                .animation(anim("gradientShift"), s(3), linear, s(0), infinite)
-                .prop("-webkit-mask", "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)")
-                .prop("mask", "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)")
-                .prop("-webkit-mask-composite", "xor")
-                .prop("mask-composite", "exclude")
-                .zIndex(0)
-            .done()),
+            brandBorder(ROUNDED_LG),
             div(attrs().style().position(relative).zIndex(1).done(),
                 h3(attrs().style().fontSize(TEXT_LG).fontWeight(600).color(PRIMARY).done(),
                     text(title)),

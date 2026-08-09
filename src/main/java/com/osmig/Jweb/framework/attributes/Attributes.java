@@ -769,8 +769,12 @@ public class Attributes implements TransitionReceiver {
     public Attributes alt(String value) { return set("alt", value); }
     /** Sets the width attribute. @param value the width (numeric or with unit) */
     public Attributes width(String value) { return set("width", value); }
+    /** Sets the width attribute from a number. */
+    public Attributes width(int value) { return set("width", String.valueOf(value)); }
     /** Sets the height attribute. @param value the height */
     public Attributes height(String value) { return set("height", value); }
+    /** Sets the height attribute from a number. */
+    public Attributes height(int value) { return set("height", String.valueOf(value)); }
 
     // ==================== Form Attributes ====================
 
@@ -993,6 +997,10 @@ public class Attributes implements TransitionReceiver {
 
     /** Sets the viewBox attribute for SVG. @param value e.g., "0 0 100 100" */
     public Attributes viewBox(String value) { return set("viewBox", value); }
+    /** Sets the viewBox attribute from numbers: {@code viewBox(0, 0, 24, 24)}. */
+    public Attributes viewBox(int minX, int minY, int width, int height) {
+        return set("viewBox", minX + " " + minY + " " + width + " " + height);
+    }
     /** Sets the preserveAspectRatio attribute for SVG. @param value e.g., "xMidYMid meet" */
     public Attributes preserveAspectRatio(String value) { return set("preserveAspectRatio", value); }
     /** Sets the xmlns attribute for SVG namespace. @param value namespace URI */
@@ -1003,6 +1011,26 @@ public class Attributes implements TransitionReceiver {
     public Attributes stroke(String value) { return set("stroke", value); }
     /** Sets the stroke-width attribute for SVG. @param value width */
     public Attributes strokeWidth(String value) { return set("stroke-width", value); }
+    /** Sets the stroke-width attribute from a number. */
+    public Attributes strokeWidth(int value) { return set("stroke-width", String.valueOf(value)); }
+    /**
+     * Rounds stroke ends and joins — sets both {@code stroke-linecap} and
+     * {@code stroke-linejoin} to {@code round}. The usual choice for line icons.
+     */
+    public Attributes strokeRound() {
+        return set("stroke-linecap", "round").set("stroke-linejoin", "round");
+    }
+    /**
+     * Common setup for stroked line icons: no fill, {@code currentColor}
+     * stroke at the given width, rounded caps and joins.
+     *
+     * <pre>
+     * svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2), path(...))
+     * </pre>
+     */
+    public Attributes lineIcon(int strokeWidth) {
+        return fill("none").stroke("currentColor").strokeWidth(strokeWidth).strokeRound();
+    }
     /** Sets the d attribute for SVG path. @param value path data */
     public Attributes d(String value) { return set("d", value); }
     /** Sets the cx attribute for SVG circles. @param value center x */

@@ -76,4 +76,62 @@ class DslFixesTest {
         public int x;
         public int y;
     }
+
+    // ==================== Builder simplifications ====================
+
+    @Test
+    void styleFragmentsCompose() {
+        var fragment = com.osmig.Jweb.framework.styles.CSS.style()
+            .prop("background", "red")
+            .prop("color", "white");
+
+        String css = com.osmig.Jweb.framework.styles.CSS.style()
+            .prop("padding", "1rem")
+            .apply(fragment)
+            .css();
+
+        assertTrue(css.contains("padding: 1rem;"));
+        assertTrue(css.contains("background: red;"));
+        assertTrue(css.contains("color: white;"));
+    }
+
+    @Test
+    void borderMaskEmitsCrossBrowserPair() {
+        String css = com.osmig.Jweb.framework.styles.CSS.style().borderMask().css();
+        assertTrue(css.contains("-webkit-mask:"));
+        assertTrue(css.contains("mask-composite: exclude;"));
+        assertTrue(css.contains("-webkit-mask-composite: xor;"));
+    }
+
+    @Test
+    void contentEmitsEmptyQuotes() {
+        String css = com.osmig.Jweb.framework.styles.CSS.style().content().css();
+        assertTrue(css.contains("content: '';"));
+    }
+
+    @Test
+    void svgIconBuilderChain() {
+        String html = El.svg(El.attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2)).toHtml();
+        assertTrue(html.contains("viewBox=\"0 0 24 24\""));
+        assertTrue(html.contains("stroke=\"currentColor\""));
+        assertTrue(html.contains("stroke-linecap=\"round\""));
+        assertTrue(html.contains("stroke-linejoin=\"round\""));
+        assertTrue(html.contains("stroke-width=\"2\""));
+    }
+
+    @Test
+    void onClickAcceptsActions() {
+        String html = El.button(El.attrs().onClick(
+            com.osmig.Jweb.framework.js.Actions.reload()), El.text("Retry")).toHtml();
+        assertTrue(html.contains("onclick="), "onclick attribute expected: " + html);
+        assertTrue(html.contains("reload"), "reload JS expected: " + html);
+    }
+
+    @Test
+    void metaHelpers() {
+        assertTrue(El.metaCharset().toHtml().contains("charset=\"UTF-8\""));
+        String viewport = El.metaViewport().toHtml();
+        assertTrue(viewport.contains("name=\"viewport\""));
+        assertTrue(viewport.contains("width=device-width"));
+    }
 }

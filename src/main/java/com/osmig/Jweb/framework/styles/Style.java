@@ -1957,6 +1957,65 @@ public class Style<T extends Style<T>> implements CSSValue {
     /** Sets all property to reset all properties. @param value initial, inherit, unset, revert */
     public T all(CSSValue value) { return prop("all", value); }
 
+    // ==================== Composition ====================
+
+    /**
+     * Merges another style's properties into this one — the composition
+     * primitive for shared style fragments. Later properties win, so call
+     * order reads naturally.
+     *
+     * <p>Example — define a fragment once, reuse everywhere:</p>
+     * <pre>
+     * static Style&lt;?&gt; brandGradient() {
+     *     return style().background(BRAND_GRADIENT)
+     *                   .backgroundSize(percent(300), percent(100))
+     *                   .animation(anim("shift"), s(3), linear, s(0), infinite);
+     * }
+     *
+     * button(attrs().style().padding(SP_3).apply(brandGradient()).done(), ...)
+     * </pre>
+     *
+     * @param fragment the style whose properties to merge in
+     * @return this builder for chaining
+     */
+    public T apply(Style<?> fragment) {
+        properties.putAll(fragment.properties);
+        return self();
+    }
+
+    // ==================== Pseudo-element / Mask Helpers ====================
+
+    /** Sets {@code content: ''} — required for ::before/::after pseudo-elements. */
+    public T content() {
+        properties.put("content", "''");
+        return self();
+    }
+
+    /**
+     * Masks an element so only its padding ring is visible — the standard
+     * trick for gradient borders: paint a gradient background, set the
+     * border thickness as padding, and call this.
+     *
+     * <p>Example (animated gradient border overlay):</p>
+     * <pre>
+     * style().position(absolute).inset(zero)
+     *        .borderRadius(px(12)).padding(px(2))
+     *        .background(myGradient)
+     *        .borderMask()
+     * </pre>
+     *
+     * <p>Emits the cross-browser mask-composite pair (webkit xor / standard
+     * exclude).</p>
+     */
+    public T borderMask() {
+        String mask = "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)";
+        properties.put("-webkit-mask", mask);
+        properties.put("mask", mask);
+        properties.put("-webkit-mask-composite", "xor");
+        properties.put("mask-composite", "exclude");
+        return self();
+    }
+
     // ==================== Raw Property ====================
 
     /**

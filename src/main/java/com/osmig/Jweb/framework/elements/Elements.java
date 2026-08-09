@@ -155,6 +155,10 @@ public final class Elements {
     public static Tag title(String text) { return tag("title", text); }
     public static Tag meta(Object... attrs) { return tag("meta", attrs); }
     public static Tag meta(Attributes attrs) { return new Tag("meta", attrs); }
+    /** {@code <meta charset="UTF-8">} */
+    public static Tag metaCharset() { return DocumentElements.metaCharset(); }
+    /** The standard responsive viewport meta tag. */
+    public static Tag metaViewport() { return DocumentElements.metaViewport(); }
     public static Tag meta(String name, String content) {
         return tag("meta", new Attributes().name(name).set("content", content));
     }

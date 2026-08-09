@@ -41,9 +41,8 @@ public final class ErrorPage {
 
         return html(
             head(
-                tag("meta", attrs().set("charset", "UTF-8")),
-                tag("meta", attrs().set("name", "viewport")
-                    .set("content", "width=device-width, initial-scale=1.0")),
+                metaCharset(),
+                metaViewport(),
                 title(status + " - " + title),
                 style(globalStyles())
             ),
@@ -71,7 +70,7 @@ public final class ErrorPage {
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
                         button(attrs().class_("error-btn error-btn-secondary")
-                            .set("onclick", "location.reload()"), text("Retry"))
+                            .onClick(com.osmig.Jweb.framework.js.Actions.reload()), text("Retry"))
                     )
                 )
             )
@@ -82,9 +81,8 @@ public final class ErrorPage {
     private static Element renderProduction(int status, String title) {
         return html(
             head(
-                tag("meta", attrs().set("charset", "UTF-8")),
-                tag("meta", attrs().set("name", "viewport")
-                    .set("content", "width=device-width, initial-scale=1.0")),
+                metaCharset(),
+                metaViewport(),
                 title(status + " - " + title),
                 style(globalStyles())
             ),
@@ -99,7 +97,7 @@ public final class ErrorPage {
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
                         button(attrs().class_("error-btn error-btn-secondary")
-                            .set("onclick", "location.reload()"), text("Retry"))
+                            .onClick(com.osmig.Jweb.framework.js.Actions.reload()), text("Retry"))
                     )
                 )
             )
@@ -109,9 +107,8 @@ public final class ErrorPage {
     public static Element render404(String path) {
         return html(
             head(
-                tag("meta", attrs().set("charset", "UTF-8")),
-                tag("meta", attrs().set("name", "viewport")
-                    .set("content", "width=device-width, initial-scale=1.0")),
+                metaCharset(),
+                metaViewport(),
                 title("404 - Not Found"),
                 style(globalStyles())
             ),

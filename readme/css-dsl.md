@@ -60,6 +60,34 @@ div(attrs().style(s -> s
 borders, transforms, transitions, animations, filters, positioning, overflow, columns,
 scroll behavior, containment, and more. If a CSS property exists, it's very likely a method.
 
+### Composing style fragments
+
+Define a style once, reuse it everywhere with `.apply(fragment)` — the composition
+primitive for design systems:
+
+```java
+// In your Theme:
+public static Style<?> brandFlow() {
+    return style().background(BRAND_GRADIENT)
+                  .backgroundSize(percent(300), percent(100))
+                  .animation(anim("gradientShift"), s(3), linear, s(0), infinite);
+}
+
+// Anywhere:
+button(attrs().style().padding(SP_3).apply(brandFlow()).color(white).done(), ...)
+```
+
+Related helpers that kill common `prop("...")` strings:
+
+```java
+style().content()        // content: '' — for ::before/::after rules
+style().inset(zero)      // top/right/bottom/left in one call
+style().borderMask()     // mask so only the padding ring shows — gradient borders:
+style().position(absolute).inset(zero)
+       .borderRadius(px(12)).padding(px(2))     // 2px border thickness
+       .apply(brandFlow()).borderMask()
+```
+
 ## CSS Rules and Stylesheets
 
 Three mechanisms, from ad-hoc to global:

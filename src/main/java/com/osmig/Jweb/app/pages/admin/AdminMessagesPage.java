@@ -58,10 +58,7 @@ public class AdminMessagesPage implements Template {
                 .prop("transition", "color 0.2s")
             .done(),
             // Logout door icon (SVG)
-            svg(attrs().viewBox("0 0 24 24").width("24").height("24")
-                    .fill("none").stroke("currentColor")
-                    .set("stroke-width", "2").set("stroke-linecap", "round")
-                    .set("stroke-linejoin", "round"),
+            svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
                 path(attrs().d("M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4")),
                 polyline(attrs().points("16 17 21 12 16 7")),
                 line(attrs().x1("21").y1("12").x2("9").y2("12"))
@@ -99,7 +96,7 @@ public class AdminMessagesPage implements Template {
                 .overflow(hidden)
             .done(),
             // Gradient border
-            gradientBorder(),
+            brandBorder(ROUNDED_LG),
             // Card content
             div(attrs().style()
                     .position(relative).zIndex(1).padding(SP_6)
@@ -130,24 +127,6 @@ public class AdminMessagesPage implements Template {
                     text(msg.getString("message")))
             )
         );
-    }
-
-    private Element gradientBorder() {
-        return div(attrs().style()
-            .position(absolute).top(zero).left(zero).right(zero).bottom(zero)
-            .borderRadius(ROUNDED_LG)
-            .padding(px(2))
-            .background(linearGradient("90deg",
-                hex("#6366f1"), hex("#8b5cf6"), hex("#a855f7"),
-                hex("#ec4899"), hex("#8b5cf6"), hex("#6366f1")))
-            .backgroundSize(() -> "300% 100%")
-            .animation(anim("gradientShift"), s(3), linear, s(0), infinite)
-            .prop("-webkit-mask", "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)")
-            .prop("mask", "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)")
-            .prop("-webkit-mask-composite", "xor")
-            .prop("mask-composite", "exclude")
-            .zIndex(0)
-        .done());
     }
 
     private String formatDate(Object dateObj) {
