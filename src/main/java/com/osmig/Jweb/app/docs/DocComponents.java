@@ -3,6 +3,7 @@ package com.osmig.Jweb.app.docs;
 import com.osmig.Jweb.framework.core.Element;
 import java.util.List;
 import static com.osmig.Jweb.framework.elements.El.*;
+import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.app.docs.DocStyles.*;
 
@@ -10,7 +11,7 @@ public final class DocComponents {
     private DocComponents() {}
 
     public static Element section(Element... children) {
-        return div(attrs().style().maxWidth(px(900)).done(), fragment(children));
+        return div(style().maxWidth(px(900)), fragment(children));
     }
 
     public static Element docTitle(String t) { return h1(attrs().style(title()), text(t)); }
@@ -47,5 +48,5 @@ public final class DocComponents {
 
     public static Element warn(String t) { return div(attrs().style(warning()), text(t)); }
 
-    public static Element spacer() { return div(attrs().style().height(rem(2)).done()); }
+    public static Element spacer() { return div(style().height(rem(2))); }
 }

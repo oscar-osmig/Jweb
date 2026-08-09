@@ -56,7 +56,7 @@ public final class Theme {
      * Pairs with the {@code gradientShift} keyframes defined in Head.
      *
      * <pre>
-     * button(attrs().style().padding(SP_3).apply(brandFlow()).done(), ...)
+     * button(style().padding(SP_3).apply(brandFlow()), ...)
      * </pre>
      */
     public static Style<?> brandFlow() {
@@ -72,12 +72,11 @@ public final class Theme {
      * {@code z-index: 1}.
      */
     public static Element brandBorder(CSSValue radius) {
-        return div(attrs().style()
+        return div(style()
             .position(absolute).inset(zero)
             .borderRadius(radius).padding(px(2))
             .apply(brandFlow())
             .borderMask()
-            .zIndex(0)
-        .done());
+            .zIndex(0));
     }
 }

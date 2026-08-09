@@ -19,10 +19,10 @@ public class ContactPage implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style().maxWidth(px(500)).margin(zero, auto).padding(rem(4), SP_8).done(),
-            h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).done(),
+        return div(style().maxWidth(px(500)).margin(zero, auto).padding(rem(4), SP_8),
+            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
                 text("Get in Touch")),
-            p(attrs().style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.7).done(),
+            p(style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.7),
                 text("Have questions, feedback, or ideas? We'd love to hear from you.")),
             form(attrs().id("contact-form")
                     .action("/contact/submit").method("post")          // no-JS fallback

@@ -55,7 +55,7 @@ public final class Theme {
 }
 
 // Usage
-div(attrs().style().color(PRIMARY).padding(SP_4).done())"""),
+div(style().color(PRIMARY).padding(SP_4))"""),
 
             docTip("Define design tokens in Theme.java for consistent styling across your app."),
 

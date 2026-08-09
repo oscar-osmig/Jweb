@@ -29,9 +29,9 @@ public class UserCard implements Template {
     public UserCard(User user) { this.user = user; }
 
     public Element render() {
-        return div(attrs().style()
+        return div(style()
                 .padding(rem(1)).backgroundColor(white)
-                .borderRadius(px(8)).boxShadow(px(0), px(2), px(8), rgba(0,0,0,0.1)).done(),
+                .borderRadius(px(8)).boxShadow(px(0), px(2), px(8), rgba(0,0,0,0.1)),
             h3(user.getName()),
             p(user.getEmail()),
             when(user.isAdmin(), () -> badge("Admin"))

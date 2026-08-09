@@ -25,24 +25,22 @@ public class AdminMessagesPage implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style()
+        return div(style()
                 .flex(num(1)).padding(SP_8)
-                .maxWidth(px(900)).margin(zero, auto).width(percent(100))
-            .done(),
+                .maxWidth(px(900)).margin(zero, auto).width(percent(100)),
             topBar(),
             messagesGrid()
         );
     }
 
     private Element topBar() {
-        return div(attrs().style()
+        return div(style()
                 .display(flex).justifyContent(spaceBetween).alignItems(center)
-                .marginBottom(SP_8)
-            .done(),
+                .marginBottom(SP_8),
             div(
-                h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).done(),
+                h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
                     text("Messages")),
-                p(attrs().style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_1).done(),
+                p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_1),
                     text(messages.size() + " submission" + (messages.size() != 1 ? "s" : "")))
             ),
             logoutButton()
@@ -70,60 +68,51 @@ public class AdminMessagesPage implements Template {
         if (messages.isEmpty()) {
             return emptyState();
         }
-        return div(attrs().style()
-                .display(grid).gridTemplateColumns(repeat(1, fr(1))).gap(SP_6)
-            .done(),
+        return div(style()
+                .display(grid).gridTemplateColumns(repeat(1, fr(1))).gap(SP_6),
             each(messages, this::messageCard)
         );
     }
 
     private Element emptyState() {
-        return div(attrs().style()
+        return div(style()
                 .textAlign(center).padding(rem(4))
-                .color(TEXT_LIGHT).fontSize(TEXT_LG)
-            .done(),
+                .color(TEXT_LIGHT).fontSize(TEXT_LG),
             p(text("No messages yet")),
-            p(attrs().style().fontSize(TEXT_SM).marginTop(SP_2).done(),
+            p(style().fontSize(TEXT_SM).marginTop(SP_2),
                 text("Contact form submissions will appear here"))
         );
     }
 
     private Element messageCard(Doc msg) {
-        return div(attrs().style()
+        return div(style()
                 .position(relative)
                 .backgroundColor(white)
                 .borderRadius(ROUNDED_LG)
-                .overflow(hidden)
-            .done(),
+                .overflow(hidden),
             // Gradient border
             brandBorder(ROUNDED_LG),
             // Card content
-            div(attrs().style()
-                    .position(relative).zIndex(1).padding(SP_6)
-                .done(),
+            div(style()
+                    .position(relative).zIndex(1).padding(SP_6),
                 // Header row: name + date
-                div(attrs().style()
+                div(style()
                         .display(flex).justifyContent(spaceBetween).alignItems(center)
-                        .marginBottom(SP_3)
-                    .done(),
-                    span(attrs().style()
-                            .fontSize(TEXT_LG).fontWeight(600).color(TEXT)
-                        .done(),
+                        .marginBottom(SP_3),
+                    span(style()
+                            .fontSize(TEXT_LG).fontWeight(600).color(TEXT),
                         text(msg.getString("name"))),
-                    span(attrs().style()
-                            .fontSize(TEXT_SM).color(TEXT_LIGHT)
-                        .done(),
+                    span(style()
+                            .fontSize(TEXT_SM).color(TEXT_LIGHT),
                         text(formatDate(msg.get("createdAt"))))
                 ),
                 // Email
-                p(attrs().style()
-                        .fontSize(TEXT_SM).color(PRIMARY).marginBottom(SP_3)
-                    .done(),
+                p(style()
+                        .fontSize(TEXT_SM).color(PRIMARY).marginBottom(SP_3),
                     text(msg.getString("email"))),
                 // Message body
-                p(attrs().style()
-                        .fontSize(TEXT_BASE).color(TEXT).lineHeight(1.7)
-                    .done(),
+                p(style()
+                        .fontSize(TEXT_BASE).color(TEXT).lineHeight(1.7),
                     text(msg.getString("message")))
             )
         );

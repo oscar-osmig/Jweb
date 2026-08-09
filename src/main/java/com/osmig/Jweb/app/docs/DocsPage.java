@@ -25,7 +25,7 @@ public class DocsPage implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style().display(flex).flex(num(1)).minHeight(num(0)).done(),
+        return div(style().display(flex).flex(num(1)).minHeight(num(0)),
             new DocSidebar(section).render(),
             div(attrs().class_("docs-content").style()
                     .flex(num(1)).padding(SP_8, SP_12).overflowY(auto).done(),

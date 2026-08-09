@@ -21,7 +21,7 @@ public class DocSidebar implements Template {
         return aside(attrs().class_("docs-sidebar").style()
                 .width(px(220))
                 .padding(SP_6)
-                .borderRight(px(1), solid, hex("#e2e8f0"))
+                .borderRight(px(1), solid, BORDER)
                 .backgroundColor(hex("#fafafa"))
                 .overflowY(auto)
                 .flexShrink(0)
@@ -57,12 +57,12 @@ public class DocSidebar implements Template {
     }
 
     private Element navSection(String title, Element... links) {
-        return div(attrs().style().marginBottom(SP_6).done(),
-            h4(attrs().style()
+        return div(style().marginBottom(SP_6),
+            h4(style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
-                .letterSpacing(em(0.05)).done(), text(title)),
-            nav(attrs().style().display(flex).flexDirection(column).gap(SP_1).done(),
+                .letterSpacing(em(0.05)), text(title)),
+            nav(style().display(flex).flexDirection(column).gap(SP_1),
                 fragment(links)));
     }
 

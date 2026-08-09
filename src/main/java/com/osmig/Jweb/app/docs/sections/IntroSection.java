@@ -34,9 +34,9 @@ public class HelloPage implements Template {
             docSubtitle("With Styling"),
             codeBlock("""
 public Element render() {
-    return div(attrs().style()
+    return div(style()
             .padding(rem(2))
-            .backgroundColor(hex("#f5f5f5")).done(),
+            .backgroundColor(hex("#f5f5f5")),
         h1("Welcome to JWeb"),
         p("Build web apps in pure Java")
     );

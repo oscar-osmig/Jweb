@@ -16,17 +16,16 @@ public class Nav implements Template {
 
     @Override
     public Element render() {
-        return nav(attrs().style()
+        return nav(style()
                 .position(sticky).top(zero).zIndex(1000)
                 .apply(brandFlow())
                 .padding(rem(0.75), rem(2))
-                .display(flex).alignItems(center).justifyContent(spaceBetween)
-            .done(),
+                .display(flex).alignItems(center).justifyContent(spaceBetween),
             a(attrs().href("/").style()
                 .color(white).fontSize(rem(1.25)).fontWeight(700)
                 .textDecoration(none)
             .done(), text("JWeb")),
-            div(attrs().style().display(flex).gap(rem(1.5)).alignItems(center).done(),
+            div(style().display(flex).gap(rem(1.5)).alignItems(center),
                 link("/docs", "Documentation"),
                 link("/about", "About"),
                 link("/contact", "Contact")

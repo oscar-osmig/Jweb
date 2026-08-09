@@ -19,37 +19,32 @@ public class AdminLoginPage implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style()
+        return div(style()
                 .display(flex).justifyContent(center).alignItems(center)
-                .flex(num(1)).padding(SP_8)
-            .done(),
+                .flex(num(1)).padding(SP_8),
             loginCard()
         );
     }
 
     private Element loginCard() {
-        return div(attrs().style()
+        return div(style()
                 .position(relative)
                 .width(px(400))
                 .backgroundColor(white)
                 .borderRadius(ROUNDED_LG)
-                .overflow(hidden)
-            .done(),
+                .overflow(hidden),
             // Gradient border (same technique as homepage feature cards)
             brandBorder(ROUNDED_LG),
             // Card content
-            div(attrs().style()
-                    .position(relative).zIndex(1).padding(SP_8)
-                .done(),
-                h2(attrs().style()
+            div(style()
+                    .position(relative).zIndex(1).padding(SP_8),
+                h2(style()
                         .fontSize(TEXT_2XL).fontWeight(700).color(TEXT)
-                        .textAlign(center).marginBottom(SP_2)
-                    .done(),
+                        .textAlign(center).marginBottom(SP_2),
                     text("Admin Login")),
-                p(attrs().style()
+                p(style()
                         .fontSize(TEXT_SM).color(TEXT_LIGHT)
-                        .textAlign(center).marginBottom(SP_6)
-                    .done(),
+                        .textAlign(center).marginBottom(SP_6),
                     text("Enter your credentials to access the dashboard")),
                 errorMessage(),
                 form(attrs().action("/only-admin/log/in").method("post").style()
@@ -74,11 +69,10 @@ public class AdminLoginPage implements Template {
 
     private Element errorMessage() {
         if (error == null) return text("");
-        return div(attrs().style()
+        return div(style()
                 .padding(SP_3).borderRadius(ROUNDED).marginBottom(SP_4)
                 .backgroundColor(hex("#fee2e2")).color(hex("#991b1b"))
-                .fontSize(TEXT_SM).textAlign(center)
-            .done(),
+                .fontSize(TEXT_SM).textAlign(center),
             text(error)
         );
     }

@@ -29,10 +29,10 @@ public class SubheaderSidebar implements Template {
                 .overflowY(hidden)
                 .display(none)
             .done(),
-            h4(attrs().style()
+            h4(style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_4).textTransform(uppercase)
-                .letterSpacing(em(0.05)).done(),
+                .letterSpacing(em(0.05)),
                 text("On This Page")),
             nav(attrs().id("subheader-nav").style()
                 .display(flex).flexDirection(column).gap(SP_1)

@@ -17,10 +17,9 @@ public final class DocExamples {
                     )
                     
                     // Styling in JWeb:
-                    attrs().style()
+                    style()
                         .padding(rem(2))
-                        .backgroundColor(hex("#f5f5f5"))
-                    .done()""";
+                        .backgroundColor(hex("#f5f5f5"))""";
 
     // ==================== Setup Section ====================
 
@@ -176,9 +175,9 @@ public final class DocExamples {
                         return div(attrs().class_("card").style()
                                 .padding(SP_4).backgroundColor(hex("#f8fafc"))
                                 .borderRadius(ROUNDED).done(),
-                            h3(attrs().style().fontSize(TEXT_LG).fontWeight(600).done(),
+                            h3(style().fontSize(TEXT_LG).fontWeight(600),
                                 text(title)),
-                            p(attrs().style().color(TEXT_LIGHT).marginTop(SP_2).done(),
+                            p(style().color(TEXT_LIGHT).marginTop(SP_2),
                                 text(content))
                         );
                     }
@@ -202,10 +201,10 @@ public final class DocExamples {
                 
                     @Override
                     public Element render() {
-                        return div(attrs().style()
+                        return div(style()
                                 .display(grid)
                                 .gridTemplateColumns(repeat(3, fr(1)))
-                                .gap(SP_4).done(),
+                                .gap(SP_4),
                             each(cards, card -> card.render())
                         );
                     }
@@ -225,11 +224,11 @@ public final class DocExamples {
                     public Element render() {
                         return html(
                             head(title(title)),
-                            body(attrs().style()
+                            body(style()
                                     .display(flex).flexDirection(column)
-                                    .minHeight(vh(100)).done(),
+                                    .minHeight(vh(100)),
                                 new Nav().render(),
-                                main(attrs().style().flex(num(1)).done(),
+                                main(style().flex(num(1)),
                                     content),
                                 new Footer().render()
                             )
@@ -275,12 +274,11 @@ app/
     // ==================== Styling Section ====================
 
     public static final String STYLING_INLINE = """
-div(attrs().style()
+div(style()
     .display(flex)
     .padding(rem(2))
     .backgroundColor(hex("#f5f5f5"))
-    .borderRadius(px(8))
-.done(),
+    .borderRadius(px(8)),
     text("Styled content")
 )""";
 
@@ -335,20 +333,18 @@ currentColor""";
 
     public static final String STYLING_LAYOUT = """
 // Flexbox
-div(attrs().style()
+div(style()
     .display(flex)
     .flexDirection(column)
     .justifyContent(center)
     .alignItems(center)
-    .gap(rem(1))
-.done())
+    .gap(rem(1)))
 
 // Grid
-div(attrs().style()
+div(style()
     .display(grid)
     .gridTemplateColumns(repeat(3, fr(1)))
-    .gap(SP_4)
-.done())""";
+    .gap(SP_4))""";
 
     public static final String STYLING_VALUES = """
 import static com.osmig.Jweb.framework.styles.CSS.*;
@@ -397,11 +393,10 @@ public final class Theme {
 // Usage:
 import static com.yourapp.layout.Theme.*;
 
-div(attrs().style()
+div(style()
     .color(PRIMARY)
     .padding(SP_4)
-    .fontSize(TEXT_LG)
-.done())""";
+    .fontSize(TEXT_LG))""";
 
     public static final String STYLING_TRANSITIONS = """
 // Simple transition

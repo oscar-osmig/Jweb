@@ -12,19 +12,19 @@ public class AboutPage implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style().maxWidth(px(700)).margin(zero, auto).padding(rem(2), SP_8).done(),
-            h1(attrs().style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).marginBottom(rem(1.5)).done(),
+        return div(style().maxWidth(px(700)).margin(zero, auto).padding(rem(2), SP_8),
+            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).marginBottom(rem(1.5)),
                 text("About JWeb")),
 
-            p(attrs().style().color(TEXT_LIGHT).lineHeight(1.7).marginBottom(rem(1)).done(),
+            p(style().color(TEXT_LIGHT).lineHeight(1.7).marginBottom(rem(1)),
                 text("JWeb is a Java web framework that provides a fluent DSL for building web " +
                      "applications entirely in Java. No separate HTML, CSS, or JavaScript files needed.")),
 
-            p(attrs().style().color(TEXT_LIGHT).lineHeight(1.7).marginBottom(rem(1)).done(),
+            p(style().color(TEXT_LIGHT).lineHeight(1.7).marginBottom(rem(1)),
                 text("Built for developers who want simplicity. Components, styles, routes, and logic " +
                      "all live together in Java with full IDE support for autocomplete and refactoring.")),
 
-            p(attrs().style().color(TEXT_LIGHT).lineHeight(1.7).done(),
+            p(style().color(TEXT_LIGHT).lineHeight(1.7),
                 text("Powered by Spring Boot, JWeb integrates seamlessly with the Java ecosystem " +
                      "that developers already know and trust."))
         );
