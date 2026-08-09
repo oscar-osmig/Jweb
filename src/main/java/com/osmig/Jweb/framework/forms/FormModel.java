@@ -55,12 +55,11 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  *
  * <p>Example - Binding request data:</p>
  * <pre>
- * {@literal @}PostMapping("/users/save")
- * public String saveUser(Request request) {
- *     UserForm user = FormModel.bind(UserForm.class, request.formData());
+ * app.post("/users/save", request -> {
+ *     UserForm user = FormModel.bindFromParameterMap(UserForm.class, request.formParams());
  *     userService.save(user);
- *     return "redirect:/users";
- * }
+ *     return Response.redirect("/users");
+ * });
  * </pre>
  */
 public final class FormModel {

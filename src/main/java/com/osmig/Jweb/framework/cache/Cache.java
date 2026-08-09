@@ -149,15 +149,19 @@ public class Cache<K, V> {
      * Gets a value, or computes and caches it with custom TTL.
      */
     public V getOrSet(K key, Supplier<V> supplier, Duration ttl) {
-        V value = get(key);
-        if (value != null) {
-            return value;
+        // Atomic per key: concurrent misses compute the value once
+        // instead of stampeding the supplier.
+        CacheEntry<V> entry = store.compute(key, (k, existing) -> {
+            if (existing != null && !existing.isExpired()) {
+                return existing;
+            }
+            V value = supplier.get();
+            return value != null ? new CacheEntry<>(value, Instant.now().plus(ttl)) : null;
+        });
+        if (store.size() > maxSize) {
+            evictOldest();
         }
-        value = supplier.get();
-        if (value != null) {
-            set(key, value, ttl);
-        }
-        return value;
+        return entry != null ? entry.value : null;
     }
 
     /**

@@ -8,11 +8,18 @@ import com.osmig.Jweb.framework.server.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /** Admin business logic - authentication and message retrieval. */
 @Component
 public class AdminApi {
+
+    private static final int MAX_ATTEMPTS = 5;
+    private static final long ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 
     @Value("${jweb.admin.token:}")
     private String adminToken;
@@ -20,13 +27,56 @@ public class AdminApi {
     @Value("${jweb.admin.email:}")
     private String adminEmail;
 
+    // Per-IP failed-login tracking (windowStart, count)
+    private final Map<String, long[]> failedAttempts = new ConcurrentHashMap<>();
+
     /** Validates admin credentials and logs in if valid. Returns true on success. */
     public boolean login(Request request, String email, String token) {
         if (adminToken == null || adminToken.isBlank()) return false;
-        if (!adminToken.equals(token) || !adminEmail.equals(email)) return false;
+        if (isRateLimited(request.ip())) return false;
 
+        if (!constantTimeEquals(adminToken, token) || !constantTimeEquals(adminEmail, email)) {
+            recordFailure(request.ip());
+            return false;
+        }
+
+        failedAttempts.remove(request.ip());
         Auth.login(request, Principal.of("admin", email, "admin"));
         return true;
+    }
+
+    /** Timing-safe string comparison so the token can't be guessed byte-by-byte. */
+    private static boolean constantTimeEquals(String expected, String actual) {
+        if (expected == null || actual == null) return false;
+        return MessageDigest.isEqual(
+            expected.getBytes(StandardCharsets.UTF_8),
+            actual.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private boolean isRateLimited(String ip) {
+        long[] entry = failedAttempts.get(ip);
+        if (entry == null) return false;
+        long now = System.currentTimeMillis();
+        if (now - entry[0] > ATTEMPT_WINDOW_MS) {
+            failedAttempts.remove(ip);
+            return false;
+        }
+        return entry[1] >= MAX_ATTEMPTS;
+    }
+
+    private void recordFailure(String ip) {
+        long now = System.currentTimeMillis();
+        failedAttempts.compute(ip, (k, entry) -> {
+            if (entry == null || now - entry[0] > ATTEMPT_WINDOW_MS) {
+                return new long[]{now, 1};
+            }
+            entry[1]++;
+            return entry;
+        });
+        // Bound the map so attackers rotating IPs can't grow it forever
+        if (failedAttempts.size() > 10_000) {
+            failedAttempts.entrySet().removeIf(e -> now - e.getValue()[0] > ATTEMPT_WINDOW_MS);
+        }
     }
 
     /** Logs out the current admin session. */

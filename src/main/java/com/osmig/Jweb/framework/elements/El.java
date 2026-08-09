@@ -93,12 +93,21 @@ public final class El {
     public static Tag textarea(Object... c) { return FormElements.textarea(c); }
     public static Tag select(Object... c) { return FormElements.select(c); }
     public static Tag option(String v, String t) { return FormElements.option(v, t); }
+    public static Tag option(String vt) { return FormElements.option(vt); }
     public static Tag label(Object... c) { return FormElements.label(c); }
     public static Tag button(Object... c) { return FormElements.button(c); }
 
     // ==================== Media ====================
     public static Tag img(String s) { return MediaElements.img(s); }
     public static Tag img(String s, String a) { return MediaElements.img(s, a); }
+    public static Tag video(Object... c) { return MediaElements.video(c); }
+    public static Tag audio(Object... c) { return MediaElements.audio(c); }
+    public static Tag canvas(Object... c) { return MediaElements.canvas(c); }
+    public static Tag iframe(Attributes a) { return MediaElements.iframe(a); }
+    public static Tag track(Attributes a) { return MediaElements.track(a); }
+    public static Attr srcset(String v) { return PictureElements.srcset(v); }
+    public static Tag responsiveImg(String src, String alt, String src2x) { return PictureElements.responsiveImg(src, alt, src2x); }
+    public static Tag lazyImg(String src, String alt, int w, int h) { return PictureElements.lazyImg(src, alt, w, h); }
 
     // ==================== SVG ====================
     public static Tag svg(Object... c) { return SVGElements.svg(c); }
@@ -183,6 +192,30 @@ public final class El {
     public static Tag fieldset(Attributes a, Object... c) { return FormEnhancements.fieldset(a, c); }
     public static Tag legend(Object... c) { return FormEnhancements.legend(c); }
     public static Tag legend(Attributes a, Object... c) { return FormEnhancements.legend(a, c); }
+
+    // ==================== Popovers ====================
+    public static Attr popover() { return PopoverElements.popover(); }
+    public static Attr popover(String type) { return PopoverElements.popover(type); }
+    public static Attr popoverTarget(String targetId) { return PopoverElements.popoverTarget(targetId); }
+    public static Attr popoverTargetAction(String action) { return PopoverElements.popoverTargetAction(action); }
+    public static Tag autoPopover(String id, Object... c) { return PopoverElements.autoPopover(id, c); }
+    public static Tag manualPopover(String id, Object... c) { return PopoverElements.manualPopover(id, c); }
+    public static Tag popoverToggleButton(String targetId, Object... c) { return PopoverElements.popoverToggleButton(targetId, c); }
+
+    // ==================== Misc Elements ====================
+    public static Tag hr() { return Elements.hr(); }
+    public static Tag hr(Attributes a) { return Elements.hr(a); }
+
+    // ==================== Conditionals ====================
+    public static Element when(boolean condition, Element element) { return Elements.when(condition, element); }
+    public static Element when(boolean condition, java.util.function.Supplier<Element> element) { return Elements.when(condition, element); }
+    public static Element match(Elements.CondCase... cases) { return Elements.match(cases); }
+    public static Elements.CondCase cond(boolean condition, Element element) { return Elements.cond(condition, element); }
+    public static Elements.CondCase cond(boolean condition, java.util.function.Supplier<Element> element) { return Elements.cond(condition, element); }
+    public static Elements.CondCase otherwise(Element element) { return Elements.otherwise(element); }
+    public static Elements.CondCase otherwise(java.util.function.Supplier<Element> element) { return Elements.otherwise(element); }
+    public static Element errorBoundary(java.util.function.Supplier<Element> content, Function<Throwable, Element> fallback) { return Elements.errorBoundary(content, fallback); }
+    public static Element errorBoundary(java.util.function.Supplier<Element> content, Element fallback) { return Elements.errorBoundary(content, fallback); }
 
     // ==================== Helpers ====================
     public static TextElement text(String c) { return TextElement.of(c); }

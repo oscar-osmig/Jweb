@@ -13,7 +13,23 @@ package com.osmig.Jweb.framework.js;
  */
 public final class JWebRuntime {
 
+    private static volatile boolean enabled = true;
+
     private JWebRuntime() {}
+
+    /**
+     * Enables or disables runtime injection. When disabled,
+     * {@link #getScriptTag()} returns an empty string and pages are served
+     * without the client runtime (server events/state sync won't work).
+     */
+    public static void setEnabled(boolean value) {
+        enabled = value;
+    }
+
+    /** Whether the runtime is injected into rendered pages. */
+    public static boolean isEnabled() {
+        return enabled;
+    }
 
     /**
      * Returns the JWeb client runtime JavaScript code.
@@ -23,9 +39,11 @@ public final class JWebRuntime {
     }
 
     /**
-     * Returns a script tag containing the JWeb runtime.
+     * Returns a script tag containing the JWeb runtime,
+     * or an empty string when injection is disabled.
      */
     public static String getScriptTag() {
+        if (!enabled) return "";
         return "<script>\n" + RUNTIME_SCRIPT + "\n</script>";
     }
 
@@ -56,6 +74,50 @@ public final class JWebRuntime {
                     }
                 }
                 this.connect();
+                this.initTransitions();
+                this.initBindings();
+            },
+
+            initBindings:function(){
+                var self=this;
+                document.querySelectorAll('[data-state-input]').forEach(function(el){
+                    var stateId=el.getAttribute('data-state-bind');
+                    if(!stateId)return;
+                    el.addEventListener('input',function(){
+                        self.setState(stateId,el.type==='checkbox'?el.checked:el.value);
+                    });
+                });
+            },
+
+            initTransitions:function(){
+                document.querySelectorAll('[data-transition]').forEach(function(el){
+                    var enterClass=el.getAttribute('data-enter-class');
+                    if(enterClass){
+                        var duration=parseInt(el.getAttribute('data-enter-duration')||'300',10);
+                        setTimeout(function(){
+                            enterClass.split(' ').forEach(function(c){el.classList.remove(c);});
+                        },duration);
+                    }
+                });
+            },
+
+            leave:function(elOrId,callback){
+                var el=typeof elOrId==='string'?document.getElementById(elOrId):elOrId;
+                if(!el){if(callback)callback();return;}
+                var leaveClass=el.getAttribute('data-leave-class');
+                var leaveActive=el.getAttribute('data-leave-active-class');
+                var duration=parseInt(el.getAttribute('data-leave-duration')||'300',10);
+                if(!leaveClass&&!leaveActive){
+                    el.remove();
+                    if(callback)callback();
+                    return;
+                }
+                if(leaveClass)leaveClass.split(' ').forEach(function(c){el.classList.add(c);});
+                if(leaveActive)leaveActive.split(' ').forEach(function(c){el.classList.add(c);});
+                setTimeout(function(){
+                    el.remove();
+                    if(callback)callback();
+                },duration);
             },
 
             connect:function(){
@@ -109,6 +171,14 @@ public final class JWebRuntime {
                         break;
                     case 'domUpdate':
                         this.handleDomUpdate(msg);
+                        break;
+                    case 'initState':
+                        this.handleStateUpdate(msg.states);
+                        break;
+                    case 'eventHandled':
+                        document.dispatchEvent(new CustomEvent('jweb:eventHandled',{detail:{handler:msg.handler}}));
+                        break;
+                    case 'pong':
                         break;
                     case 'error':
                         console.error('[JWeb] Server error:',msg.message);
@@ -197,7 +267,8 @@ public final class JWebRuntime {
                     altKey:domEvent?domEvent.altKey:false,
                     metaKey:domEvent?domEvent.metaKey:false,
                     clientX:domEvent?domEvent.clientX:-1,
-                    clientY:domEvent?domEvent.clientY:-1
+                    clientY:domEvent?domEvent.clientY:-1,
+                    dataset:domEvent&&domEvent.target?Object.assign({},domEvent.target.dataset):{}
                 };
                 if(domEvent&&domEvent.type==='submit'&&domEvent.target.tagName==='FORM'){
                     var formData=new FormData(domEvent.target);
@@ -215,7 +286,7 @@ public final class JWebRuntime {
                 if(!this.connected){
                     return;
                 }
-                this.ws.send(JSON.stringify({type:'setState',stateId:stateId,value:value}));
+                this.ws.send(JSON.stringify({type:'setState',stateId:stateId,value:value,contextId:this.data?this.data.contextId:null}));
             },
 
             ping:function(){

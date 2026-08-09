@@ -16,10 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * form(
  *     input(attrs().ref(inputRef).type("text").name("search")),
- *     button(attrs().onClick(e -> {
- *         // Generate JS to focus the input
- *         e.eval("document.getElementById('" + inputRef.id() + "').focus()");
- *     }), "Focus")
+ *     // Generate JS to focus the input on click
+ *     button(attrs().set("onclick", inputRef.focus()), "Focus")
  * )
  * }</pre>
  *

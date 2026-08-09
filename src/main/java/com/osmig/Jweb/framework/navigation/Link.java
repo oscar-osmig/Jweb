@@ -1,8 +1,6 @@
 package com.osmig.Jweb.framework.navigation;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.elements.Tag;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VNode;
 

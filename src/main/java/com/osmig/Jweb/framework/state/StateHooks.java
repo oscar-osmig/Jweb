@@ -112,4 +112,45 @@ public final class StateHooks {
         // Run effect immediately
         effect.run();
     }
+
+    /**
+     * Declares a reactive region of the page. The body is re-rendered on the
+     * server whenever state changes during an event, and the resulting HTML is
+     * patched into the DOM (matched by the given element ID).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * State&lt;Integer&gt; count = useState(0);
+     * ...
+     * useComponent("counter", () -&gt; div(
+     *     text("Count: " + count.get()),
+     *     button(attrs().onClick(e -&gt; count.set(count.get() + 1)), text("+"))
+     * ))
+     * </pre>
+     *
+     * @param componentId the DOM id for the wrapper element (must be unique per page)
+     * @param body supplies the region's content; called on every (re-)render
+     * @return the wrapper element to place in the page
+     */
+    public static com.osmig.Jweb.framework.core.Element useComponent(
+            String componentId, java.util.function.Supplier<com.osmig.Jweb.framework.core.Element> body) {
+        StateManager.StateContext context = StateManager.getContext();
+        if (context != null) {
+            context.registerComponent(componentId, () -> renderComponent(componentId, body));
+        }
+        return () -> wrapperVNode(componentId, body);
+    }
+
+    private static com.osmig.Jweb.framework.vdom.VElement wrapperVNode(
+            String componentId, java.util.function.Supplier<com.osmig.Jweb.framework.core.Element> body) {
+        return com.osmig.Jweb.framework.vdom.VElement.of(
+                "div",
+                java.util.Map.of("id", componentId),
+                java.util.List.of(body.get().toVNode()));
+    }
+
+    private static String renderComponent(
+            String componentId, java.util.function.Supplier<com.osmig.Jweb.framework.core.Element> body) {
+        return wrapperVNode(componentId, body).toHtml();
+    }
 }

@@ -1978,6 +1978,34 @@ public class Style<T extends Style<T>> implements CSSValue {
     }
 
     /**
+     * Sets a CSS property from a combined {@code "property:value"} string,
+     * as returned by the property-string CSS modules (CSSAnchorPositioning,
+     * CSSScrollSnap, CSSTextWrap, CSSSubgrid, CSSMasking,
+     * CSSLogicalProperties).
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().prop(anchorName("--menu"))       // "anchor-name:--menu"
+     *        .prop(scrollSnapTypeX("mandatory"))
+     * </pre>
+     *
+     * @param propertyAndValue a {@code "property:value"} string
+     * @return this builder for chaining
+     * @throws IllegalArgumentException if the string has no colon
+     */
+    public T prop(String propertyAndValue) {
+        int colon = propertyAndValue.indexOf(':');
+        if (colon <= 0) {
+            throw new IllegalArgumentException(
+                "Expected \"property:value\" but got: " + propertyAndValue);
+        }
+        properties.put(
+            propertyAndValue.substring(0, colon).trim(),
+            propertyAndValue.substring(colon + 1).trim());
+        return self();
+    }
+
+    /**
      * Sets any CSS property by name with a string value.
      * Prefer using the type-safe overload with CSSValue when possible.
      *

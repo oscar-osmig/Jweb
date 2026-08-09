@@ -141,7 +141,7 @@ public final class Portal {
      * Called automatically at the end of request processing.
      */
     public static void clear() {
-        portalContent.get().clear();
+        portalContent.remove();
     }
 
     /**

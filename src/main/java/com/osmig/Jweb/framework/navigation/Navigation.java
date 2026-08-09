@@ -274,13 +274,23 @@ public final class Navigation {
      * @return minified JavaScript
      */
     public static String minifiedJs() {
-        // For production, you'd want a proper minifier
-        // This is a simple version that removes comments and extra whitespace
-        return js()
-            .replaceAll("//.*\\n", "\n")
-            .replaceAll("/\\*.*?\\*/", "")
-            .replaceAll("\\s+", " ")
-            .replaceAll(" ?([{}();,]) ?", "$1")
-            .trim();
+        // Conservative whitespace/comment stripping that never touches lines
+        // containing quotes, so string literals can't be corrupted.
+        // (Real minification belongs in a build step.)
+        StringBuilder out = new StringBuilder();
+        for (String line : js().split("\n")) {
+            String trimmed = line.strip();
+            if (trimmed.isEmpty()) continue;
+            boolean hasQuotes = trimmed.indexOf('"') >= 0 || trimmed.indexOf('\'') >= 0 || trimmed.indexOf('`') >= 0;
+            if (!hasQuotes) {
+                if (trimmed.startsWith("//")) continue;
+                int comment = trimmed.indexOf("//");
+                if (comment >= 0) trimmed = trimmed.substring(0, comment).strip();
+                if (trimmed.isEmpty()) continue;
+            }
+            if (out.length() > 0) out.append('\n');
+            out.append(trimmed);
+        }
+        return out.toString();
     }
 }

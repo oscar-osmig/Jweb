@@ -83,10 +83,7 @@ public final class PopoverElements {
      * @return a Tag with popover attribute
      */
     public static Tag autoPopover(String id, Object... children) {
-        return Tag.create("div", new Attr("id", id), new Attr("popover", "auto"))
-            .children(Tag.toVNodes(children).stream()
-                .map(vn -> (com.osmig.Jweb.framework.core.Element) () -> vn)
-                .toArray(com.osmig.Jweb.framework.core.Element[]::new));
+        return Tag.create("div", withAttrs(children, new Attr("id", id), new Attr("popover", "auto")));
     }
 
     /**
@@ -97,10 +94,16 @@ public final class PopoverElements {
      * @return a Tag with popover="manual" attribute
      */
     public static Tag manualPopover(String id, Object... children) {
-        return Tag.create("div", new Attr("id", id), new Attr("popover", "manual"))
-            .children(Tag.toVNodes(children).stream()
-                .map(vn -> (com.osmig.Jweb.framework.core.Element) () -> vn)
-                .toArray(com.osmig.Jweb.framework.core.Element[]::new));
+        return Tag.create("div", withAttrs(children, new Attr("id", id), new Attr("popover", "manual")));
+    }
+
+    /** Prepends fixed attrs to a children array so a single Tag.create call
+     *  sees both (child Attr arguments are kept instead of dropped). */
+    private static Object[] withAttrs(Object[] children, Object... attrs) {
+        Object[] items = new Object[attrs.length + children.length];
+        System.arraycopy(attrs, 0, items, 0, attrs.length);
+        System.arraycopy(children, 0, items, attrs.length, children.length);
+        return items;
     }
 
     /**

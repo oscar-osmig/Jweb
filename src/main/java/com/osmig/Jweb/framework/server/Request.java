@@ -14,10 +14,36 @@ public class Request {
 
     private final HttpServletRequest servletRequest;
     private Map<String, String> pathParams = new HashMap<>();
+    private final Map<String, String> responseHeaders = new LinkedHashMap<>();
     private String cachedBody;
 
     public Request(HttpServletRequest servletRequest) {
         this.servletRequest = servletRequest;
+    }
+
+    // === Response Headers ===
+
+    /**
+     * Queues a header to be added to the response, whatever the handler
+     * returns (Element, String, ResponseEntity, ...). Used by header
+     * middlewares; applied by the framework when the response is built.
+     *
+     * @param name  the header name
+     * @param value the header value
+     * @return this request for chaining
+     */
+    public Request responseHeader(String name, String value) {
+        responseHeaders.put(name, value);
+        return this;
+    }
+
+    /**
+     * Gets the headers queued for the response.
+     *
+     * @return map of header names to values, in insertion order
+     */
+    public Map<String, String> responseHeaders() {
+        return Collections.unmodifiableMap(responseHeaders);
     }
 
     // === Path Parameters ===
@@ -280,7 +306,9 @@ public class Request {
     public String query(String name) { return servletRequest.getParameter(name); }
     public Integer queryInt(String name) {
         String value = query(name);
-        return value != null ? Integer.parseInt(value) : null;
+        if (value == null) return null;
+        try { return Integer.parseInt(value); }
+        catch (NumberFormatException e) { return null; }
     }
     public int queryInt(String name, int defaultValue) {
         String value = query(name);
@@ -290,7 +318,9 @@ public class Request {
     }
     public Long queryLong(String name) {
         String value = query(name);
-        return value != null ? Long.parseLong(value) : null;
+        if (value == null) return null;
+        try { return Long.parseLong(value); }
+        catch (NumberFormatException e) { return null; }
     }
     public Boolean queryBool(String name) {
         String value = query(name);
@@ -328,11 +358,11 @@ public class Request {
 
     public String body() {
         if (cachedBody != null) return cachedBody;
-        try {
+        try (BufferedReader reader = servletRequest.getReader()) {
             StringBuilder sb = new StringBuilder();
-            BufferedReader reader = servletRequest.getReader();
-            String line;
-            while ((line = reader.readLine()) != null) sb.append(line);
+            char[] buffer = new char[4096];
+            int read;
+            while ((read = reader.read(buffer)) != -1) sb.append(buffer, 0, read);
             cachedBody = sb.toString();
             return cachedBody;
         } catch (IOException e) {

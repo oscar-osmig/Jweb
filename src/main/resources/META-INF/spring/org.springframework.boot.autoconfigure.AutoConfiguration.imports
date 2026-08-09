@@ -1,3 +1,1 @@
-# JWeb auto-configurations
-# Uncomment when using a database:
-# com.osmig.Jweb.framework.data.JWebDataAutoConfiguration
+# JWeb auto-configurations (none currently — JWebConfiguration is picked up via component scan)

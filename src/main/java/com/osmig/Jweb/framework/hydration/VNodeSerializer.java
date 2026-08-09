@@ -123,11 +123,13 @@ public final class VNodeSerializer {
     private static String escapeJson(String s) {
         if (s == null || s.isEmpty()) return "";
 
-        // Fast path: check if escaping is needed
+        // Fast path: check if escaping is needed. '<' must be escaped so a
+        // "</script>" inside serialized content can't break out of the
+        // inline <script> tag this JSON is embedded in (XSS).
         boolean needsEscape = false;
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
-            if (c < ' ' || c == '\\' || c == '"') {
+            if (c < ' ' || c == '\\' || c == '"' || c == '<') {
                 needsEscape = true;
                 break;
             }
@@ -146,6 +148,7 @@ public final class VNodeSerializer {
                 case '\t' -> sb.append("\\t");
                 case '\b' -> sb.append("\\b");
                 case '\f' -> sb.append("\\f");
+                case '<' -> sb.append("\\u003C");
                 default -> {
                     if (c < ' ') {
                         // Manual hex conversion instead of String.format

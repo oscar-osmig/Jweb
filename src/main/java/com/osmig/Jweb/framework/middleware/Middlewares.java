@@ -6,11 +6,11 @@ import com.osmig.Jweb.framework.util.Log;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Built-in middleware implementations.
@@ -125,17 +125,9 @@ public final class Middlewares {
                         .build();
             }
 
-            Object result = chain.next();
-
-            // Add CORS headers to response
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("Access-Control-Allow-Origin", allowedOrigins)
-                        .body(response.getBody());
-            }
-
-            return result;
+            // Queue the header so it applies to Element/String results too
+            req.responseHeader("Access-Control-Allow-Origin", allowedOrigins);
+            return chain.next();
         };
     }
 
@@ -193,10 +185,17 @@ public final class Middlewares {
      */
     public static Middleware rateLimit(int maxRequests, long windowMs) {
         Map<String, RateLimitEntry> limits = new ConcurrentHashMap<>();
+        AtomicLong lastCleanup = new AtomicLong(System.currentTimeMillis());
 
         return (req, chain) -> {
             String clientId = getClientId(req);
             long now = System.currentTimeMillis();
+
+            // Periodically evict expired windows so the map can't grow unbounded
+            long cleanupAt = lastCleanup.get();
+            if (now - cleanupAt > windowMs && lastCleanup.compareAndSet(cleanupAt, now)) {
+                limits.values().removeIf(e -> now - e.windowStart() > windowMs);
+            }
 
             RateLimitEntry entry = limits.compute(clientId, (k, existing) -> {
                 if (existing == null || now - existing.windowStart > windowMs) {
@@ -236,22 +235,13 @@ public final class Middlewares {
      * @return security headers middleware
      */
     public static Middleware securityHeaders() {
-        return (req, chain) -> {
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("X-Content-Type-Options", "nosniff")
-                        .header("X-Frame-Options", "DENY")
-                        .header("X-XSS-Protection", "1; mode=block")
-                        .header("Referrer-Policy", "strict-origin-when-cross-origin")
-                        .header("Content-Security-Policy", "default-src 'self'")
-                        .body(response.getBody());
-            }
-
-            return result;
-        };
+        return securityHeaders(Map.of(
+                "X-Content-Type-Options", "nosniff",
+                "X-Frame-Options", "DENY",
+                "X-XSS-Protection", "1; mode=block",
+                "Referrer-Policy", "strict-origin-when-cross-origin",
+                "Content-Security-Policy", "default-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:"
+        ));
     }
 
     /**
@@ -262,16 +252,8 @@ public final class Middlewares {
      */
     public static Middleware securityHeaders(Map<String, String> headers) {
         return (req, chain) -> {
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                var builder = ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders());
-                headers.forEach(builder::header);
-                return builder.body(response.getBody());
-            }
-
-            return result;
+            headers.forEach(req::responseHeader);
+            return chain.next();
         };
     }
 
@@ -287,14 +269,7 @@ public final class Middlewares {
             long start = System.currentTimeMillis();
             Object result = chain.next();
             long duration = System.currentTimeMillis() - start;
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("X-Response-Time", duration + "ms")
-                        .body(response.getBody());
-            }
-
+            req.responseHeader("X-Response-Time", duration + "ms");
             return result;
         };
     }
@@ -315,17 +290,9 @@ public final class Middlewares {
 
             // Store in request attribute for access in handlers
             req.raw().setAttribute("requestId", requestId);
+            req.responseHeader("X-Request-ID", requestId);
 
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("X-Request-ID", requestId)
-                        .body(response.getBody());
-            }
-
-            return result;
+            return chain.next();
         };
     }
 
@@ -359,16 +326,8 @@ public final class Middlewares {
         String cacheControl = directive.toString();
 
         return (req, chain) -> {
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("Cache-Control", cacheControl)
-                        .body(response.getBody());
-            }
-
-            return result;
+            req.responseHeader("Cache-Control", cacheControl);
+            return chain.next();
         };
     }
 
@@ -379,18 +338,10 @@ public final class Middlewares {
      */
     public static Middleware noCache() {
         return (req, chain) -> {
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate")
-                        .header("Pragma", "no-cache")
-                        .header("Expires", "0")
-                        .body(response.getBody());
-            }
-
-            return result;
+            req.responseHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+            req.responseHeader("Pragma", "no-cache");
+            req.responseHeader("Expires", "0");
+            return chain.next();
         };
     }
 
@@ -413,16 +364,8 @@ public final class Middlewares {
         String cacheControl = "public, max-age=" + maxAgeSeconds + ", immutable";
 
         return (req, chain) -> {
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("Cache-Control", cacheControl)
-                        .body(response.getBody());
-            }
-
-            return result;
+            req.responseHeader("Cache-Control", cacheControl);
+            return chain.next();
         };
     }
 
@@ -435,8 +378,16 @@ public final class Middlewares {
         return (req, chain) -> {
             Object result = chain.next();
 
+            String body = null;
             if (result instanceof ResponseEntity<?> response && response.getBody() != null) {
-                String body = response.getBody().toString();
+                body = response.getBody().toString();
+            } else if (result instanceof com.osmig.Jweb.framework.core.Element element) {
+                body = element.toHtml();
+            } else if (result instanceof String str) {
+                body = str;
+            }
+
+            if (body != null) {
                 String etag = "\"" + Integer.toHexString(body.hashCode()) + "\"";
 
                 // Check If-None-Match header
@@ -445,10 +396,7 @@ public final class Middlewares {
                     return ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
                 }
 
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("ETag", etag)
-                        .body(response.getBody());
+                req.responseHeader("ETag", etag);
             }
 
             return result;
@@ -475,16 +423,8 @@ public final class Middlewares {
      */
     public static Middleware compressionHeaders() {
         return (req, chain) -> {
-            Object result = chain.next();
-
-            if (result instanceof ResponseEntity<?> response) {
-                return ResponseEntity.status(response.getStatusCode())
-                        .headers(response.getHeaders())
-                        .header("Vary", "Accept-Encoding")
-                        .body(response.getBody());
-            }
-
-            return result;
+            req.responseHeader("Vary", "Accept-Encoding");
+            return chain.next();
         };
     }
 }

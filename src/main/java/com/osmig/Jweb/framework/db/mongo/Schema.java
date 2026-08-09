@@ -197,13 +197,81 @@ public class Schema {
 
     /**
      * Registers this schema so it can be used with Mongo operations.
+     * Field constraints are validated on {@code Mongo.save}/{@code insert},
+     * and declared indexes (plus unique fields) are created on the collection
+     * as soon as a MongoDB connection is available.
      */
     public Schema register() {
         if (collectionName == null) {
             throw new IllegalStateException("Cannot register an embedded object schema");
         }
         schemas.put(collectionName, this);
+        Mongo.registerSchema(this);
         return this;
+    }
+
+    // ==================== Validation ====================
+
+    /**
+     * Validates a document against this schema and applies field defaults.
+     * Auto-managed fields (id, timestamps) are skipped.
+     *
+     * @param doc the BSON document about to be written
+     * @throws ValidationException if any constraint is violated
+     */
+    public void validate(org.bson.Document doc) {
+        for (FieldDef f : fields.values()) {
+            if (f.type == FieldType.ID || f.autoCreate || f.autoUpdate) continue;
+
+            Object value = doc.get(f.name);
+            if (value == null && f.defaultValue != null) {
+                doc.put(f.name, f.defaultValue);
+                value = f.defaultValue;
+            }
+            if (value == null) {
+                if (f.required) {
+                    throw new ValidationException(fieldRef(f) + " is required");
+                }
+                continue;
+            }
+
+            if (value instanceof String s) {
+                if (f.minLength != null && s.length() < f.minLength) {
+                    throw new ValidationException(fieldRef(f) + " must be at least " + f.minLength + " characters");
+                }
+                if (f.maxLength != null && s.length() > f.maxLength) {
+                    throw new ValidationException(fieldRef(f) + " must be at most " + f.maxLength + " characters");
+                }
+                if (f.pattern != null && !s.matches(f.pattern)) {
+                    throw new ValidationException(fieldRef(f) + " does not match pattern " + f.pattern);
+                }
+                if (f.enumValues != null && !f.enumValues.contains(s)) {
+                    throw new ValidationException(fieldRef(f) + " must be one of " + f.enumValues);
+                }
+            }
+            if (value instanceof Number n) {
+                if (f.min != null && n.doubleValue() < f.min.doubleValue()) {
+                    throw new ValidationException(fieldRef(f) + " must be >= " + f.min);
+                }
+                if (f.max != null && n.doubleValue() > f.max.doubleValue()) {
+                    throw new ValidationException(fieldRef(f) + " must be <= " + f.max);
+                }
+            }
+            if (value instanceof org.bson.Document embedded && f.embeddedSchema != null) {
+                f.embeddedSchema.validate(embedded);
+            }
+        }
+    }
+
+    private String fieldRef(FieldDef f) {
+        return (collectionName != null ? collectionName + "." : "") + f.name;
+    }
+
+    /** Thrown when a document violates its collection's schema. */
+    public static class ValidationException extends RuntimeException {
+        public ValidationException(String message) {
+            super(message);
+        }
     }
 
     // ==================== Getters ====================

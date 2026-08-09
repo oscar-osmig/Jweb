@@ -15,9 +15,28 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;
  */
 public final class ErrorPage {
 
+    // Off by default: stack traces are only shown when jweb.dev.debug=true
+    private static volatile boolean debug = false;
+
     private ErrorPage() {}
 
+    /**
+     * Enables or disables debug error pages. When disabled (the default),
+     * error pages show a generic message with no exception details.
+     */
+    public static void setDebug(boolean value) {
+        debug = value;
+    }
+
+    /** Whether error pages include exception details and stack traces. */
+    public static boolean isDebug() {
+        return debug;
+    }
+
     public static Element render(int status, String title, Exception e) {
+        if (!debug) {
+            return renderProduction(status, title);
+        }
         String stackTrace = getStackTrace(e);
 
         return html(
@@ -49,6 +68,34 @@ public final class ErrorPage {
                         pre(attrs().class_("error-stack"), code(stackTrace))
                     ),
                     // Actions
+                    div(attrs().class_("error-actions"),
+                        a(attrs().href("/").class_("error-btn"), text("Go Home")),
+                        button(attrs().class_("error-btn error-btn-secondary")
+                            .set("onclick", "location.reload()"), text("Retry"))
+                    )
+                )
+            )
+        );
+    }
+
+    /** Generic error page with no exception details, for production. */
+    private static Element renderProduction(int status, String title) {
+        return html(
+            head(
+                tag("meta", attrs().set("charset", "UTF-8")),
+                tag("meta", attrs().set("name", "viewport")
+                    .set("content", "width=device-width, initial-scale=1.0")),
+                title(status + " - " + title),
+                style(globalStyles())
+            ),
+            body(attrs().class_("error-body"),
+                div(attrs().class_("error-container"),
+                    div(attrs().class_("error-icon"), text(status >= 500 ? "⚠" : "🔍")),
+                    h1(attrs().class_("error-code"), String.valueOf(status)),
+                    h2(attrs().class_("error-title"), title),
+                    p(attrs().class_("error-message"),
+                        "Something went wrong. Please try again later."
+                    ),
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
                         button(attrs().class_("error-btn error-btn-secondary")

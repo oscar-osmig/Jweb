@@ -110,6 +110,9 @@ public final class Prefetch {
      */
     public static void setCacheTtl(int ttlMs) {
         cacheTtl = ttlMs;
+        // Invalidate so the next scriptTag() picks up the new value
+        cachedScript = null;
+        cachedScriptTag = null;
     }
 
     /**
@@ -118,6 +121,9 @@ public final class Prefetch {
      */
     public static void setHoverDelay(int delayMs) {
         hoverDelay = delayMs;
+        // Invalidate so the next scriptTag() picks up the new value
+        cachedScript = null;
+        cachedScriptTag = null;
     }
 
     /**

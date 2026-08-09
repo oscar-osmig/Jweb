@@ -30,15 +30,29 @@ public final class EventRegistry {
     /**
      * Registers an event handler and returns a unique ID.
      *
+     * <p>When a state context is active (i.e. during a page render), the
+     * handler is scoped to that context and evicted with it. Handlers
+     * registered outside a render fall back to the global registry.</p>
+     *
      * @param eventType the DOM event type (click, change, submit, etc.)
      * @param handler the Java lambda to execute
      * @return the EventHandler with assigned ID
      */
     public static EventHandler register(String eventType, Consumer<Event> handler) {
-        String id = "h_" + handlerIdCounter.incrementAndGet();
+        var context = com.osmig.Jweb.framework.state.StateManager.getContext();
+        if (context != null) {
+            return register(context.getSessionId(), eventType, handler);
+        }
+        String id = newHandlerId();
         EventHandler eventHandler = new EventHandler(id, eventType, handler);
         globalHandlers.put(id, eventHandler);
         return eventHandler;
+    }
+
+    /** Unique, unguessable handler ID (counter for uniqueness + random suffix). */
+    private static String newHandlerId() {
+        return "h_" + handlerIdCounter.incrementAndGet() + "_"
+                + Long.toHexString(java.util.concurrent.ThreadLocalRandom.current().nextLong());
     }
 
     /**
@@ -50,7 +64,7 @@ public final class EventRegistry {
      * @return the EventHandler with assigned ID
      */
     public static EventHandler register(String sessionId, String eventType, Consumer<Event> handler) {
-        String id = "h_" + handlerIdCounter.incrementAndGet();
+        String id = newHandlerId();
         EventHandler eventHandler = new EventHandler(id, eventType, handler);
 
         sessionHandlers

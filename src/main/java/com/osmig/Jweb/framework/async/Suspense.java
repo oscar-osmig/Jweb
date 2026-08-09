@@ -243,8 +243,15 @@ public class Suspense<T> implements Element {
                     return loadingElement.get().toVNode();
                 }
             } else {
-                // Blocking mode (default): wait for data
-                data = dataLoader.call();
+                // Blocking mode (default): wait for data, bounded by timeout(...)
+                Future<T> future = EXECUTOR.submit(dataLoader);
+                try {
+                    data = future.get(timeoutMs, TimeUnit.MILLISECONDS);
+                } catch (TimeoutException e) {
+                    future.cancel(true);
+                    throw new TimeoutException(
+                        "Suspense data loading timed out after " + timeoutMs + "ms");
+                }
             }
 
             if (contentRenderer != null) {

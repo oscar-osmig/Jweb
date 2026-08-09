@@ -10,6 +10,10 @@ server:
 spring:
   application:
     name: MyApp
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
 
 logging:
   level:
@@ -20,8 +24,10 @@ jweb:
     token: ${JWEB_ADMIN_TOKEN:}
     email: ${JWEB_ADMIN_EMAIL:}
 
-  api:
-    base: /api/v1
+  markitdown:
+    # Path to the markitdown CLI (project-local venv by default)
+    command: ${MARKITDOWN_CMD:.tools/markitdown/bin/markitdown}
+    timeout-seconds: 120
 
   data:
     enabled: true

@@ -2,79 +2,18 @@
 
 # Configuration
 
-## Additional Features
+## Configuration files — who owns what
 
-| Feature | Package | Classes | Usage |
-|---------|---------|---------|-------|
-| **Internationalization** | `i18n/` | `I18n`, `Messages` | `I18n.load("en")`, `messages.get("greeting")`, locale detection |
-| **File Uploads** | `upload/` | `FileUpload`, `UploadedFile` | `FileUpload.single(req, "file")`, validation, save to disk |
-| **Background Jobs** | `async/` | `Jobs`, `Scheduler`, `BackgroundTask`, `Suspense` | `Jobs.run(() -> processOrder(id))`, scheduled tasks |
-| **Health Checks** | `health/` | `Health`, `HealthCheck`, `HealthStatus` | `Health.register("db", () -> HealthStatus.healthy())` |
-| **Testing** | `testing/` | `JWebTest`, `TestClient`, `MockRequest`, `MockSession` | Unit and integration test utilities |
-| **Accessibility** | `accessibility/` | `A11y` | `A11y.srOnly("text")`, ARIA helpers, WCAG 2.1 compliance |
-| **Server-Sent Events** | `sse/` | `SseBroadcaster`, `SseEmitter`, `SseEvent` | Real-time server-to-client updates |
-| **WebSockets** | `websocket/` | `JWebSocketConfig`, `JWebSocketHandler`, `WebSocketMessage` | Bidirectional real-time with auto-reconnect |
-| **View Transitions** | `transition/` | `Transition`, `TransitionBuilder` | Page/view transitions with CSS animations |
-| **Portals** | `portal/` | `Portal` | Render content outside normal DOM hierarchy |
-| **Caching** | `cache/` | `Cache` | Server-side response and data caching |
-| **Metrics** | `metrics/` | `Metrics` | Application performance monitoring |
-| **Error Handling** | `error/` | `ErrorHandler`, `ErrorResponse`, `JWebException`, `ValidationException` | Structured error responses (400, 401, 403, 404, 500) |
-| **HTTP Client** | `http/` | `Fetch`, `FetchResult` | Server-side HTTP requests |
-| **Hydration** | `hydration/` | `HydrationData`, `VNodeSerializer` | Client-side state hydration |
-| **Navigation** | `navigation/` | `Link`, `Navigation` | Navigation helpers and link building |
-| **UI Components** | `ui/` | `UI`, `Toast` | Toast notifications, UI utilities |
-| **Context** | `context/` | `Context`, `ContextKey` | Request context management |
-| **CLI** | `cli/` | `JWebCli`, `Templates` | Project scaffolding and generation |
+JWeb splits configuration across **two YAML files**:
 
----
+| File | Owner | Loaded by | Contains |
+|------|-------|-----------|----------|
+| `src/main/resources/application.yaml` | your app | Spring Boot | port, app name, logging, `jweb.admin.*`, `jweb.data.*` |
+| `src/main/resources/jweb.yaml` | framework | `@JWebApplication`'s `@PropertySource` | compression, devtools/livereload, `jweb.dev.*`, `jweb.performance.*` |
 
-## Development Tools
+`application.yaml` values override `jweb.yaml` (standard Spring property precedence).
 
-### Hot Reload
-
-```yaml
-jweb:
-  dev:
-    hot-reload: true
-    watch-paths: src/main/java,src/main/resources
-    debounce-ms: 10
-    debug: false
-```
-
-### Prefetch
-
-```yaml
-jweb:
-  performance:
-    prefetch:
-      enabled: true
-      cache-ttl: 300000
-      hover-delay: 300
-```
-
-### Claude Code Agents
-
-JWeb ships with 13 specialized Claude agents in `.claude/agents/` for AI-assisted development:
-
-| Agent | Purpose |
-|-------|---------|
-| `css-dsl-guardian.md` | CSS DSL validation and review |
-| `html-dsl-guardian.md` | HTML DSL validation and review |
-| `js-dsl-guardian.md` | JavaScript DSL validation and review |
-| `jweb-dsl-validator.md` | General DSL validation |
-| `jweb-dsl-reviewer.md` | DSL code review |
-| `jweb-dsl-bugfix.md` | DSL bug fixing |
-| `jweb-html-dsl-reviewer.md` | HTML DSL review |
-| `jweb-css-dsl-validator.md` | CSS DSL validation |
-| `todo-manager.md` | Task management |
-| `context-taker.md` | Context gathering |
-| `remember-last-session.md` | Session context |
-| `search-web.md` | Web search |
-| `simplify-dsl.md` | DSL simplification |
-
----
-
-## application.yaml
+### `application.yaml` (actual contents of the sample app)
 
 ```yaml
 server:
@@ -90,22 +29,52 @@ logging:
 
 jweb:
   admin:
-    token: ${JWEB_ADMIN_TOKEN:}
+    token: ${JWEB_ADMIN_TOKEN:}    # empty default → admin login disabled (fails closed)
     email: ${JWEB_ADMIN_EMAIL:}
   api:
-    base: /api/v1
+    base: /api/v1                  # NOTE: declared but currently unused by any code
   data:
     enabled: true
     mongo:
       uri: ${MONGO_URI:mongodb://localhost:27017}
       database: ${MONGO_DB:myapp}
+```
+
+### `jweb.yaml` (framework defaults)
+
+```yaml
+server:
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,text/javascript,application/javascript,application/json,...
+    min-response-size: 1024
+
+spring:
+  main:
+    lazy-initialization: true
+  devtools:
+    restart:
+      enabled: true
+      poll-interval: 100ms
+      quiet-period: 50ms
+      additional-paths: src/main/java/com/osmig/Jweb/app
+    livereload:
+      enabled: true
+      port: 35729
+
+jweb:
   dev:
     hot-reload: true
+    watch-paths: src/main/java/com/osmig/Jweb/app
+    debounce-ms: 10          # code floor is 10; code default is 50
     debug: false
   performance:
     minify-css: true
+    minify-html: false
     prefetch:
       enabled: true
+      cache-ttl: 300000
+      hover-delay: 300       # code default is 100; yaml overrides to 300
 ```
 
 ## Environment Variables
@@ -113,158 +82,190 @@ jweb:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `PORT` | Server port | 8085 |
-| `JWEB_ADMIN_TOKEN` | Admin authentication token | - |
-| `JWEB_ADMIN_EMAIL` | Admin email address | - |
-| `JWT_SECRET` | JWT signing secret (min 32 chars) | - |
-| `MONGO_URI` | MongoDB connection URI | mongodb://localhost:27017 |
-| `MONGO_DB` | MongoDB database name | myapp |
-| `OPENAI_API_KEY` | OpenAI API key for AI features | - |
+| `JWEB_ADMIN_TOKEN` | Admin login token (empty = admin disabled) | — |
+| `JWEB_ADMIN_EMAIL` | Admin email address | — |
+| `JWT_SECRET` | JWT signing secret (min 32 chars; used by `Jwt.init()`) | — |
+| `MONGO_URI` | MongoDB URI (via `application.yaml` placeholder) | mongodb://localhost:27017 |
+| `MONGO_DB` | MongoDB database (via placeholder) | myapp |
+| `OPENAI_API_KEY` | Reserved for the planned AI module | — |
 
----
+`.env` files are supported via the `spring-dotenv` dependency.
+
+> Note: `Mongo.connect()` (the no-arg form) reads `MONGO_URI`/`MONGO_DB` directly with a
+> different database default (`test`), but the framework never calls it — the active path is the
+> Spring placeholder route through `JWebConfiguration`.
+
+> Docker note: the Dockerfile `EXPOSE`s **8085**, matching the app default.
+
+### Framework toggles (application.yaml)
+
+| Property | Default | Effect |
+|----------|---------|--------|
+| `jweb.dev.debug` | `false` | Show exception details and stack traces on error pages (dev only) |
+| `jweb.runtime.enabled` | `true` | Inject the JWeb client runtime (WebSocket events, state sync, DOM patching) into rendered pages |
+| `jweb.websocket.allowed-origins` | *(blank = same-origin)* | Comma-separated origins allowed to open the `/jweb` WebSocket (`*` for dev) |
+| `jweb.markitdown.command` | `.tools/markitdown/bin/markitdown` | Path to the markitdown CLI |
+| `jweb.markitdown.timeout-seconds` | `120` | Max seconds per document conversion |
+
+## MongoDB Auto-Connection
+
+`JWebConfiguration` registers an `ApplicationRunner` that calls
+`Mongo.connect(uri, database)` when `jweb.data.enabled: true`. This happens **after** context
+refresh, and applies registered `Schema` indexes on connect. Set `jweb.data.enabled: false`
+to run without MongoDB (the test suite runs with it disabled).
+
+## Development Tools
+
+### Hot Reload
+
+`DevServer` (`@ConditionalOnProperty jweb.dev.hot-reload=true`) watches
+`jweb.dev.watch-paths` with a `WatchService` and exposes `/__jweb_dev/events` (SSE),
+`/__jweb_dev/reload`, and `/__jweb_dev/status` via `DevController`. The sample layout includes
+`DevServer.script()` in `<body>` so the browser reloads on change.
+
+```java
+// In your layout:
+body(..., DevServer.script())          // recommended (SSE-based)
+// Alternatives via HotReload: fast(), liveReload(), combined(),
+// builder().useSSE(true).showIndicator(true).indicatorPosition("bottom-right").build()
+```
+
+### Prefetch
+
+Auto-injected on every Element response (`Prefetch.scriptTag()`); hover-prefetches links.
+Configure via `jweb.performance.prefetch.*`. For full SPA-style navigation (partial swaps, View
+Transitions), additionally include `Navigation.script()` — see the architecture doc.
+
+### CLI Scaffolding
+
+`JWebCli` provides project and file generation:
+
+```bash
+# New project
+java -cp Jweb.jar com.osmig.Jweb.framework.cli.JWebCli new myapp --package=com.example
+
+# Generators: page (p), component (c), layout (l), form (f), crud, api
+java -cp ... JWebCli generate page Pricing
+java -cp ... JWebCli generate crud Product name:string price:double
+```
+
+### Claude Code Agents
+
+The repo ships specialized agents in `.claude/agents/` for AI-assisted development (DSL
+guardians/validators/reviewers for HTML/CSS/JS, todo management, context helpers). Note
+`.claude/` is gitignored — agents are local to each machine.
 
 ## Project Structure
 
-### Application Code (108 Java files)
+### Application code (`src/main/java/com/osmig/Jweb/app/`, ~108 files)
 
 ```
 app/
-|-- api/                       # 3 files - REST API controllers
-|   |-- AdminApi.java             # Admin authentication (session-based, env config) + message retrieval
-|   |-- ContactApi.java           # Contact form API (@REST("/api/v1/contact"), saves to MongoDB)
-|   |-- ExampleApi.java           # Example API endpoints
-|-- docs/                      # 90 files - Documentation pages
-|   |-- DocComponents.java        # Reusable doc UI components
-|   |-- DocContent.java           # Content retrieval for client-side navigation
-|   |-- DocExamples.java          # Example code blocks
-|   |-- DocSidebar.java           # Docs navigation sidebar
-|   |-- DocsNavScript.java        # Docs navigation JavaScript
-|   |-- DocsPage.java             # Docs page shell
-|   |-- DocStyles.java            # Docs CSS styles
-|   |-- sections/                 # 83 documentation section files
-|       |-- IntroSection.java, SetupSection.java
-|       |-- ElementsSection.java (+ 12 element subsections)
-|       |-- StylingSection.java (+ 15 styling subsections)
-|       |-- JavaScriptSection.java (+ 9 JS subsections)
-|       |-- ComponentsSection.java (+ 5 component subsections)
-|       |-- RoutingSection.java (+ 5 routing subsections)
-|       |-- FormsSection.java (+ 8 form subsections)
-|       |-- ConditionalsSection.java (+ 4 conditional subsections)
-|       |-- LayoutsSection.java, StateSection.java
-|       |-- ApiSection.java, SecuritySection.java, DataSection.java
-|       |-- UIComponentsSection.java, DevToolsSection.java, ExamplesSection.java
-|-- forms/                     # 1 file
-|   |-- FormComponents.java      # Reusable form components (field, textareaField, statusBox, submitButton)
-|-- layout/                    # 5 files - Layout components
-|   |-- Footer.java               # Site footer
-|   |-- Head.java                 # HTML head (meta, CSS, fonts)
-|   |-- Layout.java               # Main layout wrapper (title + content)
-|   |-- Nav.java                  # Navigation bar
-|   |-- Theme.java                # Design tokens (colors, spacing, fonts, rounded corners)
-|-- pages/                     # 5 files - Page components
-|   |-- AboutPage.java            # About page
-|   |-- ContactPage.java          # Contact form with JS DSL submission + ContactScripts
-|   |-- HomePage.java             # Home page
-|   |-- admin/                    # 2 files - Admin dashboard
-|       |-- AdminLoginPage.java       # Login form with gradient border card effect
-|       |-- AdminMessagesPage.java    # Messages grid with gradient border cards
-|-- subheader/                 # 2 files - Subheader components
-|   |-- SubheaderSidebar.java     # Right sidebar with sub-header navigation
-|   |-- SubheaderScript.java      # Scroll-synced navigation JavaScript
-|-- App.java                   # Application entry point (@JWebApplication)
-|-- Routes.java                # Route definitions (pages, admin auth, API docs, OpenAPI mount)
+├── api/                       # REST controllers (Spring MVC dispatch)
+│   ├── AdminApi.java             # Session-based admin auth (env-configured token) + messages
+│   ├── ContactApi.java           # @REST("/api/v1/contact") — saves submissions to MongoDB
+│   └── ExampleApi.java           # @REST("/api/v1/example") — demo CRUD (stub data)
+├── docs/                      # ~90 files — the /docs documentation site
+│   ├── DocsPage.java             # 3-column shell (sidebar | content | on-this-page rail)
+│   ├── DocContent.java           # section-id → section dispatch (17 sections)
+│   ├── DocSidebar.java           # nav groups (Basics/Core/Features/Advanced/More)
+│   ├── DocExamples.java          # ~111 code-sample constants (1585 lines)
+│   ├── DocComponents/DocStyles/DocsNavScript
+│   └── sections/                 # 17 top-level sections + per-topic subpackages
+├── forms/
+│   └── FormComponents.java       # field/textareaField/statusBox/submitButton helpers
+├── layout/
+│   ├── Layout.java               # html > Head + body[Nav, main(content), Footer, DevServer.script()]
+│   ├── Head.java                 # meta/title + global Stylesheet + keyframes
+│   ├── Nav.java                  # sticky animated-gradient navbar
+│   ├── Footer.java               # glassmorphism footer
+│   └── Theme.java                # design tokens (colors, spacing, text sizes, radii)
+├── pages/
+│   ├── HomePage.java  AboutPage.java  ContactPage.java
+│   └── admin/
+│       ├── AdminLoginPage.java       # posts to /only-admin/log/in
+│       └── AdminMessagesPage.java    # contact-submission grid
+├── subheader/                 # scroll-synced "On This Page" rail
+├── App.java                   # @JWebApplication entry point
+└── Routes.java                # the single JWebRoutes implementation
 ```
 
-### Framework Code (237 Java files across 44 packages)
+### Framework code
 
-```
-framework/
-|-- core/               # 6 files: Element, Renderable, Component, Page, RawContent, ErrorBoundary
-|-- elements/           # 24 files: HTML elements DSL (see HTML DSL section)
-|-- styles/             # 35 files: CSS DSL (see CSS DSL section)
-|-- js/                 # 43 files: JavaScript DSL (see JavaScript DSL section)
-|-- template/           # 1 file: Template interface with lifecycle hooks
-|-- vdom/               # 5 files: VNode, VElement, VText, VRaw, VFragment
-|-- routing/            # 6 files: Router, Route, RouteHandler, PageRoute, PageRegistry, @Page
-|-- middleware/         # 4 files: Middleware, MiddlewareChain, MiddlewareStack, Middlewares
-|-- server/             # 6 files: Request, Response, Cookie, JWebController, JWebEventController, ErrorPage
-|-- api/                # 6 files: @REST, @GET, @POST, @DEL, @PATCH, @UPDATE
-|-- security/           # 10 files: Auth, Principal, Jwt, Password, Cors, Csrf, CsrfToken, CsrfException, RateLimit, OAuth2
-|-- db/mongo/           # 6 files: Mongo, Doc, Schema, MongoQuery, MongoUpdate, MongoDelete
-|-- openapi/            # 5 files: OpenApi, ApiDoc, ApiParam, ApiBody, ApiResponse
-|-- validation/         # 7 files: Validator, Validators, ValidationResult, FormValidator, FieldValidator, NumberValidators
-|-- state/              # 6 files: State, StateBinding, StateHooks, StateManager, ComponentRegistry, RenderableComponent
-|-- attributes/         # 3 files: Attr, Attrs, Attributes
-|-- events/             # 4 files: Event, DomEvent, EventHandler, EventRegistry
-|-- error/              # 4 files: ErrorHandler, ErrorResponse, JWebException, ValidationException
-|-- async/              # 4 files: Jobs, Scheduler, BackgroundTask, Suspense
-|-- testing/            # 4 files: JWebTest, MockRequest, MockSession, TestClient
-|-- websocket/          # 3 files: JWebSocketConfig, JWebSocketHandler, WebSocketMessage
-|-- sse/                # 3 files: SseBroadcaster, SseEmitter, SseEvent
-|-- dev/                # 3 files: HotReload, DevController, DevServer
-|-- health/             # 3 files: Health, HealthCheck, HealthStatus
-|-- util/               # 3 files: Json, Log, YamlPropertySourceFactory
-|-- i18n/               # 2 files: I18n, Messages
-|-- upload/             # 2 files: FileUpload, UploadedFile
-|-- navigation/         # 2 files: Link, Navigation
-|-- transition/         # 2 files: Transition, TransitionBuilder
-|-- ui/                 # 2 files: UI, Toast
-|-- http/               # 2 files: Fetch, FetchResult
-|-- hydration/          # 2 files: HydrationData, VNodeSerializer
-|-- context/            # 2 files: Context, ContextKey
-|-- forms/              # 2 files: Form, FormModel
-|-- cli/                # 2 files: JWebCli, Templates
-|-- accessibility/      # 1 file: A11y (WCAG 2.1, ARIA)
-|-- config/             # 1 file: JWebConfiguration (MongoDB init, Router, static resources)
-|-- cache/              # 1 file: Cache
-|-- layout/             # 1 file: Layout
-|-- metrics/            # 1 file: Metrics
-|-- performance/        # 1 file: Prefetch
-|-- portal/             # 1 file: Portal
-|-- ref/                # 1 file: Ref
-|-- docs/               # 15 .md files (css, elements, http, i18n, javascript, jobs, middleware, routing, security, sse, state, templates, testing, validation, file-upload)
-|-- JWeb.java           # Main framework class
-|-- JWebApplication.java # @JWebApplication annotation
-|-- JWebAutoConfiguration.java # Auto-configuration
-|-- JWebRoutes.java     # Routes interface
-|-- package-info.java   # Package documentation
-```
+237 Java files across 45 packages — see the package tree in
+[Architecture](./architecture.md#framework-structure-237-framework-files-across-45-packages--108-app-files).
 
-### Documentation Files
+### Root-level documents
 
-| File | Purpose |
-|------|---------|
-| `CLAUDE.md` | Comprehensive project context for Claude Code AI |
-| `README.md` | User-facing documentation (this file) |
-| `STANDARD.md` | Development standards (file length, DSL usage, separation of concerns) |
-| `dsl-todos.md` | DSL improvement tracker (completed + remaining tasks) |
-| `PLAN.md` | Project planning |
-| `HELP.md` | Help documentation |
-| `JWEB_EXAMPLES.md` | Example code |
-| `prompt.md` | Prompt templates |
-| `Dockerfile` | Docker configuration |
-| `framework/MODERN_ELEMENTS.md` | Modern HTML5 elements guide |
-| `framework/docs/*.md` | 15 detailed feature documentation files |
+| File | Purpose | Status |
+|------|---------|--------|
+| `README.md` | User-facing overview (this doc set) | current |
+| `readme/*.md` | The 8 detailed docs | current |
+| `STANDARD.md` | Coding standards for JWeb apps (file size, DSL-only, separation) | current |
+| `framework/MODERN_ELEMENTS.md` | Modern HTML5 elements guide | ⚠️ contains non-compiling `attrs().onclick(...)` examples |
+| `dsl-todos.md` | DSL improvement tracker | ⚠️ several "remaining" items actually shipped (anchor positioning, scroll snap, popover, IndexedDB, …) |
+| `PLAN.md` | Original design doc (2025-12) | historical — describes aspirational WebSocket state sync |
+| `JWEB_EXAMPLES.md` | 20-level DSL tutorial | ⚠️ stale imports (`Elements.*` vs `El.*`) |
+| `prompt.md` | AI-agent governance prompt | stale; contradicts STANDARD.md on file-size limits |
+| `src/main/java/com/osmig/Jweb/framework/docs/*.md` | 15 internal reference docs, shipped in the jar | mostly current; no doc for db/mongo or openapi |
 
----
+## Dependencies (from `pom.xml`)
 
-## Dependencies
+**Coordinates:** `com.osmig:Jweb:1.0.0` · **Parent:** `spring-boot-starter-parent:4.0.0` ·
+**Java:** 21
 
 | Dependency | Version | Purpose |
 |------------|---------|---------|
-| Spring Boot | 4.0.0 | Framework base |
-| Spring Boot Web | - | HTTP handling |
-| Spring Boot WebSocket | - | WebSocket support |
-| Spring Boot DevTools | - | Hot reload |
-| Spring Boot Test | - | Testing |
-| spring-dotenv | 4.0.0 | .env file support |
-| MongoDB Driver Sync | 5.2.0 | Database |
-| MongoDB BSON | 5.2.0 | BSON types |
-| MongoDB Driver Core | 5.2.0 | Driver core |
-| Spring Security Crypto | - | BCrypt password hashing |
-| JJWT | 0.12.6 | JWT support |
-| Jackson Databind | - | JSON processing |
+| spring-boot-starter-web | (managed 4.0.0) | HTTP handling |
+| spring-boot-starter-websocket | (managed) | WebSocket support |
+| spring-boot-starter-test | (managed, test) | Testing |
+| spring-boot-devtools | (managed, runtime, optional) | Hot reload |
+| spring-dotenv | 4.0.0 | `.env` file support |
+| jackson-databind | (managed) | JSON processing |
+| mongodb-driver-sync / bson / mongodb-driver-core | 5.2.0 | MongoDB |
+| spring-security-crypto | (managed, optional) | BCrypt hashing |
+| jjwt-api / jjwt-impl / jjwt-jackson | 0.12.6 (optional) | JWT support |
 
-### Optional Dependencies (commented in pom.xml)
-- Spring AI OpenAI 2.0.0-M1 - AI/LLM integration
-- Spring AI Ollama 2.0.0-M1 - Local LLM support
-- Testcontainers Ollama 1.20.4 - Docker-based Ollama
+**Commented out (not active):** spring-boot-starter-data-jpa, Spring AI OpenAI/Ollama
+(2.0.0-M1), Testcontainers.
+
+**Build plugins:**
+
+- `maven-resources-plugin` — copies `framework/**/*.java|*.md` into the jar under
+  `framework-src/` (used by the CLI scaffolder) and `README.md` under `readme/`.
+- `spring-boot-maven-plugin` — mainClass `com.osmig.Jweb.app.App`, with
+  `--add-opens java.base/sun.misc` and `java.base/java.nio` JVM args.
+
+## Feature Reference (smaller packages)
+
+| Feature | Package | Key API |
+|---------|---------|---------|
+| Internationalization | `i18n/` | `Messages.load(lang, map)`, `I18n.t(key, args)`, `I18n.middleware()` — see [Backend](./backend.md#internationalization) |
+| File Uploads | `upload/` | `FileUpload.getFile(req, name)`, `validate(...)`, `UploadedFile.saveTo(dir)` |
+| Background Jobs | `async/` | `Jobs.run/submit/track`, `Scheduler.cron(...)`, `Suspense` — see [State & Realtime](./state-and-realtime.md) |
+| Health Checks | `health/` | `Health.register(name, check)`, `Health.setupEndpoints(app)` → `/health[/live|/ready]` |
+| Metrics | `metrics/` | `Metrics.counter/gauge/timer`, `Metrics.middleware()`, `/metrics` (JSON or Prometheus) |
+| Testing | `testing/` | `JWebTest`, `MockRequest`, `MockSession`, `TestClient` |
+| Accessibility | `accessibility/` | `A11y.validate(element)` — WCAG 2.1 **auditor** (checks alt text, labels, heading order; it is not an ARIA helper library) |
+| SSE | `sse/` | `SseBroadcaster`, `SseEmitter`, `SseEvent` |
+| WebSockets | `websocket/` | auto-registered at `/jweb` |
+| View Transitions | `transition/` | `Transition.when(show).enter(...)`, `attrs().transition()` |
+| Portals | `portal/` | `Portal.to(name, el)` / `Portal.outlet(name)` |
+| Caching | `cache/` | `Cache.create(ttl)`, `getOrSet`, `Cache.named(...)` |
+| Error Handling | `error/` | `JWebException`, `ErrorHandler.errorHandling()` middleware |
+| HTTP Client | `http/` | `Fetch.get(url).bearer(t).send()` → `FetchResult` |
+| Hydration | `hydration/` | `HydrationData`, `VNodeSerializer` (see State & Realtime) |
+| Navigation | `navigation/` | `Link.to(...)`, `Navigation.script()` |
+| UI Components | `ui/` | `UI.*` builders, `Toast.setup()` |
+| Context | `context/` | `Context.key/provide/use/find` |
+| CLI | `cli/` | `JWebCli` (`Templates` is package-private) |
+
+## Testing status
+
+The suite (30 tests, no MongoDB required) covers Route matching and 405 semantics
+(`RouterTest`), middleware ordering/glob scoping/queued headers (`MiddlewareStackTest`), the
+reactive-state loop — context lifetime, scoped handlers, `useComponent` (`StateLoopTest`) —
+Mongo `Schema` validation (`SchemaValidationTest`), and the DSL fixes (`DslFixesTest`), plus
+the Spring context smoke test (which runs with `jweb.data.enabled=false`). Run with
+`./mvnw test`. Next candidates: `AdminApi.login`, `ContactApi.submit`, and an integration
+test through `JWebController` for page routes.

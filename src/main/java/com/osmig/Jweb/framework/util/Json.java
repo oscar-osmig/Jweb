@@ -168,6 +168,26 @@ public final class Json {
     }
 
     /**
+     * Parses a JSON string to a typed List. Unlike a {@code TypeReference}
+     * with a generic parameter, this resolves the element type at runtime,
+     * so elements are real instances of {@code elementType}.
+     *
+     * @param json the JSON string
+     * @param elementType the element class
+     * @param <T> the element type
+     * @return the parsed list
+     * @throws JsonException if parsing fails
+     */
+    public static <T> List<T> parseList(String json, Class<T> elementType) {
+        try {
+            return mapper.readValue(json,
+                mapper.getTypeFactory().constructCollectionType(List.class, elementType));
+        } catch (Exception e) {
+            throw new JsonException("Failed to parse JSON list of " + elementType.getSimpleName(), e);
+        }
+    }
+
+    /**
      * Parses a JSON string to a JsonNode tree for dynamic access.
      *
      * @param json the JSON string

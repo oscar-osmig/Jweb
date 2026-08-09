@@ -49,6 +49,51 @@
       "name": "jweb.performance.prefetch.hover-delay",
       "type": "java.lang.Integer",
       "description": "Delay before prefetching on hover in milliseconds"
+    },
+    {
+      "name": "jweb.admin.token",
+      "type": "java.lang.String",
+      "description": "Admin login token (blank disables admin login)"
+    },
+    {
+      "name": "jweb.admin.email",
+      "type": "java.lang.String",
+      "description": "Admin login email"
+    },
+    {
+      "name": "jweb.data.mongo.uri",
+      "type": "java.lang.String",
+      "description": "MongoDB connection URI"
+    },
+    {
+      "name": "jweb.data.mongo.database",
+      "type": "java.lang.String",
+      "description": "MongoDB database name"
+    },
+    {
+      "name": "jweb.dev.debug",
+      "type": "java.lang.Boolean",
+      "description": "Show exception details and stack traces on error pages (dev only)"
+    },
+    {
+      "name": "jweb.runtime.enabled",
+      "type": "java.lang.Boolean",
+      "description": "Inject the JWeb client runtime (WebSocket events, state sync, DOM patching) into rendered pages"
+    },
+    {
+      "name": "jweb.websocket.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Comma-separated origins allowed to open the /jweb WebSocket (blank = same-origin only)"
+    },
+    {
+      "name": "jweb.markitdown.command",
+      "type": "java.lang.String",
+      "description": "Path to the markitdown CLI used for document-to-Markdown conversion"
+    },
+    {
+      "name": "jweb.markitdown.timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "Maximum seconds a markitdown conversion may take"
     }
   ]
 }

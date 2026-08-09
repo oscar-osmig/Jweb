@@ -61,12 +61,17 @@ public final class StateManager {
     /**
      * Removes stale contexts that haven't been explicitly cleaned up.
      * This prevents memory leaks from abandoned requests or exceptions.
+     * Also evicts the event handlers registered under each reaped context.
      */
     private static void cleanupStaleContexts() {
         long now = System.currentTimeMillis();
         contextRegistry.entrySet().removeIf(entry -> {
             StateContext ctx = entry.getValue();
-            return now - ctx.getCreatedAt() > CONTEXT_TTL_MS;
+            boolean stale = now - ctx.getLastAccessedAt() > CONTEXT_TTL_MS;
+            if (stale) {
+                com.osmig.Jweb.framework.events.EventRegistry.clearSession(entry.getKey());
+            }
+            return stale;
         });
     }
 
@@ -168,7 +173,12 @@ public final class StateManager {
      * @return the context, or null if not found
      */
     public static StateContext getContextById(String sessionId) {
-        return contextRegistry.get(sessionId);
+        if (sessionId == null) return null;
+        StateContext context = contextRegistry.get(sessionId);
+        if (context != null) {
+            context.touch();
+        }
+        return context;
     }
 
     /**
@@ -227,18 +237,33 @@ public final class StateManager {
         private final Map<String, RenderableComponent> components = new ConcurrentHashMap<>();
         private final String sessionId;
         private final long createdAt;
+        private volatile long lastAccessedAt;
 
         StateContext() {
             this.createdAt = System.currentTimeMillis();
-            this.sessionId = "ctx_" + createdAt + "_" + Thread.currentThread().threadId();
+            this.lastAccessedAt = createdAt;
+            // Random ID so context IDs can't be guessed across sessions
+            this.sessionId = "ctx_" + java.util.UUID.randomUUID();
         }
 
         /**
          * Gets the creation timestamp of this context.
-         * Used for TTL-based cleanup.
          */
         public long getCreatedAt() {
             return createdAt;
+        }
+
+        /**
+         * Gets the last-access timestamp. Used for TTL-based cleanup so
+         * actively-used contexts (live WebSocket pages) are not reaped.
+         */
+        public long getLastAccessedAt() {
+            return lastAccessedAt;
+        }
+
+        /** Marks this context as recently used, extending its TTL. */
+        public void touch() {
+            this.lastAccessedAt = System.currentTimeMillis();
         }
 
         void register(State<?> state) {
@@ -345,8 +370,9 @@ public final class StateManager {
             changedStates.clear();
             components.clear();
 
-            // Remove from registry to prevent memory leaks
+            // Remove from registry and drop this context's event handlers
             contextRegistry.remove(sessionId);
+            com.osmig.Jweb.framework.events.EventRegistry.clearSession(sessionId);
 
             // Clear thread-local if this is the current context
             if (currentContext.get() == this) {

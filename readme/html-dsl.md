@@ -2,32 +2,82 @@
 
 # HTML DSL
 
-## Imports
+## Imports — what lives where
+
+There are **two facades** plus per-category modules. Knowing which import provides what saves a
+lot of "cannot resolve method" errors:
 
 ```java
-// The ONE import you need for HTML elements
+// Primary facade — most common elements + attrs() (147 members)
 import static com.osmig.Jweb.framework.elements.El.*;
 
-// Additional imports for styling
+// The full legacy facade — adds conditionals (when/match/cond/otherwise),
+// errorBoundary, hr, video/audio/canvas/iframe, InlineStyle overloads, etc.
+import static com.osmig.Jweb.framework.elements.Elements.*;
+
+// Specialty modules (NOT re-exported by El — import directly when needed):
+import static com.osmig.Jweb.framework.elements.PopoverElements.*;   // popover API
+import static com.osmig.Jweb.framework.elements.PictureElements.*;   // srcset/responsiveImg/lazyImg
+import static com.osmig.Jweb.framework.elements.FormEnhancements.*;  // colorInput/dateInput/rangeInput/...
+import static com.osmig.Jweb.framework.elements.DialogHelper.*;      // dialog JS helpers
+import static com.osmig.Jweb.framework.elements.DetailsHelper.*;     // details JS helpers
+
+// Styling
 import static com.osmig.Jweb.framework.styles.CSS.*;
 import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 import static com.osmig.Jweb.framework.styles.CSSColors.*;
 ```
 
-## Elements
+> ⚠️ Don't wildcard-import `El.*` and `Elements.*` together carelessly — they share many names.
+> Pick one per file (app code conventionally uses `El.*`; reach into `Elements` explicitly for
+> `when`/`match`/`errorBoundary`: `Elements.when(...)`).
 
-The `El` class is the single entry point that re-exports all element factory methods (24 modules):
+## What `El` actually exports
+
+`El` is a pure static facade — each method is a one-line delegate to a category module. Verified
+inventory:
+
+| Category | In `El` |
+|----------|---------|
+| **Attributes** | `attrs()`, `id`, `class_`, `href`, `src`, `type`, `name`, `value`, `disabled()`, `required()`, `attr(n,v)` |
+| **Document** | `html`, `head`, `body`, `title`, `meta`, `link`, `css`, `script(src)`, `inlineScript(code)`, `style(css)`, `icon`, `appleIcon` |
+| **Semantic** | `header`, `footer`, `nav`, `main`, `section`, `article`, `aside`, `hgroup`, `search`, `address` |
+| **Text** | `div`, `span`, `p`, `h1`–`h6`, `strong`, `em`, `a`, `small`, `code`, `pre`, `time`, `wbr`, `br` |
+| **Lists** | `ul`, `ol`, `li` |
+| **Tables** | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
+| **Forms** | `form`, `input`, `textarea`, `select`, `option(value,text)`, `option(valueAndText)`, `label`, `button` |
+| **Media** | `img`, `video`, `audio`, `canvas`, `iframe(attrs)`, `track(attrs)`, `srcset`, `responsiveImg`, `lazyImg` |
+| **SVG** | `svg`, `path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `g`, `d`, `viewBox`, `fill`, `stroke`, `strokeWidth` |
+| **Modern HTML5** | `dialog`, `details`, `summary`, `meter`, `progress`, `progressIndeterminate`, `template`, `slot`, `output`, `timeWithDatetime`, `data(value,text)`, `bdi`, `bdo`, `ruby`, `rt`, `rp` |
+| **Figure** | `figure`, `figcaption` |
+| **Definition** | `dl`, `dt`, `dd` |
+| **Interactive text** | `abbr`, `dfn`, `cite`, `q`, `blockquote`, `kbd`, `samp`, `var_`, `mark`, `sub`, `sup`, `ins`, `del`, `s` |
+| **Picture** | `picture`, `source` (attrs like `srcset` need `PictureElements`) |
+| **Form enhancements** | `datalist`, `optgroup`, `fieldset`, `legend` (input helpers need `FormEnhancements`) |
+| **Popovers** | `popover`, `popoverTarget`, `popoverTargetAction`, `autoPopover`, `manualPopover`, `popoverToggleButton` |
+| **Conditionals** | `when`, `match`, `cond`, `otherwise`, `errorBoundary` |
+| **Misc** | `hr` |
+| **Helpers** | `text`, `raw`, `fragment`, `each`, `tag` |
+
+**NOT in `El`** (import the module named in parentheses):
+
+- `b`, `i`, `u`, `menu`, `tfoot`, `caption`, `colgroup`, `col`, `noscript`, `tryCatch`
+  (→ `Elements`)
+- `media`, `sizes`, `loading` attrs (→ `PictureElements`)
+- `colorInput`, `dateInput`, `timeInput`, `datetimeInput`, `monthInput`, `weekInput`,
+  `rangeInput` (→ `FormEnhancements`); typed `Input.text("name")` builders (→ `Input` —
+  the names collide with `El.text`/`El.time` etc.)
+- Naming note: `El.data("SKU-123", "Widget")` creates a `<data>` **element**. The `data-*`
+  attribute is `attrs().data("key", "value")`.
+
+## Elements — basics
 
 ```java
-import static com.osmig.Jweb.framework.elements.El.*;
-
-// Simple elements
 div(class_("container"),
     h1("Welcome"),
     p("Hello, World!")
 )
 
-// Nested structure
 nav(class_("navbar"),
     ul(
         li(a("/", "Home")),
@@ -36,11 +86,8 @@ nav(class_("navbar"),
     )
 )
 
-// Tables
 table(class_("data-table"),
-    thead(
-        tr(th("Name"), th("Email"), th("Role"))
-    ),
+    thead(tr(th("Name"), th("Email"), th("Role"))),
     tbody(
         tr(td("John"), td("john@example.com"), td("Admin")),
         tr(td("Jane"), td("jane@example.com"), td("User"))
@@ -48,319 +95,308 @@ table(class_("data-table"),
 )
 ```
 
-**Available Elements (24 modules):**
+Rules enforced by the VDOM:
 
-| Category | Elements |
-|----------|----------|
-| **Document** | `html`, `head`, `body`, `title`, `meta`, `link`, `script`, `style`, `css`, `inlineScript`, `icon`, `appleIcon` |
-| **Semantic** | `header`, `footer`, `nav`, `main`, `section`, `article`, `aside`, `hgroup`, `search`, `address` |
-| **Text** | `h1`-`h6`, `p`, `span`, `div`, `strong`, `em`, `code`, `pre`, `small`, `a`, `br`, `time`, `wbr` |
-| **Lists** | `ul`, `ol`, `li` |
-| **Tables** | `table`, `thead`, `tbody`, `tfoot`, `tr`, `th`, `td` |
-| **Forms** | `form`, `input`, `textarea`, `select`, `option`, `button`, `label` |
-| **Media** | `img`, `video`, `audio`, `canvas`, `svg`, `iframe` |
-| **SVG** | `svg`, `path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `g` |
-| **Modern HTML5** | `dialog`, `details`, `summary`, `meter`, `progress`, `template`, `slot`, `output`, `data`, `bdi`, `bdo`, `ruby`, `rt`, `rp` |
-| **Popover** | `autoPopover`, `manualPopover`, `popoverToggleButton`, `popoverShowButton`, `popoverHideButton` |
-| **Responsive Images** | `picture`, `source`, `responsiveImg`, `lazyImg` |
-| **Figure** | `figure`, `figcaption` |
-| **Definition** | `dl`, `dt`, `dd` |
-| **Interactive Text** | `abbr`, `dfn`, `cite`, `q`, `blockquote`, `kbd`, `samp`, `var_`, `mark`, `sub`, `sup`, `ins`, `del`, `s` |
-| **Form Enhancements** | `datalist`, `optgroup`, `fieldset`, `legend`, `colorInput`, `dateInput`, `timeInput`, `datetimeInput`, `monthInput`, `weekInput`, `rangeInput` |
-| **Helpers** | `text`, `raw`, `fragment`, `each`, `tag` |
+- **Void elements** (`img`, `br`, `input`, `hr`, `meta`, `link`, `source`, …) throw
+  `IllegalArgumentException` if you pass children.
+- Strings become escaped text automatically; use `raw("...")` for trusted HTML.
+- Collections passed as children are flattened one level.
 
 ## Attributes
 
-```java
-// Simple attributes (shortcuts)
-div(class_("card"), id("main"),
-    h2("Title"),
-    p("Content")
-)
+`Attr` is a simple `record(name, value)` with static shortcuts. `Attributes` is the fluent
+builder returned by `attrs()`. (`Attrs` is `@Deprecated(forRemoval = true)` — don't use it.)
 
-// Fluent attribute builder
+```java
+// Shortcuts
+div(class_("card"), id("main"), ...)
+
+// Fluent builder
 div(attrs()
     .class_("card")
     .id("main")
-    .data("user-id", "123")
-    .aria("label", "User card"),
+    .data("user-id", "123")       // data-user-id
+    .aria("label", "User card")   // aria-label
+    .set("custom-attr", "v"),     // ⚠️ arbitrary attrs use set(), not attr()
     content
 )
 
-// Form elements with attributes
+// Forms
 form(attrs().action("/submit").method("POST"),
     label(for_("email"), "Email:"),
-    input(attrs()
-        .type("email")
-        .name("email")
-        .placeholder("you@example.com")
-        .required()),
+    input(attrs().type("email").name("email").placeholder("you@example.com").required()),
     button(type("submit"), "Subscribe")
 )
 
-// Conditional class shortcuts
+// Conditional classes
 div(attrs()
     .class_("btn")
-    .classIf("active", isActive)           // adds "active" if isActive is true
-    .classToggle(isOpen, "open", "closed") // adds "open" or "closed"
+    .classIf("active", isActive)            // adds "active" when true
+    .classToggle(isOpen, "open", "closed")  // one or the other
 )
 
-// Layout shortcuts (no style builder needed!)
-div(attrs().flexCenter(), ...)              // centered flexbox
-div(attrs().flexColumn("1rem"), ...)        // column with gap
-div(attrs().flexRow("0.5rem"), ...)         // row with gap
-div(attrs().flexBetween(), ...)             // space-between
-div(attrs().gridCols(3, "1rem"), ...)       // 3-column grid with gap
+// Layout shortcuts (inline flex/grid without a style builder)
+div(attrs().flexCenter(), ...)
+div(attrs().flexColumn("1rem"), ...)
+div(attrs().flexRow("0.5rem"), ...)
+div(attrs().flexBetween(), ...)
+div(attrs().gridCols(3, "1rem"), ...)
 ```
+
+`Attributes` covers essentially every HTML attribute, grouped: validation (`pattern`, `min`,
+`max`, `step`, `minlength`, `maxlength`, `autocomplete`, `inputmode`), global (`tabindex`,
+`lang`, `dir`, `contenteditable()`, `draggable`, `inert()`, `popover(type)`,
+`popovertarget(id)`), link (`rel`, `download()`, `crossorigin`, `integrity`), media (`srcset`,
+`sizes`, `loading`, `controls()`, `autoplay()`, `muted()`, `poster`), script (`async()`,
+`defer()`, `nonce`), table (`colspan`, `rowspan`), SVG, microdata, dialog/details (`open()`),
+and iframe (`sandbox`, `allow`).
+
+### Event attributes
+
+Two typed forms exist — there is **no** `onclick(String)` string setter:
+
+```java
+// 1. Server-side handler (Consumer<Event>) — registers with EventRegistry,
+//    requires the client runtime to be wired (see State & Realtime doc)
+button(attrs().onClick(e -> counter.update(n -> n + 1)), "Increment")
+
+// 2. JS DSL Action — inlined into the attribute
+import static com.osmig.Jweb.framework.js.Actions.*;
+button(attrs().onClick(toggle("panel")), "Toggle")
+
+// For raw JS strings, use set():
+button(attrs().set("onclick", DialogHelper.showModal("confirm-dialog")), "Open")
+```
+
+Available on `Attributes` for both forms: `onClick`, `onChange`, `onInput`, `onSubmit`,
+`onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`, mouse/drag/touch/scroll/animation events, and the
+generic `on(type, handler)`.
+
+## Fluent builders: `Input`, `Button`, `Form`
+
+Beyond `input(attrs()...)`, dedicated builders exist:
+
+```java
+import com.osmig.Jweb.framework.elements.Input;
+import com.osmig.Jweb.framework.elements.Button;
+import com.osmig.Jweb.framework.elements.Form;
+
+Input.email("email").placeholder("you@example.com").required()
+Input.password("pw").minlength(8)
+Input.range("volume")          // also: text/number/tel/url/search/date/time/color/checkbox/radio/file/hidden
+
+Button.submit("Save")
+Button.of("Cancel").formAction("/cancel")
+
+Form.post("/api/users")
+    .multipart()
+    .add(Input.text("name").required())
+    .add(Button.submit("Create"))
+```
+
+There is also a much richer `forms/Form` builder (labels, help text, radio groups, selects) and
+`forms/FormModel` (POJO → form) — see [Backend](./backend.md#forms).
+
+## Tag instance API
+
+Every element factory returns a `Tag`, which is itself fluent:
+
+```java
+div()
+    .addClass("card")
+    .data("id", "42")
+    .child(h2("Title"))
+    .children(list.stream().map(ItemView::new).toList())
+    .each(users, u -> li(u.name()))          // iterate on the instance
+    .when(isAdmin, () -> adminBadge())       // conditional child
+    .styled(style().padding(px(16)))         // per-element stylesheet class (jweb-N)
+    .hover(style().backgroundColor(hex("#f5f5f5")))
+```
+
+`.styled()/.hover()/.focus()/.active()` generate a unique `jweb-N` class plus an inline
+`<style>` block next to the element (see CSS DSL doc).
 
 ## Modern HTML5 Elements
 
 ```java
-import static com.osmig.Jweb.framework.elements.El.*;
+// Dialog (modal) — helpers return JS strings; attach via set()
 import static com.osmig.Jweb.framework.elements.DialogHelper.*;
-import static com.osmig.Jweb.framework.elements.DetailsHelper.*;
 
-// Dialog (modal)
 dialog(attrs().id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure?"),
-    button(attrs().onclick(close("confirm-dialog")), "Cancel"),
-    button(attrs().onclick(close("confirm-dialog", "confirmed")), "Confirm")
+    button(attrs().set("onclick", close("confirm-dialog")), "Cancel"),
+    button(attrs().set("onclick", close("confirm-dialog", "confirmed")), "Confirm")
 )
-button(attrs().onclick(showModal("confirm-dialog")), "Open Dialog")
+button(attrs().set("onclick", showModal("confirm-dialog")), "Open Dialog")
 
-// Details/Summary (accordion)
-details(attrs().name("faq"),  // name attribute creates exclusive accordion
-    summary("Question 1"),
-    p("Answer 1")
-)
-details(attrs().name("faq"),
-    summary("Question 2"),
-    p("Answer 2")
-)
+// Details/Summary — name attribute creates an exclusive accordion
+details(attrs().name("faq"), summary("Question 1"), p("Answer 1"))
+details(attrs().name("faq"), summary("Question 2"), p("Answer 2"))
 
 // Progress and Meter
-progress(70, 100)  // Determinate progress bar
-progressIndeterminate()  // Loading spinner
-meter(0.6, 0, 1)  // Scalar measurement
+progress(70, 100)          // determinate
+progressIndeterminate()    // loading state
+meter(0.6, 0, 1)           // scalar measurement
 
-// Time with datetime
-timeWithDatetime("2026-01-29", "January 29, 2026")
-
-// Data element for machine-readable values
+// Machine-readable values
+timeWithDatetime("2026-08-08", "August 8, 2026")
 data("SKU-123", "Product Widget")
 ```
 
-## Popover API
+`DialogHelper`: `showModal`, `show`, `close`, `close(id, returnValue)`, `toggle`,
+`closeOnBackdropClick`, `getReturnValue`, `isOpen`.
+`DetailsHelper`: `open`, `close`, `toggle`, `isOpen`, `openExclusive`, `closeAll`, `openAll`,
+`closeAllBySelector`, `openAllBySelector`.
+
+## Popover API (`PopoverElements` — separate import)
 
 ```java
 import static com.osmig.Jweb.framework.elements.PopoverElements.*;
 
-// Auto popover (closes when clicking outside)
-div(autoPopover("my-popover"),
-    p("Popover content here")
-)
+// Attribute factories
+div(popover("auto"), id("my-popover"), p("Popover content"))
 button(popoverTarget("my-popover"), "Toggle")
+button(popoverTarget("my-popover"), popoverTargetAction("show"), "Show")
 
-// Manual popover (requires explicit close)
-div(manualPopover("my-tooltip"),
-    p("This stays open until explicitly closed")
-)
+// Prebuilt elements
+autoPopover("tips", p("Closes when clicking outside"))
+manualPopover("pinned", p("Stays until explicitly closed"))
+popoverToggleButton("tips", "Toggle tips")
+popoverShowButton("tips", "Show")
+popoverHideButton("tips", "Hide")
 
-// Popover toggle/show/hide buttons
-popoverToggleButton("my-popover", "Toggle Popover")
-popoverShowButton("my-popover", "Show Popover")
-popoverHideButton("my-popover", "Hide Popover")
-
-// JS helpers for programmatic control
-showPopover("my-popover")    // JS: document.getElementById('my-popover').showPopover()
-hidePopover("my-popover")    // JS: document.getElementById('my-popover').hidePopover()
-togglePopover("my-popover")  // JS: document.getElementById('my-popover').togglePopover()
+// JS helpers (return strings — attach via set() or inlineScript)
+showPopover("tips"); hidePopover("tips"); togglePopover("tips");
 ```
 
-## Responsive Images
+> Note: pass `Attr`s (like `id(...)`) as direct arguments to `autoPopover`/`manualPopover` —
+> attributes nested inside child elements are ignored by the two-pass builder.
+
+## Responsive Images (`PictureElements` — separate import)
 
 ```java
 import static com.osmig.Jweb.framework.elements.PictureElements.*;
 
-// Picture element with multiple sources
 picture(
     source(srcset("image.avif"), type("image/avif")),
     source(srcset("image.webp"), type("image/webp")),
-    img("image.jpg", "Fallback description")
+    img("image.jpg", "Fallback description")     // img comes from El
 )
 
-// Responsive image with srcset
-responsiveImg("image.jpg", "Description",
-    "image-320.jpg 320w",
-    "image-640.jpg 640w",
-    "image-1024.jpg 1024w"
-)
+// Exact signatures:
+responsiveImg("image.jpg", "Description", "image@2x.jpg")   // (src, alt, src2x)
+lazyImg("image.jpg", "Description", 640, 480)               // (src, alt, width, height)
 
-// Lazy-loaded image
-lazyImg("image.jpg", "Description")
+// Attribute factories: srcset, media, sizes, type, width, height,
+// loading("lazy"|"eager"), lazyLoad(), eagerLoad(), decoding, fetchPriority
 ```
 
-## Definition Lists
+## Definition Lists / Figures / Interactive Text
 
 ```java
-import static com.osmig.Jweb.framework.elements.DefinitionElements.*;
-
-// Glossary
+// Definition lists (in El)
 dl(
     dt("HTML"), dd("HyperText Markup Language"),
-    dt("CSS"), dd("Cascading Style Sheets"),
-    dt("JS"), dd("JavaScript")
+    dt("CSS"),  dd("Cascading Style Sheets")
 )
 
-// Metadata key-value pairs
-dl(class_("metadata"),
-    dt("Author"), dd("Jane Doe"),
-    dt("Published"), dd("2026-01-29"),
-    dt("Category"), dd("Technology")
-)
-```
-
-## Figure and Caption
-
-```java
-import static com.osmig.Jweb.framework.elements.FigureElements.*;
-
-// Image with caption
-figure(
-    img(attrs().src("chart.png").attr("alt", "Sales chart")),
-    figcaption("Figure 1: Quarterly sales data")
-)
-
-// Code listing with caption
+// Figures (in El)
 figure(class_("code-example"),
     pre(code("const x = 42;")),
     figcaption("Example: Variable declaration")
 )
-```
 
-## Interactive Text Elements
-
-```java
-import static com.osmig.Jweb.framework.elements.InteractiveElements.*;
-
-// Abbreviation with expansion
+// Interactive/semantic text (in El)
 p("The ", abbr("HTML", "HyperText Markup Language"), " specification")
-
-// Citation
-p("As described in ", cite("The Art of Programming"), "...")
-
-// Keyboard input
 p("Press ", kbd("Ctrl"), "+", kbd("C"), " to copy.")
-
-// Highlighted text
 p("Search results for: ", mark("JWeb framework"))
-
-// Inline quotation (browser adds quotes automatically)
-p("She said, ", q("Hello World"), ", and the program ran.")
-
-// Subscript and superscript
-p("H", sub("2"), "O")  // H2O
-p("E = mc", sup("2"))  // E = mc2
-
-// Inserted and deleted text (for showing edits)
+p("H", sub("2"), "O")
+p("E = mc", sup("2"))
 p(del("old price: $20"), " ", ins("new price: $15"))
+blockquote("https://example.com/source", p("Quoted text with a cite URL"))
 ```
 
-## Form Enhancements
+> Overload hazard: `q("Hello")` resolves to the varargs form (text child), not the
+> `(citeUrl, ...)` form. Same for `abbr` and `blockquote` — a lone String is a child.
+
+## Form Enhancements (`FormEnhancements` — separate import for input helpers)
 
 ```java
 import static com.osmig.Jweb.framework.elements.FormEnhancements.*;
 
-// Datalist for autocomplete suggestions
-input(attrs().attr("list", "browsers")),
+// Datalist for autocomplete (datalist/optgroup/fieldset/legend are also in El)
+input(attrs().list("browsers")),
 datalist("browsers",
-    option("Chrome"),
-    option("Firefox"),
-    option("Safari"),
-    option("Edge")
+    option("chrome", "Chrome"),        // option is (value, text); option("v") uses v as both
+    option("firefox", "Firefox"),
+    option("safari", "Safari")
 )
 
-// Option groups in select
 select(attrs().name("car"),
     optgroup("Swedish Cars",
-        option(attrs().value("volvo"), "Volvo"),
-        option(attrs().value("saab"), "Saab")
-    ),
+        option("volvo", "Volvo"),
+        option("saab", "Saab")),
     optgroup("German Cars",
-        option(attrs().value("bmw"), "BMW"),
-        option(attrs().value("audi"), "Audi")
-    )
+        option("bmw", "BMW"),
+        option("audi", "Audi"))
 )
 
-// Fieldset with legend for form grouping
 fieldset(
     legend("Personal Information"),
     label(attrs().for_("name"), "Name:"),
-    input(attrs().type("text").name("name").id("name")),
-    label(attrs().for_("email"), "Email:"),
-    input(attrs().type("email").name("email").id("email"))
+    input(attrs().type("text").name("name").id("name"))
 )
 
-// Specialized input helpers
-colorInput("theme-color", "#3b82f6")       // Color picker
-dateInput("birthday")                       // Date input
-dateInput("event", "2026-01-01", "2026-12-31")  // Date with min/max
-timeInput("meeting-time")                   // Time input
-datetimeInput("appointment")                // Date+time input
-monthInput("birth-month")                   // Month picker
-weekInput("work-week")                      // Week picker
-rangeInput("volume", 0, 100, 50)            // Range slider
-rangeInput("opacity", 0, 100, 50, 5)        // Range with step
+// Typed input helpers (FormEnhancements only)
+colorInput("theme-color", "#3b82f6")
+dateInput("birthday")
+dateInput("event", "2026-01-01", "2026-12-31")   // with min/max
+timeInput("meeting-time")
+datetimeInput("appointment")
+monthInput("birth-month")
+weekInput("work-week")
+rangeInput("volume", 0, 100, 50)
+rangeInput("opacity", 0, 100, 50, 5)             // with step
+
+// Submit-button overrides: formaction, formmethod, formenctype, formtarget, formnovalidate
 ```
 
-## Form Input Builders
+## Conditional Rendering (`Elements` — not in `El`)
 
 ```java
-// Fluent input builders via attrs() pattern
-input(attrs().type("email").name("email").placeholder("you@example.com").required())
-textarea(attrs().name("message").rows(5).placeholder("Your message"))
-select(attrs().name("role"), option("User"), option("Admin"))
-```
+import static com.osmig.Jweb.framework.elements.Elements.*;
 
-## Conditional Rendering
-
-```java
-// Simple conditional
+// Simple conditional (lazy)
 when(isLoggedIn, () -> span("Welcome, " + user.getName()))
+when(isLoggedIn, welcomeBanner)          // eager variant
 
-// If/elif/else chain
+// If/elif/else chain — terminate with otherwise(...) or end()
 when(isAdmin)
     .then(adminPanel())
     .elif(isModerator, modPanel())
-    .elif(isUser, userPanel())
     .otherwise(loginPrompt())
 
-// Pattern matching style
+// Pattern-matching style
 match(
     cond(isAdmin, adminPanel()),
     cond(isModerator, modPanel()),
-    cond(isUser, userPanel()),
     otherwise(loginPrompt())
 )
 ```
 
-## Collection Iteration
+> Two `otherwise` shapes exist: the free function (returns a `CondCase` for `match`) and the
+> `Condition` method (returns `Element`). This is fine in practice but confuses auto-import.
+
+## Collection Iteration & Fragments (in `El`)
 
 ```java
-// Map a collection to elements
 ul(each(users, user ->
     li(class_("user-item"),
         strong(user.getName()),
-        span(" - " + user.getEmail())
-    )
+        span(" - " + user.getEmail()))
 ))
-```
 
-## Fragments
-
-```java
-// Group multiple elements without a wrapper
 fragment(
     h1("Title"),
     p("First paragraph"),
@@ -371,8 +407,45 @@ fragment(
 ## Error Boundaries
 
 ```java
-errorBoundary(
-    () -> riskyComponent.render(),
-    error -> p("Error: " + error.getMessage())
-)
+// Free function (Elements)
+import static com.osmig.Jweb.framework.elements.Elements.*;
+errorBoundary(() -> riskyComponent.render(),
+              error -> p("Error: " + error.getMessage()))
+tryCatch(() -> riskyComponent.render())   // silent empty fallback
+
+// Fluent class (core)
+import com.osmig.Jweb.framework.core.ErrorBoundary;
+ErrorBoundary.of(() -> riskyComponent.render())
+    .fallback(err -> div(class_("error"), p(err.getMessage())))
+    .onError(err -> Log.framework().error("render failed", err));
+ErrorBoundary.silent(() -> widget.render());
+ErrorBoundary.withMessage(() -> widget.render(), "Something went wrong");
+```
+
+## Layout helpers (`framework/layout/Layout`)
+
+A static utility of ~45 prebuilt layout wrappers (distinct from your app's `Layout` template):
+
+```java
+import com.osmig.Jweb.framework.layout.Layout;
+
+Layout.container(...)      // centered max-width container
+Layout.row(...) / Layout.column(...) / Layout.center(...)
+Layout.spaceBetween(...) / Layout.cluster(...) / Layout.stack(...)
+Layout.grid(3, ...) / Layout.autoGrid(...) / Layout.sidebar(side, main)
+Layout.card(...) / Layout.divider() / Layout.spacer(px(24))
+Layout.sticky(...) / Layout.scrollable(...) / Layout.aspectRatio("16/9", ...)
+Layout.visuallyHidden(...)  // a11y: screen-reader-only content
+```
+
+## Raw content & custom tags
+
+```java
+text("escaped text")                 // VText
+raw("<b>trusted html</b>")           // VRaw — no escaping, use with care
+tag("custom-element", attrs().set("prop", "x"), span("child"))
+
+// Full-response raw payloads (from route handlers):
+RawContent.json("{\"ok\":true}")     // application/json response
+RawContent.html("<h1>hi</h1>")       // text/html response
 ```

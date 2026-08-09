@@ -34,7 +34,9 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  * <h2>Usage with Middleware:</h2>
  * <pre>
  * // In middleware configuration
- * app.use(Csrf.middleware());
+ * app.use(Middlewares.csrf());
+ * // or with excluded paths:
+ * app.use(Middlewares.csrf(Set.of("/api")));
  * </pre>
  */
 public final class Csrf {

@@ -23,6 +23,11 @@ public final class FormElements {
         return new Tag("option", new Attributes().value(value), Tag.toVNodes(new Object[]{text}));
     }
 
+    /** Option whose value equals its visible text. */
+    public static Tag option(String valueAndText) {
+        return option(valueAndText, valueAndText);
+    }
+
     public static Tag optgroup(Attributes attrs, Object... children) { return new Tag("optgroup", attrs, Tag.toVNodes(children)); }
     public static Tag label(Object... children) { return Tag.create("label", children); }
     public static Tag label(Attributes attrs, Object... children) { return new Tag("label", attrs, Tag.toVNodes(children)); }

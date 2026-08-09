@@ -44,14 +44,36 @@ public class Router {
         return addRoute(Route.delete(path, handler));
     }
 
+    public Router patch(String path, RouteHandler handler) {
+        return addRoute(Route.patch(path, handler));
+    }
+
     public Optional<RouteMatch> match(String method, String path) {
+        // HEAD is served by GET handlers (the container strips the body)
+        String effective = "HEAD".equalsIgnoreCase(method) ? "GET" : method;
         for (Route route : routes) {
-            if (route.matches(method, path)) {
+            if (route.matches(effective, path)) {
                 Map<String, String> params = route.extractParams(path);
                 return Optional.of(new RouteMatch(route, params));
             }
         }
         return Optional.empty();
+    }
+
+    /**
+     * Returns the HTTP methods that have a route at this path.
+     * Empty when no route matches the path at all (a true 404);
+     * non-empty when the path exists but was requested with the
+     * wrong method (a 405).
+     */
+    public Set<String> allowedMethods(String path) {
+        Set<String> methods = new TreeSet<>();
+        for (Route route : routes) {
+            if (route.matchesPath(path)) {
+                methods.add(route.getMethod());
+            }
+        }
+        return methods;
     }
 
     public List<Route> getRoutes() {

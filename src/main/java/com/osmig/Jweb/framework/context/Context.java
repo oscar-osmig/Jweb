@@ -289,7 +289,7 @@ public final class Context {
      * Typically called at the end of request processing.
      */
     public static void clear() {
-        contextStack.get().clear();
+        contextStack.remove();
     }
 
     // ==================== Context Builder ====================

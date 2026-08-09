@@ -59,8 +59,8 @@ import java.util.function.Consumer;
  * // Require valid JWT on all requests
  * app.use(Jwt.protect());
  *
- * // Protect specific paths
- * app.use(Jwt.protect().path("/api/**"));
+ * // Protect specific paths (prefix match)
+ * app.use("/api", Jwt.protect());
  *
  * // Optional auth (parse but don't require)
  * app.use(Jwt.optional());

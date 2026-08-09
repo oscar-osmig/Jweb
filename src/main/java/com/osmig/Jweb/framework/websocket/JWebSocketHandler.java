@@ -70,6 +70,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             switch (type) {
                 case "event" -> handleEventMessage(session, Json.parse(payload, EventMessage.class));
                 case "init" -> handleInitMessage(session, Json.parse(payload, InitMessage.class));
+                case "setState" -> handleSetStateMessage(session, Json.parse(payload, SetStateMessage.class));
                 case "ping" -> sendMessage(session, new PongResponse());
                 default -> sendMessage(session, new ErrorResponse("Unknown message type: " + type));
             }
@@ -92,8 +93,11 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        // Extract context ID and restore context for this thread
+        // Extract context ID (fall back to the one announced at init)
         String contextId = msg.getContextId();
+        if (contextId == null) {
+            contextId = sessionContextMap.get(session.getId());
+        }
         StateManager.StateContext context = null;
         if (contextId != null) {
             context = StateManager.getContextById(contextId);
@@ -120,8 +124,10 @@ public class JWebSocketHandler extends TextWebSocketHandler {
                 .dataset(msg.getDataset())
                 .build();
 
-        // Execute the handler
-        boolean executed = EventRegistry.execute(handlerId, event);
+        // Execute the handler (context-scoped first, then global fallback)
+        boolean executed = contextId != null
+                ? EventRegistry.execute(contextId, handlerId, event)
+                : EventRegistry.execute(handlerId, event);
 
         if (executed) {
             // Check for state changes
@@ -185,8 +191,8 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             sessionContextMap.put(session.getId(), contextId);
         }
 
-        // Send current state if available
-        StateManager.StateContext context = StateManager.getContext();
+        // Send the current state of the page's render context
+        StateManager.StateContext context = StateManager.getContextById(contextId);
         List<StateData> stateDataList = new ArrayList<>();
 
         if (context != null) {
@@ -196,6 +202,41 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         }
 
         sendMessage(session, new InitStateResponse(stateDataList));
+    }
+
+    /**
+     * Handles JWeb.setState() calls from the client: updates the state in the
+     * page's context and reports resulting changes (including derived states
+     * and DOM patches) back to the session.
+     */
+    private void handleSetStateMessage(WebSocketSession session, SetStateMessage msg) throws IOException {
+        StateManager.StateContext context = StateManager.getContextById(msg.getContextId());
+        if (context == null) {
+            sendMessage(session, new ErrorResponse("Unknown context: " + msg.getContextId()));
+            return;
+        }
+        State<Object> state = context.getState(msg.getStateId());
+        if (state == null) {
+            sendMessage(session, new ErrorResponse("Unknown state: " + msg.getStateId()));
+            return;
+        }
+
+        StateManager.setContext(context);
+        try {
+            state.set(msg.getValue());
+            var changedStates = context.getChangedStates();
+            if (!changedStates.isEmpty()) {
+                List<StateData> stateDataList = new ArrayList<>();
+                for (State<?> changed : changedStates) {
+                    stateDataList.add(new StateData(changed.getId(), changed.get()));
+                }
+                sendMessage(session, new StateUpdateResponse(stateDataList));
+                sendDomUpdates(session, context);
+                context.clearChangedStates();
+            }
+        } finally {
+            StateManager.clearContext();
+        }
     }
 
     @Override

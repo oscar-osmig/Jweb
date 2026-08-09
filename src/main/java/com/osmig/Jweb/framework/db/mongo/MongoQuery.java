@@ -51,9 +51,17 @@ public class MongoQuery {
     // ==================== Where Clauses ====================
 
     /**
-     * Adds an equality filter.
+     * Adds an equality filter. {@code "id"} is treated as {@code "_id"}
+     * (with String values converted to ObjectId), matching the update and
+     * delete builders.
      */
     public MongoQuery where(String field, Object value) {
+        if ("id".equals(field) || "_id".equals(field)) {
+            field = "_id";
+            if (value instanceof String str && org.bson.types.ObjectId.isValid(str)) {
+                value = new org.bson.types.ObjectId(str);
+            }
+        }
         filters.add(Filters.eq(field, value));
         return this;
     }
@@ -62,7 +70,7 @@ public class MongoQuery {
      * Starts a comparison chain for a field.
      */
     public MongoQuery where(String field) {
-        this.currentField = field;
+        this.currentField = "id".equals(field) ? "_id" : field;
         return this;
     }
 

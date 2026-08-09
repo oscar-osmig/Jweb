@@ -91,6 +91,7 @@ public class Mongo {
         }
         client = MongoClients.create(uri);
         database = client.getDatabase(databaseName);
+        applyRegisteredSchemas();
     }
 
     /**
@@ -99,6 +100,19 @@ public class Mongo {
     public static void connect(MongoClient mongoClient, String databaseName) {
         client = mongoClient;
         database = client.getDatabase(databaseName);
+        applyRegisteredSchemas();
+    }
+
+    /** Creates indexes for every schema registered before the connection. */
+    private static void applyRegisteredSchemas() {
+        for (Schema schema : schemas.values()) {
+            try {
+                ensureIndexes(schema);
+            } catch (Exception e) {
+                com.osmig.Jweb.framework.util.Log.warn(
+                    "Could not create indexes for '{}': {}", schema.getCollectionName(), e.getMessage());
+            }
+        }
     }
 
     /**
@@ -139,12 +153,15 @@ public class Mongo {
         Document bson = doc.toBson();
 
         Schema schema = schemas.get(doc.getCollectionName());
-        if (schema != null && schema.hasTimestamps()) {
-            long now = System.currentTimeMillis();
-            if (doc.getId() == null) {
-                bson.put("createdAt", now);
+        if (schema != null) {
+            schema.validate(bson);
+            if (schema.hasTimestamps()) {
+                long now = System.currentTimeMillis();
+                if (doc.getId() == null) {
+                    bson.put("createdAt", now);
+                }
+                bson.put("updatedAt", now);
             }
-            bson.put("updatedAt", now);
         }
 
         if (doc.getId() == null) {
@@ -177,10 +194,13 @@ public class Mongo {
         Document bson = doc.toBson();
 
         Schema schema = schemas.get(doc.getCollectionName());
-        if (schema != null && schema.hasTimestamps()) {
-            long now = System.currentTimeMillis();
-            bson.put("createdAt", now);
-            bson.put("updatedAt", now);
+        if (schema != null) {
+            schema.validate(bson);
+            if (schema.hasTimestamps()) {
+                long now = System.currentTimeMillis();
+                bson.put("createdAt", now);
+                bson.put("updatedAt", now);
+            }
         }
 
         collection.insertOne(bson);
@@ -279,12 +299,15 @@ public class Mongo {
         Document doc = Document.parse(toJson(object));
 
         Schema schema = schemas.get(collectionName);
-        if (schema != null && schema.hasTimestamps()) {
-            long now = System.currentTimeMillis();
-            if (!doc.containsKey("_id")) {
-                doc.put("createdAt", now);
+        if (schema != null) {
+            schema.validate(doc);
+            if (schema.hasTimestamps()) {
+                long now = System.currentTimeMillis();
+                if (!doc.containsKey("_id")) {
+                    doc.put("createdAt", now);
+                }
+                doc.put("updatedAt", now);
             }
-            doc.put("updatedAt", now);
         }
 
         MongoCollection<Document> collection = getCollection(collectionName);
@@ -312,10 +335,51 @@ public class Mongo {
     // ==================== Schema Registry ====================
 
     /**
-     * Registers a schema.
+     * Registers a schema. Called by {@link Schema#register()}; may also be
+     * called directly. Declared indexes (and unique fields) are created
+     * immediately when connected, or on the next {@code connect(...)}.
      */
-    static void registerSchema(Schema schema) {
+    public static void registerSchema(Schema schema) {
         schemas.put(schema.getCollectionName(), schema);
+        if (database != null) {
+            ensureIndexes(schema);
+        }
+    }
+
+    /**
+     * Creates the indexes declared by a schema (idempotent — MongoDB ignores
+     * createIndex calls for indexes that already exist).
+     */
+    public static void ensureIndexes(Schema schema) {
+        ensureConnected();
+        MongoCollection<Document> collection = getCollection(schema.getCollectionName());
+
+        // Unique field constraints become unique single-field indexes
+        for (Schema.FieldDef field : schema.getFields().values()) {
+            if (field.unique) {
+                collection.createIndex(
+                    com.mongodb.client.model.Indexes.ascending(field.name),
+                    new com.mongodb.client.model.IndexOptions().unique(true));
+            }
+        }
+
+        // Declared indexes
+        for (Schema.IndexDef index : schema.getIndexes()) {
+            org.bson.conversions.Bson keys = index.text
+                ? com.mongodb.client.model.Indexes.compoundIndex(
+                      java.util.Arrays.stream(index.fields)
+                          .map(com.mongodb.client.model.Indexes::text)
+                          .toArray(org.bson.conversions.Bson[]::new))
+                : com.mongodb.client.model.Indexes.ascending(index.fields);
+
+            var options = new com.mongodb.client.model.IndexOptions()
+                .unique(index.unique)
+                .sparse(index.sparse);
+            if (index.expireAfterSeconds != null) {
+                options.expireAfter(index.expireAfterSeconds, java.util.concurrent.TimeUnit.SECONDS);
+            }
+            collection.createIndex(keys, options);
+        }
     }
 
     /**

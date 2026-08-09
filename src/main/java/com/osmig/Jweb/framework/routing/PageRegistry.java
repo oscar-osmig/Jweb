@@ -115,9 +115,13 @@ public class PageRegistry {
     private String extractTitle(String path) {
         if (path.equals("/")) return "Home";
         String name = path.substring(1); // remove leading /
+        while (name.endsWith("/")) { // tolerate trailing slashes ("/about/")
+            name = name.substring(0, name.length() - 1);
+        }
         if (name.contains("/")) {
             name = name.substring(name.lastIndexOf("/") + 1);
         }
+        if (name.isEmpty()) return "Home";
         // Capitalize first letter
         return name.substring(0, 1).toUpperCase() + name.substring(1);
     }

@@ -219,7 +219,7 @@ public final class Transition implements Element {
         VNode node = el.toVNode();
 
         // If we have transition classes, wrap or modify the element
-        if (enterClass != null || enterActiveClass != null) {
+        if (enterClass != null || enterActiveClass != null || leaveClass != null || leaveActiveClass != null) {
             if (node instanceof VElement ve) {
                 Map<String, String> newAttrs = new LinkedHashMap<>(ve.getAttributes());
 
@@ -240,10 +240,24 @@ public final class Transition implements Element {
                     newAttrs.put("class", String.join(" ", classes));
                 }
 
-                // Add data attributes for client-side handling
+                // Add data attributes for client-side handling (the JWeb
+                // runtime removes enter classes after the enter duration and
+                // applies leave classes in JWeb.leave(el))
                 newAttrs.put("data-transition", "true");
+                if (enterClass != null) {
+                    newAttrs.put("data-enter-class", enterClass);
+                }
                 if (enterDuration > 0) {
                     newAttrs.put("data-enter-duration", String.valueOf(enterDuration));
+                }
+                if (leaveClass != null) {
+                    newAttrs.put("data-leave-class", leaveClass);
+                }
+                if (leaveActiveClass != null) {
+                    newAttrs.put("data-leave-active-class", leaveActiveClass);
+                }
+                if (leaveDuration > 0) {
+                    newAttrs.put("data-leave-duration", String.valueOf(leaveDuration));
                 }
 
                 return VElement.of(ve.getTag(), newAttrs, ve.getChildren());

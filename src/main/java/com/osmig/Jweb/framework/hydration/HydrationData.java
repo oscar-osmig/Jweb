@@ -71,8 +71,11 @@ public class HydrationData {
      * Generates a script tag containing hydration data.
      */
     public String toScriptTag() {
+        // '<' can only occur inside JSON strings, so escaping it globally is
+        // safe and prevents "</script>" in state values from terminating the
+        // script block (XSS).
         return "<script id=\"__JWEB_DATA__\" type=\"application/json\">" +
-                toJson() +
+                toJson().replace("<", "\\u003C") +
                 "</script>";
     }
 

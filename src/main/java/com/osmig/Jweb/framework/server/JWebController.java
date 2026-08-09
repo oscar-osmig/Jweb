@@ -80,9 +80,14 @@ public class JWebController {
             return null;
         }
 
-        // Try page routes
+        // Try page routes (GET/HEAD only — pages are documents)
         Optional<PageRoute> pageMatch = matchPageRoute(path);
         if (pageMatch.isPresent()) {
+            if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
+                return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                    .header("Allow", "GET, HEAD")
+                    .body("Method not allowed");
+            }
             return handlePageRoute(pageMatch.get(), servletRequest);
         }
 
@@ -90,7 +95,22 @@ public class JWebController {
         Optional<Router.RouteMatch> match = router.match(method, path);
 
         if (match.isEmpty()) {
-            return handleNotFound(path);
+            // Path exists under another method → 405, not 404
+            var allowed = router.allowedMethods(path);
+            if (!allowed.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
+                    .header("Allow", String.join(", ", allowed))
+                    .body("Method not allowed");
+            }
+
+            // 404s still run through middleware (logging, headers, metrics)
+            Request request = new Request(servletRequest);
+            try {
+                Object result = middlewareStack.execute(request, () -> handleNotFound(path));
+                return applyQueuedHeaders(processResult(result, null, request), request);
+            } catch (Exception e) {
+                return handleError(e);
+            }
         }
 
         // Create state context for this request
@@ -101,18 +121,58 @@ public class JWebController {
             // Execute through middleware stack
             Object result = middlewareStack.execute(request, () -> match.get().handle(request));
 
-            return processResult(result, context);
+            return applyQueuedHeaders(processResult(result, context, request), request);
         } catch (Exception e) {
             return handleError(e);
         } finally {
-            // Always clean up context to prevent memory leaks
-            context.clearContext();
+            // Detach from this thread only. The context stays registered so
+            // browser events (WebSocket) can reference it; the TTL reaper in
+            // StateManager collects it once idle.
+            StateManager.clearContext();
+            clearThreadLocals();
         }
     }
 
-    private ResponseEntity<String> processResult(Object result, StateManager.StateContext context) {
+    /** Clears per-request thread-locals (DI context, portals, locale) after a render. */
+    private void clearThreadLocals() {
+        com.osmig.Jweb.framework.context.Context.clear();
+        com.osmig.Jweb.framework.portal.Portal.clear();
+        com.osmig.Jweb.framework.i18n.I18n.clearCurrent();
+    }
+
+    /** Adds middleware-queued headers to the response (existing headers win). */
+    private ResponseEntity<String> applyQueuedHeaders(ResponseEntity<String> response, Request request) {
+        var queued = request.responseHeaders();
+        if (queued.isEmpty()) {
+            return response;
+        }
+        var headers = new org.springframework.http.HttpHeaders();
+        headers.addAll(response.getHeaders());
+        queued.forEach((name, value) -> {
+            if (headers.get(name) == null) {
+                headers.add(name, value);
+            }
+        });
+        return new ResponseEntity<>(response.getBody(), headers, response.getStatusCode());
+    }
+
+    private ResponseEntity<String> processResult(Object result, StateManager.StateContext context, Request request) {
         if (result == null) {
             return ResponseEntity.ok().body("");
+        }
+
+        // Templates returned from handlers get their lifecycle hooks
+        if (result instanceof Template template) {
+            template.beforeRender(request);
+            String html = template.render().toHtml();
+            template.afterRender(request);
+            html = applyTemplateExtras(html, template);
+            if (context != null) {
+                html = injectHydrationData(html, buildHydrationScript(context));
+            }
+            return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
         }
 
         // If middleware already returned a ResponseEntity, use it directly
@@ -136,8 +196,11 @@ public class JWebController {
             String html = element.toHtml();
 
             // Inject hydration data with state and context info
-            String hydrationScript = buildHydrationScript(context);
-            html = injectHydrationData(html, hydrationScript);
+            // (skipped when no state context exists, e.g. 404 pages)
+            if (context != null) {
+                String hydrationScript = buildHydrationScript(context);
+                html = injectHydrationData(html, hydrationScript);
+            }
 
             return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
@@ -145,14 +208,19 @@ public class JWebController {
         }
 
         if (result instanceof String str) {
+            // Heuristic: JSON-shaped strings are served as JSON. Use
+            // Response.json(...)/RawContent to set the type explicitly.
+            String trimmed = str.stripLeading();
+            boolean looksJson = trimmed.startsWith("{") || trimmed.startsWith("[");
             return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_HTML)
+                .contentType(looksJson ? MediaType.APPLICATION_JSON : MediaType.TEXT_HTML)
                 .body(str);
         }
 
+        // POJOs are serialized to real JSON (not toString())
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(result.toString());
+            .body(com.osmig.Jweb.framework.util.Json.stringify(result));
     }
 
     private String buildHydrationScript(StateManager.StateContext context) {
@@ -167,18 +235,24 @@ public class JWebController {
         // Get pre-cached prefetch script
         String prefetchScript = Prefetch.scriptTag();
 
+        // Client runtime (defines the JWeb global used by rendered event
+        // attributes). Injected after the hydration data so JWeb.init() can
+        // read __JWEB_DATA__ immediately.
+        String runtimeScript = com.osmig.Jweb.framework.js.JWebRuntime.getScriptTag();
+
         // Fast path: if no scripts to inject, return as-is
-        if (prefetchScript.isEmpty() && hydrationScript.isEmpty()) {
+        if (prefetchScript.isEmpty() && hydrationScript.isEmpty() && runtimeScript.isEmpty()) {
             return html;
         }
+
+        String scripts = prefetchScript + hydrationScript + runtimeScript;
 
         // Use StringBuilder for efficient string building
         int bodyEnd = html.lastIndexOf(BODY_END);
         if (bodyEnd != -1) {
-            return new StringBuilder(html.length() + prefetchScript.length() + hydrationScript.length())
+            return new StringBuilder(html.length() + scripts.length())
                 .append(html, 0, bodyEnd)
-                .append(prefetchScript)
-                .append(hydrationScript)
+                .append(scripts)
                 .append(html, bodyEnd, html.length())
                 .toString();
         }
@@ -186,16 +260,15 @@ public class JWebController {
         // Inject before </html> if no body
         int htmlEnd = html.lastIndexOf(HTML_END);
         if (htmlEnd != -1) {
-            return new StringBuilder(html.length() + prefetchScript.length() + hydrationScript.length())
+            return new StringBuilder(html.length() + scripts.length())
                 .append(html, 0, htmlEnd)
-                .append(prefetchScript)
-                .append(hydrationScript)
+                .append(scripts)
                 .append(html, htmlEnd, html.length())
                 .toString();
         }
 
         // Append at end
-        return html + prefetchScript + hydrationScript;
+        return html + scripts;
     }
 
     private ResponseEntity<String> handleNotFound(String path) {
@@ -205,7 +278,7 @@ public class JWebController {
     }
 
     private ResponseEntity<String> handleError(Exception e) {
-        e.printStackTrace();
+        com.osmig.Jweb.framework.util.Log.error("Unhandled error while handling request: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .contentType(MediaType.TEXT_HTML)
             .body(ErrorPage.render(500, "Server Error", e).toHtml());
@@ -221,34 +294,135 @@ public class JWebController {
     private ResponseEntity<String> handlePageRoute(PageRoute route, HttpServletRequest servletRequest) {
         StateManager.StateContext context = StateManager.createContext();
         try {
-            // Create page instance
-            Template page = route.pageSupplier().get();
-            Element content = page.render();
+            Request request = new Request(servletRequest);
 
-            // Wrap in layout if specified
-            Element result = content;
-            if (route.layoutClass() != null) {
-                result = wrapInLayout(route.layoutClass(), route.title(), content);
+            // Page routes run through the middleware stack like every other
+            // route, so auth/CSRF/headers/logging apply to them too.
+            Template[] pageHolder = new Template[1];
+            Object result = middlewareStack.execute(request, () -> renderPage(route, request, pageHolder));
+
+            // Middleware may short-circuit (auth redirect, rate limit, ...)
+            if (!(result instanceof Element element)) {
+                return applyQueuedHeaders(processResult(result, context, request), request);
             }
 
-            String html = result.toHtml();
+            Template page = pageHolder[0];
+            String html = element.toHtml();
+            if (page != null) {
+                html = applyTemplateExtras(html, page);
+            }
             String hydrationScript = buildHydrationScript(context);
             html = injectHydrationData(html, hydrationScript);
 
             // Check if this is a prefetch request (has X-Prefetch header)
             boolean isPrefetch = "true".equals(servletRequest.getHeader("X-Prefetch"));
-            CacheControl cacheControl = isPrefetch ? PREFETCH_CACHE : NAVIGATION_CACHE;
+            CacheControl cacheControl = isPrefetch ? PREFETCH_CACHE : cacheControlFor(page);
 
-            return ResponseEntity.ok()
+            return applyQueuedHeaders(ResponseEntity.ok()
                 .cacheControl(cacheControl)
                 .contentType(MediaType.TEXT_HTML)
-                .body(html);
+                .body(html), request);
         } catch (Exception e) {
             return handleError(e);
         } finally {
-            // Always clean up context to prevent memory leaks
-            context.clearContext();
+            // Detach from this thread only — see handleRequest
+            StateManager.clearContext();
+            clearThreadLocals();
         }
+    }
+
+    /**
+     * Renders a page route's template with its lifecycle hooks
+     * (beforeRender → render → layout → afterRender), wrapped in its layout
+     * if configured. The instantiated page is exposed via pageHolder so the
+     * caller can apply title/head/script extras to the final HTML.
+     */
+    private Element renderPage(PageRoute route, Request request, Template[] pageHolder) {
+        Template page = route.pageSupplier().get();
+        pageHolder[0] = page;
+        page.beforeRender(request);
+        Element content = page.render();
+        String title = page.pageTitle().orElse(route.title());
+        Element result = route.layoutClass() != null
+            ? wrapInLayout(route.layoutClass(), title, content)
+            : content;
+        page.afterRender(request);
+        return result;
+    }
+
+    /** Cache-control derived from the template's cacheable()/cacheDuration(). */
+    private CacheControl cacheControlFor(Template page) {
+        if (page == null) return NAVIGATION_CACHE;
+        if (!page.cacheable()) return CacheControl.noStore();
+        if (page.cacheDuration() > 0) {
+            return CacheControl.maxAge(page.cacheDuration(), TimeUnit.SECONDS)
+                .mustRevalidate()
+                .cachePrivate();
+        }
+        return NAVIGATION_CACHE;
+    }
+
+    /**
+     * Injects the template's pageTitle/metaDescription/extraHead into the
+     * head, and scripts/onMount/onUnmount before the closing body tag.
+     */
+    private String applyTemplateExtras(String html, Template page) {
+        // Title: replace the existing <title> or add one to the head
+        Optional<String> pageTitle = page.pageTitle();
+        if (pageTitle.isPresent()) {
+            String escaped = escapeHtmlText(pageTitle.get());
+            int start = html.indexOf("<title>");
+            int end = html.indexOf("</title>");
+            if (start >= 0 && end > start) {
+                html = html.substring(0, start + "<title>".length()) + escaped + html.substring(end);
+            } else {
+                html = injectBefore(html, "</head>", "<title>" + escaped + "</title>");
+            }
+        }
+
+        StringBuilder headExtras = new StringBuilder();
+        page.metaDescription().ifPresent(desc -> headExtras
+            .append("<meta name=\"description\" content=\"")
+            .append(escapeHtmlAttribute(desc))
+            .append("\">"));
+        page.extraHead().ifPresent(extra -> headExtras.append(extra.toHtml()));
+        if (headExtras.length() > 0) {
+            html = injectBefore(html, "</head>", headExtras.toString());
+        }
+
+        StringBuilder bodyExtras = new StringBuilder();
+        page.scripts().ifPresent(js -> bodyExtras.append("<script>").append(js).append("</script>"));
+        String mount = page.onMount();
+        if (mount != null && !mount.isBlank()) {
+            bodyExtras.append("<script>document.addEventListener('DOMContentLoaded',function(){")
+                .append(mount).append("});</script>");
+        }
+        String unmount = page.onUnmount();
+        if (unmount != null && !unmount.isBlank()) {
+            bodyExtras.append("<script>window.addEventListener('beforeunload',function(){")
+                .append(unmount).append("});</script>");
+        }
+        if (bodyExtras.length() > 0) {
+            html = injectBefore(html, "</body>", bodyExtras.toString());
+        }
+
+        return html;
+    }
+
+    private static String injectBefore(String html, String marker, String content) {
+        int index = html.lastIndexOf(marker);
+        if (index < 0) {
+            return html + content;
+        }
+        return html.substring(0, index) + content + html.substring(index);
+    }
+
+    private static String escapeHtmlText(String text) {
+        return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private static String escapeHtmlAttribute(String text) {
+        return escapeHtmlText(text).replace("\"", "&quot;").replace("'", "&#39;");
     }
 
     private Element wrapInLayout(Class<? extends Template> layoutClass, String title, Element content) {

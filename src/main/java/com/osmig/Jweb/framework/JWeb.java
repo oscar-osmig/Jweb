@@ -31,25 +31,27 @@ import java.util.function.Supplier;
  * }</pre>
  *
  * <h2>API Routes</h2>
- * <p>APIs are created using the {@code @Api} annotation on classes. They are
- * automatically discovered by Spring when placed in the component scan path.</p>
+ * <p>APIs are created using the {@code @REST} annotation on classes. They are
+ * automatically discovered by Spring when placed in the component scan path.
+ * REST controllers must live under {@code /api/v*} — those paths are reserved
+ * for Spring MVC and excluded from the JWeb router.</p>
  *
  * <pre>{@code
- * @Api("/api/v1/users")
+ * @REST("/api/v1/users")
  * public class UserApi {
  *
- *     @Get
+ *     @GET
  *     public List<User> getAll() { ... }
  *
- *     @Get("/{id}")
- *     public User getById(@Param("id") Long id) { ... }
+ *     @GET("/{id}")
+ *     public User getById(@PathVariable("id") Long id) { ... }
  *
- *     @Post
- *     public User create(@Body User user) { ... }
+ *     @POST
+ *     public User create(@RequestBody User user) { ... }
  * }
  * }</pre>
  *
- * @see com.osmig.Jweb.framework.api.Api
+ * @see com.osmig.Jweb.framework.api.REST
  */
 public class JWeb {
 
@@ -228,6 +230,42 @@ public class JWeb {
      */
     public JWeb pages(Object... pathsAndPages) {
         pageRegistry.register(pathsAndPages);
+        return this;
+    }
+
+    /**
+     * Scans a package (recursively) for Template classes annotated with
+     * {@code @Page(path = "...")} and registers each at its declared path,
+     * using the current default layout.
+     *
+     * <pre>{@code
+     * app.layout(MainLayout.class)
+     *    .scanPages("com.example.app.pages");
+     * }</pre>
+     *
+     * @param basePackage the package to scan
+     * @return this for chaining
+     */
+    @SuppressWarnings("unchecked")
+    public JWeb scanPages(String basePackage) {
+        var scanner = new org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new org.springframework.core.type.filter.AnnotationTypeFilter(
+            com.osmig.Jweb.framework.routing.Page.class));
+        for (var candidate : scanner.findCandidateComponents(basePackage)) {
+            try {
+                Class<?> clazz = Class.forName(candidate.getBeanClassName());
+                var annotation = clazz.getAnnotation(com.osmig.Jweb.framework.routing.Page.class);
+                if (annotation == null || annotation.path().isEmpty()) continue;
+                if (!Template.class.isAssignableFrom(clazz)) {
+                    throw new IllegalStateException(
+                        "@Page class " + clazz.getName() + " must implement Template");
+                }
+                pageRegistry.register(annotation.path(), (Class<? extends Template>) clazz);
+            } catch (ClassNotFoundException e) {
+                com.osmig.Jweb.framework.util.Log.warn(
+                    "scanPages could not load class {}", candidate.getBeanClassName());
+            }
+        }
         return this;
     }
 

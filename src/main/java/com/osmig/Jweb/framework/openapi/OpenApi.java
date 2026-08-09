@@ -188,13 +188,21 @@ public class OpenApi {
     }
 
     /**
-     * Scans a package for @REST annotated classes.
+     * Scans a package (recursively) for @REST annotated classes and adds
+     * them as if passed to {@link #addApi(Class)}.
      */
     public OpenApi scan(String packageName) {
-        // Note: Full classpath scanning requires additional libraries like ClassGraph
-        // For now, classes must be added manually via addApi()
-        // In a real implementation, you'd use:
-        // ClassGraph.scan(packageName).getClassesWithAnnotation(REST.class)
+        var scanner = new org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new org.springframework.core.type.filter.AnnotationTypeFilter(
+            com.osmig.Jweb.framework.api.REST.class));
+        for (var candidate : scanner.findCandidateComponents(packageName)) {
+            try {
+                apiClasses.add(Class.forName(candidate.getBeanClassName()));
+            } catch (ClassNotFoundException e) {
+                com.osmig.Jweb.framework.util.Log.warn(
+                    "OpenApi.scan could not load class {}", candidate.getBeanClassName());
+            }
+        }
         return this;
     }
 

@@ -213,6 +213,40 @@ public final class WebSocketMessage {
     }
 
     /**
+     * State set request from client (JWeb.setState).
+     */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class SetStateMessage extends Base {
+        private String contextId;
+        private String stateId;
+        private Object value;
+
+        public String getContextId() {
+            return contextId;
+        }
+
+        public void setContextId(String contextId) {
+            this.contextId = contextId;
+        }
+
+        public String getStateId() {
+            return stateId;
+        }
+
+        public void setStateId(String stateId) {
+            this.stateId = stateId;
+        }
+
+        public Object getValue() {
+            return value;
+        }
+
+        public void setValue(Object value) {
+            this.value = value;
+        }
+    }
+
+    /**
      * Connected response from server.
      * Sent after WebSocket connection is established.
      */

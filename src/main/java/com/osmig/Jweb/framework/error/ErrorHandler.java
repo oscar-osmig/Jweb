@@ -23,9 +23,12 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  * try {
  *     return handler.handle(request);
  * } catch (JWebException e) {
- *     return ErrorHandler.toResponse(e, request.path());
+ *     return request.acceptsJson()
+ *         ? ErrorHandler.toJsonResponse(e, request.path())
+ *         : ErrorHandler.toHtmlResponse(e);
  * } catch (Exception e) {
- *     return ErrorHandler.serverError(e, request.path());
+ *     return ErrorHandler.jsonResponse(
+ *         HttpStatus.INTERNAL_SERVER_ERROR, "Server error", request.path());
  * }
  * </pre>
  */

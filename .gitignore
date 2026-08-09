@@ -40,7 +40,9 @@ build/
 ### Claude ###
 .claude/
 CLAUDE.md
-prompt.md
-PLAN.md
-JWEB_EXAMPLES.md
-dsl-todos.md
+# Note: prompt.md, PLAN.md, JWEB_EXAMPLES.md and dsl-todos.md are already
+# tracked, so ignore rules for them would be inert. Run
+# `git rm --cached <file>` first if you want them ignored.
+
+# Local tool venvs (markitdown, etc.)
+.tools/

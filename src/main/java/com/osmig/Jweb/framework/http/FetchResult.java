@@ -138,7 +138,7 @@ public class FetchResult {
      * @return the parsed list
      */
     public <T> List<T> asList(Class<T> elementType) {
-        return Json.parse(body, new TypeReference<List<T>>() {});
+        return Json.parseList(body, elementType);
     }
 
     /**

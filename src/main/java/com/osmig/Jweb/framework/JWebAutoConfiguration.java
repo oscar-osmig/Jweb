@@ -14,18 +14,18 @@ import java.util.Map;
  * <p>Automatically discovers:</p>
  * <ul>
  *   <li>JWebRoutes beans for page configuration</li>
- *   <li>@Api annotated classes are auto-discovered by Spring as REST controllers</li>
+ *   <li>@REST annotated classes are auto-discovered by Spring as REST controllers</li>
  * </ul>
  *
  * <h2>API Controllers</h2>
- * <p>Since JWeb's @Api annotation includes @RestController, API classes are
+ * <p>Since JWeb's @REST annotation includes @RestController, API classes are
  * automatically registered by Spring's component scanning. Just place your
- * @Api classes in the component scan path.</p>
+ * @REST classes in the component scan path (paths must start with /api/v*).</p>
  *
  * <pre>{@code
- * @Api("/api/v1/users")
+ * @REST("/api/v1/users")
  * public class UserApi {
- *     @Get
+ *     @GET
  *     public List<User> getAll() { ... }
  * }
  * }</pre>

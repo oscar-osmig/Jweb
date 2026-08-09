@@ -12,19 +12,19 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;
 /**
  * Toast notification system for displaying temporary messages.
  *
- * <p>Setup - Add container and script to your page:</p>
+ * <p>Setup - Add container and script to your page (or use Toast.setup()):</p>
  * <pre>
  * body(
  *     // ... your content ...
  *     Toast.container(),
- *     Toast.script()
+ *     Toast.toastScript()
  * )
  * </pre>
  *
  * <p>Show toasts from JavaScript:</p>
  * <pre>
  * // From Java-generated JS
- * button(attrs().onClick("Toast.success('Item saved!')"), text("Save"))
+ * button(attrs().set("onclick", "Toast.success('Item saved!')"), text("Save"))
  *
  * // Different types
  * Toast.showJs("success", "Operation completed!")

@@ -105,18 +105,19 @@ public final class I18n {
     /**
      * Creates i18n middleware that sets the locale for each request.
      *
+     * <p>The locale is intentionally NOT cleared when the chain returns:
+     * handlers return lazily-rendered Elements that evaluate (and call
+     * {@code I18n.t(...)}) after the middleware chain completes. The
+     * framework clears the locale at the end of the request instead.</p>
+     *
      * @return the middleware
      */
     public static com.osmig.Jweb.framework.middleware.Middleware middleware() {
         return (req, chain) -> {
-            try {
-                Locale locale = getLocale(req);
-                setCurrent(locale);
-                req.raw().setAttribute("locale", locale);
-                return chain.next();
-            } finally {
-                clearCurrent();
-            }
+            Locale locale = getLocale(req);
+            setCurrent(locale);
+            req.raw().setAttribute("locale", locale);
+            return chain.next();
         };
     }
 

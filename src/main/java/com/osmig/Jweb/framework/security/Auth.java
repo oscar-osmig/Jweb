@@ -251,37 +251,61 @@ public final class Auth {
 
     /**
      * Creates middleware with a custom authentication check.
+     * Rejects the request with 401 when the checker returns null.
      *
-     * @param authChecker function that takes the request and returns a Principal (or null)
+     * <p>To attach a principal without rejecting unauthenticated requests,
+     * use {@link #attachPrincipal(Function)}.</p>
+     *
+     * @param authChecker function that takes the request and returns a Principal (or null to reject)
      * @return authentication middleware
      */
     public static Middleware customAuth(Function<Request, Principal> authChecker) {
         return (req, chain) -> {
             Principal principal = authChecker.apply(req);
-            if (principal != null) {
-                // Store principal in request for access in handlers
-                req.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
+            if (principal == null) {
+                throw JWebException.unauthorized("Authentication required");
             }
+            req.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
             return chain.next();
         };
     }
 
     /**
      * Creates middleware that extracts a Bearer token from Authorization header
-     * and validates it using the provided function.
+     * and validates it using the provided function. Rejects the request with
+     * 401 when the header is missing or the validator returns null.
      *
-     * @param tokenValidator function that validates token and returns Principal
+     * @param tokenValidator function that validates token and returns Principal (or null to reject)
      * @return authentication middleware
      */
     public static Middleware bearerAuth(Function<String, Principal> tokenValidator) {
         return (req, chain) -> {
             String authHeader = req.header("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                Principal principal = tokenValidator.apply(token);
-                if (principal != null) {
-                    req.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
-                }
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                throw JWebException.unauthorized("Bearer token required");
+            }
+            Principal principal = tokenValidator.apply(authHeader.substring(7));
+            if (principal == null) {
+                throw JWebException.unauthorized("Invalid token");
+            }
+            req.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
+            return chain.next();
+        };
+    }
+
+    /**
+     * Creates middleware that attaches a principal when the checker resolves
+     * one, but never rejects the request. Useful for optional authentication
+     * (e.g. personalized-but-public pages).
+     *
+     * @param authChecker function that takes the request and returns a Principal (or null)
+     * @return principal-attaching middleware
+     */
+    public static Middleware attachPrincipal(Function<Request, Principal> authChecker) {
+        return (req, chain) -> {
+            Principal principal = authChecker.apply(req);
+            if (principal != null) {
+                req.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
             }
             return chain.next();
         };

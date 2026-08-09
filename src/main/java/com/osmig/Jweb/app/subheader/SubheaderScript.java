@@ -3,6 +3,16 @@ package com.osmig.Jweb.app.subheader;
 /**
  * JavaScript for dynamically populating the subheader sidebar.
  * Scans h2 and h3 elements in the docs content and creates navigation links.
+ *
+ * Scrollspy rules:
+ * - the "active" header is the last one above an activation line placed 25%
+ *   down the visible content area (not a fixed pixel offset), so the section
+ *   occupying the viewport is the one highlighted;
+ * - at the very bottom of the scroll container the last header wins (it may
+ *   never reach the activation line otherwise);
+ * - the sidebar rebuilds itself whenever the docs content is swapped by the
+ *   left sidebar's SPA navigation (MutationObserver), so links never point at
+ *   detached DOM nodes.
  */
 public final class SubheaderScript {
     private SubheaderScript() {}
@@ -10,26 +20,21 @@ public final class SubheaderScript {
     public static String build() {
         return """
             (function() {
-                function initSubheader() {
-                    const sidebar = document.getElementById('subheader-sidebar');
-                    const nav = document.getElementById('subheader-nav');
-                    const content = document.querySelector('.docs-content');
+                let headerArray = [];
+                let clickLock = false;
+                let sidebar, nav, content;
 
-                    if (!sidebar || !nav || !content) return;
-
+                function buildLinks() {
                     const headers = content.querySelectorAll('h2, h3');
-                    console.log('Found ' + headers.length + ' headers in .docs-content');
+                    headerArray = Array.from(headers);
 
-                    if (headers.length === 0) {
+                    if (headerArray.length === 0) {
                         sidebar.style.display = 'none';
                         return;
                     }
 
                     sidebar.style.display = 'block';
                     nav.innerHTML = '';
-
-                    const headerArray = Array.from(headers);
-                    let clickLock = false;
 
                     headerArray.forEach(function(header, index) {
                         const id = header.id || 'section-' + index;
@@ -54,11 +59,11 @@ public final class SubheaderScript {
                                 clickLock = true;
                                 const targetRect = target.getBoundingClientRect();
                                 const contentRect = content.getBoundingClientRect();
-                                const offset = targetRect.top - contentRect.top - 55;
+                                const offset = targetRect.top - contentRect.top - 24;
                                 content.scrollBy({ top: offset, behavior: 'smooth' });
                                 history.pushState(null, null, '#' + id);
                                 setActiveLink(index);
-                                setTimeout(function() { clickLock = false; }, 500);
+                                releaseClickLockOnSettle();
                             }
                         });
 
@@ -76,65 +81,85 @@ public final class SubheaderScript {
                         nav.appendChild(link);
                     });
 
-                    function setActiveLink(index) {
-                        const links = nav.querySelectorAll('.subheader-link');
-                        links.forEach(function(link) {
-                            link.classList.remove('active');
-                            link.style.color = '#64748b';
-                            link.style.backgroundColor = 'transparent';
-                            link.style.fontWeight = '400';
-                        });
-                        const activeLink = links[index];
-                        if (activeLink) {
-                            activeLink.classList.add('active');
-                            activeLink.style.color = '#6366f1';
-                            activeLink.style.backgroundColor = '#eef2ff';
-                            activeLink.style.fontWeight = '600';
-                            activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    findActiveHeader();
+                }
+
+                // Release the click lock only once smooth scrolling has settled,
+                // so the spy doesn't fight the clicked link mid-animation.
+                let settleTimer = null;
+                function releaseClickLockOnSettle() {
+                    let lastTop = content.scrollTop;
+                    clearInterval(settleTimer);
+                    settleTimer = setInterval(function() {
+                        if (content.scrollTop === lastTop) {
+                            clearInterval(settleTimer);
+                            clickLock = false;
+                        }
+                        lastTop = content.scrollTop;
+                    }, 120);
+                }
+
+                function setActiveLink(index) {
+                    const links = nav.querySelectorAll('.subheader-link');
+                    links.forEach(function(link) {
+                        link.classList.remove('active');
+                        link.style.color = '#64748b';
+                        link.style.backgroundColor = 'transparent';
+                        link.style.fontWeight = '400';
+                    });
+                    const activeLink = links[index];
+                    if (activeLink) {
+                        activeLink.classList.add('active');
+                        activeLink.style.color = '#6366f1';
+                        activeLink.style.backgroundColor = '#eef2ff';
+                        activeLink.style.fontWeight = '600';
+                        activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+
+                function findActiveHeader() {
+                    if (clickLock || headerArray.length === 0) return;
+
+                    // Bottom of the scroll container: the last section wins
+                    if (content.scrollTop + content.clientHeight >= content.scrollHeight - 4) {
+                        setActiveLink(headerArray.length - 1);
+                        return;
+                    }
+
+                    // Activation line 25% down the visible area (max 160px):
+                    // the active header is the last one at or above it.
+                    const contentRect = content.getBoundingClientRect();
+                    const activationLine = Math.min(contentRect.height * 0.25, 160);
+
+                    let activeIndex = 0;
+                    for (let i = 0; i < headerArray.length; i++) {
+                        const relativeTop = headerArray[i].getBoundingClientRect().top - contentRect.top;
+                        if (relativeTop <= activationLine) {
+                            activeIndex = i;
+                        } else {
+                            break;
                         }
                     }
 
-                    function findActiveHeader() {
-                        if (clickLock) return;
-                        const contentRect = content.getBoundingClientRect();
+                    setActiveLink(activeIndex);
+                }
 
-                        // Find the header closest to the top of the visible area
-                        let activeIndex = 0;
-                        let bestDistance = Infinity;
+                function initSubheader() {
+                    sidebar = document.getElementById('subheader-sidebar');
+                    nav = document.getElementById('subheader-nav');
+                    content = document.querySelector('.docs-content');
 
-                        for (let i = 0; i < headerArray.length; i++) {
-                            const header = headerArray[i];
-                            const rect = header.getBoundingClientRect();
-                            const relativeTop = rect.top - contentRect.top;
+                    if (!sidebar || !nav || !content) return;
 
-                            // Header is at or above the threshold - it's a candidate
-                            if (relativeTop <= 70) {
-                                activeIndex = i;
-                            }
-                        }
+                    buildLinks();
 
-                        // If no header has crossed the threshold yet, pick the first visible one
-                        if (activeIndex === 0) {
-                            for (let i = 0; i < headerArray.length; i++) {
-                                const header = headerArray[i];
-                                const rect = header.getBoundingClientRect();
-                                const relativeTop = rect.top - contentRect.top;
+                    content.addEventListener('scroll', findActiveHeader, { passive: true });
 
-                                if (relativeTop >= 0 && relativeTop < bestDistance) {
-                                    bestDistance = relativeTop;
-                                    activeIndex = i;
-                                }
-                            }
-                        }
-
-                        setActiveLink(activeIndex);
-                    }
-
-                    // Listen for scroll events
-                    content.addEventListener('scroll', findActiveHeader);
-
-                    // Set initial active state
-                    setTimeout(findActiveHeader, 100);
+                    // Rebuild when SPA navigation swaps the docs content
+                    new MutationObserver(function() {
+                        clickLock = false;
+                        buildLinks();
+                    }).observe(content, { childList: true });
                 }
 
                 if (document.readyState === 'loading') {

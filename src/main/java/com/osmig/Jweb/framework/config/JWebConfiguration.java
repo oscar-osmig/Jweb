@@ -25,12 +25,26 @@ public class JWebConfiguration implements WebMvcConfigurer {
     @Value("${jweb.data.mongo.database:myapp}")
     private String mongoDatabase;
 
+    @Value("${jweb.dev.debug:false}")
+    private boolean devDebug;
+
+    @Value("${jweb.runtime.enabled:true}")
+    private boolean runtimeEnabled;
+
     @Bean
     public ApplicationRunner mongoInitializer() {
         return args -> {
             if (dataEnabled) {
                 Mongo.connect(mongoUri, mongoDatabase);
             }
+        };
+    }
+
+    @Bean
+    public ApplicationRunner jwebFrameworkSettings() {
+        return args -> {
+            com.osmig.Jweb.framework.server.ErrorPage.setDebug(devDebug);
+            com.osmig.Jweb.framework.js.JWebRuntime.setEnabled(runtimeEnabled);
         };
     }
 

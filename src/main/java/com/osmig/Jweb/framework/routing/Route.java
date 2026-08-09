@@ -45,13 +45,7 @@ public class Route {
             }
         }
 
-        if (path.equals("/")) {
-            regex.append("/?");
-        } else {
-            regex.append("/?");
-        }
-
-        regex.append("$");
+        regex.append("/?$");
         return Pattern.compile(regex.toString());
     }
 
@@ -59,6 +53,11 @@ public class Route {
         if (!this.method.equals(method.toUpperCase())) {
             return false;
         }
+        return pattern.matcher(path).matches();
+    }
+
+    /** True when the path matches regardless of HTTP method (used for 405s). */
+    public boolean matchesPath(String path) {
         return pattern.matcher(path).matches();
     }
 
@@ -101,5 +100,9 @@ public class Route {
 
     public static Route delete(String path, RouteHandler handler) {
         return new Route("DELETE", path, handler);
+    }
+
+    public static Route patch(String path, RouteHandler handler) {
+        return new Route("PATCH", path, handler);
     }
 }

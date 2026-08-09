@@ -56,18 +56,36 @@ public class MiddlewareStack {
     /**
      * Adds a middleware that only runs for specific paths.
      *
-     * @param pathPrefix the path prefix to match
+     * <p>Accepts a plain prefix ({@code "/api"}), or glob patterns:
+     * {@code "/api/**"} (the prefix and everything under it) and
+     * {@code "/files/*.png"} ({@code *} matches within one segment).</p>
+     *
+     * @param pathPattern the path prefix or glob pattern to match
      * @param middleware the middleware to add
      * @return this stack for chaining
      */
-    public MiddlewareStack useForPath(String pathPrefix, Middleware middleware) {
+    public MiddlewareStack useForPath(String pathPattern, Middleware middleware) {
         if (middleware != null) {
-            middlewares.add(Middleware.when(
-                    req -> req.path().startsWith(pathPrefix),
-                    middleware
-            ));
+            var matcher = pathMatcher(pathPattern);
+            middlewares.add(Middleware.when(req -> matcher.test(req.path()), middleware));
         }
         return this;
+    }
+
+    private static java.util.function.Predicate<String> pathMatcher(String pattern) {
+        if (pattern.endsWith("/**")) {
+            String prefix = pattern.substring(0, pattern.length() - 3);
+            return path -> path.equals(prefix) || path.startsWith(prefix + "/");
+        }
+        if (pattern.contains("*")) {
+            String regex = java.util.regex.Pattern.quote(pattern)
+                    .replace("**", "\u0000")
+                    .replace("*", "\\E[^/]*\\Q")
+                    .replace("\u0000", "\\E.*\\Q");
+            java.util.regex.Pattern compiled = java.util.regex.Pattern.compile(regex);
+            return path -> compiled.matcher(path).matches();
+        }
+        return path -> path.startsWith(pattern);
     }
 
     /**

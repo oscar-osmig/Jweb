@@ -122,6 +122,7 @@ public final class VElement implements VNode {
                 case '<' -> escaped.append("&lt;");
                 case '>' -> escaped.append("&gt;");
                 case '"' -> escaped.append("&quot;");
+                case '\'' -> escaped.append("&#x27;");
                 default -> escaped.append(c);
             }
         }
