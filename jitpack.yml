@@ -1,5 +1,6 @@
-# JitPack build config — JWeb needs JDK 21 (records, sealed types, virtual threads)
+# JitPack build config — JWeb needs JDK 21 (records, sealed types, virtual threads).
+# Invoked via `sh` so the build never depends on the wrapper's file mode.
 jdk:
   - openjdk21
 install:
-  - ./mvnw -B install -DskipTests
+  - sh mvnw -B install -DskipTests
