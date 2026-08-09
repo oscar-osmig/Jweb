@@ -11,7 +11,7 @@ public final class FormsBuilders {
             h3Title("Form Input Builders"),
             para("JWeb provides type-safe input builders with validation and styling built-in."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static com.osmig.Jweb.framework.elements.El.*;
 
 // Text inputs with labels
 textInput("username", "Username")

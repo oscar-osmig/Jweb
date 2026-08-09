@@ -20,6 +20,7 @@ public class DocContent {
             case "forms" -> FormsSection.render();
             case "layouts" -> LayoutsSection.render();
             case "ai" -> AiSection.render();
+            case "performance" -> PerformanceSection.render();
             case "api" -> ApiSection.render();
             case "security" -> SecuritySection.render();
             case "ui" -> UIComponentsSection.render();
