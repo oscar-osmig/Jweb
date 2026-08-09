@@ -35,9 +35,13 @@ JWeb is built on these core principles:
 - **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers
 - **Validation** — Composable `Validator<T>` plus `FormValidator`/`FieldValidator` fluent APIs
 - **OpenAPI** — Generates OpenAPI 3.0.3 spec + Swagger UI, Redoc, and Scalar doc pages
-- **Realtime primitives** — SSE broadcaster, WebSocket handler, reactive `State<T>` (partially wired — see known issues)
+- **Realtime** — Reactive `State<T>` with a wired browser↔server loop (WebSocket events, DOM patching), SSE from any route, `useComponent` reactive regions
+- **Fragments (server-driven UI)** — `attrs().swap(url, target)` / `swapForm(...)` fetch-and-swap HTML fragments with View Transitions and history — the HTMX pattern, built in, zero JS written
+- **Typed routes** — `TypedRoute.path("/users/:id", Long.class)`: handler params parsed and URLs compile-time checked
+- **Built-in AI** — `AI.ask/chat/agent` with tool-calling loops against any OpenAI-compatible API (OpenAI, Ollama, Groq...), plus a drop-in chat widget — zero dependencies
+- **SEO & performance** — `Seo` builder (OG/Twitter/canonical), on-the-fly image optimization (`/jweb/img`), immutably-cached runtime assets, gzip, startup warmup
 - **Background work** — Virtual-thread `Jobs`, cron `Scheduler`, `Suspense` for async rendering, TTL `Cache`
-- **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding, accessibility auditor
+- **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding, accessibility auditor, `Middlewares.recommended()` secure baseline
 
 ---
 
@@ -87,24 +91,26 @@ public class Routes implements JWebRoutes {
 }
 ```
 
-### Form with Server Submission (JS DSL)
+### Form with Server Submission — zero JavaScript written
 
 ```java
-import static com.osmig.Jweb.framework.js.Actions.*;
+// The form POSTs and swaps the returned fragment into #form-status.
+// Without JS it still submits natively to the same route.
+form(attrs().action("/contact/submit").method("post")
+        .swapForm("/contact/submit", "#form-status"),
+    field("Name", "name", "text", "Your name"),
+    div(attrs().id("form-status")),
+    submitButton("Send Message"))
 
-// withHelpers() is REQUIRED — the generated handlers depend on the $_ helper it defines
-String js = script()
-    .withHelpers()
-    .add(onSubmit("contact-form")
-        .loading("Sending...")
-        .post("/api/v1/contact").withFormData()
-        .ok(all(showMessage("form-status").success("Sent!"), resetForm("contact-form")))
-        .fail(showMessage("form-status").error("Failed.")))
-    .build();
-
-// Place it in the page:
-inlineScript(js)
+// The route returns a fragment:
+app.post("/contact/submit", ctx -> {
+    messageStore.save(ctx.formParam("name"), ...);
+    return ContactStatus.success("Message sent!");
+});
 ```
+
+For richer client behavior the JS DSL is still there (`script().add(onSubmit(...)...)`) —
+see [JavaScript DSL](./readme/javascript-dsl.md).
 
 ---
 

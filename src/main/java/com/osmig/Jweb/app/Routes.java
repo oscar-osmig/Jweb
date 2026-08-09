@@ -8,6 +8,7 @@ import com.osmig.Jweb.framework.server.Response;
 import com.osmig.Jweb.app.api.AdminApi;
 import com.osmig.Jweb.app.api.ContactApi;
 import com.osmig.Jweb.app.api.ExampleApi;
+import com.osmig.Jweb.app.forms.ContactStatus;
 import com.osmig.Jweb.app.layout.Layout;
 import com.osmig.Jweb.app.pages.HomePage;
 import com.osmig.Jweb.app.pages.AboutPage;
@@ -26,13 +27,22 @@ import org.springframework.stereotype.Component;
 public class Routes implements JWebRoutes {
 
     private final AdminApi adminApi;
+    private final com.osmig.Jweb.app.api.MessageStore messageStore;
 
-    public Routes(AdminApi adminApi) {
+    public Routes(AdminApi adminApi, com.osmig.Jweb.app.api.MessageStore messageStore) {
         this.adminApi = adminApi;
+        this.messageStore = messageStore;
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     @Override
     public void configure(JWeb app) {
+        // Production baseline: security headers, request ids, compression
+        app.use(com.osmig.Jweb.framework.middleware.Middlewares.recommended());
+
         // Page routes
         app.layout(Layout.class)
            .pages(
@@ -40,6 +50,19 @@ public class Routes implements JWebRoutes {
                "/about", AboutPage.class,
                "/contact", ContactPage.class
            );
+
+        // Contact form target — returns a status fragment that the runtime
+        // swaps into #form-status (works without JS as a plain POST too)
+        app.post("/contact/submit", (RouteHandler) ctx -> {
+            String name = ctx.formParam("name");
+            String email = ctx.formParam("email");
+            String message = ctx.formParam("message");
+            if (isBlank(name) || isBlank(email) || isBlank(message)) {
+                return ContactStatus.error("All fields are required.");
+            }
+            messageStore.save(name.trim(), email.trim(), message.trim());
+            return ContactStatus.success("Message sent — we'll get back to you soon!");
+        });
 
         // Docs page needs request access for query params
         app.get("/docs", ctx -> new Layout("Documentation - JWeb",

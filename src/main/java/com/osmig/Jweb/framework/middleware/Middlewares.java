@@ -29,6 +29,26 @@ public final class Middlewares {
         // Static utility class
     }
 
+    // ========== Recommended bundle ==========
+
+    /**
+     * The recommended production baseline in one call: security headers,
+     * request IDs, and compression negotiation headers.
+     *
+     * <pre>
+     * app.use(Middlewares.recommended());
+     * </pre>
+     */
+    public static Middleware recommended() {
+        Middleware security = securityHeaders();
+        Middleware ids = requestId();
+        Middleware compression = compressionHeaders();
+        return (req, chain) ->
+            security.handle(req, () ->
+                ids.handle(req, () ->
+                    compression.handle(req, chain)));
+    }
+
     // ========== Logging ==========
 
     /**

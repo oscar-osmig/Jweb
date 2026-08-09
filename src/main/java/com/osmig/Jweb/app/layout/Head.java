@@ -24,9 +24,13 @@ public class Head implements Template {
     @Override
     public Element render() {
         return head(
-            meta(attr("charset", "UTF-8")),
-            meta(name("viewport"), attr("content", "width=device-width, initial-scale=1")),
-            title(pageTitle),
+            metaCharset(),
+            metaViewport(),
+            com.osmig.Jweb.framework.seo.Seo
+                .of(pageTitle, "Build complete web applications entirely in Java — "
+                    + "type-safe components, fluent DSL, zero frontend tooling.")
+                .siteName("JWeb")
+                .render(),
             style(globalStyles())
         );
     }
