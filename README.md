@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v1.0.2</version>
+    <version>v1.0.3</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.2' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.3' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
