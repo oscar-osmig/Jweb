@@ -9,12 +9,12 @@ public final class SetupSection {
     public static Element render() {
         return section(
             docTitle("Getting Started"),
-            para("JWeb is a Spring Boot library published on JitPack. Add one dependency, "
-                 + "annotate your application class, and write pages in pure Java — "
-                 + "no frontend toolchain, no templates."),
+            para("A complete Hello World in three files. JWeb is a Spring Boot library — "
+                 + "add one dependency and write pages in pure Java. No frontend toolchain, "
+                 + "no templates, no build step."),
 
             docSubtitle("1. Add the Dependency"),
-            para("Maven — add the JitPack repository and the dependency:"),
+            para("Maven — the JitPack repository plus the dependency:"),
             codeBlock("""
                     <repositories>
                         <repository>
@@ -32,14 +32,28 @@ public final class SetupSection {
             codeBlock("""
                     repositories { maven { url 'https://jitpack.io' } }
                     dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.4' }"""),
-            docTip("Requires Java 21+. Spring Boot's web starter comes transitively — you "
-                   + "don't need to add it. Use main-SNAPSHOT to track the latest commit."),
+            docTip("Requires Java 21+. Spring Boot's web starter arrives transitively — "
+                   + "you don't add it yourself."),
 
-            docSubtitle("2. Your Application Class"),
-            para("@JWebApplication replaces @SpringBootApplication. The framework's beans "
-                 + "arrive through Spring Boot auto-configuration, so only your own package "
-                 + "is component-scanned."),
+            docSubtitle("2. Project Structure"),
+            para("Three files. Java allows one public class per file, so each of these is "
+                 + "its own file — putting them in one file will not compile:"),
             codeBlock("""
+                    src/main/java/org/example/
+                        App.java              <- starts the application
+                        Routes.java           <- maps URLs to pages
+                        pages/
+                            HomePage.java     <- the page itself"""),
+
+            docSubtitle("3. App.java"),
+            para("@JWebApplication replaces @SpringBootApplication. Framework beans arrive "
+                 + "through auto-configuration, so only your own package is scanned."),
+            codeBlock("""
+                    package org.example;
+
+                    import com.osmig.Jweb.framework.JWebApplication;
+                    import org.springframework.boot.SpringApplication;
+
                     @JWebApplication
                     public class App {
                         public static void main(String[] args) {
@@ -47,29 +61,38 @@ public final class SetupSection {
                         }
                     }"""),
 
-            docSubtitle("3. Define Routes"),
-            para("Implement JWebRoutes in a @Component. Page routes render Templates; "
+            docSubtitle("4. Routes.java"),
+            para("A @Component implementing JWebRoutes. Page routes render a Template; "
                  + "router routes take the request and can return anything."),
             codeBlock("""
+                    package org.example;
+
+                    import com.osmig.Jweb.framework.JWeb;
+                    import com.osmig.Jweb.framework.JWebRoutes;
+                    import com.osmig.Jweb.framework.middleware.Middlewares;
+                    import org.example.pages.HomePage;
+                    import org.springframework.stereotype.Component;
+
                     @Component
                     public class Routes implements JWebRoutes {
                         @Override
                         public void configure(JWeb app) {
-                            // Production baseline: security headers, request ids, compression
-                            app.use(Middlewares.recommended());
+                            app.use(Middlewares.recommended());   // security headers, request ids
 
-                            app.layout(MainLayout.class)      // optional shared layout
-                               .pages("/", HomePage.class,
-                                      "/about", AboutPage.class);
-
+                            app.pages("/", HomePage.class);
                             app.get("/hello", req -> "Hello from JWeb");
                         }
                     }"""),
 
-            docSubtitle("4. Create a Page"),
-            para("A page is any class implementing Template. Elements come from El, "
-                 + "styles from the CSS DSL — both fully type-checked."),
+            docSubtitle("5. pages/HomePage.java"),
+            para("A page is any class implementing Template. Elements come from El, styles "
+                 + "from the CSS DSL — both fully type-checked."),
             codeBlock("""
+                    package org.example.pages;
+
+                    import com.osmig.Jweb.framework.core.Element;
+                    import com.osmig.Jweb.framework.template.Template;
+
                     import static com.osmig.Jweb.framework.elements.El.*;
                     import static com.osmig.Jweb.framework.styles.CSS.*;
                     import static com.osmig.Jweb.framework.styles.CSSUnits.*;
@@ -84,53 +107,69 @@ public final class SetupSection {
                             );
                         }
                     }"""),
-            docTip("Import El.* and CSS.* together — El for elements, CSS for style(). "
-                   + "Don't wildcard-import Elements.* alongside El.*; they share names."),
+            warn("Watch your IDE's auto-import: div, h1, p and text must all come from the "
+                 + "single El.* import above. If it offers javax.management.Query.div or "
+                 + "com.mongodb.client.model.Indexes.text, reject it — those compile but "
+                 + "are not JWeb."),
 
-            docSubtitle("5. Run It"),
+            docSubtitle("6. Run It"),
             codeBlock("""
-                    mvn spring-boot:run     # http://localhost:8080
+                    mvn spring-boot:run
 
-                    jweb build              # production jar + Dockerfile
-                    java -jar target/*-exec.jar"""),
+                    #  /       -> your page
+                    #  /hello  -> Hello from JWeb"""),
+            docTip("Default port is 8080 — set server.port in application.properties "
+                   + "or application.yaml to change it."),
+
+            docSubtitle("Next: a Shared Layout (optional)"),
+            para("Once you have more than one page, a layout gives them a common shell. "
+                 + "It is a Template that takes the page content:"),
+            codeBlock("""
+                    public class MainLayout implements Template {
+                        private final Element content;
+                        public MainLayout(Element content) { this.content = content; }
+
+                        @Override
+                        public Element render() {
+                            return html(
+                                head(metaCharset(), metaViewport(), title("My App")),
+                                body(nav(a(href("/"), text("Home"))), main(content))
+                            );
+                        }
+                    }
+
+                    // in Routes.configure:
+                    app.layout(MainLayout.class)
+                       .pages("/", HomePage.class,
+                              "/about", AboutPage.class);"""),
 
             docSubtitle("Configuration (optional)"),
-            para("Everything below has a working default — configure only what you need "
-                 + "in application.yaml:"),
+            para("Everything has a working default — set only what you need:"),
             codeBlock("""
                     server:
                       port: 8080
 
                     jweb:
-                      # Show stack traces on error pages (development only)
                       dev:
-                        debug: false
+                        debug: false          # stack traces on error pages (dev only)
 
-                      # MongoDB — off by default; the app runs fine without it
-                      data:
+                      data:                   # MongoDB, off by default
                         enabled: false
-                        mongo:
-                          uri: ${MONGO_URI:mongodb://localhost:27017}
-                          database: ${MONGO_DB:myapp}
 
-                      # Built-in AI (chat, agents, tools) — any OpenAI-compatible API
-                      ai:
+                      ai:                     # built-in AI, off by default
                         enabled: false
-                        base-url: ${AI_BASE_URL:https://api.openai.com/v1}
-                        api-key: ${AI_API_KEY:}
-                        model: ${AI_MODEL:gpt-4o-mini}"""),
-            warn("Keep secrets out of application.yaml — use environment variables "
-                 + "(${AI_API_KEY:}) so tokens never reach your repository or a published jar."),
+                        api-key: ${AI_API_KEY:}"""),
+            warn("Keep secrets in environment variables (${AI_API_KEY:}) so they never "
+                 + "reach your repository or a published jar."),
 
-            docSubtitle("Scaffolding"),
-            para("The CLI generates a ready-to-run project with the dependency, "
-                 + "application class, routes, layout, and a home page already wired:"),
+            docSubtitle("Skip the Setup"),
+            para("The CLI generates this whole structure, wired and ready to run:"),
             codeBlock("""
                     jweb new myapp --package=com.mycompany.myapp
                     cd myapp && mvn spring-boot:run"""),
 
             docTip("Next: Elements for the HTML DSL, Styling for CSS, Fragments for "
-                   + "server-driven UI without JavaScript.")
+                   + "server-driven UI without writing JavaScript.")
         );
     }
 }

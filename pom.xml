@@ -230,12 +230,24 @@
 					     Jweb-<version>-exec.jar. Without this, repackage rewrites the
 					     main jar into BOOT-INF/classes and consumers get no classes. -->
 					<classifier>exec</classifier>
-					<skip>${jweb.repackage.skip}</skip>
 					<jvmArguments>
 						--add-opens java.base/sun.misc=ALL-UNNAMED
 						--add-opens java.base/java.nio=ALL-UNNAMED
 					</jvmArguments>
 				</configuration>
+				<executions>
+					<!-- Skip ONLY repackage in the library build. A plugin-level <skip>
+					     would also disable spring-boot:run. -->
+					<execution>
+						<id>repackage</id>
+						<goals>
+							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<skip>${jweb.repackage.skip}</skip>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 			<!-- Keep the DEMO APP's config out of the published library jar.
