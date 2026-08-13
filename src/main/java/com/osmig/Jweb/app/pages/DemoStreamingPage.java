@@ -15,7 +15,8 @@ public final class DemoStreamingPage {
     private DemoStreamingPage() {}
 
     public static Element content() {
-        return div(style().maxWidth(px(700)).margin(zero, auto).padding(rem(3), SP_8),
+        return div(style().maxWidth(px(700)).margin(zero, auto)
+                .padding(clamp(rem(2), vw(6), rem(3)), GUTTER),
             h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
                 text("Streaming SSR")),
             p(style().marginTop(SP_2).color(TEXT_LIGHT),

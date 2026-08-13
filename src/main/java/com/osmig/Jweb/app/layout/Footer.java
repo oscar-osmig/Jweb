@@ -21,7 +21,7 @@ public class Footer implements Template {
                 .backgroundColor(rgba(255, 255, 255, 0.3))
                 .backdropFilter(blur(px(10)))
                 .borderTop(px(1), solid, rgba(255, 255, 255, 0.3))
-                .padding(SP_4, SP_8)
+                .padding(SP_4, GUTTER)
                 .textAlign(center),
             p(style().color(TEXT_LIGHT).fontSize(TEXT_SM),
                 text("© 2025 - Built with JWeb Framework"))

@@ -19,7 +19,8 @@ public class ContactPage implements Template {
 
     @Override
     public Element render() {
-        return div(style().maxWidth(px(500)).margin(zero, auto).padding(rem(4), SP_8),
+        return div(style().maxWidth(px(500)).margin(zero, auto)
+                .padding(clamp(rem(2), vw(8), rem(4)), GUTTER),
             h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
                 text("Get in Touch")),
             p(style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.7),

@@ -27,7 +27,8 @@ public class SubheaderSidebar implements Template {
                 .top(px(0))
                 .maxHeight(vh(100))
                 .overflowY(hidden)
-                .display(none)
+                // visibility is class-driven (.has-headers + min-width media
+                // rule in DocsPage) — no inline display, so CSS stays in charge
             .done(),
             h2(style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)

@@ -18,14 +18,11 @@ public class DocSidebar implements Template {
 
     @Override
     public Element render() {
+        // Layout props (width, padding, border, overflow) live in DocsPage's
+        // .docs-sidebar rules so the phone breakpoint can reshape them.
         return aside(class_("docs-sidebar"), style()
-                .width(px(220))
-                .padding(SP_6)
-                .borderRight(px(1), solid, BORDER)
-                .backgroundColor(hex("#fafafa"))
-                .overflowY(auto)
-                .flexShrink(0),
-            div(
+                .backgroundColor(hex("#fafafa")),
+            div(class_("docs-sidebar-inner"),
                 navSection("Basics",
                     link("intro", "Introduction"),
                     link("setup", "Getting Started"),
@@ -57,13 +54,12 @@ public class DocSidebar implements Template {
     }
 
     private Element navSection(String title, Element... links) {
-        return div(style().marginBottom(SP_6),
-            h2(style()
+        return div(class_("docs-nav-section"),
+            h2(class_("docs-nav-title"), style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), text(title)),
-            nav(style().display(flex).flexDirection(column).gap(SP_1),
-                fragment(links)));
+            nav(class_("docs-nav-links"), fragment(links)));
     }
 
     private Element link(String id, String label) {

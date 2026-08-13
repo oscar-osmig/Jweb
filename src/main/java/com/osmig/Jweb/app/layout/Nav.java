@@ -19,12 +19,15 @@ public class Nav implements Template {
         return nav(style()
                 .position(sticky).top(zero).zIndex(1000)
                 .apply(brandFlow())
-                .padding(rem(0.75), rem(2))
-                .display(flex).alignItems(center).justifyContent(spaceBetween),
+                .padding(rem(0.75), GUTTER)
+                .display(flex).flexWrap(wrap).rowGap(SP_2)
+                .alignItems(center).justifyContent(spaceBetween),
             a(href("/"), style()
                 .color(white).fontSize(rem(1.25)).fontWeight(700)
                 .textDecoration(none), text("JWeb")),
-            div(style().display(flex).gap(rem(1.5)).alignItems(center),
+            div(style()
+                    .display(flex).flexWrap(wrap).alignItems(center)
+                    .gap(clamp(SP_3, vw(3), rem(1.5))),
                 link("/docs", "Documentation"),
                 link("/about", "About"),
                 link("/contact", "Contact")

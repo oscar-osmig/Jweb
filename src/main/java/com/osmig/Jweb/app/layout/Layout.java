@@ -24,10 +24,12 @@ public class Layout implements Template {
     public Element render() {
         return html(
             new Head(title).render(),
-            body(style()
-                    .display(flex).flexDirection(column).height(vh(100)).overflow(hidden),
+            // The body shell (fixed height, flex column) lives in Head's global
+            // stylesheet so the dvh fallback can apply; main is the one scroll
+            // container, so any page taller than a phone screen just scrolls.
+            body(
                 new Nav().render(),
-                main(style().flex(1).display(flex).minHeight(num(0)), content),
+                main(style().flex(1).minHeight(num(0)).overflowY(auto), content),
                 new Footer().render(),
                 DevServer.script() // Hot reload - only active when jweb.dev.hot-reload=true
             )

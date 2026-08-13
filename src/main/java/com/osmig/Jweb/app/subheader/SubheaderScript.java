@@ -29,11 +29,11 @@ public final class SubheaderScript {
                     headerArray = Array.from(headers);
 
                     if (headerArray.length === 0) {
-                        sidebar.style.display = 'none';
+                        sidebar.classList.remove('has-headers');
                         return;
                     }
 
-                    sidebar.style.display = 'block';
+                    sidebar.classList.add('has-headers');
                     nav.innerHTML = '';
 
                     headerArray.forEach(function(header, index) {

@@ -12,7 +12,7 @@ public class AboutPage implements Template {
 
     @Override
     public Element render() {
-        return div(style().maxWidth(px(700)).margin(zero, auto).padding(rem(2), SP_8),
+        return div(style().maxWidth(px(700)).margin(zero, auto).padding(rem(2), GUTTER),
             h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT).marginBottom(rem(1.5)),
                 text("About JWeb")),
 

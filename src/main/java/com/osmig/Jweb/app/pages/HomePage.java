@@ -14,9 +14,12 @@ public class HomePage implements Template {
 
     @Override
     public Element render() {
+        // minHeight 100% (not flex/fixed height) keeps the hero vertically
+        // centered on large screens while letting the page grow and scroll
+        // on phones instead of clipping.
         return div(style()
                 .display(flex).flexDirection(column).justifyContent(center).alignItems(center)
-                .flex(1).padding(SP_8),
+                .minHeight(percent(100)).padding(SP_8, GUTTER),
             hero(),
             features()
         );
@@ -24,7 +27,9 @@ public class HomePage implements Template {
 
     private Element hero() {
         return section(style().textAlign(center).marginBottom(SP_8),
-            h1(style().fontSize(TEXT_4XL).fontWeight(800).color(TEXT),
+            h1(style()
+                .fontSize(clamp(rem(1.9), vw(6.5), TEXT_4XL)).fontWeight(800).color(TEXT)
+                .prop("text-wrap", "balance"),
                 text("Java Web Framework")),
             p(style()
                 .fontSize(TEXT_LG).color(TEXT_LIGHT)
@@ -39,8 +44,11 @@ public class HomePage implements Template {
     }
 
     private Element features() {
-        return section(style().maxWidth(px(1000)).margin(zero, auto),
-            div(style().display(grid).gridTemplateColumns(repeat(3, fr(1))).gap(SP_6),
+        // auto-fit grid: 3 columns on desktop, 2 on tablets, 1 on phones —
+        // driven by available width, not breakpoints.
+        return section(style().width(percent(100)).maxWidth(px(1000)),
+            div(style().display(grid)
+                    .gridTemplateColumns(repeat(autoFit(), minmax(px(240), fr(1)))).gap(SP_6),
                 feature("Type-Safe", "Compile-time verified components and routes"),
                 feature("Pure Java", "No templates, no build tools, just Maven"),
                 feature("Component-Based", "Reusable, composable UI components")

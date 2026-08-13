@@ -48,6 +48,10 @@ public final class Theme {
     public static final CSSValue ROUNDED = px(6);
     public static final CSSValue ROUNDED_LG = px(12);
 
+    // Fluid horizontal page gutter: 2rem on wide screens, tightening toward
+    // 1rem on narrow phones — no breakpoint needed.
+    public static final CSSValue GUTTER = clamp(SP_4, vw(5), SP_8);
+
     // Brand gradient (loops back to the first color for seamless animation).
     // Every stop carries white text somewhere, so each one clears 4.5:1 against white;
     // the lightest stop here is #db2777 at 4.60:1.
