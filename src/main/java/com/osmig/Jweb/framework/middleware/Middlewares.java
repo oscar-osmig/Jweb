@@ -250,18 +250,38 @@ public final class Middlewares {
     // ========== Security Headers ==========
 
     /**
-     * Creates middleware that adds common security headers.
+     * Creates middleware that adds common security headers, including a
+     * nonce-based Content-Security-Policy: only {@code <script>} tags
+     * carrying the request's nonce (stamped automatically by the renderer)
+     * may execute, so markup injected past output escaping still can't run
+     * script. Inline {@code style=""} attributes stay allowed — the Style
+     * DSL renders inline styles, and nonces can't cover attributes.
+     *
+     * <p>Use {@link #securityHeaders(Map)} to override any of these (e.g.
+     * to allow external image/font hosts in the CSP).</p>
      *
      * @return security headers middleware
      */
     public static Middleware securityHeaders() {
-        return securityHeaders(Map.of(
-                "X-Content-Type-Options", "nosniff",
-                "X-Frame-Options", "DENY",
-                "X-XSS-Protection", "1; mode=block",
-                "Referrer-Policy", "strict-origin-when-cross-origin",
-                "Content-Security-Policy", "default-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:"
-        ));
+        return (req, chain) -> {
+            req.responseHeader("X-Content-Type-Options", "nosniff");
+            req.responseHeader("X-Frame-Options", "DENY");
+            // "0" is the modern recommendation: the legacy XSS auditor this
+            // header controlled introduced vulnerabilities of its own
+            req.responseHeader("X-XSS-Protection", "0");
+            req.responseHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+            req.responseHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+            String nonce = com.osmig.Jweb.framework.security.CspNonce.current();
+            String csp = nonce != null
+                ? "default-src 'self'; script-src 'self' 'nonce-" + nonce + "'; "
+                    + "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+                    + "connect-src 'self' ws: wss:; object-src 'none'; base-uri 'self'; "
+                    + "frame-ancestors 'none'; form-action 'self'"
+                : "default-src 'self' 'unsafe-inline'; connect-src 'self' ws: wss:";
+            req.responseHeader("Content-Security-Policy", csp);
+            return chain.next();
+        };
     }
 
     /**

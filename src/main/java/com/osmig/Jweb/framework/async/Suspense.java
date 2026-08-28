@@ -233,12 +233,18 @@ public class Suspense<T> implements Element {
         // the real content — it streams in when the data resolves.
         StreamingContext streaming = StreamingContext.active();
         if (streaming != null) {
+            // Carry the request's CSP nonce onto the render thread so inline
+            // scripts inside the streamed block get stamped too
+            String cspNonce = com.osmig.Jweb.framework.security.CspNonce.current();
             CompletableFuture<String> htmlFuture = CompletableFuture.supplyAsync(() -> {
+                com.osmig.Jweb.framework.security.CspNonce.set(cspNonce);
                 try {
                     T data = dataLoader.call();
                     return contentRenderer != null ? contentRenderer.apply(data).toHtml() : "";
                 } catch (Throwable t) {
                     return errorElement.apply(t).toHtml();
+                } finally {
+                    com.osmig.Jweb.framework.security.CspNonce.clear();
                 }
             }, EXECUTOR);
             String id = streaming.register(htmlFuture);

@@ -80,6 +80,10 @@ public class JWebController {
             return null;
         }
 
+        // Per-request CSP nonce: the serializer stamps it on <script> tags,
+        // securityHeaders() puts it in the Content-Security-Policy header
+        com.osmig.Jweb.framework.security.CspNonce.begin();
+
         // Try page routes (GET/HEAD only — pages are documents)
         Optional<PageRoute> pageMatch = matchPageRoute(path);
         if (pageMatch.isPresent()) {
@@ -110,6 +114,8 @@ public class JWebController {
                 return applyQueuedHeaders(processResult(result, null, request), request);
             } catch (Exception e) {
                 return handleError(e);
+            } finally {
+                clearThreadLocals();
             }
         }
 
@@ -147,11 +153,12 @@ public class JWebController {
         }
     }
 
-    /** Clears per-request thread-locals (DI context, portals, locale) after a render. */
+    /** Clears per-request thread-locals (DI context, portals, locale, CSP nonce) after a render. */
     private void clearThreadLocals() {
         com.osmig.Jweb.framework.context.Context.clear();
         com.osmig.Jweb.framework.portal.Portal.clear();
         com.osmig.Jweb.framework.i18n.I18n.clearCurrent();
+        com.osmig.Jweb.framework.security.CspNonce.clear();
     }
 
     /** Adds middleware-queued headers to the response (existing headers win). */
@@ -376,7 +383,7 @@ public class JWebController {
     public static String streamChunk(String placeholderId, String contentHtml) {
         String templateId = placeholderId + "-c";
         return "<template id=\"" + templateId + "\">" + contentHtml + "</template>"
-            + "<script>(function(){var p=document.getElementById('" + placeholderId + "'),"
+            + "<script" + com.osmig.Jweb.framework.security.CspNonce.attr() + ">(function(){var p=document.getElementById('" + placeholderId + "'),"
             + "t=document.getElementById('" + templateId + "');"
             + "if(p&&t){p.replaceWith(t.content.cloneNode(true));t.remove();}})()</script>";
     }
@@ -507,15 +514,16 @@ public class JWebController {
         }
 
         StringBuilder bodyExtras = new StringBuilder();
-        page.scripts().ifPresent(js -> bodyExtras.append("<script>").append(js).append("</script>"));
+        String scriptOpen = "<script" + com.osmig.Jweb.framework.security.CspNonce.attr() + ">";
+        page.scripts().ifPresent(js -> bodyExtras.append(scriptOpen).append(js).append("</script>"));
         String mount = page.onMount();
         if (mount != null && !mount.isBlank()) {
-            bodyExtras.append("<script>document.addEventListener('DOMContentLoaded',function(){")
+            bodyExtras.append(scriptOpen).append("document.addEventListener('DOMContentLoaded',function(){")
                 .append(mount).append("});</script>");
         }
         String unmount = page.onUnmount();
         if (unmount != null && !unmount.isBlank()) {
-            bodyExtras.append("<script>window.addEventListener('beforeunload',function(){")
+            bodyExtras.append(scriptOpen).append("window.addEventListener('beforeunload',function(){")
                 .append(unmount).append("});</script>");
         }
         if (bodyExtras.length() > 0) {

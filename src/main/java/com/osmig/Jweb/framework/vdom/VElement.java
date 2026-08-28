@@ -79,6 +79,15 @@ public final class VElement implements VNode {
             }
         }
 
+        // Stamp the per-request CSP nonce so inline scripts survive the
+        // nonce-based Content-Security-Policy (injected markup won't have it)
+        if ("script".equals(tag) && !attributes.containsKey("nonce")) {
+            String nonce = com.osmig.Jweb.framework.security.CspNonce.current();
+            if (nonce != null) {
+                html.append(" nonce=\"").append(nonce).append("\"");
+            }
+        }
+
         if (selfClosing) {
             html.append(">");
             return html.toString();
