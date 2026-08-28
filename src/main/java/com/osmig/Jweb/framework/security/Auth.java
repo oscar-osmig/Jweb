@@ -63,6 +63,11 @@ public final class Auth {
      */
     public static void login(Request request, Principal principal) {
         HttpSession session = request.raw().getSession(true);
+        // Rotate the session ID at the privilege boundary so a session ID
+        // planted before login (session fixation) never becomes authenticated.
+        if (!session.isNew()) {
+            request.raw().changeSessionId();
+        }
         session.setAttribute(SESSION_PRINCIPAL_KEY, principal);
         // Also store in request for immediate access
         request.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);

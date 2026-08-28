@@ -44,6 +44,10 @@ public class Routes implements JWebRoutes {
         // Production baseline: security headers, request ids, compression
         app.use(com.osmig.Jweb.framework.middleware.Middlewares.recommended());
 
+        // The contact form writes to the message store — cap per-IP submissions
+        app.use("/contact/submit",
+            com.osmig.Jweb.framework.middleware.Middlewares.rateLimit(5, 60_000));
+
         // Page routes
         app.layout(Layout.class)
            .pages(
@@ -60,6 +64,9 @@ public class Routes implements JWebRoutes {
             String message = ctx.formParam("message");
             if (isBlank(name) || isBlank(email) || isBlank(message)) {
                 return ContactStatus.error("All fields are required.");
+            }
+            if (name.length() > 200 || email.length() > 320 || message.length() > 5_000) {
+                return ContactStatus.error("Message is too long.");
             }
             messageStore.save(name.trim(), email.trim(), message.trim());
             return ContactStatus.success("Message sent — we'll get back to you soon!");

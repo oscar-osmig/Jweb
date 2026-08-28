@@ -6,6 +6,13 @@
 
 server:
   port: ${PORT:8085}
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        # Set SESSION_COOKIE_SECURE=true in production (requires HTTPS)
+        secure: ${SESSION_COOKIE_SECURE:false}
 
 spring:
   application:
