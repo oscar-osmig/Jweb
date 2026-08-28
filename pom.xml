@@ -5,10 +5,10 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<!-- Keep current with Boot 4.0.x patches: 4.0.7 manages Jackson 3 at
-		     3.1.4, fixing CVE-2026-29062 (nesting-depth bypass in
-		     UTF8DataInputJsonParser, affected >=3.0.0 <3.1.0). -->
-		<version>4.0.7</version>
+		<!-- Keep current with Boot 4.0.x patches (managed Tomcat/Jackson/
+		     Framework security fixes ride along). 4.0.7 fixed
+		     CVE-2026-29062 via Jackson 3.1.4; 4.0.8 is the Aug 2026 patch. -->
+		<version>4.0.8</version>
 		<relativePath/>
 	</parent>
 	<groupId>com.osmig</groupId>
@@ -99,17 +99,17 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>5.2.0</version>
+			<version>5.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>bson</artifactId>
-			<version>5.2.0</version>
+			<version>5.10.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-core</artifactId>
-			<version>5.2.0</version>
+			<version>5.10.0</version>
 		</dependency>
 
 		<!-- Spring Security Crypto for password hashing (BCrypt) -->
@@ -123,20 +123,20 @@
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.12.6</version>
+			<version>0.12.7</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.12.6</version>
+			<version>0.12.7</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.12.6</version>
+			<version>0.12.7</version>
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
