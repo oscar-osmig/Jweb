@@ -1,6 +1,8 @@
 package com.osmig.Jweb.app.pages;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.security.Csrf;
+import com.osmig.Jweb.framework.security.CsrfToken;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.El.*;
@@ -17,6 +19,12 @@ import static com.osmig.Jweb.app.forms.FormComponents.*;
  */
 public class ContactPage implements Template {
 
+    private final CsrfToken csrfToken;
+
+    public ContactPage(CsrfToken csrfToken) {
+        this.csrfToken = csrfToken;
+    }
+
     @Override
     public Element render() {
         return div(style().maxWidth(px(500)).margin(zero, auto)
@@ -29,6 +37,7 @@ public class ContactPage implements Template {
                     .action("/contact/submit").method("post")          // no-JS fallback
                     .swapForm("/contact/submit", "#form-status")       // progressive swap
                     .style().marginTop(SP_8).display(flex).flexDirection(column).gap(SP_4).done(),
+                Csrf.tokenField(csrfToken),
                 field("Name", "name", "text", "Your name"),
                 field("Email", "email", "email", "you@example.com"),
                 textareaField("Message", "message", "How can we help?", 4),

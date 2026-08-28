@@ -1,6 +1,8 @@
 package com.osmig.Jweb.app.pages.admin;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.security.Csrf;
+import com.osmig.Jweb.framework.security.CsrfToken;
 import com.osmig.Jweb.framework.template.Template;
 
 import static com.osmig.Jweb.framework.elements.El.*;
@@ -13,9 +15,13 @@ import static com.osmig.Jweb.app.forms.FormComponents.*;
 /** Admin login page with gradient-bordered card. */
 public class AdminLoginPage implements Template {
     private final String error;
+    private final CsrfToken csrfToken;
 
-    public AdminLoginPage() { this.error = null; }
-    public AdminLoginPage(String error) { this.error = error; }
+    public AdminLoginPage(CsrfToken csrfToken) { this(null, csrfToken); }
+    public AdminLoginPage(String error, CsrfToken csrfToken) {
+        this.error = error;
+        this.csrfToken = csrfToken;
+    }
 
     @Override
     public Element render() {
@@ -50,6 +56,7 @@ public class AdminLoginPage implements Template {
                 form(attrs().action("/only-admin/log/in").method("post").style()
                         .display(flex).flexDirection(column).gap(SP_4)
                     .done(),
+                    Csrf.tokenField(csrfToken),
                     field("Email", "email", "email", "admin@example.com"),
                     field("Admin Token", "token", "password", "Enter admin token"),
                     gradientSubmitButton("Sign In")

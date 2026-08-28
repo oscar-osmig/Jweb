@@ -4,6 +4,7 @@ import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.JWebRoutes;
 import com.osmig.Jweb.framework.openapi.OpenApi;
 import com.osmig.Jweb.framework.routing.RouteHandler;
+import com.osmig.Jweb.framework.security.Csrf;
 import com.osmig.Jweb.framework.server.Response;
 import com.osmig.Jweb.app.api.AdminApi;
 import com.osmig.Jweb.app.api.ContactApi;
@@ -52,13 +53,20 @@ public class Routes implements JWebRoutes {
         app.layout(Layout.class)
            .pages(
                "/", HomePage.class,
-               "/about", AboutPage.class,
-               "/contact", ContactPage.class
+               "/about", AboutPage.class
            );
+
+        // Contact page needs the request to issue a session-bound CSRF token
+        app.get("/contact", ctx -> new Layout("Contact - JWeb",
+            new ContactPage(Csrf.getOrCreateToken(ctx)).render()
+        ).render());
 
         // Contact form target — returns a status fragment that the runtime
         // swaps into #form-status (works without JS as a plain POST too)
         app.post("/contact/submit", (RouteHandler) ctx -> {
+            if (!Csrf.isValid(ctx)) {
+                return ContactStatus.error("Your session expired — reload the page and try again.");
+            }
             String name = ctx.formParam("name");
             String email = ctx.formParam("email");
             String message = ctx.formParam("message");
@@ -91,20 +99,24 @@ public class Routes implements JWebRoutes {
                 return Response.redirect("/only-admin/messages");
             }
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage().render()
+                new AdminLoginPage(Csrf.getOrCreateToken(ctx)).render()
             ).render());
         });
 
         // Admin login handler
         app.post("/only-admin/log/in", (RouteHandler) ctx -> {
-            if (adminApi.login(ctx, ctx.formParam("email"), ctx.formParam("token"))) {
+            String error;
+            if (!Csrf.isValid(ctx)) {
+                error = "Your session expired — please try again.";
+            } else if (adminApi.login(ctx, ctx.formParam("email"), ctx.formParam("token"))) {
                 return Response.redirect("/only-admin/messages");
+            } else {
+                error = adminApi.isConfigured()
+                    ? "Invalid email or token"
+                    : "Admin login is not configured — set JWEB_ADMIN_TOKEN and JWEB_ADMIN_EMAIL.";
             }
-            String error = adminApi.isConfigured()
-                ? "Invalid email or token"
-                : "Admin login is not configured — set JWEB_ADMIN_TOKEN and JWEB_ADMIN_EMAIL.";
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(error).render()
+                new AdminLoginPage(error, Csrf.getOrCreateToken(ctx)).render()
             ).render());
         });
 
@@ -114,13 +126,15 @@ public class Routes implements JWebRoutes {
                 return Response.redirect("/only-admin/log/in");
             }
             return Response.html(new Layout("Messages - Admin",
-                new AdminMessagesPage(adminApi.getMessages()).render()
+                new AdminMessagesPage(adminApi.getMessages(), Csrf.getOrCreateToken(ctx)).render()
             ).render());
         });
 
-        // Admin logout
-        app.get("/only-admin/logout", ctx -> {
-            adminApi.logout(ctx);
+        // Admin logout — POST with CSRF token so a cross-site link can't trigger it
+        app.post("/only-admin/logout", (RouteHandler) ctx -> {
+            if (Csrf.isValid(ctx)) {
+                adminApi.logout(ctx);
+            }
             return Response.redirect("/");
         });
 

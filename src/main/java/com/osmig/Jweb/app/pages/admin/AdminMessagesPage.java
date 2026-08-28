@@ -2,6 +2,8 @@ package com.osmig.Jweb.app.pages.admin;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.db.mongo.Doc;
+import com.osmig.Jweb.framework.security.Csrf;
+import com.osmig.Jweb.framework.security.CsrfToken;
 import com.osmig.Jweb.framework.template.Template;
 
 import java.text.SimpleDateFormat;
@@ -18,9 +20,11 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 /** Admin messages dashboard showing contact form submissions. */
 public class AdminMessagesPage implements Template {
     private final List<Doc> messages;
+    private final CsrfToken csrfToken;
 
-    public AdminMessagesPage(List<Doc> messages) {
+    public AdminMessagesPage(List<Doc> messages, CsrfToken csrfToken) {
         this.messages = messages;
+        this.csrfToken = csrfToken;
     }
 
     @Override
@@ -47,19 +51,24 @@ public class AdminMessagesPage implements Template {
         );
     }
 
+    // Logout is a POST (with CSRF token) so a cross-site link can't trigger it
     private Element logoutButton() {
-        return a(attrs().href("/only-admin/logout").title("Logout").style()
-                .display(flex).alignItems(center).justifyContent(center)
-                .width(px(40)).height(px(40))
-                .borderRadius(ROUNDED).color(TEXT_LIGHT)
-                .textDecoration(none)
-                .transitionColors(s(0.2))
-            .done(),
-            // Logout door icon (SVG)
-            svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
-                path(attrs().d("M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4")),
-                polyline(attrs().points("16 17 21 12 16 7")),
-                line(attrs().x1("21").y1("12").x2("9").y2("12"))
+        return form(attrs().action("/only-admin/logout").method("post")
+                .style().margin(zero).done(),
+            Csrf.tokenField(csrfToken),
+            button(attrs().type("submit").title("Logout").style()
+                    .display(flex).alignItems(center).justifyContent(center)
+                    .width(px(40)).height(px(40))
+                    .backgroundColor(transparent).border(none).cursor(pointer)
+                    .borderRadius(ROUNDED).color(TEXT_LIGHT)
+                    .transitionColors(s(0.2))
+                .done(),
+                // Logout door icon (SVG)
+                svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
+                    path(attrs().d("M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4")),
+                    polyline(attrs().points("16 17 21 12 16 7")),
+                    line(attrs().x1("21").y1("12").x2("9").y2("12"))
+                )
             )
         );
     }
