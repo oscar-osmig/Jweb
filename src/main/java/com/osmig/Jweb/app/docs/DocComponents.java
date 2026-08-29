@@ -36,7 +36,14 @@ public final class DocComponents {
 
     public static Element para(String t) { return p(attrs().style(paragraph()), text(t)); }
 
-    public static Element codeBlock(String c) { return pre(attrs().style(DocStyles.codeBlock()), code(text(c))); }
+    public static Element codeBlock(String c) {
+        // Wrapper anchors the copy button; its hover reveal and the click
+        // handler live in DocsPage.docsStyles() and CodeCopyScript.
+        return div(attrs().class_("doc-code").style(style().position(relative)),
+            pre(attrs().style(DocStyles.codeBlock()), code(text(c))),
+            button(attrs().class_("code-copy-btn").type("button").aria("label", "Copy code to clipboard"),
+                text("Copy")));
+    }
 
     public static Element inlineCode(String c) { return span(attrs().style(DocStyles.inlineCode()), text(c)); }
 

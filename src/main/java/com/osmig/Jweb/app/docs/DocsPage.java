@@ -39,7 +39,8 @@ public class DocsPage implements Template {
                 DocContent.get(section)),
             new SubheaderSidebar().render(),
             inlineScript(DocsNavScript.build()),
-            inlineScript(SubheaderScript.build())
+            inlineScript(SubheaderScript.build()),
+            inlineScript(CodeCopyScript.build())
         );
     }
 
@@ -88,6 +89,29 @@ public class DocsPage implements Template {
             .rule(scrollbarThumb("#subheader-nav"), style().background(rgba(0, 0, 0, 0.1)).borderRadius(px(3)))
             .rule(scrollbarThumbHover("#subheader-nav"), style().background(rgba(0, 0, 0, 0.2)))
             .rule(".docs-content h2, .docs-content h3", style().scrollMarginTop(rem(1.5)))
+            // Code-block copy button: hidden until the block is hovered or the
+            // button keyboard-focused; CodeCopyScript toggles .copied on click.
+            // Hover reveal must be class rules — inline styles can't do :hover.
+            .rule(".code-copy-btn", style()
+                .position(absolute).top(SP_2).right(SP_2)
+                .padding(px(4), px(10))
+                .fontSize(rem(0.75)).lineHeight(1.4)
+                .color(hex("#cbd5e1"))
+                .backgroundColor(rgba(255, 255, 255, 0.08))
+                .border(px(1), solid, rgba(255, 255, 255, 0.15))
+                .borderRadius(px(6))
+                .cursor(pointer)
+                .opacity(0)
+                .transitionOpacity(s(0.15)))
+            .rule(".doc-code:hover .code-copy-btn, .code-copy-btn:focus-visible", style()
+                .opacity(1))
+            .rule(".code-copy-btn:hover", style()
+                .backgroundColor(rgba(255, 255, 255, 0.18)).color(hex("#f1f5f9")))
+            .rule(".code-copy-btn.copied", style()
+                .color(hex("#6ee7b7")).borderColor(rgba(110, 231, 183, 0.4)))
+            // Touch screens have no hover — keep the button always visible.
+            .mediaQuery(media().noHover(),
+                new Rule(".code-copy-btn", style().opacity(1)))
             .rule(".docs-nav-link.active, .subheader-link.active", style()
                 .position(relative)
                 .overflow(visible)
