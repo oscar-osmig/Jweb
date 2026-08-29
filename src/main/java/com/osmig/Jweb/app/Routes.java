@@ -88,6 +88,21 @@ public class Routes implements JWebRoutes {
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
 
+        // Playground: user code runs through SandboxDsl's whitelist interpreter
+        // only — nothing is compiled or reflected, and output uses the normal
+        // escaping pipeline. The render POST is stateless (no CSRF surface).
+        app.get("/sandbox", ctx -> new Layout("Sandbox - JWeb",
+            new com.osmig.Jweb.app.sandbox.SandboxPage(ctx.query("file")).render()
+        ).render());
+
+        app.post("/sandbox/render", (RouteHandler) ctx ->
+            com.osmig.Jweb.app.sandbox.SandboxPanes.renderFragment(
+                ctx.formParam("file"), ctx.formParam("code")));
+
+        // Starter sources for the client-side file switcher (static constants)
+        app.get("/sandbox/source", ctx ->
+            com.osmig.Jweb.app.sandbox.SandboxFiles.byId(ctx.query("file")).source());
+
         // Streaming SSR demo: the shell flushes instantly, both blocks
         // stream in as their (deliberately slow) data resolves
         app.get("/demo/streaming", ctx -> com.osmig.Jweb.framework.async.Streamed.of(

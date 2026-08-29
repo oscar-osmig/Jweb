@@ -29,6 +29,7 @@ public class Nav implements Template {
                     .display(flex).flexWrap(wrap).alignItems(center)
                     .gap(clamp(SP_3, vw(3), rem(1.5))),
                 link("/docs", "Documentation"),
+                link("/sandbox", "Sandbox"),
                 link("/about", "About"),
                 link("/contact", "Contact")
             )
