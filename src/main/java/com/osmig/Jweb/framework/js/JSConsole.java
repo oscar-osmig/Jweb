@@ -14,9 +14,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * table(variable("users"))          // console.table(users)
  * time("fetch"); ... timeEnd("fetch") // Performance timing
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSConsole} — shorter import, same API. Existing code keeps working.
  */
-public final class JSConsole {
-    private JSConsole() {}
+@Deprecated
+public class JSConsole {
+    protected JSConsole() {}
 
     // ==================== Logging Levels ====================
 

@@ -56,9 +56,12 @@ import java.util.List;
  *     .then(callback().call("sendToRemote", variable("pc").dot("localDescription")))
  *     .build()
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSWebRTC} — shorter import, same API. Existing code keeps working.
  */
-public final class JSWebRTC {
-    private JSWebRTC() {}
+@Deprecated
+public class JSWebRTC {
+    protected JSWebRTC() {}
 
     // ==================== RTCPeerConnection ====================
 

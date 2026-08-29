@@ -14,9 +14,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * formatDate(variable("date"), "en-US")              // 1/20/2026
  * formatRelativeTime(-5, "minutes", "en-US")         // 5 minutes ago
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSIntl} — shorter import, same API. Existing code keeps working.
  */
-public final class JSIntl {
-    private JSIntl() {}
+@Deprecated
+public class JSIntl {
+    protected JSIntl() {}
 
     // ==================== Number Formatting ====================
 

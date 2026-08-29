@@ -173,6 +173,10 @@ import static jweb.UI.*;      // prebuilt components
 import static jweb.Layout.*;  // layout primitives
 import static jweb.Mongo.*;   // MongoDB access (also jweb.Schema, jweb.Doc)
 
+// Specialty modules keep their class names under jweb.css.* / jweb.js.*
+import static jweb.css.Selectors.*;   // and MediaQuery, Keyframes, Stylesheet, ...
+import static jweb.js.JSClipboard.*;  // and JSCanvas, JSCrypto, JSStorage, ...
+
 // Types
 import jweb.Element;          // what components return
 import jweb.Template;         // what pages implement

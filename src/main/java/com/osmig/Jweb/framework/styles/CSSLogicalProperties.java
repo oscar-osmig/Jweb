@@ -41,10 +41,13 @@ package com.osmig.Jweb.framework.styles;
  * }</pre>
  *
  * @see CSS for creating style rules
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSLogicalProperties} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSLogicalProperties {
+@Deprecated
+public class CSSLogicalProperties {
 
-    private CSSLogicalProperties() {}
+    protected CSSLogicalProperties() {}
 
     // ==================== Sizing ====================
 

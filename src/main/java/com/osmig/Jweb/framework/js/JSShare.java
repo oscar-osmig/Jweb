@@ -25,9 +25,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Check if sharing is supported
  * if_(canShare(), showShareButton())
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSShare} — shorter import, same API. Existing code keeps working.
  */
-public final class JSShare {
-    private JSShare() {}
+@Deprecated
+public class JSShare {
+    protected JSShare() {}
 
     // ==================== Share Builder ====================
 

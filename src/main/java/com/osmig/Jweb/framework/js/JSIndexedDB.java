@@ -45,9 +45,12 @@ import java.util.List;
  * // Delete a database
  * deleteDB("myApp")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSIndexedDB} — shorter import, same API. Existing code keeps working.
  */
-public final class JSIndexedDB {
-    private JSIndexedDB() {}
+@Deprecated
+public class JSIndexedDB {
+    protected JSIndexedDB() {}
 
     // ==================== Database Operations ====================
 

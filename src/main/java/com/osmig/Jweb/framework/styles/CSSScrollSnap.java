@@ -37,10 +37,13 @@ package com.osmig.Jweb.framework.styles;
  * }</pre>
  *
  * @see CSS for creating style rules
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSScrollSnap} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSScrollSnap {
+@Deprecated
+public class CSSScrollSnap {
 
-    private CSSScrollSnap() {}
+    protected CSSScrollSnap() {}
 
     // ==================== Scroll Snap Type ====================
 

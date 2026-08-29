@@ -60,10 +60,13 @@ import java.util.List;
  *
  * @see CSS for creating style rules
  * @see MediaQuery for media queries
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSLayer} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSLayer {
+@Deprecated
+public class CSSLayer {
 
-    private CSSLayer() {}
+    protected CSSLayer() {}
 
     // ==================== Layer Order ====================
 

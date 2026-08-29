@@ -40,7 +40,10 @@ import java.util.Map;
  * // :root { --color-primary: #4F46E5; ... }
  * // @media (prefers-color-scheme: dark) { :root { --color-background: #18181b; ... } }
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.css.Theme} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Theme {
 
     private final Map<String, String> colors = new LinkedHashMap<>();
@@ -61,7 +64,7 @@ public class Theme {
 
     private String name = "default";
 
-    private Theme() {}
+    protected Theme() {}
 
     // ==================== Factory ====================
 

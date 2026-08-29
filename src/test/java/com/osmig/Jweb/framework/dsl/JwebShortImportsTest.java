@@ -83,6 +83,19 @@ class JwebShortImportsTest {
     }
 
     @Test
+    void longTailShellsExposeLegacyStatics() {
+        // jweb.css.* — specialty style modules keep their class names
+        assertEquals(":has(.card)", jweb.css.Selectors.has(".card"));
+        String frames = jweb.css.Keyframes.fadeIn().build();
+        assertTrue(frames.contains("@keyframes"));
+        assertNotNull(jweb.css.Stylesheet.stylesheet());
+        assertNotNull(jweb.css.MediaQuery.media().maxWidth(px(768)));
+        // jweb.js.* — browser-API modules
+        String js = jweb.js.JSClipboard.copyText("hi").build();
+        assertTrue(js.contains("clipboard"));
+    }
+
+    @Test
     void mixedOldAndNewTypesInteroperate() {
         // A legacy component value assigns to the new Element type...
         Element fromLegacy = com.osmig.Jweb.framework.elements.Elements.fragment(p(text("x")));

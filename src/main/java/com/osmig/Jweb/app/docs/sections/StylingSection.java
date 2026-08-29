@@ -15,13 +15,13 @@ public final class StylingSection {
 
             docSubtitle("Import Statements"),
             codeBlock("""
-// Core CSS DSL
+// One import covers the whole core CSS DSL: style(), rule(), units
+// (px, rem, vh, ...), colors (named, rgb(), hex(), hsl()), grid,
+// animations, variables, media() and keyframes()
 import static jweb.Css.*;
 
-// Units (px, rem, em, vh, vw, etc.)
-
-// Colors (named colors, rgb, hex, etc.)
-import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
+// The Style type your helpers return
+import jweb.Style;"""),
 
             docSubtitle("Bare Styles — the concise form"),
             para("When an element only needs styling, pass style() directly as an " +

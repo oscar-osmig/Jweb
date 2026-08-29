@@ -24,9 +24,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Check permission
  * if_(hasPermission(), showNotification())
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSNotification} — shorter import, same API. Existing code keeps working.
  */
-public final class JSNotification {
-    private JSNotification() {}
+@Deprecated
+public class JSNotification {
+    protected JSNotification() {}
 
     // ==================== Permission ====================
 

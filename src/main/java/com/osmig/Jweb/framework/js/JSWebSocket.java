@@ -24,9 +24,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Send JSON
  * sendJson(variable("ws"), obj("type", "chat", "text", variable("msg")))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSWebSocket} — shorter import, same API. Existing code keeps working.
  */
-public final class JSWebSocket {
-    private JSWebSocket() {}
+@Deprecated
+public class JSWebSocket {
+    protected JSWebSocket() {}
 
     // ==================== Creation ====================
 

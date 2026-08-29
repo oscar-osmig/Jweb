@@ -35,10 +35,13 @@ package com.osmig.Jweb.framework.styles;
  * }</pre>
  *
  * @see CSS for creating style rules
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSMasking} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSMasking {
+@Deprecated
+public class CSSMasking {
 
-    private CSSMasking() {}
+    protected CSSMasking() {}
 
     // ==================== mask-image ====================
 

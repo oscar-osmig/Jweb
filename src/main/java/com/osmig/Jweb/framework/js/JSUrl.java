@@ -21,9 +21,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * // Parse query string
  * searchParams(variable("location").dot("search"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSUrl} — shorter import, same API. Existing code keeps working.
  */
-public final class JSUrl {
-    private JSUrl() {}
+@Deprecated
+public class JSUrl {
+    protected JSUrl() {}
 
     // ==================== URL Creation ====================
 

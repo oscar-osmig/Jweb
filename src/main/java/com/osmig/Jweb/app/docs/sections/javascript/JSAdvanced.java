@@ -13,7 +13,7 @@ public final class JSAdvanced {
 
             h3Title("Promise Utilities"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSPromise.*;
+import static jweb.js.JSPromise.*;
 
 // Promise combinators
 promiseAll(
@@ -46,7 +46,7 @@ cancellable(fetch("/api/data").get().toVal())
 
             h3Title("Web Workers"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSWorker.*;
+import static jweb.js.JSWorker.*;
 
 // Create dedicated worker
 dedicatedWorker("/worker.js")
@@ -65,7 +65,7 @@ sharedWorker("/shared-worker.js").build("sw")"""),
 
             h3Title("Service Workers"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSServiceWorker.*;
+import static jweb.js.JSServiceWorker.*;
 
 // Register service worker
 registerServiceWorker("/sw.js")
@@ -80,7 +80,7 @@ unregisterServiceWorker()"""),
 
             h3Title("Web Crypto"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSCrypto.*;
+import static jweb.js.JSCrypto.*;
 
 // Random values
 cryptoRandomUUID()     // UUID v4
@@ -99,7 +99,7 @@ generateAESKey().then(callback("key").call("storeKey", variable("key")))"""),
 
             h3Title("Canvas 2D"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSCanvas.*;
+import static jweb.js.JSCanvas.*;
 
 // Get context
 getContext2D(variable("canvas"))
@@ -126,7 +126,7 @@ drawImage(variable("ctx"), variable("img"), 0, 0)"""),
 
             h3Title("Performance API"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSPerformance.*;
+import static jweb.js.JSPerformance.*;
 
 // High-resolution timing
 performanceNow()
@@ -146,7 +146,7 @@ performanceObserver(callback("entries")
 
             h3Title("JSON & Data"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSJson.*;
+import static jweb.js.JSJson.*;
 
 // Parse/stringify
 jsonParse(variable("jsonString"))
@@ -154,14 +154,14 @@ jsonStringify(variable("obj"))
 jsonStringifyPretty(variable("obj"), 2)
 
 // FormData
-import static com.osmig.Jweb.framework.js.JSFormData.*;
+import static jweb.js.JSFormData.*;
 
 formData(variable("formElement"))
 formDataEmpty()
 formDataAppend(variable("fd"), "key", "value")
 
 // URL
-import static com.osmig.Jweb.framework.js.JSUrl.*;
+import static jweb.js.JSUrl.*;
 
 urlParse(str("/path?q=search"))
 urlSearchParams(obj("q", "search", "page", 1))
@@ -169,7 +169,7 @@ urlSearchParamsGet(variable("params"), "q")"""),
 
             h3Title("Internationalization"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSIntl.*;
+import static jweb.js.JSIntl.*;
 
 // Number formatting
 numberFormat("en-US", obj(

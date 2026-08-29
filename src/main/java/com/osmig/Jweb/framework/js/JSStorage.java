@@ -14,9 +14,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * local().setJson("user", variable("u"))  // localStorage.setItem('user', JSON.stringify(u))
  * session().remove("temp")                // sessionStorage.removeItem('temp')
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSStorage} — shorter import, same API. Existing code keeps working.
  */
-public final class JSStorage {
-    private JSStorage() {}
+@Deprecated
+public class JSStorage {
+    protected JSStorage() {}
 
     public static Storage local() { return new Storage("localStorage"); }
     public static Storage session() { return new Storage("sessionStorage"); }

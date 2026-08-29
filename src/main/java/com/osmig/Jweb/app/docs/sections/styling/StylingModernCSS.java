@@ -14,7 +14,7 @@ public final class StylingModernCSS {
             h3Title("Anchor Positioning"),
             para("Position elements relative to an anchor element without JavaScript."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSAnchorPositioning.*;
+import static jweb.css.CSSAnchorPositioning.*;
 
 // Define an anchor
 rule(".trigger").prop(anchorName("--tooltip-anchor"))
@@ -46,7 +46,7 @@ rule(".sub")
             h3Title("Scroll Snap"),
             para("Control scroll behavior to snap to specific elements."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSScrollSnap.*;
+import static jweb.css.CSSScrollSnap.*;
 
 // Horizontal carousel
 rule(".carousel")
@@ -75,7 +75,7 @@ rule(".panel")
             h3Title("Text Wrapping"),
             para("Modern text wrapping and truncation controls."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSTextWrap.*;
+import static jweb.css.CSSTextWrap.*;
 
 // Balanced line lengths (great for headings)
 rule("h1, h2").prop(textWrapBalance())
@@ -104,7 +104,7 @@ rule(".ellipsis").prop(textOverflowEllipsis())"""),
             h3Title("Subgrid"),
             para("Inherit parent grid tracks in nested grids."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSSubgrid.*;
+import static jweb.css.CSSSubgrid.*;
 
 // Parent grid
 rule(".card-grid")
@@ -134,7 +134,7 @@ rule(".span-all")
             h3Title("Masking and Clipping"),
             para("Apply masks and clip paths for creative shapes."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSMasking.*;
+import static jweb.css.CSSMasking.*;
 
 // Mask with image
 rule(".masked").prop(maskImage("url(mask.svg)"))
@@ -164,7 +164,7 @@ rule(".custom").prop(clipSvgPath("M0,0 L100,0 L50,100 Z"))"""),
             h3Title("Logical Properties"),
             para("Direction-aware properties that adapt to RTL/LTR and writing modes."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSLogicalProperties.*;
+import static jweb.css.CSSLogicalProperties.*;
 
 // Sizing (replaces width/height)
 rule(".box")

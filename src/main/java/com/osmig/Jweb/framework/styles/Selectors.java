@@ -21,10 +21,13 @@ package com.osmig.Jweb.framework.styles;
  *
  *   // Combine in CSS rules:
  *   ".card" + has(".featured")  // .card:has(.featured)
+ *
+ * @deprecated Replaced by {@code jweb.css.Selectors} — shorter import, same API. Existing code keeps working.
  */
-public final class Selectors {
+@Deprecated
+public class Selectors {
 
-    private Selectors() {}
+    protected Selectors() {}
 
     // ==================== Modern Selectors ====================
 

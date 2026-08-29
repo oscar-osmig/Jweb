@@ -34,10 +34,13 @@ package com.osmig.Jweb.framework.styles;
  * }</pre>
  *
  * @see CSS for creating style rules
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSTextWrap} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSTextWrap {
+@Deprecated
+public class CSSTextWrap {
 
-    private CSSTextWrap() {}
+    protected CSSTextWrap() {}
 
     // ==================== text-wrap ====================
 

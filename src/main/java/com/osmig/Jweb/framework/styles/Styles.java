@@ -17,10 +17,13 @@ package com.osmig.Jweb.framework.styles;
  *           .background(hex("#f5f5f5"))
  *           .border(px(1), solid, gray)
  *   ))
+ *
+ * @deprecated Replaced by {@code jweb.css.Styles} — shorter import, same API. Existing code keeps working.
  */
-public final class Styles {
+@Deprecated
+public class Styles {
 
-    private Styles() {}
+    protected Styles() {}
 
     /**
      * Creates a new Style builder.

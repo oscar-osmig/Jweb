@@ -35,9 +35,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  *     .onEntries(callback("list").log(variable("list").dot("getEntries()")))
  *     .build("perfObs");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSPerformance} — shorter import, same API. Existing code keeps working.
  */
-public final class JSPerformance {
-    private JSPerformance() {}
+@Deprecated
+public class JSPerformance {
+    protected JSPerformance() {}
 
     // ==================== High Resolution Time ====================
 

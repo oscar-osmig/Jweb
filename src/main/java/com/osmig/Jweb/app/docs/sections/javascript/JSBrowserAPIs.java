@@ -13,7 +13,7 @@ public final class JSBrowserAPIs {
 
             h3Title("Storage"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSStorage.*;
+import static jweb.js.JSStorage.*;
 
 // localStorage
 local().set("token", "abc123")
@@ -38,7 +38,7 @@ onStorageChange(callback("e")
 
             h3Title("WebSocket"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSWebSocket.*;
+import static jweb.js.JSWebSocket.*;
 
 // Create connection
 webSocket("/ws/chat")
@@ -60,7 +60,7 @@ close(variable("ws"))"""),
 
             h3Title("Clipboard"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSClipboard.*;
+import static jweb.js.JSClipboard.*;
 
 // Write to clipboard
 clipboardWrite(str("Copied text"))
@@ -73,7 +73,7 @@ clipboardRead().then(callback("text").log(variable("text")))"""),
 
             h3Title("Notifications"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSNotification.*;
+import static jweb.js.JSNotification.*;
 
 // Check permission
 notificationPermission()
@@ -89,7 +89,7 @@ showNotification("New Message", obj(
 
             h3Title("Geolocation"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSGeolocation.*;
+import static jweb.js.JSGeolocation.*;
 
 // Get current position
 getCurrentPosition()
@@ -108,7 +108,7 @@ watchPosition(callback("pos")
 
             h3Title("Web Share"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSShare.*;
+import static jweb.js.JSShare.*;
 
 // Share content
 share(obj(
@@ -123,7 +123,7 @@ if_(canShare())
 
             h3Title("Fullscreen"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSFullscreen.*;
+import static jweb.js.JSFullscreen.*;
 
 // Enter fullscreen
 requestFullscreen(variable("videoElem"))
@@ -136,7 +136,7 @@ isFullscreen()"""),
 
             h3Title("Page Visibility"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSVisibility.*;
+import static jweb.js.JSVisibility.*;
 
 // Check if visible
 isPageVisible()
@@ -150,7 +150,7 @@ onVisibilityChange(callback()
 
             h3Title("Observers"),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSObservers.*;
+import static jweb.js.JSObservers.*;
 
 // IntersectionObserver (lazy loading, infinite scroll)
 intersectionObserver(callback("entries")

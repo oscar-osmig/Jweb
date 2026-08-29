@@ -26,10 +26,13 @@ import java.util.List;
  * Theme theme = Theme.preset();
  * String css = Utility.generateCss(theme);
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.css.Utility} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Utility {
 
-    private Utility() {}
+    protected Utility() {}
 
     /**
      * Creates a new utility class builder.

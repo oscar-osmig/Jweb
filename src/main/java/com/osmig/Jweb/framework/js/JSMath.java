@@ -13,9 +13,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * pow(variable("base"), 2)    // Math.pow(base, 2)
  * min(variable("a"), variable("b"))  // Math.min(a, b)
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSMath} — shorter import, same API. Existing code keeps working.
  */
-public final class JSMath {
-    private JSMath() {}
+@Deprecated
+public class JSMath {
+    protected JSMath() {}
 
     // Trigonometric
     public static Val sin(Val val) { return new Val("Math.sin(" + val.js() + ")"); }

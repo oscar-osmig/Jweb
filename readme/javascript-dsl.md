@@ -33,7 +33,10 @@ button(attrs().onClick(Toast.success("Saved!")), text("Save"))   // typed Toast 
 
 Short imports: `import static jweb.Actions.*;` is the high-level layer;
 `import static jweb.Js.*;` is the low-level layer and also folds in the legacy
-`Events`, `Runtime` and `Async` modules, so one import covers all four.
+`Events`, `Runtime` and `Async` modules, so one import covers all four. Every
+browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) keeps
+its own import but lives at `jweb.js.*` with the same class name — e.g.
+`import static jweb.js.JSClipboard.*;`.
 
 Also: `Js.*` and `Actions.*` share many static names (`script`, `query`, `queryAll`, `call`,
 `fetch`, `sleep`, `promiseAll`, `pushState`, ...). **Wildcard-importing both into one file causes
@@ -319,7 +322,7 @@ sse("/events")
 ### IndexedDB
 
 ```java
-import static com.osmig.Jweb.framework.js.JSIndexedDB.*;
+import static jweb.js.JSIndexedDB.*;
 import static jweb.Js.*;
 
 openDB("myApp", 1)
@@ -343,7 +346,7 @@ cursorQuery(variable("db"), "users")
 ### History API
 
 ```java
-import static com.osmig.Jweb.framework.js.JSHistory.*;
+import static jweb.js.JSHistory.*;
 
 pushState("/dashboard", obj("page", "dashboard"), "Dashboard")
 replaceState("/login", obj("page", "login"))
@@ -360,7 +363,7 @@ getQueryParam("page"); setQueryParam("page", "2"); removeQueryParam("filter")
 ### Drag and Drop
 
 ```java
-import static com.osmig.Jweb.framework.js.JSDragDrop.*;
+import static jweb.js.JSDragDrop.*;
 
 draggable("card-1")
     .data("text/plain", "Card 1 data")
@@ -379,7 +382,7 @@ dropZone("target-area")
 ### Pointer Events
 
 ```java
-import static com.osmig.Jweb.framework.js.JSPointer.*;
+import static jweb.js.JSPointer.*;
 
 onPointerDown("canvas", callback("e")
     .log(pointerId(variable("e")))
@@ -395,7 +398,7 @@ multiPointerTracker("canvas")
 ### Speech
 
 ```java
-import static com.osmig.Jweb.framework.js.JSSpeech.*;
+import static jweb.js.JSSpeech.*;
 
 speak("Hello, welcome to JWeb!")
 
@@ -415,7 +418,7 @@ startRecognition(variable("rec"));
 ### Storage & Cookies
 
 ```java
-import static com.osmig.Jweb.framework.js.JSStorage.*;
+import static jweb.js.JSStorage.*;
 
 local().setJson("user", obj("name", "Jo"))
 local().getJsonOr("user", obj())
@@ -427,7 +430,7 @@ onStorageKeyChange("user", callback("e").log(eventNewValue()))
 ### WebSocket (client)
 
 ```java
-import static com.osmig.Jweb.framework.js.JSWebSocket.*;
+import static jweb.js.JSWebSocket.*;
 
 webSocket(wsUrl("/live"))
     .onOpen(callback().log("connected"))

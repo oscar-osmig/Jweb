@@ -33,9 +33,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * setFont(ctx, "24px Arial");
  * fillText(ctx, "Hello Canvas", 10, 50);
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSCanvas} — shorter import, same API. Existing code keeps working.
  */
-public final class JSCanvas {
-    private JSCanvas() {}
+@Deprecated
+public class JSCanvas {
+    protected JSCanvas() {}
 
     // ==================== Context ====================
 

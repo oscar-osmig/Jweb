@@ -57,6 +57,11 @@ The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2h
   `Async←Runtime←Events←JS` now form inheritance chains purely for static-import
   aggregation; duplicate helpers (`lightDark`, `colorMix`, `var`, `env`) resolve to the
   subclass-most declaration.
+- Long-tail follow-up (same day): every specialty styles module has a `jweb.css.X`
+  shell and every `JS*` browser-API module a `jweb.js.X` shell (class names unchanged,
+  so migration is a pure package-prefix swap); the legacy classes are `@Deprecated`
+  aliases. `JWebRuntime`, `StyledElement`, `DialogHelper`/`DetailsHelper` (elements)
+  keep their original locations.
 
 Fixed in the 2026-08-09 follow-up pass:
 

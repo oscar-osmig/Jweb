@@ -21,9 +21,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Create Blob and download
  * downloadBlob(textBlob(variable("content")), "file.txt")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSFile} — shorter import, same API. Existing code keeps working.
  */
-public final class JSFile {
-    private JSFile() {}
+@Deprecated
+public class JSFile {
+    protected JSFile() {}
 
     // ==================== FileReader ====================
 

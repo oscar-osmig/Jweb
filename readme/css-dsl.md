@@ -21,10 +21,12 @@ duplicate names (`colorMix`, `lightDark`, `var`, `env` existed in two modules ea
 are resolved inside the facade — no more ambiguous-reference errors from combining
 those wildcards.
 
-Specialty modules that stay separate: `Selectors`, `Supports`, `CSSNested`,
-`CSSMasking`, `CSSScrollSnap`, `CSSLogicalProperties`, `CSSAnchorPositioning`,
-`CSSTextWrap`, `CSSSubgrid`, `Theme`, `Utility` (import from
-`com.osmig.Jweb.framework.styles` as before).
+Specialty modules keep their own imports but now live at `jweb.css.*` (same class
+names): `Selectors`, `Supports`, `MediaQuery`, `Keyframes`, `Stylesheet`, `FontFace`,
+`ContainerQuery`, `CSSNested`, `CSSMasking`, `CSSScrollSnap`, `CSSLogicalProperties`,
+`CSSAnchorPositioning`, `CSSTextWrap`, `CSSSubgrid`, `CSSScope`, `CSSLayer`,
+`Theme`, `Utility`, `Styles`, `CSSProperty` — e.g.
+`import static jweb.css.Selectors.*;`.
 
 > The legacy imports still compile — the old entry classes are `@Deprecated`
 > aliases feeding the same methods.
@@ -159,7 +161,7 @@ String css = styles(
 ### 2. `Stylesheet` — the global stylesheet accumulator
 
 ```java
-import com.osmig.Jweb.framework.styles.Stylesheet;
+import jweb.css.Stylesheet;
 
 Stylesheet sheet = Stylesheet.stylesheet()
     .variables("--primary", "#6366f1", "--radius", "8px")
@@ -242,7 +244,7 @@ lightDark(white, black)           // theme-aware
 ## Media Queries (`MediaQuery`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.MediaQuery.*;
+import static jweb.css.MediaQuery.*;
 
 media().minWidth(px(768)).rule(".container", style().maxWidth(px(720))).build()
 md().rule(".sidebar", style().display(block)).build()      // presets: xs sm md lg xl xxl
@@ -260,7 +262,7 @@ media().prefersReducedMotion()
 ## Container Queries (`ContainerQuery`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.ContainerQuery.*;
+import static jweb.css.ContainerQuery.*;
 
 container().minWidth(px(400)).rule(".card", style().display(flex)).build()
 container("sidebar").maxWidth(px(300)).rule(".nav", style().flexDirection(column)).build()
@@ -269,7 +271,7 @@ container("sidebar").maxWidth(px(300)).rule(".nav", style().flexDirection(column
 ## Feature Queries (`Supports`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.Supports.*;
+import static jweb.css.Supports.*;
 
 supports("display", "grid").rule(".container", style().display(grid)).build()
 supportsGrid(); supportsFlexbox(); supportsCustomProperties();
@@ -314,7 +316,7 @@ rule(tag("li").nthChild("2n+1"))
 rule(cls("form").has("input:invalid"))       // :has()
 
 // Static strings (Selectors)
-import static com.osmig.Jweb.framework.styles.Selectors.*;
+import static jweb.css.Selectors.*;
 has(".open"), is(".a", ".b"), where(...), not(...)
 attrEquals("type", "text"), attrStartsWith("href", "https")
 viewTransitionOld("hero"), viewTransitionNew("hero")     // view-transition pseudo-elements
@@ -324,7 +326,7 @@ viewTransitionOld("hero"), viewTransitionNew("hero")     // view-transition pseu
 ## CSS Variables & Design Tokens (`CSSVariables`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.CSSVariables.*;
+import static jweb.Css.*;   // CSSVariables is folded into the Css facade
 
 var("primary-color")             // var(--primary-color)   ← named var(), not var_()
 var("spacing", "1rem")           // with fallback
@@ -348,7 +350,7 @@ theme()                          // ThemeBuilder (not themeBuilder())
 The class the sample app's `Theme.java` wraps:
 
 ```java
-import com.osmig.Jweb.framework.styles.Theme;
+import jweb.css.Theme;
 
 Theme theme = new Theme()
     .color("primary", "#6366f1")
@@ -370,7 +372,7 @@ class-name builder methods for markup that prefers utility classes over inline s
 ## CSS Animations (`CSSAnimations`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.CSSAnimations.*;
+import static jweb.Css.*;   // CSSAnimations is folded into the Css facade
 
 // 40 presets: fadeIn/Out, fadeInUp/Down/Left/Right, slideIn*/slideOut*, zoomIn/Out,
 // scaleIn/Out, pulse, heartbeat, bounce, rotate360, flipX/Y, shake, wobble, jello,
@@ -477,7 +479,7 @@ button(attrs().transition().fade().done(), "Hover me")
 ## Nested CSS (`CSSNested`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.CSSNested.*;
+import static jweb.css.CSSNested.*;
 
 nested(".card")
     .style(rule(".card").padding(px(20)))     // base declarations via a StyleBuilder

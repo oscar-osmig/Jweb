@@ -15,9 +15,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * parse(variable("jsonStr"))               // JSON.parse(jsonStr)
  * safeParse(variable("str"), obj())        // try/catch with fallback
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSJson} — shorter import, same API. Existing code keeps working.
  */
-public final class JSJson {
-    private JSJson() {}
+@Deprecated
+public class JSJson {
+    protected JSJson() {}
 
     // ==================== Stringify ====================
 

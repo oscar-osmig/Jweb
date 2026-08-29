@@ -6,7 +6,7 @@ import jweb.Template;
 import com.osmig.Jweb.framework.styles.Stylesheet.Rule;
 import static jweb.El.*;
 import static jweb.Css.*;
-import static com.osmig.Jweb.framework.styles.Selectors.*;
+import static jweb.css.Selectors.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 import com.osmig.Jweb.app.subheader.SubheaderSidebar;
 import com.osmig.Jweb.app.subheader.SubheaderScript;

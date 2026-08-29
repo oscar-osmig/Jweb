@@ -29,13 +29,16 @@ import java.util.Map;
  *       .to(style()
  *           .opacity(1)
  *           .transform(translateX(zero)))
+ *
+ * @deprecated Replaced by {@code jweb.css.Keyframes} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Keyframes {
 
     private final String name;
     private final Map<String, jweb.Style<?>> frames = new LinkedHashMap<>();
 
-    private Keyframes(String name) {
+    protected Keyframes(String name) {
         this.name = name;
     }
 

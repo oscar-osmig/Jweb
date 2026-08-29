@@ -21,9 +21,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * addDays(variable("date"), 7)  // Adds 7 days
  * startOfDay(variable("date"))  // Sets to midnight
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSDate} — shorter import, same API. Existing code keeps working.
  */
-public final class JSDate {
-    private JSDate() {}
+@Deprecated
+public class JSDate {
+    protected JSDate() {}
 
     // ==================== Creation ====================
 

@@ -37,9 +37,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * pointerType(variable("e"))   // "mouse", "touch", or "pen"
  * isPrimary(variable("e"))     // true for primary pointer
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSPointer} — shorter import, same API. Existing code keeps working.
  */
-public final class JSPointer {
-    private JSPointer() {}
+@Deprecated
+public class JSPointer {
+    protected JSPointer() {}
 
     // ==================== Event Listeners ====================
 

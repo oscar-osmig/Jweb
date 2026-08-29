@@ -40,9 +40,12 @@ import java.util.List;
  *         .inc("page")
  *     .endWhile();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSIterator} — shorter import, same API. Existing code keeps working.
  */
-public final class JSIterator {
-    private JSIterator() {}
+@Deprecated
+public class JSIterator {
+    protected JSIterator() {}
 
     // ==================== Iterator Protocol ====================
 

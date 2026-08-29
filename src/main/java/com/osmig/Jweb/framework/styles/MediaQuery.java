@@ -25,13 +25,16 @@ import java.util.Map;
  *   media().print().rules(
  *       rule("body", style().fontSize(pt(12)))
  *   )
+ *
+ * @deprecated Replaced by {@code jweb.css.MediaQuery} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class MediaQuery {
 
     private final List<String> conditions = new ArrayList<>();
     private final Map<String, jweb.Style<?>> rules = new LinkedHashMap<>();
 
-    private MediaQuery() {}
+    protected MediaQuery() {}
 
     /**
      * Creates a new media query builder.

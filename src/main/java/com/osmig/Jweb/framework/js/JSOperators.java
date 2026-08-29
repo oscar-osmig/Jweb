@@ -14,9 +14,12 @@ import com.osmig.Jweb.framework.js.JS.Stmt;
  * nullishCoalesce(variable("name"), str("Anonymous"))  // name ?? 'Anonymous'
  * orAssign(variable("config"), obj("debug", false))    // config ||= {debug: false}
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSOperators} — shorter import, same API. Existing code keeps working.
  */
-public final class JSOperators {
-    private JSOperators() {}
+@Deprecated
+public class JSOperators {
+    protected JSOperators() {}
 
     // ==================== Optional Chaining ====================
 

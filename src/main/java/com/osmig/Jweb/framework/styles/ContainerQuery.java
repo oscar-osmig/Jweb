@@ -27,14 +27,17 @@ import java.util.Map;
  *   container().minWidth(px(300)).rules(
  *       rule(".item", style().flexDirection(row))
  *   )
+ *
+ * @deprecated Replaced by {@code jweb.css.ContainerQuery} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class ContainerQuery {
 
     private String containerName;
     private final List<String> conditions = new ArrayList<>();
     private final Map<String, jweb.Style<?>> rules = new LinkedHashMap<>();
 
-    private ContainerQuery() {}
+    protected ContainerQuery() {}
 
     private ContainerQuery(String name) {
         this.containerName = name;

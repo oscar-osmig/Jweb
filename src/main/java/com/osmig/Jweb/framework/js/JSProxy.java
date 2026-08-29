@@ -40,9 +40,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * proxyRevocable(variable("target"), variable("handler")).build("revocable")
  * // Later: revoke(variable("revocable"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSProxy} — shorter import, same API. Existing code keeps working.
  */
-public final class JSProxy {
-    private JSProxy() {}
+@Deprecated
+public class JSProxy {
+    protected JSProxy() {}
 
     // ==================== Proxy Creation ====================
 

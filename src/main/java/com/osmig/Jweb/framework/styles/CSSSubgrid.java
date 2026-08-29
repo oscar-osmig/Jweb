@@ -36,10 +36,13 @@ package com.osmig.Jweb.framework.styles;
  *
  * @see CSS for creating style rules
  * @see CSSGrid for grid template utilities
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSSubgrid} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSSubgrid {
+@Deprecated
+public class CSSSubgrid {
 
-    private CSSSubgrid() {}
+    protected CSSSubgrid() {}
 
     // ==================== Subgrid Values ====================
 

@@ -53,10 +53,13 @@ import java.util.List;
  *
  * @see CSS for creating style rules
  * @see CSSLayer for cascade layers
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSScope} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSScope {
+@Deprecated
+public class CSSScope {
 
-    private CSSScope() {}
+    protected CSSScope() {}
 
     /**
      * Creates a new @scope rule with the given root selector.

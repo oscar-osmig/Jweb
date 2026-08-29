@@ -23,9 +23,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Cancel request
  * abort(variable("ctrl"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSAbort} — shorter import, same API. Existing code keeps working.
  */
-public final class JSAbort {
-    private JSAbort() {}
+@Deprecated
+public class JSAbort {
+    protected JSAbort() {}
 
     // ==================== Controller Creation ====================
 

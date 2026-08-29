@@ -85,10 +85,13 @@ package com.osmig.Jweb.framework.styles;
  *
  * @see CSS for creating style rules
  * @see CSSLayer for cascade layers
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSProperty} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSProperty {
+@Deprecated
+public class CSSProperty {
 
-    private CSSProperty() {}
+    protected CSSProperty() {}
 
     /**
      * Starts registering a custom property.

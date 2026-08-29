@@ -20,12 +20,15 @@ import java.util.List;
  *         rule(".container", style().padding(SPACE_SM)))
  *     .build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.css.Stylesheet} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Stylesheet {
 
     private final List<String> rules = new ArrayList<>();
 
-    private Stylesheet() {}
+    protected Stylesheet() {}
 
     /**
      * Creates a new stylesheet builder.

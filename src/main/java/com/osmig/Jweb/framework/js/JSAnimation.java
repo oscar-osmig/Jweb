@@ -16,9 +16,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  *
  * transition(getElem("box"), "opacity", "0", "1", 500);
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSAnimation} — shorter import, same API. Existing code keeps working.
  */
-public final class JSAnimation {
-    private JSAnimation() {}
+@Deprecated
+public class JSAnimation {
+    protected JSAnimation() {}
 
     // ==================== requestAnimationFrame ====================
 

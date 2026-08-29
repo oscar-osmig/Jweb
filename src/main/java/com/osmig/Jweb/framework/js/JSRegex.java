@@ -13,9 +13,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * regex("hello", "i").match(variable("str"))    // /hello/i.match(str)
  * variable("email").matchesEmail()              // email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSRegex} — shorter import, same API. Existing code keeps working.
  */
-public final class JSRegex {
-    private JSRegex() {}
+@Deprecated
+public class JSRegex {
+    protected JSRegex() {}
 
     /** Creates a regex: regex("pattern") -> /pattern/ */
     public static Regex regex(String pattern) {

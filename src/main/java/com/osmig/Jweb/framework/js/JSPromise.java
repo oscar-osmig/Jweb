@@ -47,9 +47,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  *     .finally_(callback().log("Done"))
  *     .build()
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSPromise} — shorter import, same API. Existing code keeps working.
  */
-public final class JSPromise {
-    private JSPromise() {}
+@Deprecated
+public class JSPromise {
+    protected JSPromise() {}
 
     // ==================== Promise.withResolvers ====================
 

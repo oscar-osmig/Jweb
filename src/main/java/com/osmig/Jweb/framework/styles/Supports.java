@@ -38,14 +38,17 @@ import java.util.List;
  *     .rule(".card:has(> img)", style().padding(zero))
  *     .build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.css.Supports} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Supports {
 
     private final List<String> conditions = new ArrayList<>();
     private final List<MediaQuery.Rule> rules = new ArrayList<>();
     private String currentOperator = null;
 
-    private Supports() {}
+    protected Supports() {}
 
     /**
      * Creates a new @supports builder.

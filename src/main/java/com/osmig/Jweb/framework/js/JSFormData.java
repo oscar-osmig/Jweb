@@ -22,9 +22,12 @@ import com.osmig.Jweb.framework.js.JS.Val;
  * // Convert to URL encoded string
  * toUrlEncoded(variable("formData"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSFormData} — shorter import, same API. Existing code keeps working.
  */
-public final class JSFormData {
-    private JSFormData() {}
+@Deprecated
+public class JSFormData {
+    protected JSFormData() {}
 
     // ==================== Creation ====================
 

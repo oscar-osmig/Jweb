@@ -14,7 +14,7 @@ public final class JSNewAPIs {
             h3Title("IndexedDB"),
             para("Client-side database for structured offline storage."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSIndexedDB.*;
+import static jweb.js.JSIndexedDB.*;
 
 // Open a database (creates if not exists)
 openDB("myApp", 1)
@@ -47,7 +47,7 @@ deleteDB("myApp")"""),
             h3Title("History API"),
             para("Browser navigation control for SPA routing patterns."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSHistory.*;
+import static jweb.js.JSHistory.*;
 
 // Navigate without reload
 pushState("/dashboard", obj("page", str("dashboard")))
@@ -77,7 +77,7 @@ queryParamsObject()             // All params as object"""),
             h3Title("Drag and Drop"),
             para("Native HTML5 drag-and-drop with builder pattern."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSDragDrop.*;
+import static jweb.js.JSDragDrop.*;
 
 // Make an element draggable
 draggable("card-1")
@@ -104,7 +104,7 @@ getTypes(variable("e"))"""),
             h3Title("Pointer Events"),
             para("Unified mouse, touch, and pen input handling."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSPointer.*;
+import static jweb.js.JSPointer.*;
 
 // Listen for pointer events
 onPointerDown("canvas", callback("e")
@@ -134,7 +134,7 @@ multiPointer("canvas")
             h3Title("Web Speech"),
             para("Text-to-speech and speech recognition APIs."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.JSSpeech.*;
+import static jweb.js.JSSpeech.*;
 
 // Text-to-Speech (simple)
 speak("Hello, welcome to JWeb!")

@@ -98,10 +98,13 @@ import java.util.List;
  *
  * @see CSS for creating flat style rules
  * @see CSSLayer for cascade layers
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSNested} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSNested {
+@Deprecated
+public class CSSNested {
 
-    private CSSNested() {}
+    protected CSSNested() {}
 
     /**
      * Creates a new nested CSS rule starting with the given selector.

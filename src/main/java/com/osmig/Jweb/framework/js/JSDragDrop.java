@@ -39,9 +39,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * getData(variable("event"), "text/plain")
  * getFiles(variable("event"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSDragDrop} — shorter import, same API. Existing code keeps working.
  */
-public final class JSDragDrop {
-    private JSDragDrop() {}
+@Deprecated
+public class JSDragDrop {
+    protected JSDragDrop() {}
 
     // ==================== Draggable Setup ====================
 

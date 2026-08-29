@@ -25,9 +25,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Stop watching
  * clearWatch(variable("watchId"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSGeolocation} — shorter import, same API. Existing code keeps working.
  */
-public final class JSGeolocation {
-    private JSGeolocation() {}
+@Deprecated
+public class JSGeolocation {
+    protected JSGeolocation() {}
 
     // ==================== Position Requests ====================
 

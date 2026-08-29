@@ -43,9 +43,12 @@ import java.util.List;
  *     .data(variable("message"))
  *     .build()
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSCrypto} — shorter import, same API. Existing code keeps working.
  */
-public final class JSCrypto {
-    private JSCrypto() {}
+@Deprecated
+public class JSCrypto {
+    protected JSCrypto() {}
 
     // ==================== Random Values ====================
 

@@ -11,7 +11,7 @@ public final class StylingSupports {
             h3Title("@supports Feature Queries"),
             para("Test for CSS feature support before applying styles."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.Supports.*;
+import static jweb.css.Supports.*;
 
 // Check for single property support
 supports(property("display", "grid"),

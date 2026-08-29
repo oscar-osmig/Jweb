@@ -22,9 +22,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Check state
  * if_(isFullscreen(), showExitButton())
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSFullscreen} — shorter import, same API. Existing code keeps working.
  */
-public final class JSFullscreen {
-    private JSFullscreen() {}
+@Deprecated
+public class JSFullscreen {
+    protected JSFullscreen() {}
 
     // ==================== Fullscreen Operations ====================
 

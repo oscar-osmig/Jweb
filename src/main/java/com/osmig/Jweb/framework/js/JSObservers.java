@@ -15,9 +15,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  *     .threshold(0.5)
  *     .observe("myElement", "io");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSObservers} — shorter import, same API. Existing code keeps working.
  */
-public final class JSObservers {
-    private JSObservers() {}
+@Deprecated
+public class JSObservers {
+    protected JSObservers() {}
 
     public static IntersectionBuilder intersection() { return new IntersectionBuilder(); }
     public static MutationBuilder mutation() { return new MutationBuilder(); }

@@ -47,9 +47,12 @@ import java.util.List;
  *     .onMessage(callback("e").call("showNotification", variable("e").dot("data")))
  *     .build("bc");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSWorker} — shorter import, same API. Existing code keeps working.
  */
-public final class JSWorker {
-    private JSWorker() {}
+@Deprecated
+public class JSWorker {
+    protected JSWorker() {}
 
     // ==================== Dedicated Worker ====================
 

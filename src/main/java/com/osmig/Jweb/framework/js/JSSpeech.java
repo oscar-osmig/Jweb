@@ -43,9 +43,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * resumeSpeech()
  * cancelSpeech()
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSSpeech} — shorter import, same API. Existing code keeps working.
  */
-public final class JSSpeech {
-    private JSSpeech() {}
+@Deprecated
+public class JSSpeech {
+    protected JSSpeech() {}
 
     // ==================== Speech Synthesis (TTS) ====================
 

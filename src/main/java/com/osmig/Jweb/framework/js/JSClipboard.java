@@ -22,9 +22,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Copy element's text content
  * copyElementText("myElement")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSClipboard} — shorter import, same API. Existing code keeps working.
  */
-public final class JSClipboard {
-    private JSClipboard() {}
+@Deprecated
+public class JSClipboard {
+    protected JSClipboard() {}
 
     // ==================== Write Operations ====================
 

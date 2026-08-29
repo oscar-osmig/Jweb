@@ -47,9 +47,12 @@ import java.util.List;
  *     .onPause(callback().call("pause"))
  *     .build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSMedia} — shorter import, same API. Existing code keeps working.
  */
-public final class JSMedia {
-    private JSMedia() {}
+@Deprecated
+public class JSMedia {
+    protected JSMedia() {}
 
     // ==================== HTMLMediaElement Control ====================
 

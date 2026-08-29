@@ -25,9 +25,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * play(variable("anim"))
  * reverse(variable("anim"))
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSWebAnimations} — shorter import, same API. Existing code keeps working.
  */
-public final class JSWebAnimations {
-    private JSWebAnimations() {}
+@Deprecated
+public class JSWebAnimations {
+    protected JSWebAnimations() {}
 
     // ==================== Animation Creation ====================
 

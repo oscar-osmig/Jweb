@@ -22,9 +22,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // Get visibility state
  * visibilityState()  // "visible", "hidden"
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSVisibility} — shorter import, same API. Existing code keeps working.
  */
-public final class JSVisibility {
-    private JSVisibility() {}
+@Deprecated
+public class JSVisibility {
+    protected JSVisibility() {}
 
     // ==================== Visibility State ====================
 

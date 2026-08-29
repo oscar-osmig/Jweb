@@ -24,7 +24,10 @@ import java.util.List;
  *     .fontWeight(700)
  *     .build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.css.FontFace} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class FontFace {
 
     // Font format constants
@@ -56,7 +59,7 @@ public class FontFace {
     private String unicodeRange;
     private String fontStretch;
 
-    private FontFace(String fontFamily) {
+    protected FontFace(String fontFamily) {
         this.fontFamily = fontFamily;
     }
 

@@ -48,9 +48,12 @@ import java.util.List;
  *     )
  *     .build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSServiceWorker} — shorter import, same API. Existing code keeps working.
  */
-public final class JSServiceWorker {
-    private JSServiceWorker() {}
+@Deprecated
+public class JSServiceWorker {
+    protected JSServiceWorker() {}
 
     // ==================== Registration ====================
 

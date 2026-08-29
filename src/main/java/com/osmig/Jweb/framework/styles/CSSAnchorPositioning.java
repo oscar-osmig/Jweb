@@ -43,10 +43,13 @@ package com.osmig.Jweb.framework.styles;
  * }</pre>
  *
  * @see CSS for creating style rules
+ *
+ * @deprecated Replaced by {@code jweb.css.CSSAnchorPositioning} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSAnchorPositioning {
+@Deprecated
+public class CSSAnchorPositioning {
 
-    private CSSAnchorPositioning() {}
+    protected CSSAnchorPositioning() {}
 
     // ==================== Anchor Definition ====================
 

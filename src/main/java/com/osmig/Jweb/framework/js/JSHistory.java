@@ -42,9 +42,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * getQueryParam("search")
  * setQueryParam("page", "2")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.js.JSHistory} — shorter import, same API. Existing code keeps working.
  */
-public final class JSHistory {
-    private JSHistory() {}
+@Deprecated
+public class JSHistory {
+    protected JSHistory() {}
 
     // ==================== Navigation ====================
 
