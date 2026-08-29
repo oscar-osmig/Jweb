@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 1.0.0** | **Last Updated: 2026-08-08**
+**Version 1.1.0** | **Last Updated: 2026-08-29**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -18,7 +18,7 @@ JWeb is built on these core principles:
 4. **Component-Based** — Build UIs from composable, reusable pieces.
 5. **Reactive** — State changes propagate to the UI (see [State & Realtime](./readme/state-and-realtime.md) for current wiring status).
 6. **Minimal Dependencies** — Built on Spring Boot, no JavaScript toolchain required.
-7. **Modular Architecture** — Clean separation with focused files. Facade entry points (`El.*` for HTML, `CSS.*` for CSS, `JS.*`/`Actions.*` for JavaScript) hide complexity while keeping internals maintainable.
+7. **Modular Architecture** — Clean separation with focused files. Facade entry points (`jweb.El.*` for HTML, `jweb.Css.*` for CSS, `jweb.Js.*`/`jweb.Actions.*` for JavaScript) hide complexity while keeping internals maintainable.
 
 ---
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v1.0.6</version>
+    <version>v1.1.0</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.0.6' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.1.0' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
