@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app;
 
-import com.osmig.Jweb.framework.JWebApplication;
+import jweb.JWebApplication;
 import org.springframework.boot.SpringApplication;
 
 /**

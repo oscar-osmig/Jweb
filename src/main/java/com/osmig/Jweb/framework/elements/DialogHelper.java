@@ -22,9 +22,12 @@ package com.osmig.Jweb.framework.elements;
  * // Button to open modal
  * button(attrs().onclick(DialogHelper.showModal("confirm-dialog")), "Open Dialog")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.el.DialogHelper} — shorter import, same behavior. Existing code keeps working.
  */
-public final class DialogHelper {
-    private DialogHelper() {}
+@Deprecated
+public class DialogHelper {
+    protected DialogHelper() {}
 
     /**
      * Generates JavaScript to show a dialog as a modal (with backdrop).

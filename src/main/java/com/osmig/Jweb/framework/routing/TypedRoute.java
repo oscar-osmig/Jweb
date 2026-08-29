@@ -26,10 +26,13 @@ import java.util.UUID;
  * </pre>
  *
  * Supported parameter types: String, Integer, Long, Double, Boolean, UUID.
+ *
+ * @deprecated Replaced by {@code jweb.TypedRoute} — shorter import, same behavior. Existing code keeps working.
  */
-public final class TypedRoute {
+@Deprecated
+public class TypedRoute {
 
-    private TypedRoute() {}
+    protected TypedRoute() {}
 
     /** A route with no parameters. */
     public static Path0 path(String pattern) {

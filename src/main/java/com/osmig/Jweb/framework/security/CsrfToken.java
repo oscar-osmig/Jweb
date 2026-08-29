@@ -31,7 +31,10 @@ import java.util.Base64;
  *     throw new CsrfException("Invalid CSRF token");
  * }
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.CsrfToken} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public class CsrfToken {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
@@ -49,7 +52,7 @@ public class CsrfToken {
      * @param value     the token value
      * @param expiresAt expiration timestamp (millis)
      */
-    private CsrfToken(String value, long expiresAt) {
+    protected CsrfToken(String value, long expiresAt) {
         this.value = value;
         this.createdAt = System.currentTimeMillis();
         this.expiresAt = expiresAt;
@@ -60,7 +63,7 @@ public class CsrfToken {
      *
      * @return a new CSRF token
      */
-    public static CsrfToken generate() {
+    public static jweb.CsrfToken generate() {
         return generate(30 * 60 * 1000L); // 30 minutes default expiry
     }
 
@@ -70,11 +73,11 @@ public class CsrfToken {
      * @param expiryMillis how long the token is valid (milliseconds)
      * @return a new CSRF token
      */
-    public static CsrfToken generate(long expiryMillis) {
+    public static jweb.CsrfToken generate(long expiryMillis) {
         byte[] bytes = new byte[TOKEN_LENGTH];
         SECURE_RANDOM.nextBytes(bytes);
         String value = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        return new CsrfToken(value, System.currentTimeMillis() + expiryMillis);
+        return new jweb.CsrfToken(value, System.currentTimeMillis() + expiryMillis);
     }
 
     /**
@@ -84,8 +87,8 @@ public class CsrfToken {
      * @param expiresAt expiration timestamp
      * @return the token
      */
-    public static CsrfToken of(String value, long expiresAt) {
-        return new CsrfToken(value, expiresAt);
+    public static jweb.CsrfToken of(String value, long expiresAt) {
+        return new jweb.CsrfToken(value, expiresAt);
     }
 
     /**

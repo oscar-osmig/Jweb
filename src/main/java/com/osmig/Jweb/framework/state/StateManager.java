@@ -82,9 +82,9 @@ public final class StateManager {
      * @param <T> the type of the state
      * @return a new State instance
      */
-    public static <T> State<T> createState(T initialValue) {
+    public static <T> jweb.state.State<T> createState(T initialValue) {
         String id = "state_" + idCounter.incrementAndGet();
-        State<T> state = new State<>(id, initialValue);
+        jweb.state.State<T> state = new jweb.state.State<>(id, initialValue);
 
         // Register with current context if available
         StateContext context = currentContext.get();
@@ -103,8 +103,8 @@ public final class StateManager {
      * @param <T> the type of the state
      * @return a new State instance
      */
-    public static <T> State<T> createState(String id, T initialValue) {
-        State<T> state = new State<>(id, initialValue);
+    public static <T> jweb.state.State<T> createState(String id, T initialValue) {
+        jweb.state.State<T> state = new jweb.state.State<>(id, initialValue);
 
         StateContext context = currentContext.get();
         if (context != null) {

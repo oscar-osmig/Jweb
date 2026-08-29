@@ -300,7 +300,7 @@ architecture doc.
 ## Async rendering (`async/Suspense`)
 
 ```java
-import com.osmig.Jweb.framework.async.Suspense;
+import jweb.Suspense;
 import static com.osmig.Jweb.framework.async.Suspense.*;
 
 // Blocking (default): loader runs inline during render

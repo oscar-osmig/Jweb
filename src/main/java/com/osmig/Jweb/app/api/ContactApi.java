@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.api;
 
-import com.osmig.Jweb.framework.api.*;
+import jweb.api.*;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;

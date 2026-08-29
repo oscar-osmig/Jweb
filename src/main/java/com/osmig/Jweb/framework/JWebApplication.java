@@ -21,11 +21,14 @@ import java.lang.annotation.*;
  *     }
  * }
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.JWebApplication} — shorter import, same behavior. Existing code keeps working.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @SpringBootApplication
 @PropertySource(value = "classpath:jweb.yaml", factory = YamlPropertySourceFactory.class)
+@Deprecated
 public @interface JWebApplication {
 }

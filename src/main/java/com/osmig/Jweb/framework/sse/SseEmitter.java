@@ -28,7 +28,10 @@ import java.util.function.Consumer;
  * // Later, broadcast to all subscribers
  * eventBus.broadcast(SseEvent.of("New message received"));
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.SseEmitter} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public class SseEmitter {
 
     private static final Logger log = LoggerFactory.getLogger(SseEmitter.class);
@@ -38,7 +41,7 @@ public class SseEmitter {
     private final CopyOnWriteArrayList<Consumer<Throwable>> onErrorCallbacks = new CopyOnWriteArrayList<>();
     private volatile boolean completed = false;
 
-    private SseEmitter(long timeout) {
+    protected SseEmitter(long timeout) {
         this.delegate = new org.springframework.web.servlet.mvc.method.annotation.SseEmitter(timeout);
 
         delegate.onCompletion(() -> {
@@ -60,8 +63,8 @@ public class SseEmitter {
     /**
      * Creates an SSE emitter with default timeout (30 seconds).
      */
-    public static SseEmitter create() {
-        return new SseEmitter(30_000);
+    public static jweb.SseEmitter create() {
+        return new jweb.SseEmitter(30_000);
     }
 
     /**
@@ -69,8 +72,8 @@ public class SseEmitter {
      *
      * @param timeoutMs timeout in milliseconds (0 for no timeout)
      */
-    public static SseEmitter create(long timeoutMs) {
-        return new SseEmitter(timeoutMs);
+    public static jweb.SseEmitter create(long timeoutMs) {
+        return new jweb.SseEmitter(timeoutMs);
     }
 
     /**

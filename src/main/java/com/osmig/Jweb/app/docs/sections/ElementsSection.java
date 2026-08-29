@@ -15,7 +15,7 @@ public final class ElementsSection {
 
             docSubtitle("Import Statement"),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.El.*;"""),
+import static jweb.El.*;"""),
             para("This single import gives you access to all HTML elements, attributes, and helpers."),
 
             docSubtitle("Basic Pattern"),

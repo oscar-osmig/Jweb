@@ -2,8 +2,8 @@ package com.osmig.Jweb.app.pages.admin;
 
 import jweb.Element;
 import com.osmig.Jweb.framework.db.mongo.Doc;
-import com.osmig.Jweb.framework.security.Csrf;
-import com.osmig.Jweb.framework.security.CsrfToken;
+import jweb.Csrf;
+import jweb.CsrfToken;
 import jweb.Template;
 
 import java.text.SimpleDateFormat;

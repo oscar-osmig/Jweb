@@ -28,9 +28,12 @@ import com.osmig.Jweb.framework.attributes.Attributes;
  * button(popoverTarget("menu"), popoverTargetAction("show"), "Open Menu"),
  * button(popoverTarget("menu"), popoverTargetAction("hide"), "Close Menu")
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.el.PopoverElements} — shorter import, same behavior. Existing code keeps working.
  */
-public final class PopoverElements {
-    private PopoverElements() {}
+@Deprecated
+public class PopoverElements {
+    protected PopoverElements() {}
 
     // ==================== Popover Attributes ====================
 

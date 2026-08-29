@@ -11,7 +11,7 @@ public final class FormsUpload {
             h3Title("File Upload"),
             para("Handle file uploads with validation and storage."),
             codeBlock("""
-import com.osmig.Jweb.framework.upload.FileUpload;
+import jweb.FileUpload;
 import com.osmig.Jweb.framework.upload.UploadedFile;
 
 app.post("/upload", req -> {

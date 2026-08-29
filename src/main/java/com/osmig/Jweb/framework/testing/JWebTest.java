@@ -59,10 +59,13 @@ import java.util.regex.Pattern;
  * JWebTest.assertHasClass(html, "card");
  * JWebTest.assertHasAttribute(html, "id", "my-card");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.JWebTest} — shorter import, same behavior. Existing code keeps working.
  */
-public final class JWebTest {
+@Deprecated
+public class JWebTest {
 
-    private JWebTest() {
+    protected JWebTest() {
         // Static utility class
     }
 

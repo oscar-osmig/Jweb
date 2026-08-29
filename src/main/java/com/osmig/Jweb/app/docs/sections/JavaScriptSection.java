@@ -24,7 +24,7 @@ import static jweb.Actions.*;
 // Event handling patterns
 
 // Async/await and fetch
-import static com.osmig.Jweb.framework.js.Async.*;"""),
+import static jweb.Js.*;"""),
 
             docSubtitle("Two Approaches"),
             para("Use Actions DSL for common UI patterns, or JS DSL for custom logic."),

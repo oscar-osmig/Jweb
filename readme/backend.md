@@ -151,7 +151,7 @@ How it works — and what that implies:
 ## OpenAPI Documentation
 
 ```java
-import com.osmig.Jweb.framework.openapi.OpenApi;
+import jweb.OpenApi;
 
 OpenApi.create()
     .title("JWeb Example API")
@@ -293,7 +293,7 @@ overloads), `getDateTime` (⚠️ not `getDate`), `getList`, `getDoc`, `get(dott
 ### Session-based Authentication (`Auth` + `Principal`)
 
 ```java
-import com.osmig.Jweb.framework.security.Auth;
+import jweb.Auth;
 import com.osmig.Jweb.framework.security.Principal;
 
 // Login — stores principal in session, regenerates the CSRF token
@@ -571,7 +571,7 @@ Registration reg = FormModel.bindFromParameterMap(Registration.class, req.formPa
 ## File Uploads
 
 ```java
-import com.osmig.Jweb.framework.upload.FileUpload;
+import jweb.FileUpload;
 import com.osmig.Jweb.framework.upload.UploadedFile;
 
 UploadedFile file = FileUpload.getFile(req, "avatar");        // never null (empty wrapper)
@@ -641,7 +641,7 @@ for large PDFs.
 ## Internationalization
 
 ```java
-import com.osmig.Jweb.framework.i18n.I18n;
+import jweb.I18n;
 import com.osmig.Jweb.framework.i18n.Messages;
 
 // Register bundles programmatically (no properties-file auto-loading yet)

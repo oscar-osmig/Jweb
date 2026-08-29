@@ -1,7 +1,7 @@
 package com.osmig.Jweb.app.api;
 
 import com.osmig.Jweb.framework.db.mongo.Doc;
-import com.osmig.Jweb.framework.db.mongo.Mongo;
+import jweb.Mongo;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

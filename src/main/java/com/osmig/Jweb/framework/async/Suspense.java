@@ -61,7 +61,10 @@ import java.util.function.Supplier;
  *
  * @param <T> the type of data being loaded
  * @see Element
+ *
+ * @deprecated Replaced by {@code jweb.Suspense} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public class Suspense<T> implements Element {
 
     // Shared executor for non-blocking suspense - virtual threads for efficiency
@@ -74,7 +77,7 @@ public class Suspense<T> implements Element {
     private long timeoutMs = 30000; // 30 second default
     private long nonBlockingTimeoutMs = 0; // 0 means blocking mode (default)
 
-    private Suspense(Callable<T> dataLoader) {
+    protected Suspense(Callable<T> dataLoader) {
         this.dataLoader = dataLoader;
         this.loadingElement = () -> () -> new VText("Loading...");
         this.errorElement = e -> () -> new VText("Error: " + e.getMessage());

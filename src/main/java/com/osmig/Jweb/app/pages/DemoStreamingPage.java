@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.pages;
 
-import com.osmig.Jweb.framework.async.Suspense;
+import jweb.Suspense;
 import jweb.Element;
 
 import static jweb.El.*;

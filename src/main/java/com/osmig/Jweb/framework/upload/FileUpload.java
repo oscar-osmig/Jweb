@@ -52,10 +52,13 @@ import java.util.Optional;
  * spring.servlet.multipart.max-file-size=10MB
  * spring.servlet.multipart.max-request-size=50MB
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.FileUpload} — shorter import, same behavior. Existing code keeps working.
  */
-public final class FileUpload {
+@Deprecated
+public class FileUpload {
 
-    private FileUpload() {}
+    protected FileUpload() {}
 
     /**
      * Gets a single uploaded file by name.

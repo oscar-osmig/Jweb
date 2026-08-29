@@ -46,9 +46,12 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  * </pre>
  *
  * <p>The server watches for file changes and notifies connected browsers via SSE.</p>
+ *
+ * @deprecated Replaced by {@code jweb.DevServer} — shorter import, same behavior. Existing code keeps working.
  */
 @Configuration
 @ConditionalOnProperty(name = "jweb.dev.hot-reload", havingValue = "true")
+@Deprecated
 public class DevServer {
 
     private static final Set<SseEmitter> emitters = ConcurrentHashMap.newKeySet();

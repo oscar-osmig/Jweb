@@ -2,10 +2,10 @@ package com.osmig.Jweb.app;
 
 import jweb.JWeb;
 import jweb.JWebRoutes;
-import com.osmig.Jweb.framework.openapi.OpenApi;
+import jweb.OpenApi;
 import com.osmig.Jweb.framework.routing.RouteHandler;
-import com.osmig.Jweb.framework.security.Csrf;
-import com.osmig.Jweb.framework.server.Response;
+import jweb.Csrf;
+import jweb.Response;
 import com.osmig.Jweb.app.api.AdminApi;
 import com.osmig.Jweb.app.api.ContactApi;
 import com.osmig.Jweb.app.api.ExampleApi;

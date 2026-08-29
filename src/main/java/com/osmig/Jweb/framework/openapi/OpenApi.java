@@ -35,7 +35,10 @@ import java.util.*;
  * app.get("/openapi.json", req -> Response.json(spec));
  * app.get("/docs", req -> Response.html(OpenApi.swaggerUi("/openapi.json")));
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.OpenApi} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public class OpenApi {
 
     private String title = "API Documentation";
@@ -54,7 +57,7 @@ public class OpenApi {
     private final Map<String, TagInfo> tags = new LinkedHashMap<>();
     private final Map<String, Map<String, Object>> schemas = new LinkedHashMap<>();
 
-    private OpenApi() {}
+    protected OpenApi() {}
 
     // ==================== Factory ====================
 

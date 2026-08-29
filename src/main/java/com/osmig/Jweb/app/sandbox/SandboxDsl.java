@@ -1,7 +1,7 @@
 package com.osmig.Jweb.app.sandbox;
 
 import jweb.Element;
-import com.osmig.Jweb.framework.elements.Elements;
+import jweb.El;
 import jweb.CSSValue;
 import jweb.Style;
 
@@ -323,7 +323,7 @@ public final class SandboxDsl {
             if (VOID_ELEMENTS.contains(c.name())) {
                 requireNoChain(c);
                 if (!c.args().isEmpty()) throw new DslError(c.name() + "() takes no arguments", c.pos());
-                return countElement(Elements.tag(c.name()), c);
+                return countElement(El.tag(c.name()), c);
             }
             if (ELEMENTS.contains(c.name())) {
                 requireNoChain(c);
@@ -344,7 +344,7 @@ public final class SandboxDsl {
                         case SIdent id -> throw new DslError(unknownIn(id.name(), "as an element child", ELEMENTS), id.pos());
                     }
                 }
-                return countElement(Elements.tag(c.name(), parts.toArray()), c);
+                return countElement(El.tag(c.name(), parts.toArray()), c);
             }
             throw new DslError(unknownIn(c.name(), "here", elementCandidates()), c.pos());
         }

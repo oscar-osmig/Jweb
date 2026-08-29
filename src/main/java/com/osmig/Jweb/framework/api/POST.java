@@ -11,10 +11,13 @@ import java.lang.annotation.Target;
 
 /**
  * HTTP POST endpoint. Shorthand for @PostMapping.
+ *
+ * @deprecated Replaced by {@code jweb.api.POST} — shorter import, same behavior. Existing code keeps working.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping(method = RequestMethod.POST)
+@Deprecated
 public @interface POST {
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value() default {};

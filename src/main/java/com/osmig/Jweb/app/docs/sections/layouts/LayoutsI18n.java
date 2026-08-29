@@ -11,7 +11,7 @@ public final class LayoutsI18n {
             h3Title("Internationalization (i18n)"),
             para("Build multilingual applications with translated messages."),
             codeBlock("""
-import com.osmig.Jweb.framework.i18n.I18n;
+import jweb.I18n;
 
 // Get translated message
 String title = I18n.t("page.title");

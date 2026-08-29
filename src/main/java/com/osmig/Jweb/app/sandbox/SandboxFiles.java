@@ -76,7 +76,7 @@ public final class SandboxFiles {
     private static final String APP_SRC = """
         package demo;
 
-        import com.osmig.Jweb.framework.JWebApplication;
+        import jweb.JWebApplication;
         import org.springframework.boot.SpringApplication;
 
         @JWebApplication
@@ -91,7 +91,7 @@ public final class SandboxFiles {
 
         import jweb.JWeb;
         import jweb.JWebRoutes;
-        import com.osmig.Jweb.framework.middleware.Middlewares;
+        import jweb.Middlewares;
         import demo.pages.HomePage;
         import org.springframework.stereotype.Component;
 

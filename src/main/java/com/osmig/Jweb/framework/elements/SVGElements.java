@@ -29,10 +29,13 @@ import com.osmig.Jweb.framework.attributes.Attr;
  * </pre>
  *
  * @see Elements for HTML elements
+ *
+ * @deprecated Replaced by {@code jweb.el.SVGElements} — shorter import, same behavior. Existing code keeps working.
  */
-public final class SVGElements {
+@Deprecated
+public class SVGElements {
 
-    private SVGElements() {}
+    protected SVGElements() {}
 
     // ==================== Container Elements ====================
 

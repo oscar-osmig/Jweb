@@ -14,7 +14,7 @@ public final class ElementsEnhanced {
             h3Title("Popover API"),
             para("Native popover elements with auto-dismiss and backdrop behavior."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.PopoverElements.*;
+import static jweb.el.PopoverElements.*;
 import static jweb.El.*;
 
 // Auto popover (dismisses on click outside or Escape)
@@ -50,7 +50,7 @@ button(attrs().attr(popoverTarget("custom-pop")),
             h3Title("Responsive Images"),
             para("Art direction and format selection for optimized image delivery."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.PictureElements.*;
+import static jweb.el.PictureElements.*;
 import static jweb.El.*;
 
 // Art direction: different images per viewport
@@ -171,7 +171,7 @@ p(s("Available in stores"), " — Now online only!")"""),
             h3Title("Form Enhancements"),
             para("Modern form elements for autocomplete, grouping, and specialized inputs."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.FormEnhancements.*;
+import static jweb.el.FormEnhancements.*;
 import static jweb.El.*;
 
 // Autocomplete with datalist

@@ -14,7 +14,7 @@ public final class ElementsModern {
             h3Title("Dialog (Modal)"),
             para("Native modal dialogs with backdrop and close behavior."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.DialogHelper.*;
+import static jweb.el.DialogHelper.*;
 
 // Define the dialog
 dialog(attrs().id("confirm-dialog"),
@@ -48,7 +48,7 @@ dialog(attrs()
             h3Title("Details & Summary (Accordion)"),
             para("Expandable content sections with native toggle behavior."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.DetailsHelper.*;
+import static jweb.el.DetailsHelper.*;
 
 // Basic collapsible
 details(

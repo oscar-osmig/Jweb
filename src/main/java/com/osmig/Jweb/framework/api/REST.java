@@ -26,11 +26,14 @@ import java.lang.annotation.Target;
  *     public User create(@RequestBody User user) { }
  * }
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.api.REST} — shorter import, same behavior. Existing code keeps working.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @RestController
 @RequestMapping
+@Deprecated
 public @interface REST {
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value() default {};

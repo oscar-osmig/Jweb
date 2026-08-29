@@ -1,7 +1,7 @@
 package com.osmig.Jweb.app.layout;
 
 import jweb.Element;
-import com.osmig.Jweb.framework.dev.DevServer;
+import jweb.DevServer;
 import jweb.Template;
 
 import static jweb.El.*;

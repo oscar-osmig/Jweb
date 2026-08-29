@@ -32,9 +32,12 @@ import com.osmig.Jweb.framework.attributes.Attributes;
  * // Responsive with density descriptors
  * responsiveImg("photo.jpg", "Photo", "photo-2x.jpg")
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.el.PictureElements} — shorter import, same behavior. Existing code keeps working.
  */
-public final class PictureElements {
-    private PictureElements() {}
+@Deprecated
+public class PictureElements {
+    protected PictureElements() {}
 
     // ==================== Picture Element ====================
 

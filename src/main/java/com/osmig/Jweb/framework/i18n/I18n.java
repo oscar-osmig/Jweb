@@ -31,15 +31,18 @@ import java.util.Locale;
  * <pre>{@code
  * app.use(I18n.middleware());
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.I18n} — shorter import, same behavior. Existing code keeps working.
  */
-public final class I18n {
+@Deprecated
+public class I18n {
 
     private static final String LANG_PARAM = "lang";
     private static final String LANG_SESSION = "lang";
     private static final String LANG_COOKIE = "lang";
     private static final ThreadLocal<Locale> currentLocale = new ThreadLocal<>();
 
-    private I18n() {}
+    protected I18n() {}
 
     /**
      * Gets the locale for the current request.

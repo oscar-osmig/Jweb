@@ -47,7 +47,7 @@ public class StateHooks {
      * @param <T> the type of the state
      * @return a new State instance
      */
-    public static <T> State<T> useState(T initialValue) {
+    public static <T> jweb.state.State<T> useState(T initialValue) {
         return StateManager.createState(initialValue);
     }
 
@@ -62,7 +62,7 @@ public class StateHooks {
      * @param <T> the type of the state
      * @return a new State instance with null value
      */
-    public static <T> State<T> useState() {
+    public static <T> jweb.state.State<T> useState() {
         return StateManager.createState(null);
     }
 
@@ -82,8 +82,8 @@ public class StateHooks {
      * @return a new computed State instance
      */
     @SafeVarargs
-    public static <T> State<T> useComputed(java.util.function.Supplier<T> computation, State<?>... dependencies) {
-        State<T> computed = StateManager.createState(computation.get());
+    public static <T> jweb.state.State<T> useComputed(java.util.function.Supplier<T> computation, State<?>... dependencies) {
+        jweb.state.State<T> computed = StateManager.createState(computation.get());
 
         // Subscribe to all dependencies
         for (State<?> dep : dependencies) {

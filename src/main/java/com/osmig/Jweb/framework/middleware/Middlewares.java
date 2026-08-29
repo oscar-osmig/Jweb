@@ -22,10 +22,13 @@ import java.util.concurrent.atomic.AtomicLong;
  *    .use(Middlewares.csrf())
  *    .use(Middlewares.rateLimit(100, 60000));
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Middlewares} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Middlewares {
+@Deprecated
+public class Middlewares {
 
-    private Middlewares() {
+    protected Middlewares() {
         // Static utility class
     }
 

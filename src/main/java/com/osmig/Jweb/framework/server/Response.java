@@ -62,10 +62,13 @@ import java.util.Map;
  *     .contentType(MediaType.APPLICATION_PDF)
  *     .body(pdfBytes);
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Response} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Response {
+@Deprecated
+public class Response {
 
-    private Response() {
+    protected Response() {
         // Static utility class
     }
 

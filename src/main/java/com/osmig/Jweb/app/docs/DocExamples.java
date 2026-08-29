@@ -596,12 +596,12 @@ input(attrs().type("file").name("avatar"))
 input(attrs().type("hidden").name("csrf").value(token))""";
 
     public static final String FORMS_VALIDATION = """
-import com.osmig.Jweb.framework.validation.*;
+import jweb.FormValidator;
 
 app.post("/register", req -> {
     Map<String, String> form = req.formData();
 
-    ValidationResult result = FormValidator.create()
+    var result = FormValidator.create()
         .field("email", form.get("email"))
             .required()
             .email()
@@ -1370,7 +1370,7 @@ jweb:
     // ==================== Security Section ====================
 
     public static final String SECURITY_PASSWORD = """
-import com.osmig.Jweb.framework.security.Auth;
+import jweb.Auth;
 
 // Hash a password
 String hashed = Auth.hashPassword("user-password");
@@ -1554,7 +1554,7 @@ jweb:
     watch-paths: src/main/java,src/main/resources""";
 
     public static final String DEV_LAYOUT = """
-import com.osmig.Jweb.framework.dev.DevServer;
+import jweb.DevServer;
 
 public class Layout implements Template {
     public Element render() {

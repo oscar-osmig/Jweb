@@ -1,8 +1,8 @@
 package com.osmig.Jweb.app.pages;
 
 import jweb.Element;
-import com.osmig.Jweb.framework.security.Csrf;
-import com.osmig.Jweb.framework.security.CsrfToken;
+import jweb.Csrf;
+import jweb.CsrfToken;
 import jweb.Template;
 
 import static jweb.El.*;

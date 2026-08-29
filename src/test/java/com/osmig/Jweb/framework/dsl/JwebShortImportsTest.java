@@ -96,6 +96,36 @@ class JwebShortImportsTest {
     }
 
     @Test
+    void appInfrastructureAliasesWork() {
+        // Static entries reachable through the jweb names
+        assertNotNull(jweb.Middlewares.recommended());
+        assertEquals(200, jweb.Response.html(p(text("ok"))).getStatusCode().value());
+        assertNotNull(jweb.Streamed.of(() -> p(text("late"))));
+
+        // Value types: factories hand out the jweb subtype, so both names assign
+        jweb.CsrfToken token = com.osmig.Jweb.framework.security.CsrfToken.generate();
+        com.osmig.Jweb.framework.security.CsrfToken legacyTyped = token;
+        assertNotNull(legacyTyped.getValue());
+
+        jweb.FormValidator validator = jweb.FormValidator.create();
+        assertNotNull(validator);
+
+        jweb.state.State<Integer> count =
+            com.osmig.Jweb.framework.state.StateManager.createState(0);
+        count.set(41);
+        assertEquals(41, count.get());
+
+        // Annotations carry the same Spring meta-annotations as the legacy ones
+        assertNotNull(jweb.api.REST.class.getAnnotation(
+            org.springframework.web.bind.annotation.RequestMapping.class));
+        assertNotNull(jweb.JWebApplication.class.getAnnotation(
+            org.springframework.boot.autoconfigure.SpringBootApplication.class));
+
+        // jweb.el.* element helper shells
+        assertTrue(jweb.el.SVGElements.svg().toHtml().contains("<svg"));
+    }
+
+    @Test
     void mixedOldAndNewTypesInteroperate() {
         // A legacy component value assigns to the new Element type...
         Element fromLegacy = com.osmig.Jweb.framework.elements.Elements.fragment(p(text("x")));

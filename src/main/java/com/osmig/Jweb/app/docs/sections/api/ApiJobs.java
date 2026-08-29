@@ -11,7 +11,7 @@ public final class ApiJobs {
             h3Title("Background Jobs"),
             para("Run tasks asynchronously without blocking the request."),
             codeBlock("""
-import com.osmig.Jweb.framework.async.Jobs;
+import jweb.Jobs;
 
 // Fire and forget
 Jobs.run(() -> {

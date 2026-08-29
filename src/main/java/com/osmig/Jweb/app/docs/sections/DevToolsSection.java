@@ -26,7 +26,7 @@ jweb:
             docSubtitle("Add to Layout"),
             para("Include the DevServer script in your layout for auto-refresh:"),
             codeBlock("""
-import com.osmig.Jweb.framework.dev.DevServer;
+import jweb.DevServer;
 
 public Element render() {
     return html(

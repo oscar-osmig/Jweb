@@ -21,8 +21,11 @@ import java.util.regex.Pattern;
  *
  * ValidationResult result = usernameValidator.validate(username, "username");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Validators} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Validators {
+@Deprecated
+public class Validators {
 
     // Common regex patterns
     private static final Pattern EMAIL_PATTERN = Pattern.compile(
@@ -38,7 +41,7 @@ public final class Validators {
             "^\\+?[0-9]{10,15}$"
     );
 
-    private Validators() {
+    protected Validators() {
         // Static utility class
     }
 

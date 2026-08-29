@@ -18,8 +18,8 @@ public final class ContactStatus {
         return box(message, hex("#fef2f2"), hex("#b91c1c"));
     }
 
-    private static Element box(String message, com.osmig.Jweb.framework.styles.CSSValue bg,
-                               com.osmig.Jweb.framework.styles.CSSValue fg) {
+    private static Element box(String message, jweb.CSSValue bg,
+                               jweb.CSSValue fg) {
         return div(
             style().padding(rem(0.75), rem(1)).borderRadius(px(6))
                    .backgroundColor(bg).color(fg).fontSize(rem(0.875)),

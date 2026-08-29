@@ -60,8 +60,21 @@ The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2h
 - Long-tail follow-up (same day): every specialty styles module has a `jweb.css.X`
   shell and every `JS*` browser-API module a `jweb.js.X` shell (class names unchanged,
   so migration is a pure package-prefix swap); the legacy classes are `@Deprecated`
-  aliases. `JWebRuntime`, `StyledElement`, `DialogHelper`/`DetailsHelper` (elements)
-  keep their original locations.
+  aliases.
+- App-infrastructure sweep (pre-v1.2.0): `jweb.JWebApplication` + `jweb.api.*`
+  (annotations re-declared with the same Spring meta-annotations — both spellings
+  work), `jweb.Middlewares`, `jweb.Response`, `jweb.Csrf`/`Auth`, `jweb.DevServer`,
+  `jweb.I18n`, `jweb.OpenApi`, `jweb.Jobs`, `jweb.Suspense`, `jweb.Streamed`,
+  `jweb.FileUpload`, `jweb.TypedRoute`, `jweb.JWebTest`, `jweb.Validators`,
+  `jweb.Seo`, `jweb.Cache`, `jweb.Page`, and `jweb.el.*` for the element helper
+  modules. For value types the factories now hand out `jweb` subtypes so either
+  name works in declarations: `jweb.state.State` (from `useState`),
+  `jweb.CsrfToken` (from `Csrf.getOrCreateToken`), `jweb.FormValidator` (from
+  `create()`), `jweb.SseEmitter` (from `create()`).
+- Still intentionally long: `Request`, `Principal`, `UploadedFile`, `ValidationResult`,
+  `Doc`-as-declared-type, `RouteHandler`, `Middleware` — types you receive or
+  implement where a rename would break override/lambda matching. Handlers infer
+  `req` without any import; use `var` for the rest.
 
 Fixed in the 2026-08-09 follow-up pass:
 

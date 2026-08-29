@@ -6,9 +6,12 @@ package com.osmig.Jweb.framework.validation;
  * NumberValidators.min(0).validate(count, "count");
  * NumberValidators.range(1, 100).validate(percentage, "percentage");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.NumberValidators} — shorter import, same behavior. Existing code keeps working.
  */
-public final class NumberValidators {
-    private NumberValidators() {}
+@Deprecated
+public class NumberValidators {
+    protected NumberValidators() {}
 
     public static <T extends Number> Validator<T> required() {
         return Validator.of(n -> n != null, f -> f + " is required");

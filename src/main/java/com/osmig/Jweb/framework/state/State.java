@@ -38,7 +38,7 @@ public class State<T> {
      * Creates a new State with the given initial value.
      * Use {@link StateHooks#useState(Object)} instead of calling this directly.
      */
-    State(String id, T initialValue) {
+    protected State(String id, T initialValue) {
         this.id = id;
         this.value = initialValue;
     }

@@ -60,8 +60,11 @@ import java.util.function.Supplier;
  *     return records.size();
  * });
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.Jobs} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Jobs {
+@Deprecated
+public class Jobs {
 
     private static final Logger log = LoggerFactory.getLogger(Jobs.class);
 
@@ -70,7 +73,7 @@ public final class Jobs {
     private static final Map<String, BackgroundTask<?>> tasks = new ConcurrentHashMap<>();
     private static final Map<String, ScheduledFuture<?>> scheduledJobs = new ConcurrentHashMap<>();
 
-    private Jobs() {}
+    protected Jobs() {}
 
     // ========== One-time Execution ==========
 

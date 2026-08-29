@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.api;
 
-import com.osmig.Jweb.framework.api.*;
+import jweb.api.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;

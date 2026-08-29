@@ -11,10 +11,13 @@ import java.lang.annotation.Target;
 
 /**
  * HTTP DELETE endpoint. Shorthand for @DeleteMapping.
+ *
+ * @deprecated Replaced by {@code jweb.api.DEL} — shorter import, same behavior. Existing code keeps working.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping(method = RequestMethod.DELETE)
+@Deprecated
 public @interface DEL {
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value() default {};

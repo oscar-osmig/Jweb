@@ -51,7 +51,10 @@ import java.util.function.Supplier;
  * Cache&lt;String, User&gt; users = Cache.named("users");
  * Cache&lt;String, Product&gt; products = Cache.named("products");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Cache} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public class Cache<K, V> {
 
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
@@ -63,7 +66,7 @@ public class Cache<K, V> {
     private final int maxSize;
     private volatile boolean cleanupScheduled = false;
 
-    private Cache(Duration defaultTtl) {
+    protected Cache(Duration defaultTtl) {
         this(defaultTtl, Integer.MAX_VALUE);
     }
 

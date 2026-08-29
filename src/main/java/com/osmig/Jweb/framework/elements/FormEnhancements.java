@@ -48,9 +48,12 @@ import com.osmig.Jweb.framework.attributes.Attributes;
  * // Range slider
  * rangeInput("volume", 0, 100, 50)
  * }</pre>
+ *
+ * @deprecated Replaced by {@code jweb.el.FormEnhancements} — shorter import, same behavior. Existing code keeps working.
  */
-public final class FormEnhancements {
-    private FormEnhancements() {}
+@Deprecated
+public class FormEnhancements {
+    protected FormEnhancements() {}
 
     // ==================== Datalist ====================
 

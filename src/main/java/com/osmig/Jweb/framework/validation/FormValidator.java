@@ -22,7 +22,10 @@ import java.util.function.Function;
  *     .field("password", password).required().minLength(8)
  *     .validate();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.FormValidator} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public class FormValidator {
 
     private final List<FieldValidator> fieldValidators;
@@ -35,8 +38,12 @@ public class FormValidator {
         this.currentField = null;
     }
 
-    public static FormValidator create() {
-        return new FormValidator(new ArrayList<>(), new ArrayList<>());
+    protected FormValidator() {
+        this(new ArrayList<>(), new ArrayList<>());
+    }
+
+    public static jweb.FormValidator create() {
+        return new jweb.FormValidator();
     }
 
     // ==================== Lambda-based API (Immutable) ====================

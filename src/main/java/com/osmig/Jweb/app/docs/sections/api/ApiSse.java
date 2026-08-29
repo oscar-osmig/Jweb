@@ -11,19 +11,21 @@ public final class ApiSse {
             h3Title("Server-Sent Events"),
             para("Push real-time updates to clients with SSE."),
             codeBlock("""
-import com.osmig.Jweb.framework.http.SSE;
+import jweb.SseEmitter;
 
-// Create SSE endpoint
-app.get("/events", req -> SSE.stream(emitter -> {
-    // Send events to client
-    emitter.send("connected", "Hello!");
+// Create SSE endpoint — return the emitter straight from the route
+app.get("/events", req -> {
+    SseEmitter emitter = SseEmitter.create();
 
-    // Send periodic updates
-    while (!emitter.isClosed()) {
-        emitter.send("update", getData());
-        Thread.sleep(1000);
-    }
-}));"""),
+    Jobs.run(() -> {
+        while (!emitter.isCompleted()) {
+            emitter.send(getData());
+            Thread.sleep(1000);
+        }
+    });
+
+    return emitter;
+});"""),
 
             h3Title("Event Types"),
             codeBlock("""

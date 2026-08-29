@@ -43,13 +43,16 @@ import java.util.function.Function;
  * app.use("/admin", Auth.requireRole("admin"));
  * app.use("/api", Auth.requireAnyRole("user", "admin"));
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Auth} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Auth {
+@Deprecated
+public class Auth {
 
     private static final String SESSION_PRINCIPAL_KEY = "jweb_principal";
     private static final String REQUEST_PRINCIPAL_KEY = "jweb_auth_principal";
 
-    private Auth() {
+    protected Auth() {
         // Static utility class
     }
 

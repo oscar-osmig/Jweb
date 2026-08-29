@@ -11,10 +11,13 @@ import java.lang.annotation.Target;
 
 /**
  * HTTP PUT endpoint. Shorthand for @PutMapping.
+ *
+ * @deprecated Replaced by {@code jweb.api.UPDATE} — shorter import, same behavior. Existing code keeps working.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping(method = RequestMethod.PUT)
+@Deprecated
 public @interface UPDATE {
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value() default {};

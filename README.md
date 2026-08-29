@@ -177,6 +177,17 @@ import static jweb.Mongo.*;   // MongoDB access (also jweb.Schema, jweb.Doc)
 import static jweb.css.Selectors.*;   // and MediaQuery, Keyframes, Stylesheet, ...
 import static jweb.js.JSClipboard.*;  // and JSCanvas, JSCrypto, JSStorage, ...
 
+// App infrastructure
+import jweb.JWebApplication;  // the @JWebApplication annotation
+import jweb.api.*;            // @REST, @GET, @POST, @UPDATE, @PATCH, @DEL
+import jweb.Middlewares;      // recommended(), logging(), rateLimit(), ...
+import jweb.Response;         // Response.html/json/redirect
+import jweb.Csrf;             // CSRF tokens (and jweb.CsrfToken, jweb.Auth)
+import jweb.Suspense;         // async blocks (and jweb.Streamed, jweb.Jobs)
+import jweb.SseEmitter;       // server-sent events
+import jweb.TypedRoute;       // compile-time-checked routes
+import jweb.state.State;      // the State<T> type useState() returns
+
 // Types
 import jweb.Element;          // what components return
 import jweb.Template;         // what pages implement

@@ -24,9 +24,12 @@ package com.osmig.Jweb.framework.elements;
  * // Exclusive accordion (only one open at a time)
  * button(attrs().onclick(DetailsHelper.closeAll("faq")), "Collapse All")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.el.DetailsHelper} — shorter import, same behavior. Existing code keeps working.
  */
-public final class DetailsHelper {
-    private DetailsHelper() {}
+@Deprecated
+public class DetailsHelper {
+    protected DetailsHelper() {}
 
     /**
      * Generates JavaScript to open (expand) a details element.

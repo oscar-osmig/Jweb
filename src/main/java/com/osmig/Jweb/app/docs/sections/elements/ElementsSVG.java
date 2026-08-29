@@ -14,7 +14,7 @@ public final class ElementsSVG {
             codeBlock("""
 // Import SVG elements
 import static jweb.El.*;
-import static com.osmig.Jweb.framework.elements.SVGElements.*;"""),
+import static jweb.el.SVGElements.*;"""),
 
             h3Title("Basic SVG"),
             para("Create an SVG container with viewBox."),

@@ -23,8 +23,11 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  *     ...
  * )
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Seo} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Seo {
+@Deprecated
+public class Seo {
 
     private final String title;
     private final String description;
@@ -33,7 +36,7 @@ public final class Seo {
     private String siteName;
     private String type = "website";
 
-    private Seo(String title, String description) {
+    protected Seo(String title, String description) {
         this.title = title;
         this.description = description;
     }

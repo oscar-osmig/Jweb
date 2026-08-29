@@ -1,8 +1,8 @@
 package com.osmig.Jweb.app.api;
 
-import com.osmig.Jweb.framework.api.GET;
-import com.osmig.Jweb.framework.api.POST;
-import com.osmig.Jweb.framework.api.REST;
+import jweb.api.GET;
+import jweb.api.POST;
+import jweb.api.REST;
 import com.osmig.Jweb.framework.markdown.Markitdown;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestParam;

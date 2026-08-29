@@ -23,7 +23,10 @@ import java.util.function.Supplier;
  *             .render(data -> reportTable(data))
  *     )).render()));
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Streamed} — shorter import, same behavior. Existing code keeps working.
  */
+@Deprecated
 public record Streamed(Supplier<? extends jweb.Element> page) {
 
     /** Wraps a lazily-built page for streaming delivery. */

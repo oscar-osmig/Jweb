@@ -11,10 +11,13 @@ import java.lang.annotation.Target;
 
 /**
  * HTTP PATCH endpoint. Shorthand for @PatchMapping.
+ *
+ * @deprecated Replaced by {@code jweb.api.PATCH} — shorter import, same behavior. Existing code keeps working.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @RequestMapping(method = RequestMethod.PATCH)
+@Deprecated
 public @interface PATCH {
     @AliasFor(annotation = RequestMapping.class, attribute = "value")
     String[] value() default {};

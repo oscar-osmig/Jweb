@@ -38,12 +38,15 @@ import static com.osmig.Jweb.framework.elements.Elements.*;
  * // or with excluded paths:
  * app.use(Middlewares.csrf(Set.of("/api")));
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Csrf} — shorter import, same behavior. Existing code keeps working.
  */
-public final class Csrf {
+@Deprecated
+public class Csrf {
 
     private static final String SESSION_ATTRIBUTE = "jweb_csrf_token";
 
-    private Csrf() {
+    protected Csrf() {
         // Static utility class
     }
 
@@ -53,9 +56,10 @@ public final class Csrf {
      * @param request the HTTP request
      * @return the CSRF token
      */
-    public static CsrfToken getOrCreateToken(Request request) {
+    public static jweb.CsrfToken getOrCreateToken(Request request) {
         HttpSession session = request.raw().getSession(true);
-        CsrfToken token = (CsrfToken) session.getAttribute(SESSION_ATTRIBUTE);
+        // Tokens are always created as jweb.CsrfToken (see CsrfToken.generate)
+        jweb.CsrfToken token = (jweb.CsrfToken) session.getAttribute(SESSION_ATTRIBUTE);
 
         if (token == null || token.isExpired()) {
             token = CsrfToken.generate();
@@ -71,12 +75,12 @@ public final class Csrf {
      * @param request the HTTP request
      * @return the CSRF token, or null if none exists
      */
-    public static CsrfToken getToken(Request request) {
+    public static jweb.CsrfToken getToken(Request request) {
         HttpSession session = request.raw().getSession(false);
         if (session == null) {
             return null;
         }
-        return (CsrfToken) session.getAttribute(SESSION_ATTRIBUTE);
+        return (jweb.CsrfToken) session.getAttribute(SESSION_ATTRIBUTE);
     }
 
     /**
