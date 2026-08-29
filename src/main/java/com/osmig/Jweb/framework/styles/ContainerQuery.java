@@ -32,7 +32,7 @@ public class ContainerQuery {
 
     private String containerName;
     private final List<String> conditions = new ArrayList<>();
-    private final Map<String, Style<?>> rules = new LinkedHashMap<>();
+    private final Map<String, jweb.Style<?>> rules = new LinkedHashMap<>();
 
     private ContainerQuery() {}
 
@@ -50,54 +50,54 @@ public class ContainerQuery {
 
     // ==================== Size Conditions ====================
 
-    public ContainerQuery minWidth(CSSValue value) {
+    public ContainerQuery minWidth(jweb.CSSValue value) {
         conditions.add("(min-width: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery maxWidth(CSSValue value) {
+    public ContainerQuery maxWidth(jweb.CSSValue value) {
         conditions.add("(max-width: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery width(CSSValue value) {
+    public ContainerQuery width(jweb.CSSValue value) {
         conditions.add("(width: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery minHeight(CSSValue value) {
+    public ContainerQuery minHeight(jweb.CSSValue value) {
         conditions.add("(min-height: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery maxHeight(CSSValue value) {
+    public ContainerQuery maxHeight(jweb.CSSValue value) {
         conditions.add("(max-height: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery height(CSSValue value) {
+    public ContainerQuery height(jweb.CSSValue value) {
         conditions.add("(height: " + value.css() + ")");
         return this;
     }
 
     // ==================== Inline/Block Size ====================
 
-    public ContainerQuery minInlineSize(CSSValue value) {
+    public ContainerQuery minInlineSize(jweb.CSSValue value) {
         conditions.add("(min-inline-size: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery maxInlineSize(CSSValue value) {
+    public ContainerQuery maxInlineSize(jweb.CSSValue value) {
         conditions.add("(max-inline-size: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery minBlockSize(CSSValue value) {
+    public ContainerQuery minBlockSize(jweb.CSSValue value) {
         conditions.add("(min-block-size: " + value.css() + ")");
         return this;
     }
 
-    public ContainerQuery maxBlockSize(CSSValue value) {
+    public ContainerQuery maxBlockSize(jweb.CSSValue value) {
         conditions.add("(max-block-size: " + value.css() + ")");
         return this;
     }
@@ -140,7 +140,7 @@ public class ContainerQuery {
 
     // ==================== Rules ====================
 
-    public ContainerQuery rule(String selector, Style<?> style) {
+    public ContainerQuery rule(String selector, jweb.Style<?> style) {
         rules.put(selector, style);
         return this;
     }
@@ -171,7 +171,7 @@ public class ContainerQuery {
 
         sb.append(" {\n");
 
-        for (Map.Entry<String, Style<?>> entry : rules.entrySet()) {
+        for (Map.Entry<String, jweb.Style<?>> entry : rules.entrySet()) {
             sb.append("  ").append(entry.getKey()).append(" {\n");
             for (Map.Entry<String, String> prop : entry.getValue().toMap().entrySet()) {
                 sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(";\n");

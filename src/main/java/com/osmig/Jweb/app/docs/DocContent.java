@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.app.docs.sections.*;
 
 public class DocContent {

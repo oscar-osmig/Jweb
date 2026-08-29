@@ -18,10 +18,13 @@ package com.osmig.Jweb.framework.styles;
  * // Color manipulation
  * style().backgroundColor(lighten(blue, 20))  // 20% lighter blue
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSColors {
+@Deprecated
+public class CSSColors {
 
-    private CSSColors() {}
+    protected CSSColors() {}
 
     // ==================== Special Values ====================
 
@@ -220,7 +223,7 @@ public final class CSSColors {
      * @param percent the percentage of color1 (0-100)
      * @return a CSSValue for the mixed color
      */
-    public static CSSValue colorMix(CSSValue color1, CSSValue color2, int percent) {
+    public static CSSValue colorMix(jweb.CSSValue color1, jweb.CSSValue color2, int percent) {
         return () -> "color-mix(in srgb, " + color1.css() + " " + percent + "%, " + color2.css() + ")";
     }
 
@@ -236,7 +239,7 @@ public final class CSSColors {
      * @param percent how much to lighten (0-100)
      * @return a CSSValue for the lightened color
      */
-    public static CSSValue lighten(CSSValue color, int percent) {
+    public static CSSValue lighten(jweb.CSSValue color, int percent) {
         return colorMix(white, color, 100 - percent);
     }
 
@@ -252,7 +255,7 @@ public final class CSSColors {
      * @param percent how much to darken (0-100)
      * @return a CSSValue for the darkened color
      */
-    public static CSSValue darken(CSSValue color, int percent) {
+    public static CSSValue darken(jweb.CSSValue color, int percent) {
         return colorMix(black, color, 100 - percent);
     }
 
@@ -271,7 +274,7 @@ public final class CSSColors {
      * @param darkColor the color to use in dark mode
      * @return a CSSValue for the light-dark() function
      */
-    public static CSSValue lightDark(CSSValue lightColor, CSSValue darkColor) {
+    public static CSSValue lightDark(jweb.CSSValue lightColor, jweb.CSSValue darkColor) {
         return () -> "light-dark(" + lightColor.css() + ", " + darkColor.css() + ")";
     }
 }

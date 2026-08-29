@@ -1,13 +1,11 @@
 package com.osmig.Jweb.app.layout;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 
-import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.styles.CSSValue;
-import com.osmig.Jweb.framework.styles.Style;
+import jweb.Element;
+import jweb.CSSValue;
+import jweb.Style;
 
 /**
  * Design tokens and brand style fragments for the app.
@@ -67,7 +65,7 @@ public final class Theme {
      * button(style().padding(SP_3).apply(brandFlow()), ...)
      * </pre>
      */
-    public static Style<?> brandFlow() {
+    public static jweb.Style<?> brandFlow() {
         return style()
             .background(BRAND_GRADIENT)
             .backgroundSize(percent(300), percent(100))

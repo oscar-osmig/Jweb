@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.elements;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ElementsEnhanced {
@@ -15,7 +15,7 @@ public final class ElementsEnhanced {
             para("Native popover elements with auto-dismiss and backdrop behavior."),
             codeBlock("""
 import static com.osmig.Jweb.framework.elements.PopoverElements.*;
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Auto popover (dismisses on click outside or Escape)
 popoverToggleButton("my-popup", "Toggle Menu"),
@@ -51,7 +51,7 @@ button(attrs().attr(popoverTarget("custom-pop")),
             para("Art direction and format selection for optimized image delivery."),
             codeBlock("""
 import static com.osmig.Jweb.framework.elements.PictureElements.*;
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Art direction: different images per viewport
 picture(
@@ -84,7 +84,7 @@ decoding("async")"""),
             h3Title("Figure and Caption"),
             para("Semantic container for self-contained content with optional captions."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Image with caption
 figure(
@@ -107,7 +107,7 @@ figure(
             h3Title("Definition Lists"),
             para("Semantic element for term-definition pairs, glossaries, and key-value data."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Glossary
 dl(
@@ -126,7 +126,7 @@ dl(attrs().class_("metadata"),
             h3Title("Interactive Text Elements"),
             para("Semantic inline elements for abbreviations, citations, quotations, keyboard input, and text annotations."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Abbreviation with tooltip expansion
 p("The ", abbr("HTML", "HyperText Markup Language"), " spec")
@@ -172,7 +172,7 @@ p(s("Available in stores"), " — Now online only!")"""),
             para("Modern form elements for autocomplete, grouping, and specialized inputs."),
             codeBlock("""
 import static com.osmig.Jweb.framework.elements.FormEnhancements.*;
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Autocomplete with datalist
 input(attrs().attr("list", "browsers").name("browser")),

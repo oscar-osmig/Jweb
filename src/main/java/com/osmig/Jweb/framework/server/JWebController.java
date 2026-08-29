@@ -460,13 +460,13 @@ public class JWebController {
      * if configured. The instantiated page is exposed via pageHolder so the
      * caller can apply title/head/script extras to the final HTML.
      */
-    private Element renderPage(PageRoute route, Request request, Template[] pageHolder) {
+    private jweb.Element renderPage(PageRoute route, Request request, Template[] pageHolder) {
         Template page = route.pageSupplier().get();
         pageHolder[0] = page;
         page.beforeRender(request);
-        Element content = page.render();
+        var content = page.render();
         String title = page.pageTitle().orElse(route.title());
-        Element result = route.layoutClass() != null
+        var result = route.layoutClass() != null
             ? wrapInLayout(route.layoutClass(), title, content)
             : content;
         page.afterRender(request);
@@ -549,33 +549,50 @@ public class JWebController {
         return escapeHtmlText(text).replace("\"", "&quot;").replace("'", "&#39;");
     }
 
-    private Element wrapInLayout(Class<? extends Template> layoutClass, String title, Element content) {
+    private jweb.Element wrapInLayout(Class<? extends Template> layoutClass, String title, jweb.Element content) {
         try {
             // Get cached constructor or find and cache it
             Constructor<?> cachedCtor = layoutConstructorCache.get(layoutClass);
 
             if (cachedCtor == null) {
-                // Try to find constructor with (String, Element) first
-                try {
-                    cachedCtor = layoutClass.getConstructor(String.class, Element.class);
-                } catch (NoSuchMethodException e) {
-                    // Try constructor with just Element
-                    cachedCtor = layoutClass.getConstructor(Element.class);
-                }
+                // Layouts may declare their content parameter as either
+                // jweb.Element or the legacy core Element; (String, Element)
+                // shapes take priority over (Element)-only.
+                cachedCtor = findLayoutConstructor(layoutClass);
                 cachedCtor.setAccessible(true);
                 layoutConstructorCache.put(layoutClass, cachedCtor);
             }
 
-            // Invoke the cached constructor
+            // Invoke the cached constructor. Pass the legacy view of the
+            // content so ctors typed with either Element interface accept it.
             Template layout;
             if (cachedCtor.getParameterCount() == 2) {
-                layout = (Template) cachedCtor.newInstance(title, content);
+                layout = (Template) cachedCtor.newInstance(title, Element.of(content));
             } else {
-                layout = (Template) cachedCtor.newInstance(content);
+                layout = (Template) cachedCtor.newInstance(Element.of(content));
             }
             return layout.render();
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate layout: " + layoutClass.getName(), e);
         }
+    }
+
+    private static Constructor<?> findLayoutConstructor(Class<? extends Template> layoutClass)
+            throws NoSuchMethodException {
+        Class<?>[][] shapes = {
+            {String.class, jweb.Element.class},
+            {String.class, Element.class},
+            {jweb.Element.class},
+            {Element.class},
+        };
+        for (Class<?>[] shape : shapes) {
+            try {
+                return layoutClass.getConstructor(shape);
+            } catch (NoSuchMethodException ignored) {
+                // try the next shape
+            }
+        }
+        throw new NoSuchMethodException(layoutClass.getName()
+            + " needs a (String, Element) or (Element) constructor — jweb.Element or legacy Element both work");
     }
 }

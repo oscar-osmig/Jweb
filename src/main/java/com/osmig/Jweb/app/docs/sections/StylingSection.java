@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.app.docs.sections.styling.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
@@ -16,10 +16,9 @@ public final class StylingSection {
             docSubtitle("Import Statements"),
             codeBlock("""
 // Core CSS DSL
-import static com.osmig.Jweb.framework.styles.CSS.*;
+import static jweb.Css.*;
 
 // Units (px, rem, em, vh, vw, etc.)
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
 
 // Colors (named colors, rgb, hex, etc.)
 import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
@@ -40,7 +39,7 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;"""),
                  "composition primitive for design systems."),
             codeBlock("""
                     // In your Theme:
-                    public static Style<?> brandFlow() {
+                    public static jweb.Style<?> brandFlow() {
                         return style().background(BRAND_GRADIENT)
                                       .backgroundSize(percent(300), percent(100))
                                       .animation(anim("gradientShift"), s(3), linear, s(0), infinite);

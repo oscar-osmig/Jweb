@@ -37,7 +37,7 @@ public class Stylesheet {
     /**
      * Creates a CSS rule (selector + style).
      */
-    public static Rule cssRule(String selector, Style<?> style) {
+    public static Rule cssRule(String selector, jweb.Style<?> style) {
         return new Rule(selector, style);
     }
 
@@ -48,7 +48,7 @@ public class Stylesheet {
      * @param style the styles to apply
      * @return this for chaining
      */
-    public Stylesheet rule(String selector, Style<?> style) {
+    public Stylesheet rule(String selector, jweb.Style<?> style) {
         rules.add(selector + "{" + style.build() + "}");
         return this;
     }
@@ -116,7 +116,7 @@ public class Stylesheet {
     /**
      * Adds a CSS variable definition at :root level.
      */
-    public Stylesheet variable(String name, CSSValue value) {
+    public Stylesheet variable(String name, jweb.CSSValue value) {
         return variable(name, value.css());
     }
 
@@ -205,9 +205,9 @@ public class Stylesheet {
      */
     public static class Rule {
         private final String selector;
-        private final Style<?> style;
+        private final jweb.Style<?> style;
 
-        public Rule(String selector, Style<?> style) {
+        public Rule(String selector, jweb.Style<?> style) {
             this.selector = selector;
             this.style = style;
         }

@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class SetupSection {
@@ -67,8 +67,8 @@ public final class SetupSection {
             codeBlock("""
                     package org.example;
 
-                    import com.osmig.Jweb.framework.JWeb;
-                    import com.osmig.Jweb.framework.JWebRoutes;
+                    import jweb.JWeb;
+                    import jweb.JWebRoutes;
                     import com.osmig.Jweb.framework.middleware.Middlewares;
                     import org.example.pages.HomePage;
                     import org.springframework.stereotype.Component;
@@ -90,13 +90,11 @@ public final class SetupSection {
             codeBlock("""
                     package org.example.pages;
 
-                    import com.osmig.Jweb.framework.core.Element;
-                    import com.osmig.Jweb.framework.template.Template;
+                    import jweb.Element;
+                    import jweb.Template;
 
-                    import static com.osmig.Jweb.framework.elements.El.*;
-                    import static com.osmig.Jweb.framework.styles.CSS.*;
-                    import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-                    import static com.osmig.Jweb.framework.styles.CSSColors.*;
+                    import static jweb.El.*;
+                    import static jweb.Css.*;
 
                     public class HomePage implements Template {
                         @Override

@@ -59,7 +59,10 @@ import java.util.concurrent.ConcurrentHashMap;
  *     .timestamps()
  *     .register();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Mongo} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Mongo {
 
     private static MongoClient client;

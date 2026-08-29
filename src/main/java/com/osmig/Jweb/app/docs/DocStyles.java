@@ -1,9 +1,7 @@
 package com.osmig.Jweb.app.docs;
 
-import com.osmig.Jweb.framework.styles.Style;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import jweb.Style;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 public final class DocStyles {

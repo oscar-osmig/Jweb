@@ -59,7 +59,7 @@ public class JWeb {
     private final MiddlewareStack middlewareStack;
     private final PageRegistry pageRegistry;
 
-    private JWeb() {
+    protected JWeb() {
         this.router = new Router();
         this.middlewareStack = new MiddlewareStack();
         this.pageRegistry = new PageRegistry();
@@ -127,7 +127,7 @@ public class JWeb {
     /**
      * GET route with a simple element.
      */
-    public JWeb get(String path, Supplier<Element> handler) {
+    public JWeb get(String path, Supplier<? extends jweb.Element> handler) {
         router.get(path, handler);
         return this;
     }

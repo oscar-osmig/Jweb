@@ -29,7 +29,7 @@ import java.util.Map;
 public class MediaQuery {
 
     private final List<String> conditions = new ArrayList<>();
-    private final Map<String, Style<?>> rules = new LinkedHashMap<>();
+    private final Map<String, jweb.Style<?>> rules = new LinkedHashMap<>();
 
     private MediaQuery() {}
 
@@ -105,7 +105,7 @@ public class MediaQuery {
      * @param value the minimum width value (e.g., px(768), rem(48))
      * @return this builder for chaining
      */
-    public MediaQuery minWidth(CSSValue value) {
+    public MediaQuery minWidth(jweb.CSSValue value) {
         conditions.add("(min-width: " + value.css() + ")");
         return this;
     }
@@ -122,7 +122,7 @@ public class MediaQuery {
      * @param value the maximum width value
      * @return this builder for chaining
      */
-    public MediaQuery maxWidth(CSSValue value) {
+    public MediaQuery maxWidth(jweb.CSSValue value) {
         conditions.add("(max-width: " + value.css() + ")");
         return this;
     }
@@ -133,7 +133,7 @@ public class MediaQuery {
      * @param value the exact width value
      * @return this builder for chaining
      */
-    public MediaQuery width(CSSValue value) {
+    public MediaQuery width(jweb.CSSValue value) {
         conditions.add("(width: " + value.css() + ")");
         return this;
     }
@@ -146,7 +146,7 @@ public class MediaQuery {
      * @param value the minimum height value
      * @return this builder for chaining
      */
-    public MediaQuery minHeight(CSSValue value) {
+    public MediaQuery minHeight(jweb.CSSValue value) {
         conditions.add("(min-height: " + value.css() + ")");
         return this;
     }
@@ -157,7 +157,7 @@ public class MediaQuery {
      * @param value the maximum height value
      * @return this builder for chaining
      */
-    public MediaQuery maxHeight(CSSValue value) {
+    public MediaQuery maxHeight(jweb.CSSValue value) {
         conditions.add("(max-height: " + value.css() + ")");
         return this;
     }
@@ -168,7 +168,7 @@ public class MediaQuery {
      * @param value the exact height value
      * @return this builder for chaining
      */
-    public MediaQuery height(CSSValue value) {
+    public MediaQuery height(jweb.CSSValue value) {
         conditions.add("(height: " + value.css() + ")");
         return this;
     }
@@ -284,7 +284,7 @@ public class MediaQuery {
      * @param value the minimum resolution (e.g., dpi, dppx)
      * @return this builder for chaining
      */
-    public MediaQuery minResolution(CSSValue value) {
+    public MediaQuery minResolution(jweb.CSSValue value) {
         conditions.add("(min-resolution: " + value.css() + ")");
         return this;
     }
@@ -295,7 +295,7 @@ public class MediaQuery {
      * @param value the maximum resolution
      * @return this builder for chaining
      */
-    public MediaQuery maxResolution(CSSValue value) {
+    public MediaQuery maxResolution(jweb.CSSValue value) {
         conditions.add("(max-resolution: " + value.css() + ")");
         return this;
     }
@@ -463,7 +463,7 @@ public class MediaQuery {
      * @param style the Style object containing CSS properties
      * @return this builder for chaining
      */
-    public MediaQuery rule(String selector, Style<?> style) {
+    public MediaQuery rule(String selector, jweb.Style<?> style) {
         rules.put(selector, style);
         return this;
     }
@@ -500,7 +500,7 @@ public class MediaQuery {
 
         sb.append(" {\n");
 
-        for (Map.Entry<String, Style<?>> entry : rules.entrySet()) {
+        for (Map.Entry<String, jweb.Style<?>> entry : rules.entrySet()) {
             sb.append("  ").append(entry.getKey()).append(" {\n");
             for (Map.Entry<String, String> prop : entry.getValue().toMap().entrySet()) {
                 sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(";\n");
@@ -523,7 +523,7 @@ public class MediaQuery {
      * @param selector the CSS selector
      * @param style the Style object with CSS properties
      */
-    public record Rule(String selector, Style<?> style) {}
+    public record Rule(String selector, jweb.Style<?> style) {}
 
     // ==================== Common Breakpoints ====================
 

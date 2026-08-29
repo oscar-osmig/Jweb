@@ -33,10 +33,13 @@ import java.util.Map;
  * onClick("toggle-btn")
  *     .toggle("panel")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Actions} — shorter import, same API. Existing code keeps working.
  */
-public final class Actions {
+@Deprecated
+public class Actions {
 
-    private Actions() {}
+    protected Actions() {}
 
     // ==================== Event Entry Points ====================
 
@@ -3621,7 +3624,7 @@ public final class Actions {
         }
 
         /** Add style attribute using the CSS DSL Style object. */
-        public TemplateBuilder style(Style<?> styleObj) {
+        public TemplateBuilder style(jweb.Style<?> styleObj) {
             return style(styleObj.css());
         }
 

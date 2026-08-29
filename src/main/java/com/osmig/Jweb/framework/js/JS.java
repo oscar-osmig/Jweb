@@ -26,10 +26,13 @@ import java.util.List;
  *     .add(startTimer)
  *     .build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Js} — shorter import, same API. Existing code keeps working.
  */
-public final class JS {
+@Deprecated
+public class JS extends Events {
 
-    private JS() {}
+    protected JS() {}
 
     // ==================== Entry Points ====================
 

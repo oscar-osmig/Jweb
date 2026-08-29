@@ -89,7 +89,7 @@ public final class JWebTest {
                 Object result = app.getMiddlewareStack().execute(request, () -> {
                     var page = route.pageSupplier().get();
                     page.beforeRender(request);
-                    Element content = page.render();
+                    var content = page.render();
                     page.afterRender(request);
                     return content;
                 });
@@ -131,9 +131,9 @@ public final class JWebTest {
     /**
      * Tests a supplier (for simple routes without request access).
      */
-    public static TestResult testSupplier(Supplier<Element> supplier) {
+    public static TestResult testSupplier(Supplier<? extends jweb.Element> supplier) {
         try {
-            Element result = supplier.get();
+            Element result = Element.of(supplier.get());
             return TestResult.from(result);
         } catch (Exception e) {
             return new TestResult(500, null, e.getMessage());

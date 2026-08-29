@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class DataSection {
@@ -13,7 +13,7 @@ public final class DataSection {
 
             docSubtitle("Connection"),
             codeBlock("""
-import static com.osmig.Jweb.framework.db.mongo.Mongo.*;
+import static jweb.Mongo.*;
 
 // Connect with URI and database name
 Mongo.connect("mongodb://localhost:27017", "mydb");
@@ -24,7 +24,7 @@ Mongo.connect();"""),
             docSubtitle("Documents"),
             para("Use Doc for dynamic document creation and field access."),
             codeBlock("""
-import static com.osmig.Jweb.framework.db.mongo.Doc.*;
+import static jweb.Doc.*;
 
 // Create a document
 Doc user = Doc.of("users")
@@ -88,7 +88,7 @@ Mongo.delete("users")
             docSubtitle("Schema Definition"),
             para("Define schemas for validation and automatic timestamps."),
             codeBlock("""
-import static com.osmig.Jweb.framework.db.mongo.Schema.*;
+import static jweb.Schema.*;
 
 Schema.collection("users")
     .id("id")

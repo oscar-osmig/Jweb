@@ -9,10 +9,13 @@ package com.osmig.Jweb.framework.styles;
  *   style().padding(px(10), rem(1))
  *          .margin(percent(50))
  *          .width(vw(100))
+ *
+ * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSUnits {
+@Deprecated
+public class CSSUnits extends CSSVariables {
 
-    private CSSUnits() {}
+    protected CSSUnits() {}
 
     // ==================== Common Constants ====================
 
@@ -437,7 +440,7 @@ public final class CSSUnits {
      * @param values the values to compare
      * @return CSSValue representing the min function
      */
-    public static CSSValue min(CSSValue... values) {
+    public static CSSValue min(jweb.CSSValue... values) {
         return () -> "min(" + joinValues(values) + ")";
     }
 
@@ -453,7 +456,7 @@ public final class CSSUnits {
      * @param values the values to compare
      * @return CSSValue representing the max function
      */
-    public static CSSValue max(CSSValue... values) {
+    public static CSSValue max(jweb.CSSValue... values) {
         return () -> "max(" + joinValues(values) + ")";
     }
 
@@ -472,7 +475,7 @@ public final class CSSUnits {
      * @param max the maximum value
      * @return CSSValue representing the clamp function
      */
-    public static CSSValue clamp(CSSValue min, CSSValue preferred, CSSValue max) {
+    public static CSSValue clamp(jweb.CSSValue min, jweb.CSSValue preferred, jweb.CSSValue max) {
         return () -> "clamp(" + min.css() + ", " + preferred.css() + ", " + max.css() + ")";
     }
 
@@ -588,14 +591,14 @@ public final class CSSUnits {
      * @param percent percentage of first color (0-100)
      * @return CSSValue representing the mixed color
      */
-    public static CSSValue colorMix(String colorSpace, CSSValue color1, CSSValue color2, int percent) {
+    public static CSSValue colorMix(String colorSpace, jweb.CSSValue color1, jweb.CSSValue color2, int percent) {
         return () -> "color-mix(in " + colorSpace + ", " + color1.css() + " " + percent + "%, " + color2.css() + ")";
     }
 
     /**
      * Creates a color-mix() with equal mixing.
      */
-    public static CSSValue colorMix(String colorSpace, CSSValue color1, CSSValue color2) {
+    public static CSSValue colorMix(String colorSpace, jweb.CSSValue color1, jweb.CSSValue color2) {
         return () -> "color-mix(in " + colorSpace + ", " + color1.css() + ", " + color2.css() + ")";
     }
 
@@ -611,7 +614,7 @@ public final class CSSUnits {
      * @param darkColor color for dark mode
      * @return CSSValue representing the theme-aware color
      */
-    public static CSSValue lightDark(CSSValue lightColor, CSSValue darkColor) {
+    public static CSSValue lightDark(jweb.CSSValue lightColor, jweb.CSSValue darkColor) {
         return () -> "light-dark(" + lightColor.css() + ", " + darkColor.css() + ")";
     }
 
@@ -647,14 +650,14 @@ public final class CSSUnits {
      * @param stops color stops
      * @return CSSValue representing the gradient
      */
-    public static CSSValue repeatingLinearGradient(String direction, CSSValue... stops) {
+    public static CSSValue repeatingLinearGradient(String direction, jweb.CSSValue... stops) {
         return () -> "repeating-linear-gradient(" + direction + ", " + joinValues(stops) + ")";
     }
 
     /**
      * Creates a repeating-linear-gradient() without direction.
      */
-    public static CSSValue repeatingLinearGradient(CSSValue... stops) {
+    public static CSSValue repeatingLinearGradient(jweb.CSSValue... stops) {
         return () -> "repeating-linear-gradient(" + joinValues(stops) + ")";
     }
 
@@ -670,14 +673,14 @@ public final class CSSUnits {
      * @param stops color stops
      * @return CSSValue representing the gradient
      */
-    public static CSSValue repeatingRadialGradient(String shape, CSSValue... stops) {
+    public static CSSValue repeatingRadialGradient(String shape, jweb.CSSValue... stops) {
         return () -> "repeating-radial-gradient(" + shape + ", " + joinValues(stops) + ")";
     }
 
     /**
      * Creates a repeating-radial-gradient() without shape.
      */
-    public static CSSValue repeatingRadialGradient(CSSValue... stops) {
+    public static CSSValue repeatingRadialGradient(jweb.CSSValue... stops) {
         return () -> "repeating-radial-gradient(" + joinValues(stops) + ")";
     }
 
@@ -693,14 +696,14 @@ public final class CSSUnits {
      * @param stops color stops
      * @return CSSValue representing the gradient
      */
-    public static CSSValue repeatingConicGradient(String from, CSSValue... stops) {
+    public static CSSValue repeatingConicGradient(String from, jweb.CSSValue... stops) {
         return () -> "repeating-conic-gradient(" + from + ", " + joinValues(stops) + ")";
     }
 
     /**
      * Creates a repeating-conic-gradient() without position.
      */
-    public static CSSValue repeatingConicGradient(CSSValue... stops) {
+    public static CSSValue repeatingConicGradient(jweb.CSSValue... stops) {
         return () -> "repeating-conic-gradient(" + joinValues(stops) + ")";
     }
 
@@ -712,7 +715,7 @@ public final class CSSUnits {
      * @param value the value to get absolute value of
      * @return CSSValue representing abs(value)
      */
-    public static CSSValue abs(CSSValue value) {
+    public static CSSValue abs(jweb.CSSValue value) {
         return () -> "abs(" + value.css() + ")";
     }
 
@@ -722,7 +725,7 @@ public final class CSSUnits {
      * @param value the value to get sign of (-1, 0, 1)
      * @return CSSValue representing sign(value)
      */
-    public static CSSValue sign(CSSValue value) {
+    public static CSSValue sign(jweb.CSSValue value) {
         return () -> "sign(" + value.css() + ")";
     }
 
@@ -734,14 +737,14 @@ public final class CSSUnits {
      * @param interval the rounding interval
      * @return CSSValue representing round()
      */
-    public static CSSValue round(String strategy, CSSValue value, CSSValue interval) {
+    public static CSSValue round(String strategy, jweb.CSSValue value, jweb.CSSValue interval) {
         return () -> "round(" + strategy + ", " + value.css() + ", " + interval.css() + ")";
     }
 
     /**
      * Creates a CSS round() function with default nearest rounding.
      */
-    public static CSSValue round(CSSValue value, CSSValue interval) {
+    public static CSSValue round(jweb.CSSValue value, jweb.CSSValue interval) {
         return () -> "round(" + value.css() + ", " + interval.css() + ")";
     }
 
@@ -752,7 +755,7 @@ public final class CSSUnits {
      * @param b divisor
      * @return CSSValue representing mod(a, b)
      */
-    public static CSSValue mod(CSSValue a, CSSValue b) {
+    public static CSSValue mod(jweb.CSSValue a, jweb.CSSValue b) {
         return () -> "mod(" + a.css() + ", " + b.css() + ")";
     }
 
@@ -763,7 +766,7 @@ public final class CSSUnits {
      * @param b divisor
      * @return CSSValue representing rem(a, b)
      */
-    public static CSSValue cssRem(CSSValue a, CSSValue b) {
+    public static CSSValue cssRem(jweb.CSSValue a, jweb.CSSValue b) {
         return () -> "rem(" + a.css() + ", " + b.css() + ")";
     }
 
@@ -773,7 +776,7 @@ public final class CSSUnits {
      * @param angle the angle (use deg() or rad())
      * @return CSSValue representing sin(angle)
      */
-    public static CSSValue sin(CSSValue angle) {
+    public static CSSValue sin(jweb.CSSValue angle) {
         return () -> "sin(" + angle.css() + ")";
     }
 
@@ -783,7 +786,7 @@ public final class CSSUnits {
      * @param angle the angle
      * @return CSSValue representing cos(angle)
      */
-    public static CSSValue cos(CSSValue angle) {
+    public static CSSValue cos(jweb.CSSValue angle) {
         return () -> "cos(" + angle.css() + ")";
     }
 
@@ -793,7 +796,7 @@ public final class CSSUnits {
      * @param angle the angle
      * @return CSSValue representing tan(angle)
      */
-    public static CSSValue tan(CSSValue angle) {
+    public static CSSValue tan(jweb.CSSValue angle) {
         return () -> "tan(" + angle.css() + ")";
     }
 
@@ -803,7 +806,7 @@ public final class CSSUnits {
      * @param value the value (-1 to 1)
      * @return CSSValue representing asin(value)
      */
-    public static CSSValue asin(CSSValue value) {
+    public static CSSValue asin(jweb.CSSValue value) {
         return () -> "asin(" + value.css() + ")";
     }
 
@@ -813,7 +816,7 @@ public final class CSSUnits {
      * @param value the value (-1 to 1)
      * @return CSSValue representing acos(value)
      */
-    public static CSSValue acos(CSSValue value) {
+    public static CSSValue acos(jweb.CSSValue value) {
         return () -> "acos(" + value.css() + ")";
     }
 
@@ -823,7 +826,7 @@ public final class CSSUnits {
      * @param value the value
      * @return CSSValue representing atan(value)
      */
-    public static CSSValue atan(CSSValue value) {
+    public static CSSValue atan(jweb.CSSValue value) {
         return () -> "atan(" + value.css() + ")";
     }
 
@@ -834,7 +837,7 @@ public final class CSSUnits {
      * @param x the x coordinate
      * @return CSSValue representing atan2(y, x)
      */
-    public static CSSValue atan2(CSSValue y, CSSValue x) {
+    public static CSSValue atan2(jweb.CSSValue y, jweb.CSSValue x) {
         return () -> "atan2(" + y.css() + ", " + x.css() + ")";
     }
 
@@ -845,7 +848,7 @@ public final class CSSUnits {
      * @param exponent the exponent
      * @return CSSValue representing pow(base, exponent)
      */
-    public static CSSValue pow(CSSValue base, CSSValue exponent) {
+    public static CSSValue pow(jweb.CSSValue base, jweb.CSSValue exponent) {
         return () -> "pow(" + base.css() + ", " + exponent.css() + ")";
     }
 
@@ -855,7 +858,7 @@ public final class CSSUnits {
      * @param value the value
      * @return CSSValue representing sqrt(value)
      */
-    public static CSSValue sqrt(CSSValue value) {
+    public static CSSValue sqrt(jweb.CSSValue value) {
         return () -> "sqrt(" + value.css() + ")";
     }
 
@@ -865,7 +868,7 @@ public final class CSSUnits {
      * @param values the values
      * @return CSSValue representing hypot(values...)
      */
-    public static CSSValue hypot(CSSValue... values) {
+    public static CSSValue hypot(jweb.CSSValue... values) {
         return () -> "hypot(" + joinValues(values) + ")";
     }
 
@@ -875,7 +878,7 @@ public final class CSSUnits {
      * @param value the value
      * @return CSSValue representing log(value)
      */
-    public static CSSValue log(CSSValue value) {
+    public static CSSValue log(jweb.CSSValue value) {
         return () -> "log(" + value.css() + ")";
     }
 
@@ -886,7 +889,7 @@ public final class CSSUnits {
      * @param base the logarithm base
      * @return CSSValue representing log(value, base)
      */
-    public static CSSValue log(CSSValue value, CSSValue base) {
+    public static CSSValue log(jweb.CSSValue value, jweb.CSSValue base) {
         return () -> "log(" + value.css() + ", " + base.css() + ")";
     }
 
@@ -896,7 +899,7 @@ public final class CSSUnits {
      * @param value the exponent
      * @return CSSValue representing exp(value)
      */
-    public static CSSValue exp(CSSValue value) {
+    public static CSSValue exp(jweb.CSSValue value) {
         return () -> "exp(" + value.css() + ")";
     }
 
@@ -925,7 +928,7 @@ public final class CSSUnits {
      * @param fallback fallback value
      * @return CSSValue representing env(name, fallback)
      */
-    public static CSSValue env(String name, CSSValue fallback) {
+    public static CSSValue env(String name, jweb.CSSValue fallback) {
         return () -> "env(" + name + ", " + fallback.css() + ")";
     }
 
@@ -1084,7 +1087,7 @@ public final class CSSUnits {
         return String.valueOf(value);
     }
 
-    private static String joinValues(CSSValue[] values) {
+    private static String joinValues(jweb.CSSValue[] values) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < values.length; i++) {
             if (i > 0) sb.append(", ");

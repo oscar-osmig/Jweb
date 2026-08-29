@@ -92,9 +92,9 @@ Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest co
 ## Quick Start
 
 ```java
-import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.template.Template;
-import static com.osmig.Jweb.framework.elements.El.*;
+import jweb.Element;
+import jweb.Template;
+import static jweb.El.*;
 
 public class HelloWorld implements Template {
     @Override
@@ -155,6 +155,39 @@ app.post("/contact/submit", ctx -> {
 
 For richer client behavior the JS DSL is still there (`script().add(onSubmit(...)...)`) —
 see [JavaScript DSL](./readme/javascript-dsl.md).
+
+---
+
+## Imports — one rule
+
+Everything you import lives in the `jweb` package:
+
+```java
+// Static DSLs
+import static jweb.El.*;      // HTML: elements, attributes, typed inputs, conditionals
+import static jweb.Css.*;     // CSS: style(), units, colors, grid, media(), keyframes()
+import static jweb.Js.*;      // low-level JS + events + reactive runtime + async
+import static jweb.Actions.*; // declarative event actions (kept separate from Js)
+import static jweb.State.*;   // server-driven state hooks
+import static jweb.UI.*;      // prebuilt components
+import static jweb.Layout.*;  // layout primitives
+import static jweb.Mongo.*;   // MongoDB access (also jweb.Schema, jweb.Doc)
+
+// Types
+import jweb.Element;          // what components return
+import jweb.Template;         // what pages implement
+import jweb.Style;            // what style helpers return
+import jweb.CSSValue;         // what color/unit helpers return
+import jweb.JWeb;             // the app builder
+import jweb.JWebRoutes;       // where you configure routes
+```
+
+**Migrating from the long imports:** the old
+`com.osmig.Jweb.framework.*` entry points (`El`, `Elements`, `CSS`, `CSSUnits`,
+`CSSColors`, `JS`, `Events`, `Actions`, `StateHooks`, `UI`, `Layout`, `Style`, ...)
+still compile — they are `@Deprecated` aliases of the same code, so existing apps
+keep working unchanged. New code should use the `jweb.*` forms; in most files
+`jweb.El` + `jweb.Css` replace what used to take four or five imports.
 
 ---
 

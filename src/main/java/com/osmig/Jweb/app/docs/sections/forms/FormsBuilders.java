@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.forms;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class FormsBuilders {
@@ -11,7 +11,7 @@ public final class FormsBuilders {
             h3Title("Form Input Builders"),
             para("JWeb provides type-safe input builders with validation and styling built-in."),
             codeBlock("""
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 // Text inputs with labels
 textInput("username", "Username")

@@ -6,7 +6,12 @@ import com.osmig.Jweb.framework.core.Element;
 import java.util.Collection;
 import java.util.function.Function;
 
-/** Main entry point for HTML elements. Use: {@code import static El.*;} */
+/**
+ * Main entry point for HTML elements. Use: {@code import static El.*;}
+ *
+ * @deprecated Replaced by {@code jweb.El} — shorter import, same API. Existing code keeps working.
+ */
+@Deprecated
 public final class El {
     private El() {}
 

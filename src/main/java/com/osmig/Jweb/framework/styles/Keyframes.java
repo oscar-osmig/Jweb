@@ -33,7 +33,7 @@ import java.util.Map;
 public class Keyframes {
 
     private final String name;
-    private final Map<String, Style<?>> frames = new LinkedHashMap<>();
+    private final Map<String, jweb.Style<?>> frames = new LinkedHashMap<>();
 
     private Keyframes(String name) {
         this.name = name;
@@ -71,7 +71,7 @@ public class Keyframes {
      * @param style the Style object with CSS properties for this keyframe
      * @return this builder for chaining
      */
-    public Keyframes from(Style<?> style) {
+    public Keyframes from(jweb.Style<?> style) {
         frames.put("from", style);
         return this;
     }
@@ -88,7 +88,7 @@ public class Keyframes {
      * @param style the Style object with CSS properties for this keyframe
      * @return this builder for chaining
      */
-    public Keyframes to(Style<?> style) {
+    public Keyframes to(jweb.Style<?> style) {
         frames.put("to", style);
         return this;
     }
@@ -108,7 +108,7 @@ public class Keyframes {
      * @param style the Style object with CSS properties for this keyframe
      * @return this builder for chaining
      */
-    public Keyframes at(int percentage, Style<?> style) {
+    public Keyframes at(int percentage, jweb.Style<?> style) {
         frames.put(percentage + "%", style);
         return this;
     }
@@ -125,7 +125,7 @@ public class Keyframes {
      * @param style the Style object with CSS properties for this keyframe
      * @return this builder for chaining
      */
-    public Keyframes at(double percentage, Style<?> style) {
+    public Keyframes at(double percentage, jweb.Style<?> style) {
         frames.put(formatPercent(percentage), style);
         return this;
     }
@@ -144,7 +144,7 @@ public class Keyframes {
      * @param style the Style object to apply at all specified positions
      * @return this builder for chaining
      */
-    public Keyframes at(int[] percentages, Style<?> style) {
+    public Keyframes at(int[] percentages, jweb.Style<?> style) {
         StringBuilder key = new StringBuilder();
         for (int i = 0; i < percentages.length; i++) {
             if (i > 0) key.append(", ");
@@ -182,7 +182,7 @@ public class Keyframes {
         StringBuilder sb = new StringBuilder();
         sb.append("@keyframes ").append(name).append(" {\n");
 
-        for (Map.Entry<String, Style<?>> entry : frames.entrySet()) {
+        for (Map.Entry<String, jweb.Style<?>> entry : frames.entrySet()) {
             sb.append("  ").append(entry.getKey()).append(" {\n");
             for (Map.Entry<String, String> prop : entry.getValue().toMap().entrySet()) {
                 sb.append("    ").append(prop.getKey()).append(": ").append(prop.getValue()).append(";\n");

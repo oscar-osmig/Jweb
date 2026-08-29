@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.styling;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class StylingNested {
@@ -11,7 +11,7 @@ public final class StylingNested {
             h3Title("Nested CSS"),
             para("Write CSS with nesting syntax for cleaner, more organized stylesheets."),
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSS.*;
+import static jweb.Css.*;
 
 // Basic nesting
 rule(".card")

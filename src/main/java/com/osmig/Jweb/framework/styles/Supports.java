@@ -60,7 +60,7 @@ public class Supports {
      * @param property the CSS property
      * @param value the CSS value
      */
-    public static Supports supports(CSSValue property, CSSValue value) {
+    public static Supports supports(jweb.CSSValue property, jweb.CSSValue value) {
         return new Supports().property(property, value);
     }
 
@@ -85,7 +85,7 @@ public class Supports {
      * @param value the CSS value
      * @return this for chaining
      */
-    public Supports property(CSSValue property, CSSValue value) {
+    public Supports property(jweb.CSSValue property, jweb.CSSValue value) {
         return property(property.css(), value.css());
     }
 
@@ -157,7 +157,7 @@ public class Supports {
     /**
      * Adds a CSS rule to apply when conditions are met.
      */
-    public Supports rule(String selector, Style<?> style) {
+    public Supports rule(String selector, jweb.Style<?> style) {
         rules.add(new MediaQuery.Rule(selector, style));
         return this;
     }
@@ -323,7 +323,7 @@ public class Supports {
     /**
      * Helper to create a rule using the same pattern as MediaQuery.
      */
-    public static MediaQuery.Rule makeRule(String selector, Style<?> style) {
+    public static MediaQuery.Rule makeRule(String selector, jweb.Style<?> style) {
         return new MediaQuery.Rule(selector, style);
     }
 }

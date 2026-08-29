@@ -68,9 +68,9 @@ public class Suspense<T> implements Element {
     private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
 
     private final Callable<T> dataLoader;
-    private Supplier<Element> loadingElement;
-    private Function<Throwable, Element> errorElement;
-    private Function<T, Element> contentRenderer;
+    private Supplier<? extends jweb.Element> loadingElement;
+    private Function<Throwable, ? extends jweb.Element> errorElement;
+    private Function<T, ? extends jweb.Element> contentRenderer;
     private long timeoutMs = 30000; // 30 second default
     private long nonBlockingTimeoutMs = 0; // 0 means blocking mode (default)
 
@@ -132,7 +132,7 @@ public class Suspense<T> implements Element {
      * @param loading supplier for the loading element
      * @return this builder
      */
-    public Suspense<T> loading(Supplier<Element> loading) {
+    public Suspense<T> loading(Supplier<? extends jweb.Element> loading) {
         this.loadingElement = loading;
         return this;
     }
@@ -154,7 +154,7 @@ public class Suspense<T> implements Element {
      * @param error function that receives the error and returns an element
      * @return this builder
      */
-    public Suspense<T> error(Function<Throwable, Element> error) {
+    public Suspense<T> error(Function<Throwable, ? extends jweb.Element> error) {
         this.errorElement = error;
         return this;
     }
@@ -222,7 +222,7 @@ public class Suspense<T> implements Element {
      * @param renderer function that receives the loaded data and returns an element
      * @return the rendered element
      */
-    public Element render(Function<T, Element> renderer) {
+    public Element render(Function<T, ? extends jweb.Element> renderer) {
         this.contentRenderer = renderer;
         return this;
     }
@@ -311,7 +311,7 @@ public class Suspense<T> implements Element {
     public static <T> Element suspend(
             Supplier<T> loader,
             Element loading,
-            Function<T, Element> content) {
+            Function<T, ? extends jweb.Element> content) {
         return Suspense.of(loader)
             .loading(loading)
             .render(content);
@@ -330,8 +330,8 @@ public class Suspense<T> implements Element {
     public static <T> Element suspend(
             Supplier<T> loader,
             Element loading,
-            Function<Throwable, Element> error,
-            Function<T, Element> content) {
+            Function<Throwable, ? extends jweb.Element> error,
+            Function<T, ? extends jweb.Element> content) {
         return Suspense.of(loader)
             .loading(loading)
             .error(error)
@@ -348,7 +348,7 @@ public class Suspense<T> implements Element {
      */
     public static <T> Element suspendSilent(
             Supplier<T> loader,
-            Function<T, Element> content) {
+            Function<T, ? extends jweb.Element> content) {
         return Suspense.of(loader)
             .loading(() -> new VFragment(List.of()))
             .error(e -> () -> new VFragment(List.of()))
@@ -377,7 +377,7 @@ public class Suspense<T> implements Element {
     public static <T> Element suspendFast(
             Supplier<T> loader,
             Element loading,
-            Function<T, Element> content) {
+            Function<T, ? extends jweb.Element> content) {
         return Suspense.of(loader)
             .nonBlocking()
             .loading(loading)
@@ -398,7 +398,7 @@ public class Suspense<T> implements Element {
             Supplier<T> loader,
             Element loading,
             long timeoutMs,
-            Function<T, Element> content) {
+            Function<T, ? extends jweb.Element> content) {
         return Suspense.of(loader)
             .nonBlocking(timeoutMs, TimeUnit.MILLISECONDS)
             .loading(loading)

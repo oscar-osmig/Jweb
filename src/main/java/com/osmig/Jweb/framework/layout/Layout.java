@@ -53,10 +53,13 @@ import static com.osmig.Jweb.framework.styles.CSSGrid.*;
  *     card("Card 3", "Content...")
  * )
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Layout} — shorter import, same API. Existing code keeps working.
  */
-public final class Layout {
+@Deprecated
+public class Layout {
 
-    private Layout() {}
+    protected Layout() {}
 
     // ==================== Page Structure ====================
 
@@ -114,7 +117,7 @@ public final class Layout {
     /**
      * Creates a centered container with custom max-width.
      */
-    public static Element container(CSSValue maxWidth, Object... children) {
+    public static Element container(jweb.CSSValue maxWidth, Object... children) {
         return div(attrs().style()
                 .maxWidth(maxWidth)
                 .centerX()
@@ -150,7 +153,7 @@ public final class Layout {
     /**
      * Creates a horizontal flex container with gap.
      */
-    public static Element row(CSSValue gap, Object... children) {
+    public static Element row(jweb.CSSValue gap, Object... children) {
         return div(attrs().style().flexRow().gap(gap), children);
     }
 
@@ -164,7 +167,7 @@ public final class Layout {
     /**
      * Creates a vertical flex container with gap.
      */
-    public static Element column(CSSValue gap, Object... children) {
+    public static Element column(jweb.CSSValue gap, Object... children) {
         return div(attrs().style().flexCol().gap(gap), children);
     }
 
@@ -185,7 +188,7 @@ public final class Layout {
     /**
      * Creates a flex container with wrapping items.
      */
-    public static Element wrap(CSSValue gap, Object... children) {
+    public static Element wrap(jweb.CSSValue gap, Object... children) {
         return div(attrs().style()
                 .flex()
                 .flexWrap(wrap)
@@ -205,7 +208,7 @@ public final class Layout {
     /**
      * Creates a grid with equal columns and gap.
      */
-    public static Element grid(int columns, CSSValue gap, Object... children) {
+    public static Element grid(int columns, jweb.CSSValue gap, Object... children) {
         return div(attrs().style().grid(columns, gap), children);
     }
 
@@ -213,7 +216,7 @@ public final class Layout {
      * Creates an auto-fit grid with minimum column width.
      * Columns automatically adjust based on available space.
      */
-    public static Element autoGrid(CSSValue minColumnWidth, CSSValue gap, Object... children) {
+    public static Element autoGrid(jweb.CSSValue minColumnWidth, jweb.CSSValue gap, Object... children) {
         return div(attrs().style()
                 .display(grid)
                 .gridTemplateColumns(repeat(autoFit(), minmax(minColumnWidth, fr(1))))
@@ -225,7 +228,7 @@ public final class Layout {
      * Creates an auto-fill grid with minimum column width.
      * Creates empty columns when there's extra space.
      */
-    public static Element autoFillGrid(CSSValue minColumnWidth, CSSValue gap, Object... children) {
+    public static Element autoFillGrid(jweb.CSSValue minColumnWidth, jweb.CSSValue gap, Object... children) {
         return div(attrs().style()
                 .display(grid)
                 .gridTemplateColumns(repeat(autoFill(), minmax(minColumnWidth, fr(1))))
@@ -245,7 +248,7 @@ public final class Layout {
     /**
      * Creates equal-width columns with gap.
      */
-    public static Element columns(int count, CSSValue gap, Object... children) {
+    public static Element columns(int count, jweb.CSSValue gap, Object... children) {
         return div(attrs().style().grid(count, gap), children);
     }
 
@@ -253,7 +256,7 @@ public final class Layout {
      * Creates a two-column layout with custom ratio.
      * Example: columns("1fr", "2fr", ...) creates 1:2 ratio
      */
-    public static Element columns(String leftWidth, String rightWidth, CSSValue gap, Object... children) {
+    public static Element columns(String leftWidth, String rightWidth, jweb.CSSValue gap, Object... children) {
         return div(attrs().style()
                 .display(grid)
                 .gridTemplateColumns(leftWidth + " " + rightWidth)
@@ -266,7 +269,7 @@ public final class Layout {
     /**
      * Creates a sidebar layout (sidebar on left, main content on right).
      */
-    public static Element sidebar(CSSValue sidebarWidth, Element sidebar, Element content) {
+    public static Element sidebar(jweb.CSSValue sidebarWidth, Element sidebar, Element content) {
         return div(attrs().style()
                 .display(grid)
                 .gridTemplateColumns(sidebarWidth, fr(1))
@@ -277,7 +280,7 @@ public final class Layout {
     /**
      * Creates a sidebar layout with the sidebar on the right.
      */
-    public static Element sidebarRight(CSSValue sidebarWidth, Element content, Element sidebar) {
+    public static Element sidebarRight(jweb.CSSValue sidebarWidth, Element content, Element sidebar) {
         return div(attrs().style()
                 .display(grid)
                 .gridTemplateColumns(fr(1), sidebarWidth)
@@ -290,7 +293,7 @@ public final class Layout {
     /**
      * Creates a vertical stack with consistent spacing.
      */
-    public static Element stack(CSSValue gap, Object... children) {
+    public static Element stack(jweb.CSSValue gap, Object... children) {
         return div(attrs().style().flexCol().gap(gap), children);
     }
 
@@ -317,7 +320,7 @@ public final class Layout {
      * Creates a cluster layout - horizontally aligned items with wrapping and gap.
      * Good for tags, buttons, navigation items.
      */
-    public static Element cluster(CSSValue gap, Object... children) {
+    public static Element cluster(jweb.CSSValue gap, Object... children) {
         return div(attrs().style()
                 .flex()
                 .flexWrap(wrap)
@@ -348,7 +351,7 @@ public final class Layout {
     /**
      * Creates a square container.
      */
-    public static Element square(CSSValue size, Object... children) {
+    public static Element square(jweb.CSSValue size, Object... children) {
         return div(attrs().style()
                 .width(size)
                 .height(size),
@@ -360,7 +363,7 @@ public final class Layout {
     /**
      * Creates a cover layout - vertically centers content with optional min-height.
      */
-    public static Element cover(CSSValue minHeight, Object... children) {
+    public static Element cover(jweb.CSSValue minHeight, Object... children) {
         return div(attrs().style()
                 .minHeight(minHeight)
                 .flexCenter(),
@@ -379,7 +382,7 @@ public final class Layout {
     /**
      * Creates a sticky positioned element.
      */
-    public static Element sticky(CSSValue top, Object... children) {
+    public static Element sticky(jweb.CSSValue top, Object... children) {
         return div(attrs().style()
                 .sticky()
                 .top(top),
@@ -398,7 +401,7 @@ public final class Layout {
     /**
      * Creates a scrollable container with fixed height.
      */
-    public static Element scrollable(CSSValue height, Object... children) {
+    public static Element scrollable(jweb.CSSValue height, Object... children) {
         return div(attrs().style()
                 .height(height)
                 .overflow(auto),
@@ -434,7 +437,7 @@ public final class Layout {
     /**
      * Creates a card with custom padding.
      */
-    public static Element card(CSSValue padding, Object... children) {
+    public static Element card(jweb.CSSValue padding, Object... children) {
         return div(attrs().style()
                 .padding(padding)
                 .rounded(px(8))
@@ -459,7 +462,7 @@ public final class Layout {
     /**
      * Creates a vertical divider.
      */
-    public static Element verticalDivider(CSSValue height) {
+    public static Element verticalDivider(jweb.CSSValue height) {
         return div(attrs().style()
                 .width(px(1))
                 .height(height)
@@ -478,7 +481,7 @@ public final class Layout {
     /**
      * Creates fixed-size spacing.
      */
-    public static Element space(CSSValue size) {
+    public static Element space(jweb.CSSValue size) {
         return div(attrs().style().height(size).width(size));
     }
 

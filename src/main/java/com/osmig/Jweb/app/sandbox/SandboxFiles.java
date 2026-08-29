@@ -1,14 +1,12 @@
 package com.osmig.Jweb.app.sandbox;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 /**
@@ -91,8 +89,8 @@ public final class SandboxFiles {
     private static final String ROUTES_SRC = """
         package demo;
 
-        import com.osmig.Jweb.framework.JWeb;
-        import com.osmig.Jweb.framework.JWebRoutes;
+        import jweb.JWeb;
+        import jweb.JWebRoutes;
         import com.osmig.Jweb.framework.middleware.Middlewares;
         import demo.pages.HomePage;
         import org.springframework.stereotype.Component;
@@ -110,13 +108,11 @@ public final class SandboxFiles {
     private static final String HOME_SRC = """
         package demo.pages;
 
-        import com.osmig.Jweb.framework.core.Element;
-        import com.osmig.Jweb.framework.template.Template;
+        import jweb.Element;
+        import jweb.Template;
 
-        import static com.osmig.Jweb.framework.elements.El.*;
-        import static com.osmig.Jweb.framework.styles.CSS.*;
-        import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-        import static com.osmig.Jweb.framework.styles.CSSColors.*;
+        import static jweb.El.*;
+        import static jweb.Css.*;
 
         // Edit anything below — the preview recompiles as you type.
         public class HomePage implements Template {
@@ -135,12 +131,11 @@ public final class SandboxFiles {
     private static final String GREETING_SRC = """
         package demo.components;
 
-        import com.osmig.Jweb.framework.core.Element;
-        import com.osmig.Jweb.framework.template.Template;
+        import jweb.Element;
+        import jweb.Template;
 
-        import static com.osmig.Jweb.framework.elements.El.*;
-        import static com.osmig.Jweb.framework.styles.CSS.*;
-        import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+        import static jweb.El.*;
+        import static jweb.Css.*;
 
         // Try changing the name, the emoji, or the shadow.
         public class GreetingCard implements Template {
@@ -161,13 +156,11 @@ public final class SandboxFiles {
     private static final String BUTTONS_SRC = """
         package demo.components;
 
-        import com.osmig.Jweb.framework.core.Element;
-        import com.osmig.Jweb.framework.template.Template;
+        import jweb.Element;
+        import jweb.Template;
 
-        import static com.osmig.Jweb.framework.elements.El.*;
-        import static com.osmig.Jweb.framework.styles.CSS.*;
-        import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-        import static com.osmig.Jweb.framework.styles.CSSColors.*;
+        import static jweb.El.*;
+        import static jweb.Css.*;
 
         // Swap the gradient for hex("#4f46e5"), or go full 1998 with dotted borders.
         public class Buttons implements Template {

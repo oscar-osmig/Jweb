@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.elements;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ElementsAttributes {
@@ -260,7 +260,7 @@ input(attrs().onkeydown("handleKey(event)"))
 input(attrs().onkeyup("handleKeyUp(event)"))
 
 // Using JS DSL actions
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Actions.*;
 
 button(attrs().onClick(show("panel")), "Show")
 button(attrs().onClick(hide("modal")), "Close")

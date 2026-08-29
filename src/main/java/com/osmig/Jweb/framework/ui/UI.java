@@ -42,10 +42,13 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;
  * avatar("John Doe")
  * avatarImage("/img/user.jpg", "John Doe")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.UI} — shorter import, same API. Existing code keeps working.
  */
-public final class UI {
+@Deprecated
+public class UI {
 
-    private UI() {}
+    protected UI() {}
 
     // ==================== Buttons ====================
 
@@ -374,7 +377,7 @@ public final class UI {
     /**
      * Creates an avatar with initials and custom size.
      */
-    public static Element avatar(String name, CSSValue size) {
+    public static Element avatar(String name, jweb.CSSValue size) {
         String initials = getInitials(name);
         return div(attrs().style()
                 .width(size)
@@ -399,7 +402,7 @@ public final class UI {
     /**
      * Creates an avatar with image and custom size.
      */
-    public static Element avatarImage(String src, String alt, CSSValue size) {
+    public static Element avatarImage(String src, String alt, jweb.CSSValue size) {
         return img(attrs().style()
                 .width(size)
                 .height(size)
@@ -429,7 +432,7 @@ public final class UI {
     /**
      * Creates a progress bar with custom color.
      */
-    public static Element progressBar(int progressPercent, CSSValue color) {
+    public static Element progressBar(int progressPercent, jweb.CSSValue color) {
         int clamped = Math.max(0, Math.min(100, progressPercent));
         return div(attrs().style()
                 .backgroundColor(hex("#e5e7eb"))
@@ -455,7 +458,7 @@ public final class UI {
     /**
      * Creates a loading spinner with custom size.
      */
-    public static Element spinner(CSSValue size) {
+    public static Element spinner(jweb.CSSValue size) {
         return div(attrs().style()
                 .width(size)
                 .height(size)
@@ -513,7 +516,7 @@ public final class UI {
     /**
      * Creates a skeleton loading placeholder.
      */
-    public static Element skeleton(CSSValue skWidth, CSSValue skHeight) {
+    public static Element skeleton(jweb.CSSValue skWidth, jweb.CSSValue skHeight) {
         return div(attrs().style()
                 .width(skWidth)
                 .height(skHeight)
@@ -532,7 +535,7 @@ public final class UI {
     /**
      * Creates a circular skeleton (for avatars).
      */
-    public static Element skeletonCircle(CSSValue size) {
+    public static Element skeletonCircle(jweb.CSSValue size) {
         return div(attrs().style()
                 .width(size)
                 .height(size)
@@ -694,7 +697,7 @@ public final class UI {
         private Element body;
         private Element[] footer;
         private boolean closable = true;
-        private CSSValue width = rem(28);
+        private jweb.CSSValue width = rem(28);
         private boolean closeOnOverlay = true;
 
         private Modal(String id) {
@@ -710,7 +713,7 @@ public final class UI {
         public Modal body(Object... content) { this.body = div(content); return this; }
         public Modal footer(Element... footer) { this.footer = footer; return this; }
         public Modal closable(boolean closable) { this.closable = closable; return this; }
-        public Modal width(CSSValue width) { this.width = width; return this; }
+        public Modal width(jweb.CSSValue width) { this.width = width; return this; }
         public Modal closeOnOverlay(boolean close) { this.closeOnOverlay = close; return this; }
 
         public Element build() {
@@ -1012,7 +1015,7 @@ public final class UI {
         private Element trigger;
         private final List<DropdownItem> items = new ArrayList<>();
         private Position position = Position.BOTTOM_LEFT;
-        private CSSValue width = rem(12);
+        private jweb.CSSValue width = rem(12);
 
         private Dropdown(String id) {
             this.id = id;
@@ -1022,7 +1025,7 @@ public final class UI {
             return new Dropdown(id);
         }
 
-        public Dropdown trigger(Element element) { this.trigger = element; return this; }
+        public Dropdown trigger(jweb.Element element) { this.trigger = Element.of(element); return this; }
         public Dropdown trigger(String buttonText) {
             this.trigger = button(attrs().style()
                     .backgroundColor(white)
@@ -1061,7 +1064,7 @@ public final class UI {
         }
 
         public Dropdown position(Position pos) { this.position = pos; return this; }
-        public Dropdown width(CSSValue width) { this.width = width; return this; }
+        public Dropdown width(jweb.CSSValue width) { this.width = width; return this; }
 
         public enum Position { BOTTOM_LEFT, BOTTOM_RIGHT, TOP_LEFT, TOP_RIGHT }
 
@@ -1304,7 +1307,7 @@ public final class UI {
         private final List<NavLink> links = new ArrayList<>();
         private Element[] rightElements;
         private boolean sticky = false;
-        private CSSValue height = px(64);
+        private jweb.CSSValue height = px(64);
 
         private Nav() {}
 
@@ -1323,8 +1326,8 @@ public final class UI {
             return this;
         }
 
-        public Nav brand(Element element) {
-            this.brand = element;
+        public Nav brand(jweb.Element element) {
+            this.brand = Element.of(element);
             return this;
         }
 
@@ -1344,7 +1347,7 @@ public final class UI {
         }
 
         public Nav sticky() { this.sticky = true; return this; }
-        public Nav height(CSSValue height) { this.height = height; return this; }
+        public Nav height(jweb.CSSValue height) { this.height = height; return this; }
 
         public Element build() {
             // Links
@@ -1423,7 +1426,7 @@ public final class UI {
         private Element header;
         private final List<SidebarSection> sections = new ArrayList<>();
         private Element footer;
-        private CSSValue width = rem(16);
+        private jweb.CSSValue width = rem(16);
 
         private Sidebar() {}
 
@@ -1431,9 +1434,9 @@ public final class UI {
             return new Sidebar();
         }
 
-        public Sidebar header(Element element) { this.header = element; return this; }
-        public Sidebar footer(Element element) { this.footer = element; return this; }
-        public Sidebar width(CSSValue width) { this.width = width; return this; }
+        public Sidebar header(jweb.Element element) { this.header = Element.of(element); return this; }
+        public Sidebar footer(jweb.Element element) { this.footer = Element.of(element); return this; }
+        public Sidebar width(jweb.CSSValue width) { this.width = width; return this; }
 
         public Sidebar section(String title, Element... items) {
             sections.add(new SidebarSection(title, items));
@@ -1580,17 +1583,17 @@ public final class UI {
             return new DataTable<>();
         }
 
-        public DataTable<T> column(String header, Function<T, Element> renderer) {
+        public DataTable<T> column(String header, Function<T, ? extends jweb.Element> renderer) {
             columns.add(new Column<>(header, renderer, null, true));
             return this;
         }
 
-        public DataTable<T> column(String header, Function<T, Element> renderer, CSSValue width) {
+        public DataTable<T> column(String header, Function<T, ? extends jweb.Element> renderer, jweb.CSSValue width) {
             columns.add(new Column<>(header, renderer, width, true));
             return this;
         }
 
-        public DataTable<T> columnSortable(String header, Function<T, Element> renderer) {
+        public DataTable<T> columnSortable(String header, Function<T, ? extends jweb.Element> renderer) {
             columns.add(new Column<>(header, renderer, null, true));
             return this;
         }
@@ -1601,7 +1604,7 @@ public final class UI {
         public DataTable<T> bordered() { this.bordered = true; return this; }
         public DataTable<T> compact() { this.compact = true; return this; }
         public DataTable<T> emptyMessage(String message) { this.emptyMessage = message; return this; }
-        public DataTable<T> emptyState(Element element) { this.emptyState = element; return this; }
+        public DataTable<T> emptyState(jweb.Element element) { this.emptyState = Element.of(element); return this; }
 
         public Element build() {
             // Header
@@ -1668,8 +1671,8 @@ public final class UI {
                     tbody(bodyRows.toArray())));
         }
 
-        private record Column<T>(String header, Function<T, Element> renderer,
-                                 CSSValue width, boolean sortable) {}
+        private record Column<T>(String header, Function<T, ? extends jweb.Element> renderer,
+                                 jweb.CSSValue width, boolean sortable) {}
     }
 
     // ==================== Pagination ====================

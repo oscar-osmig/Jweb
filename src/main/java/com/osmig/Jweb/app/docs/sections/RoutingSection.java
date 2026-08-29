@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.app.docs.sections.routing.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 

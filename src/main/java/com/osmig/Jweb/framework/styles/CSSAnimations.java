@@ -92,10 +92,13 @@ import static com.osmig.Jweb.framework.styles.CSSUnits.*;
  * @see Keyframes for @keyframes rule builder
  * @see CSS for animation property methods
  * @see Style for inline animation styles
+ *
+ * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSAnimations {
+@Deprecated
+public class CSSAnimations extends CSSGrid {
 
-    private CSSAnimations() {}
+    protected CSSAnimations() {}
 
     // ==================== Animation Name ====================
 
@@ -222,8 +225,8 @@ public final class CSSAnimations {
      * @param value time value (use s() or ms())
      * @return CSSValue for duration
      */
-    public static CSSValue duration(CSSValue value) {
-        return value;
+    public static CSSValue duration(jweb.CSSValue value) {
+        return value::css;
     }
 
     /**
@@ -233,8 +236,8 @@ public final class CSSAnimations {
      * @param value time value (use s() or ms())
      * @return CSSValue for delay
      */
-    public static CSSValue delay(CSSValue value) {
-        return value;
+    public static CSSValue delay(jweb.CSSValue value) {
+        return value::css;
     }
 
     // ==================== Iteration Count ====================
@@ -507,16 +510,16 @@ public final class CSSAnimations {
      */
     public static class AnimationBuilder implements CSSValue {
         private final String name;
-        private CSSValue duration;
-        private CSSValue timingFunction;
-        private CSSValue delay;
-        private CSSValue iterationCount;
-        private CSSValue direction;
-        private CSSValue fillMode;
-        private CSSValue playState;
-        private CSSValue timeline;
+        private jweb.CSSValue duration;
+        private jweb.CSSValue timingFunction;
+        private jweb.CSSValue delay;
+        private jweb.CSSValue iterationCount;
+        private jweb.CSSValue direction;
+        private jweb.CSSValue fillMode;
+        private jweb.CSSValue playState;
+        private jweb.CSSValue timeline;
 
-        AnimationBuilder(String name, CSSValue duration) {
+        AnimationBuilder(String name, jweb.CSSValue duration) {
             this.name = name;
             this.duration = duration;
         }
@@ -527,7 +530,7 @@ public final class CSSAnimations {
          * @param timing timing function (ease, linear, etc.)
          * @return this builder for chaining
          */
-        public AnimationBuilder timing(CSSValue timing) {
+        public AnimationBuilder timing(jweb.CSSValue timing) {
             this.timingFunction = timing;
             return this;
         }
@@ -538,7 +541,7 @@ public final class CSSAnimations {
          * @param delay delay value (use s() or ms())
          * @return this builder for chaining
          */
-        public AnimationBuilder delay(CSSValue delay) {
+        public AnimationBuilder delay(jweb.CSSValue delay) {
             this.delay = delay;
             return this;
         }
@@ -549,7 +552,7 @@ public final class CSSAnimations {
          * @param count iteration count or iterationInfinite
          * @return this builder for chaining
          */
-        public AnimationBuilder iterationCount(CSSValue count) {
+        public AnimationBuilder iterationCount(jweb.CSSValue count) {
             this.iterationCount = count;
             return this;
         }
@@ -560,7 +563,7 @@ public final class CSSAnimations {
          * @param direction direction value (directionNormal, directionAlternate, etc.)
          * @return this builder for chaining
          */
-        public AnimationBuilder direction(CSSValue direction) {
+        public AnimationBuilder direction(jweb.CSSValue direction) {
             this.direction = direction;
             return this;
         }
@@ -571,7 +574,7 @@ public final class CSSAnimations {
          * @param fillMode fill mode value (fillModeForwards, fillModeBoth, etc.)
          * @return this builder for chaining
          */
-        public AnimationBuilder fillMode(CSSValue fillMode) {
+        public AnimationBuilder fillMode(jweb.CSSValue fillMode) {
             this.fillMode = fillMode;
             return this;
         }
@@ -582,7 +585,7 @@ public final class CSSAnimations {
          * @param state play state (playStateRunning, playStatePaused)
          * @return this builder for chaining
          */
-        public AnimationBuilder playState(CSSValue state) {
+        public AnimationBuilder playState(jweb.CSSValue state) {
             this.playState = state;
             return this;
         }
@@ -593,7 +596,7 @@ public final class CSSAnimations {
          * @param timeline timeline value (scrollTimeline(), viewTimeline())
          * @return this builder for chaining
          */
-        public AnimationBuilder timeline(CSSValue timeline) {
+        public AnimationBuilder timeline(jweb.CSSValue timeline) {
             this.timeline = timeline;
             return this;
         }
@@ -626,7 +629,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder fadeIn(CSSValue duration) {
+    public static AnimationBuilder fadeIn(jweb.CSSValue duration) {
         return new AnimationBuilder("fadeIn", duration);
     }
 
@@ -636,7 +639,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder fadeOut(CSSValue duration) {
+    public static AnimationBuilder fadeOut(jweb.CSSValue duration) {
         return new AnimationBuilder("fadeOut", duration);
     }
 
@@ -646,7 +649,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder fadeInUp(CSSValue duration) {
+    public static AnimationBuilder fadeInUp(jweb.CSSValue duration) {
         return new AnimationBuilder("fadeInUp", duration);
     }
 
@@ -656,7 +659,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder fadeInDown(CSSValue duration) {
+    public static AnimationBuilder fadeInDown(jweb.CSSValue duration) {
         return new AnimationBuilder("fadeInDown", duration);
     }
 
@@ -666,7 +669,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder fadeInLeft(CSSValue duration) {
+    public static AnimationBuilder fadeInLeft(jweb.CSSValue duration) {
         return new AnimationBuilder("fadeInLeft", duration);
     }
 
@@ -676,7 +679,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder fadeInRight(CSSValue duration) {
+    public static AnimationBuilder fadeInRight(jweb.CSSValue duration) {
         return new AnimationBuilder("fadeInRight", duration);
     }
 
@@ -688,7 +691,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideInLeft(CSSValue duration) {
+    public static AnimationBuilder slideInLeft(jweb.CSSValue duration) {
         return new AnimationBuilder("slideInLeft", duration);
     }
 
@@ -698,7 +701,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideInRight(CSSValue duration) {
+    public static AnimationBuilder slideInRight(jweb.CSSValue duration) {
         return new AnimationBuilder("slideInRight", duration);
     }
 
@@ -708,7 +711,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideInUp(CSSValue duration) {
+    public static AnimationBuilder slideInUp(jweb.CSSValue duration) {
         return new AnimationBuilder("slideInUp", duration);
     }
 
@@ -718,7 +721,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideInDown(CSSValue duration) {
+    public static AnimationBuilder slideInDown(jweb.CSSValue duration) {
         return new AnimationBuilder("slideInDown", duration);
     }
 
@@ -728,7 +731,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideOutLeft(CSSValue duration) {
+    public static AnimationBuilder slideOutLeft(jweb.CSSValue duration) {
         return new AnimationBuilder("slideOutLeft", duration);
     }
 
@@ -738,7 +741,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideOutRight(CSSValue duration) {
+    public static AnimationBuilder slideOutRight(jweb.CSSValue duration) {
         return new AnimationBuilder("slideOutRight", duration);
     }
 
@@ -748,7 +751,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideOutUp(CSSValue duration) {
+    public static AnimationBuilder slideOutUp(jweb.CSSValue duration) {
         return new AnimationBuilder("slideOutUp", duration);
     }
 
@@ -758,7 +761,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder slideOutDown(CSSValue duration) {
+    public static AnimationBuilder slideOutDown(jweb.CSSValue duration) {
         return new AnimationBuilder("slideOutDown", duration);
     }
 
@@ -770,7 +773,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder zoomIn(CSSValue duration) {
+    public static AnimationBuilder zoomIn(jweb.CSSValue duration) {
         return new AnimationBuilder("zoomIn", duration);
     }
 
@@ -780,7 +783,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder zoomOut(CSSValue duration) {
+    public static AnimationBuilder zoomOut(jweb.CSSValue duration) {
         return new AnimationBuilder("zoomOut", duration);
     }
 
@@ -790,7 +793,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder scaleIn(CSSValue duration) {
+    public static AnimationBuilder scaleIn(jweb.CSSValue duration) {
         return new AnimationBuilder("scaleIn", duration);
     }
 
@@ -800,7 +803,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder scaleOut(CSSValue duration) {
+    public static AnimationBuilder scaleOut(jweb.CSSValue duration) {
         return new AnimationBuilder("scaleOut", duration);
     }
 
@@ -816,7 +819,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder pulse(CSSValue duration) {
+    public static AnimationBuilder pulse(jweb.CSSValue duration) {
         return new AnimationBuilder("pulse", duration);
     }
 
@@ -826,7 +829,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder heartbeat(CSSValue duration) {
+    public static AnimationBuilder heartbeat(jweb.CSSValue duration) {
         return new AnimationBuilder("heartbeat", duration);
     }
 
@@ -836,7 +839,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder bounce(CSSValue duration) {
+    public static AnimationBuilder bounce(jweb.CSSValue duration) {
         return new AnimationBuilder("bounce", duration);
     }
 
@@ -846,7 +849,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder bounceIn(CSSValue duration) {
+    public static AnimationBuilder bounceIn(jweb.CSSValue duration) {
         return new AnimationBuilder("bounceIn", duration);
     }
 
@@ -856,7 +859,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder bounceOut(CSSValue duration) {
+    public static AnimationBuilder bounceOut(jweb.CSSValue duration) {
         return new AnimationBuilder("bounceOut", duration);
     }
 
@@ -874,7 +877,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder rotate360(CSSValue duration) {
+    public static AnimationBuilder rotate360(jweb.CSSValue duration) {
         return new AnimationBuilder("spin", duration);
     }
 
@@ -884,7 +887,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder rotateIn(CSSValue duration) {
+    public static AnimationBuilder rotateIn(jweb.CSSValue duration) {
         return new AnimationBuilder("rotateIn", duration);
     }
 
@@ -894,7 +897,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder rotateOut(CSSValue duration) {
+    public static AnimationBuilder rotateOut(jweb.CSSValue duration) {
         return new AnimationBuilder("rotateOut", duration);
     }
 
@@ -906,7 +909,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder flipX(CSSValue duration) {
+    public static AnimationBuilder flipX(jweb.CSSValue duration) {
         return new AnimationBuilder("flipX", duration);
     }
 
@@ -916,7 +919,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder flipY(CSSValue duration) {
+    public static AnimationBuilder flipY(jweb.CSSValue duration) {
         return new AnimationBuilder("flipY", duration);
     }
 
@@ -926,7 +929,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder flipIn(CSSValue duration) {
+    public static AnimationBuilder flipIn(jweb.CSSValue duration) {
         return new AnimationBuilder("flipIn", duration);
     }
 
@@ -936,7 +939,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder flipOut(CSSValue duration) {
+    public static AnimationBuilder flipOut(jweb.CSSValue duration) {
         return new AnimationBuilder("flipOut", duration);
     }
 
@@ -948,7 +951,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder shake(CSSValue duration) {
+    public static AnimationBuilder shake(jweb.CSSValue duration) {
         return new AnimationBuilder("shake", duration);
     }
 
@@ -958,7 +961,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder shakeVertical(CSSValue duration) {
+    public static AnimationBuilder shakeVertical(jweb.CSSValue duration) {
         return new AnimationBuilder("shakeVertical", duration);
     }
 
@@ -968,7 +971,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder wobble(CSSValue duration) {
+    public static AnimationBuilder wobble(jweb.CSSValue duration) {
         return new AnimationBuilder("wobble", duration);
     }
 
@@ -978,7 +981,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder jello(CSSValue duration) {
+    public static AnimationBuilder jello(jweb.CSSValue duration) {
         return new AnimationBuilder("jello", duration);
     }
 
@@ -988,7 +991,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder swing(CSSValue duration) {
+    public static AnimationBuilder swing(jweb.CSSValue duration) {
         return new AnimationBuilder("swing", duration);
     }
 
@@ -998,7 +1001,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder rubberBand(CSSValue duration) {
+    public static AnimationBuilder rubberBand(jweb.CSSValue duration) {
         return new AnimationBuilder("rubberBand", duration);
     }
 
@@ -1010,7 +1013,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder flash(CSSValue duration) {
+    public static AnimationBuilder flash(jweb.CSSValue duration) {
         return new AnimationBuilder("flash", duration);
     }
 
@@ -1020,7 +1023,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder tada(CSSValue duration) {
+    public static AnimationBuilder tada(jweb.CSSValue duration) {
         return new AnimationBuilder("tada", duration);
     }
 
@@ -1030,7 +1033,7 @@ public final class CSSAnimations {
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder headShake(CSSValue duration) {
+    public static AnimationBuilder headShake(jweb.CSSValue duration) {
         return new AnimationBuilder("headShake", duration);
     }
 

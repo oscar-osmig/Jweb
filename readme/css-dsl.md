@@ -9,16 +9,25 @@ the right-hand side of a CSS declaration implements the one-method interface `CS
 ## Imports
 
 ```java
-import static com.osmig.Jweb.framework.styles.CSS.*;        // style(), rule(), styles(), selectors, keywords
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;   // px, rem, vh, fr, ms, calc, clamp, ...
-import static com.osmig.Jweb.framework.styles.CSSColors.*;  // white, black, hex(), rgb(), hsl(), ...
+import static jweb.Css.*;   // style(), rule(), units, colors, grid, animations,
+                            // variables, media(), keyframes(), stylesheet()
+import jweb.Style;          // the type your style helpers return
 ```
 
-> ⚠️ **Import collision warning:** several names exist in more than one module —
-> `lightDark` and `colorMix` (both `CSSColors` and `CSSUnits`), `var` (both `CSS` and
-> `CSSVariables`), `all` (`CSS` keyword vs `MediaQuery.all()`). Wildcard-importing colliding
-> modules together produces "ambiguous reference" compile errors — qualify one side
-> (e.g. `CSSUnits.colorMix(...)`) when it happens.
+`jweb.Css` aggregates the legacy `CSS`, `CSSUnits`, `CSSColors`, `CSSGrid`,
+`CSSAnimations` and `CSSVariables` modules plus the `media()`/`keyframes()`/
+`stylesheet()` factories, so one import replaces the old three-to-six. The old
+duplicate names (`colorMix`, `lightDark`, `var`, `env` existed in two modules each)
+are resolved inside the facade — no more ambiguous-reference errors from combining
+those wildcards.
+
+Specialty modules that stay separate: `Selectors`, `Supports`, `CSSNested`,
+`CSSMasking`, `CSSScrollSnap`, `CSSLogicalProperties`, `CSSAnchorPositioning`,
+`CSSTextWrap`, `CSSSubgrid`, `Theme`, `Utility` (import from
+`com.osmig.Jweb.framework.styles` as before).
+
+> The legacy imports still compile — the old entry classes are `@Deprecated`
+> aliases feeding the same methods.
 
 ## Inline Styles
 
@@ -386,7 +395,7 @@ staggerDelay(index, 100)
 ## Grid helpers (`CSSGrid`)
 
 ```java
-import static com.osmig.Jweb.framework.styles.CSSGrid.*;
+import static jweb.Css.*;
 
 style().gridTemplateColumns(repeat(3, fr(1)))
 style().gridTemplateColumns(repeat(autoFill(), minmax(px(200), fr(1))))

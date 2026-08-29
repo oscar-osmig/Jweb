@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.styling;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class StylingVariables {
@@ -12,7 +12,7 @@ public final class StylingVariables {
             para("Use CSS custom properties for theming and design tokens."),
 
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSVariables.*;
+import static jweb.Css.*;
 
 // Define variables in :root
 rule(":root")

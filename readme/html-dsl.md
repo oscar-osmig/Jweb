@@ -2,40 +2,41 @@
 
 # HTML DSL
 
-## Imports — what lives where
+## Imports — one facade
 
-There are **two facades** plus per-category modules. Knowing which import provides what saves a
-lot of "cannot resolve method" errors:
+As of the `jweb` short-import surface there is **one facade** for HTML:
 
 ```java
-// Primary facade — most common elements + attrs() (147 members)
-import static com.osmig.Jweb.framework.elements.El.*;
-
-// The full legacy facade — adds conditionals (when/match/cond/otherwise),
-// errorBoundary, hr, video/audio/canvas/iframe, InlineStyle overloads, etc.
-import static com.osmig.Jweb.framework.elements.Elements.*;
-
-// Specialty modules (NOT re-exported by El — import directly when needed):
-import static com.osmig.Jweb.framework.elements.PopoverElements.*;   // popover API
-import static com.osmig.Jweb.framework.elements.PictureElements.*;   // srcset/responsiveImg/lazyImg
-import static com.osmig.Jweb.framework.elements.FormEnhancements.*;  // colorInput/dateInput/rangeInput/...
-import static com.osmig.Jweb.framework.elements.DialogHelper.*;      // dialog JS helpers
-import static com.osmig.Jweb.framework.elements.DetailsHelper.*;     // details JS helpers
-
-// Styling
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static jweb.El.*;   // every element, attribute helper, typed input,
+                           // conditional, popover, SVG shape, responsive image
 ```
 
-> ⚠️ Don't wildcard-import `El.*` and `Elements.*` together carelessly — they share many names.
-> Pick one per file (app code conventionally uses `El.*`; reach into `Elements` explicitly for
-> `when`/`match`/`errorBoundary`: `Elements.when(...)`).
+`jweb.El` is the union of the two legacy facades (`El` + `Elements`): elements with
+`(Attributes, ...)` and `(InlineStyle, ...)` overloads, `attrs()` and the attribute
+shortcuts (`id`, `class_`, `alt`, `placeholder`, `aria`, `role`, ...), typed inputs
+(`textInput`, `emailInput`, `checkbox`, `radio`, ...), conditionals
+(`when`/`match`/`cond`/`otherwise`/`errorBoundary`), popovers, `icon`/`appleIcon`,
+`srcset`/`responsiveImg`/`lazyImg`, and the core SVG shapes.
 
-## What `El` actually exports
+Still separate on purpose:
 
-`El` is a pure static facade — each method is a one-line delegate to a category module. Verified
-inventory:
+```java
+import static jweb.Input.*;                                          // typed input DSL (names clash with El)
+import static com.osmig.Jweb.framework.elements.DialogHelper.*;      // dialog JS helpers
+import static com.osmig.Jweb.framework.elements.DetailsHelper.*;     // details JS helpers
+```
+
+> One deliberate semantic pick in the merge: `data(name, value)` builds a `data-*`
+> **attribute** (the `Elements` meaning). Use `data_(value, text)` for the `<data>`
+> element.
+
+> The legacy imports (`com.osmig.Jweb.framework.elements.El` / `.Elements`) still
+> compile — they are `@Deprecated` aliases of the same methods.
+
+## What `jweb.El` exports
+
+`El` is a pure static facade — each method is a one-line delegate to a category module (the
+tables below list the legacy `El` core; `jweb.El` adds everything from `Elements` on top).
 
 | Category | In `El` |
 |----------|---------|
@@ -161,7 +162,7 @@ Two typed forms exist — there is **no** `onclick(String)` string setter:
 button(attrs().onClick(e -> counter.update(n -> n + 1)), "Increment")
 
 // 2. JS DSL Action — inlined into the attribute
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Actions.*;
 button(attrs().onClick(toggle("panel")), "Toggle")
 
 // For raw JS strings, use set():
@@ -380,7 +381,7 @@ rangeInput("opacity", 0, 100, 50, 5)             // with step
 ## Conditional Rendering (`Elements` — not in `El`)
 
 ```java
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static jweb.El.*;
 
 // Simple conditional (lazy)
 when(isLoggedIn, () -> span("Welcome, " + user.getName()))
@@ -423,7 +424,7 @@ fragment(
 
 ```java
 // Free function (Elements)
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static jweb.El.*;
 errorBoundary(() -> riskyComponent.render(),
               error -> p("Error: " + error.getMessage()))
 tryCatch(() -> riskyComponent.render())   // silent empty fallback

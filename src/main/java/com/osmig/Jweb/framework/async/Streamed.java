@@ -24,10 +24,10 @@ import java.util.function.Supplier;
  *     )).render()));
  * </pre>
  */
-public record Streamed(Supplier<Element> page) {
+public record Streamed(Supplier<? extends jweb.Element> page) {
 
     /** Wraps a lazily-built page for streaming delivery. */
-    public static Streamed of(Supplier<Element> page) {
+    public static Streamed of(Supplier<? extends jweb.Element> page) {
         return new Streamed(page);
     }
 }

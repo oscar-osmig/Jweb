@@ -1,7 +1,6 @@
 package com.osmig.Jweb.app.docs;
 
-import static com.osmig.Jweb.framework.js.Runtime.*;
-import static com.osmig.Jweb.framework.js.Events.*;
+import static jweb.Js.*;
 
 /**
  * Click-to-copy for docs code blocks. Delegated to .docs-layout so buttons

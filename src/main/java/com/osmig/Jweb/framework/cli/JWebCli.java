@@ -456,8 +456,8 @@ public class JWebCli {
         return """
             package %s;
 
-            import com.osmig.Jweb.framework.JWebRoutes;
-            import com.osmig.Jweb.framework.routing.Router;
+            import jweb.JWeb;
+            import jweb.JWebRoutes;
             import %s.pages.HomePage;
             import org.springframework.stereotype.Component;
 
@@ -465,9 +465,8 @@ public class JWebCli {
             public class Routes implements JWebRoutes {
 
                 @Override
-                public void configure(Router router) {
-                    router
-                        .get("/", HomePage::new);
+                public void configure(JWeb app) {
+                    app.get("/", HomePage::new);
                 }
             }
             """.formatted(packageName, packageName);
@@ -477,14 +476,12 @@ public class JWebCli {
         return """
             package %s.pages;
 
-            import com.osmig.Jweb.framework.core.Element;
-            import com.osmig.Jweb.framework.template.Template;
+            import jweb.Element;
+            import jweb.Template;
             import %s.layouts.MainLayout;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
 
             public class HomePage implements Template {
 
@@ -525,12 +522,10 @@ public class JWebCli {
         return """
             package %s.layouts;
 
-            import com.osmig.Jweb.framework.core.Element;
+            import jweb.Element;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
 
             public class MainLayout {
 

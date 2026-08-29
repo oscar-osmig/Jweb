@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.elements;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class ElementsSVG {
@@ -13,7 +13,7 @@ public final class ElementsSVG {
 
             codeBlock("""
 // Import SVG elements
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 import static com.osmig.Jweb.framework.elements.SVGElements.*;"""),
 
             h3Title("Basic SVG"),

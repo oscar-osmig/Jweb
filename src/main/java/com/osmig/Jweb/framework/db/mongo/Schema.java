@@ -21,7 +21,10 @@ import java.util.*;
  *     .timestamps()
  *     .register();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Schema} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Schema {
 
     private static final Map<String, Schema> schemas = new HashMap<>();
@@ -31,7 +34,7 @@ public class Schema {
     private final List<IndexDef> indexes = new ArrayList<>();
     private boolean hasTimestamps = false;
 
-    private Schema(String collectionName) {
+    protected Schema(String collectionName) {
         this.collectionName = collectionName;
     }
 

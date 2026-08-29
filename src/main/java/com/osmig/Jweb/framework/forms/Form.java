@@ -58,14 +58,17 @@ class StyleBuilder extends Style<StyleBuilder> {}
  *     .submit("Search")
  *     .build()
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Form} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Form {
 
     private final Attributes formAttrs = new Attributes();
     private final List<Element> fields = new ArrayList<>();
-    private Style<?> formStyle;
+    private jweb.Style<?> formStyle;
 
-    private Form() {}
+    protected Form() {}
 
     /**
      * Creates a new Form builder.

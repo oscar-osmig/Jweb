@@ -15,7 +15,10 @@ package com.osmig.Jweb.framework;
  *     }
  * }
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.JWebRoutes} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public interface JWebRoutes {
 
     /**

@@ -17,9 +17,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * guard("initOnce").add(setupFunc).build()
  * cache("myCache", 60000).set(key, value)
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Js} — shorter import, same API. Existing code keeps working.
  */
-public final class Runtime {
-    private Runtime() {}
+@Deprecated
+public class Runtime extends Async {
+    protected Runtime() {}
 
     public static IIFE iife() { return new IIFE(); }
     public static Guard guard(String varName) { return new Guard(varName); }

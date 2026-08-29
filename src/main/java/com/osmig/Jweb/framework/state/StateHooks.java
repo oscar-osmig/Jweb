@@ -13,10 +13,13 @@ package com.osmig.Jweb.framework.state;
  *     private final State&lt;Boolean&gt; visible = useState(true);
  * }
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.State} — shorter import, same API. Existing code keeps working.
  */
-public final class StateHooks {
+@Deprecated
+public class StateHooks {
 
-    private StateHooks() {
+    protected StateHooks() {
         // Static utility class
     }
 
@@ -133,7 +136,7 @@ public final class StateHooks {
      * @return the wrapper element to place in the page
      */
     public static com.osmig.Jweb.framework.core.Element useComponent(
-            String componentId, java.util.function.Supplier<com.osmig.Jweb.framework.core.Element> body) {
+            String componentId, java.util.function.Supplier<? extends jweb.Element> body) {
         StateManager.StateContext context = StateManager.getContext();
         if (context != null) {
             context.registerComponent(componentId, () -> renderComponent(componentId, body));
@@ -142,7 +145,7 @@ public final class StateHooks {
     }
 
     private static com.osmig.Jweb.framework.vdom.VElement wrapperVNode(
-            String componentId, java.util.function.Supplier<com.osmig.Jweb.framework.core.Element> body) {
+            String componentId, java.util.function.Supplier<? extends jweb.Element> body) {
         return com.osmig.Jweb.framework.vdom.VElement.of(
                 "div",
                 java.util.Map.of("id", componentId),
@@ -150,7 +153,7 @@ public final class StateHooks {
     }
 
     private static String renderComponent(
-            String componentId, java.util.function.Supplier<com.osmig.Jweb.framework.core.Element> body) {
+            String componentId, java.util.function.Supplier<? extends jweb.Element> body) {
         return wrapperVNode(componentId, body).toHtml();
     }
 }

@@ -54,10 +54,9 @@ public final class DocExamples {
                     }""";
 
     public static final String SETUP_IMPORTS = """
-                    import static com.osmig.Jweb.framework.elements.Elements.*;
-                    import static com.osmig.Jweb.framework.styles.CSS.*;
-                    import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-                    import static com.osmig.Jweb.framework.styles.CSSColors.*;""";
+                    import static jweb.El.*;
+                    import static jweb.Css.*;
+                    import static jweb.Css.*;""";
 
     public static final String SETUP_RUN = """
                     mvn spring-boot:run
@@ -283,7 +282,7 @@ div(style()
 )""";
 
     public static final String STYLING_UNITS = """
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static jweb.Css.*;
 
 // Length units
 px(16)          // 16px
@@ -310,7 +309,7 @@ auto            // auto
 none            // none""";
 
     public static final String STYLING_COLORS = """
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static jweb.Css.*;
 
 // Named colors
 red, blue, green, white, black, gray
@@ -347,7 +346,7 @@ div(style()
     .gap(SP_4))""";
 
     public static final String STYLING_VALUES = """
-import static com.osmig.Jweb.framework.styles.CSS.*;
+import static jweb.Css.*;
 
 // Display
 block, inline, flex, grid, inlineBlock, inlineFlex
@@ -432,7 +431,7 @@ div(style()
     // ==================== State Section ====================
 
     public static final String STATE_CREATE = """
-import static com.osmig.Jweb.framework.state.StateHooks.*;
+import static jweb.State.*;
 
 public class Counter implements Template {
     private final State<Integer> count = useState(0);
@@ -688,7 +687,7 @@ input(attrs()
     // ==================== Form Builder Section ====================
 
     public static final String FORM_BUILDER_BASIC = """
-import static com.osmig.Jweb.framework.forms.Form.*;
+import static jweb.Form.*;
 
 Form.create()
     .action("/contact")
@@ -814,7 +813,7 @@ Form.create()
     // ==================== Layouts Section ====================
 
     public static final String LAYOUTS_IMPORT = """
-import static com.osmig.Jweb.framework.layout.Layout.*;""";
+import static jweb.Layout.*;""";
 
     public static final String LAYOUTS_PAGE = """
 // Full page with header, main, footer
@@ -987,7 +986,7 @@ Layout.space(rem(2))       // fixed space""";
     // ==================== UI Components Section ====================
 
     public static final String UI_IMPORT = """
-import static com.osmig.Jweb.framework.ui.UI.*;""";
+import static jweb.UI.*;""";
 
     public static final String UI_BUTTONS = """
 // Button variants
@@ -1001,7 +1000,7 @@ UI.linkButton("View Details", e -> showDetails())
 UI.iconButton(iconElement, e -> handleClick())""";
 
     public static final String UI_BADGES = """
-import static com.osmig.Jweb.framework.ui.UI.Badge.*;
+import static jweb.UI.Badge.*;
 
 // Colored badges
 UI.badge("New", SUCCESS)    // green
@@ -1011,13 +1010,13 @@ UI.badge("Info", INFO)       // blue
 UI.badge("Default", DEFAULT) // gray
 
 // Tags (similar to badges, for categories)
-import static com.osmig.Jweb.framework.ui.UI.Tag.*;
+import static jweb.UI.Tag.*;
 
 UI.tag("JavaScript", PRIMARY)
 UI.tag("Tutorial", SECONDARY)""";
 
     public static final String UI_ALERTS = """
-import static com.osmig.Jweb.framework.ui.UI.Alert.*;
+import static jweb.UI.Alert.*;
 
 // Alert with icon
 UI.alert("Operation completed successfully!", SUCCESS)
@@ -1101,8 +1100,8 @@ div(
 )""";
 
     public static final String UI_COMPLETE = """
-import static com.osmig.Jweb.framework.ui.UI.*;
-import static com.osmig.Jweb.framework.layout.Layout.*;
+import static jweb.UI.*;
+import static jweb.Layout.*;
 
 card(
     // Header with badge

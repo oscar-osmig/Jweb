@@ -31,15 +31,19 @@ button(attrs().onClick(toggle("panel")), text("Menu"))
 button(attrs().onClick(Toast.success("Saved!")), text("Save"))   // typed Toast actions
 ```
 
-Also: `JS.*` and `Actions.*` share many static names (`script`, `query`, `queryAll`, `call`,
+Short imports: `import static jweb.Actions.*;` is the high-level layer;
+`import static jweb.Js.*;` is the low-level layer and also folds in the legacy
+`Events`, `Runtime` and `Async` modules, so one import covers all four.
+
+Also: `Js.*` and `Actions.*` share many static names (`script`, `query`, `queryAll`, `call`,
 `fetch`, `sleep`, `promiseAll`, `pushState`, ...). **Wildcard-importing both into one file causes
-ambiguous-reference compile errors.** Convention: import `Actions.*` in page code; qualify
-`JS.` explicitly when you need the low-level layer.
+ambiguous-reference compile errors** — that is why they stay two facades. Convention: import
+`Actions.*` in page code; qualify `Js.` explicitly when you need the low-level layer.
 
 ## The standard form-submission pattern (used by the sample ContactPage)
 
 ```java
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Actions.*;
 
 String js = script()
     .withHelpers()
@@ -230,7 +234,7 @@ Async.delay(500); Async.onceEvent(el, "transitionend")
 ## Events (`Events`)
 
 ```java
-import static com.osmig.Jweb.framework.js.Events.*;
+import static jweb.Js.*;
 
 // Delegation — attach to parent, filter by selector
 delegate("container", "click", ".card").handler(callback("e")
@@ -316,7 +320,7 @@ sse("/events")
 
 ```java
 import static com.osmig.Jweb.framework.js.JSIndexedDB.*;
-import static com.osmig.Jweb.framework.js.JS.*;
+import static jweb.Js.*;
 
 openDB("myApp", 1)
     .onUpgrade(callback("db")

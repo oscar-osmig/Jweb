@@ -1,17 +1,17 @@
 package com.osmig.Jweb.app.sandbox;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.framework.elements.Elements;
-import com.osmig.Jweb.framework.styles.CSSValue;
-import com.osmig.Jweb.framework.styles.Style;
+import jweb.CSSValue;
+import jweb.Style;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.osmig.Jweb.framework.elements.El.text;
-import static com.osmig.Jweb.framework.styles.CSS.style;
+import static jweb.El.text;
+import static jweb.Css.style;
 
 /**
  * A safe interpreter for a subset of the JWeb DSL, powering the sandbox's
@@ -316,7 +316,7 @@ public final class SandboxDsl {
             }
             if (c.name().equals("style")) {
                 if (!c.args().isEmpty()) throw new DslError("style() takes no arguments — chain methods after it", c.pos());
-                Style<?> st = style();
+                jweb.Style<?> st = style();
                 for (SCall m : c.chain()) applyStyleMethod(st, m);
                 return st;
             }
@@ -362,7 +362,7 @@ public final class SandboxDsl {
 
         // ---------- style ----------
 
-        private void applyStyleMethod(Style<?> st, SCall m) {
+        private void applyStyleMethod(jweb.Style<?> st, SCall m) {
             StyleMethod sm = STYLE_METHODS.get(m.name());
             if (sm == null) {
                 throw new DslError(unknownIn("." + m.name(), "on style()", STYLE_METHODS.keySet()), m.pos());

@@ -73,7 +73,7 @@ import java.util.function.Supplier;
 public final class Transition implements Element {
 
     private final boolean show;
-    private Supplier<Element> content;
+    private Supplier<? extends jweb.Element> content;
     private String enterClass;
     private String enterActiveClass;
     private String leaveClass;
@@ -193,7 +193,7 @@ public final class Transition implements Element {
      * @param content the element to show/hide
      * @return the final element
      */
-    public Element render(Supplier<Element> content) {
+    public Element render(Supplier<? extends jweb.Element> content) {
         this.content = content;
         return this;
     }
@@ -215,7 +215,7 @@ public final class Transition implements Element {
             return new VFragment(List.of());
         }
 
-        Element el = content.get();
+        Element el = Element.of(content.get());
         VNode node = el.toVNode();
 
         // If we have transition classes, wrap or modify the element
@@ -276,7 +276,7 @@ public final class Transition implements Element {
      * @param content the content supplier
      * @return a fade transition element
      */
-    public static Element fade(boolean show, Supplier<Element> content) {
+    public static Element fade(boolean show, Supplier<? extends jweb.Element> content) {
         return Transition.when(show)
             .enter("jweb-fade-enter")
             .enterActiveClass("jweb-fade-enter-active")
@@ -292,7 +292,7 @@ public final class Transition implements Element {
      * @param content the content supplier
      * @return a slide transition element
      */
-    public static Element slideDown(boolean show, Supplier<Element> content) {
+    public static Element slideDown(boolean show, Supplier<? extends jweb.Element> content) {
         return Transition.when(show)
             .enter("jweb-slide-enter")
             .enterActiveClass("jweb-slide-enter-active")
@@ -308,7 +308,7 @@ public final class Transition implements Element {
      * @param content the content supplier
      * @return a scale transition element
      */
-    public static Element scale(boolean show, Supplier<Element> content) {
+    public static Element scale(boolean show, Supplier<? extends jweb.Element> content) {
         return Transition.when(show)
             .enter("jweb-scale-enter")
             .enterActiveClass("jweb-scale-enter-active")

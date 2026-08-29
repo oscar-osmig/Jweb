@@ -1,18 +1,14 @@
 package com.osmig.Jweb.app.sandbox;
 
-import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.template.Template;
+import jweb.Element;
+import jweb.Template;
 import com.osmig.Jweb.app.sandbox.SandboxDsl.Result;
 import com.osmig.Jweb.app.sandbox.SandboxFiles.Mode;
 import com.osmig.Jweb.app.sandbox.SandboxFiles.SandboxFile;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
-import static com.osmig.Jweb.framework.styles.Stylesheet.*;
-import static com.osmig.Jweb.framework.styles.MediaQuery.media;
-import static com.osmig.Jweb.framework.styles.Keyframes.keyframes;
+import com.osmig.Jweb.framework.styles.Stylesheet.Rule;
+import static jweb.El.*;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 /**

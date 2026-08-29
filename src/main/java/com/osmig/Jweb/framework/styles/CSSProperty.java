@@ -176,7 +176,7 @@ public final class CSSProperty {
          * @param value the initial value
          * @return this builder
          */
-        public PropertyBuilder initialValue(CSSValue value) {
+        public PropertyBuilder initialValue(jweb.CSSValue value) {
             this.initialValue = value.css();
             return this;
         }

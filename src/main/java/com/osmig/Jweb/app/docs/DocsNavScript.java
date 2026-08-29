@@ -1,8 +1,6 @@
 package com.osmig.Jweb.app.docs;
 
-import static com.osmig.Jweb.framework.js.Runtime.*;
-import static com.osmig.Jweb.framework.js.Events.*;
-import static com.osmig.Jweb.framework.js.JS.*;
+import static jweb.Js.*;
 
 /**
  * Client-side navigation script for documentation pages.

@@ -28,90 +28,90 @@ public class StyledElement implements Element {
 
     private final VNode baseElement;
     private final String generatedClass;
-    private Style<?> baseStyle;
-    private final Map<String, Style<?>> pseudoStyles = new LinkedHashMap<>();
+    private jweb.Style<?> baseStyle;
+    private final Map<String, jweb.Style<?>> pseudoStyles = new LinkedHashMap<>();
 
     public StyledElement(VNode baseElement) {
         this.baseElement = baseElement;
         this.generatedClass = "jweb-" + ID_COUNTER.incrementAndGet();
     }
 
-    public StyledElement style(Style<?> style) {
+    public StyledElement style(jweb.Style<?> style) {
         this.baseStyle = style;
         return this;
     }
 
-    public StyledElement hover(Style<?> style) {
+    public StyledElement hover(jweb.Style<?> style) {
         pseudoStyles.put("hover", style);
         return this;
     }
 
-    public StyledElement focus(Style<?> style) {
+    public StyledElement focus(jweb.Style<?> style) {
         pseudoStyles.put("focus", style);
         return this;
     }
 
-    public StyledElement active(Style<?> style) {
+    public StyledElement active(jweb.Style<?> style) {
         pseudoStyles.put("active", style);
         return this;
     }
 
-    public StyledElement visited(Style<?> style) {
+    public StyledElement visited(jweb.Style<?> style) {
         pseudoStyles.put("visited", style);
         return this;
     }
 
-    public StyledElement focusVisible(Style<?> style) {
+    public StyledElement focusVisible(jweb.Style<?> style) {
         pseudoStyles.put("focus-visible", style);
         return this;
     }
 
-    public StyledElement focusWithin(Style<?> style) {
+    public StyledElement focusWithin(jweb.Style<?> style) {
         pseudoStyles.put("focus-within", style);
         return this;
     }
 
-    public StyledElement disabled(Style<?> style) {
+    public StyledElement disabled(jweb.Style<?> style) {
         pseudoStyles.put("disabled", style);
         return this;
     }
 
-    public StyledElement enabled(Style<?> style) {
+    public StyledElement enabled(jweb.Style<?> style) {
         pseudoStyles.put("enabled", style);
         return this;
     }
 
-    public StyledElement checked(Style<?> style) {
+    public StyledElement checked(jweb.Style<?> style) {
         pseudoStyles.put("checked", style);
         return this;
     }
 
-    public StyledElement firstChild(Style<?> style) {
+    public StyledElement firstChild(jweb.Style<?> style) {
         pseudoStyles.put("first-child", style);
         return this;
     }
 
-    public StyledElement lastChild(Style<?> style) {
+    public StyledElement lastChild(jweb.Style<?> style) {
         pseudoStyles.put("last-child", style);
         return this;
     }
 
-    public StyledElement nthChild(String expression, Style<?> style) {
+    public StyledElement nthChild(String expression, jweb.Style<?> style) {
         pseudoStyles.put("nth-child(" + expression + ")", style);
         return this;
     }
 
-    public StyledElement before(Style<?> style) {
+    public StyledElement before(jweb.Style<?> style) {
         pseudoStyles.put(":before", style);
         return this;
     }
 
-    public StyledElement after(Style<?> style) {
+    public StyledElement after(jweb.Style<?> style) {
         pseudoStyles.put(":after", style);
         return this;
     }
 
-    public StyledElement placeholder(Style<?> style) {
+    public StyledElement placeholder(jweb.Style<?> style) {
         pseudoStyles.put(":placeholder", style);
         return this;
     }
@@ -134,9 +134,9 @@ public class StyledElement implements Element {
         }
 
         // Pseudo-class rules (minified)
-        for (Map.Entry<String, Style<?>> entry : pseudoStyles.entrySet()) {
+        for (Map.Entry<String, jweb.Style<?>> entry : pseudoStyles.entrySet()) {
             String pseudo = entry.getKey();
-            Style<?> style = entry.getValue();
+            jweb.Style<?> style = entry.getValue();
 
             if (pseudo.startsWith(":")) {
                 // Pseudo-element (::before, ::after, ::placeholder)

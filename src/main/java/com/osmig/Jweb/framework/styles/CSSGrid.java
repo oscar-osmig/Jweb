@@ -23,10 +23,13 @@ package com.osmig.Jweb.framework.styles;
  *
  * @see Style#gridTemplateColumns(CSSValue...)
  * @see Style#gridTemplateRows(CSSValue...)
+ *
+ * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSGrid {
+@Deprecated
+public class CSSGrid extends CSSColors {
 
-    private CSSGrid() {}
+    protected CSSGrid() {}
 
     // ==================== Repeat Function ====================
 
@@ -43,7 +46,7 @@ public final class CSSGrid {
      * @param value the track size to repeat
      * @return a CSSValue for the repeat function
      */
-    public static CSSValue repeat(int count, CSSValue value) {
+    public static CSSValue repeat(int count, jweb.CSSValue value) {
         return () -> "repeat(" + count + ", " + value.css() + ")";
     }
 
@@ -59,7 +62,7 @@ public final class CSSGrid {
      * @param values the track sizes to repeat
      * @return a CSSValue for the repeat function
      */
-    public static CSSValue repeat(int count, CSSValue... values) {
+    public static CSSValue repeat(int count, jweb.CSSValue... values) {
         return () -> "repeat(" + count + ", " + joinCss(values) + ")";
     }
 
@@ -76,7 +79,7 @@ public final class CSSGrid {
      * @param value the track size to repeat
      * @return a CSSValue for the repeat function
      */
-    public static CSSValue repeat(CSSValue autoKeyword, CSSValue value) {
+    public static CSSValue repeat(jweb.CSSValue autoKeyword, jweb.CSSValue value) {
         return () -> "repeat(" + autoKeyword.css() + ", " + value.css() + ")";
     }
 
@@ -87,7 +90,7 @@ public final class CSSGrid {
      * @param values the track sizes to repeat
      * @return a CSSValue for the repeat function
      */
-    public static CSSValue repeat(CSSValue autoKeyword, CSSValue... values) {
+    public static CSSValue repeat(jweb.CSSValue autoKeyword, jweb.CSSValue... values) {
         return () -> "repeat(" + autoKeyword.css() + ", " + joinCss(values) + ")";
     }
 
@@ -142,7 +145,7 @@ public final class CSSGrid {
      * @param max the maximum track size
      * @return a CSSValue for the minmax function
      */
-    public static CSSValue minmax(CSSValue min, CSSValue max) {
+    public static CSSValue minmax(jweb.CSSValue min, jweb.CSSValue max) {
         return () -> "minmax(" + min.css() + ", " + max.css() + ")";
     }
 
@@ -181,7 +184,7 @@ public final class CSSGrid {
      * @param max the maximum size
      * @return a CSSValue for the fit-content function
      */
-    public static CSSValue fitContent(CSSValue max) {
+    public static CSSValue fitContent(jweb.CSSValue max) {
         return () -> "fit-content(" + max.css() + ")";
     }
 
@@ -356,7 +359,7 @@ public final class CSSGrid {
 
     // ==================== Helper Methods ====================
 
-    private static String joinCss(CSSValue[] values) {
+    private static String joinCss(jweb.CSSValue[] values) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < values.length; i++) {
             if (i > 0) sb.append(" ");

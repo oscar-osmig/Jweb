@@ -62,10 +62,13 @@ import java.util.function.Function;
  *
  * @see Attributes for building element attributes
  * @see Attr for individual attribute shortcuts
+ *
+ * @deprecated Replaced by {@code jweb.El} — shorter import, same API. Existing code keeps working.
  */
-public final class Elements {
+@Deprecated
+public class Elements {
 
-    private Elements() {}
+    protected Elements() {}
 
     // ==================== Attribute Builder ====================
 
@@ -701,10 +704,10 @@ public final class Elements {
      *
      * Usage: each(users, user -> li(user.getName()))
      */
-    public static <T> Element each(Collection<T> items, Function<T, Element> mapper) {
+    public static <T> Element each(Collection<T> items, Function<T, ? extends jweb.Element> mapper) {
         List<VNode> nodes = items.stream()
             .map(mapper)
-            .map(Element::toVNode)
+            .map(jweb.Element::toVNode)
             .toList();
         return () -> new VFragment(nodes);
     }
@@ -717,9 +720,9 @@ public final class Elements {
      * when(isLoggedIn, () -&gt; span("Welcome!"))
      * </pre>
      */
-    public static Element when(boolean condition, java.util.function.Supplier<Element> element) {
+    public static Element when(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
         if (condition) {
-            return element.get();
+            return Element.of(element.get());
         }
         return () -> new VFragment(List.of());
     }
@@ -732,9 +735,9 @@ public final class Elements {
      * when(isLoggedIn, span("Welcome!"))
      * </pre>
      */
-    public static Element when(boolean condition, Element element) {
+    public static Element when(boolean condition, jweb.Element element) {
         if (condition) {
-            return element;
+            return Element.of(element);
         }
         return () -> new VFragment(List.of());
     }
@@ -771,9 +774,9 @@ public final class Elements {
     @Deprecated
     public static Element ifElse(
             boolean condition,
-            java.util.function.Supplier<Element> ifTrue,
-            java.util.function.Supplier<Element> ifFalse) {
-        return condition ? ifTrue.get() : ifFalse.get();
+            java.util.function.Supplier<? extends jweb.Element> ifTrue,
+            java.util.function.Supplier<? extends jweb.Element> ifFalse) {
+        return condition ? Element.of(ifTrue.get()) : Element.of(ifFalse.get());
     }
 
     // ==================== Condition Builder (if/elif/else) ====================
@@ -804,9 +807,9 @@ public final class Elements {
          * @param element the element to render
          * @return this builder for chaining
          */
-        public Condition then(Element element) {
+        public Condition then(jweb.Element element) {
             if (matched && result == null) {
-                result = element;
+                result = Element.of(element);
             }
             return this;
         }
@@ -817,9 +820,9 @@ public final class Elements {
          * @param element supplier for the element to render
          * @return this builder for chaining
          */
-        public Condition then(java.util.function.Supplier<Element> element) {
+        public Condition then(java.util.function.Supplier<? extends jweb.Element> element) {
             if (matched && result == null) {
-                result = element.get();
+                result = Element.of(element.get());
             }
             return this;
         }
@@ -831,10 +834,10 @@ public final class Elements {
          * @param element the element to render if this condition is true
          * @return this builder for chaining
          */
-        public Condition elif(boolean condition, Element element) {
+        public Condition elif(boolean condition, jweb.Element element) {
             if (!matched && result == null && condition) {
                 matched = true;
-                result = element;
+                result = Element.of(element);
             }
             return this;
         }
@@ -846,10 +849,10 @@ public final class Elements {
          * @param element supplier for the element to render
          * @return this builder for chaining
          */
-        public Condition elif(boolean condition, java.util.function.Supplier<Element> element) {
+        public Condition elif(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
             if (!matched && result == null && condition) {
                 matched = true;
-                result = element.get();
+                result = Element.of(element.get());
             }
             return this;
         }
@@ -861,11 +864,11 @@ public final class Elements {
          * @param element the fallback element
          * @return the matched element or the fallback
          */
-        public Element otherwise(Element element) {
+        public Element otherwise(jweb.Element element) {
             if (result != null) {
                 return result;
             }
-            return element;
+            return Element.of(element);
         }
 
         /**
@@ -874,11 +877,11 @@ public final class Elements {
          * @param element supplier for the fallback element
          * @return the matched element or the fallback
          */
-        public Element otherwise(java.util.function.Supplier<Element> element) {
+        public Element otherwise(java.util.function.Supplier<? extends jweb.Element> element) {
             if (result != null) {
                 return result;
             }
-            return element.get();
+            return Element.of(element.get());
         }
 
         /**
@@ -915,7 +918,7 @@ public final class Elements {
     public static Element match(CondCase... cases) {
         for (CondCase c : cases) {
             if (c.matches()) {
-                return c.element();
+                return Element.of(c.element());
             }
         }
         return () -> new VFragment(List.of());
@@ -928,7 +931,7 @@ public final class Elements {
      * @param element the element to render if condition is true
      * @return a CondCase
      */
-    public static CondCase cond(boolean condition, Element element) {
+    public static CondCase cond(boolean condition, jweb.Element element) {
         return new CondCase(condition, element);
     }
 
@@ -939,7 +942,7 @@ public final class Elements {
      * @param element supplier for the element to render
      * @return a CondCase
      */
-    public static CondCase cond(boolean condition, java.util.function.Supplier<Element> element) {
+    public static CondCase cond(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
         return new CondCase(condition, condition ? element.get() : null);
     }
 
@@ -949,7 +952,7 @@ public final class Elements {
      * @param element the fallback element
      * @return a CondCase that always matches
      */
-    public static CondCase otherwise(Element element) {
+    public static CondCase otherwise(jweb.Element element) {
         return new CondCase(true, element);
     }
 
@@ -959,14 +962,14 @@ public final class Elements {
      * @param element supplier for the fallback element
      * @return a CondCase that always matches
      */
-    public static CondCase otherwise(java.util.function.Supplier<Element> element) {
+    public static CondCase otherwise(java.util.function.Supplier<? extends jweb.Element> element) {
         return new CondCase(true, element.get());
     }
 
     /**
      * Represents a condition-element pair for pattern matching.
      */
-    public record CondCase(boolean matches, Element element) {}
+    public record CondCase(boolean matches, jweb.Element element) {}
 
     // ==================== Generic Tag Factory ====================
 
@@ -1047,8 +1050,8 @@ public final class Elements {
      * @return the rendered element or fallback
      */
     public static Element errorBoundary(
-            java.util.function.Supplier<Element> content,
-            Function<Throwable, Element> fallback) {
+            java.util.function.Supplier<? extends jweb.Element> content,
+            Function<Throwable, ? extends jweb.Element> fallback) {
         return ErrorBoundary.wrap(content, fallback);
     }
 
@@ -1060,7 +1063,7 @@ public final class Elements {
      * @return the rendered element or fallback
      */
     public static Element errorBoundary(
-            java.util.function.Supplier<Element> content,
+            java.util.function.Supplier<? extends jweb.Element> content,
             Element fallback) {
         return ErrorBoundary.wrap(content, fallback);
     }
@@ -1071,7 +1074,7 @@ public final class Elements {
      * @param content the content to render
      * @return the rendered element or empty fragment on error
      */
-    public static Element tryCatch(java.util.function.Supplier<Element> content) {
+    public static Element tryCatch(java.util.function.Supplier<? extends jweb.Element> content) {
         return ErrorBoundary.silent(content);
     }
     public static Tag audio(InlineStyle style, Object... children) { return tag("audio", style, children); }

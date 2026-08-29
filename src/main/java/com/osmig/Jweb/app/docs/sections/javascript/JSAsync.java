@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.javascript;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class JSAsync {
@@ -11,7 +11,7 @@ public final class JSAsync {
             h3Title("Async/Await"),
             para("Build asynchronous JavaScript with type-safe async functions."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Actions.*;
 
 // Simple await
 await_(fetch("/api/data").ok(processData()))

@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.sandbox;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.app.sandbox.SandboxDsl.Knob;
 import com.osmig.Jweb.app.sandbox.SandboxDsl.Result;
 import com.osmig.Jweb.app.sandbox.SandboxFiles.Mode;
@@ -9,7 +9,7 @@ import com.osmig.Jweb.app.sandbox.SandboxFiles.SandboxFile;
 import java.util.List;
 import java.util.Locale;
 
-import static com.osmig.Jweb.framework.elements.El.*;
+import static jweb.El.*;
 
 /**
  * Server-rendered halves of the live editor loop. POST /sandbox/render sends

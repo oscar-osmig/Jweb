@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.javascript;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class JSDomQuery {
@@ -11,7 +11,7 @@ public final class JSDomQuery {
             h3Title("DOM Query Builder"),
             para("Fluent API for querying and manipulating DOM elements."),
             codeBlock("""
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Actions.*;
 
 // Query single element
 query("#status")

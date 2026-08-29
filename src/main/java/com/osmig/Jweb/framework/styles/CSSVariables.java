@@ -45,10 +45,13 @@ import java.util.Map;
  * </pre>
  *
  * @see Style#var(String, CSSValue) for defining variables in styles
+ *
+ * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
-public final class CSSVariables {
+@Deprecated
+public class CSSVariables extends CSSAnimations {
 
-    private CSSVariables() {}
+    protected CSSVariables() {}
 
     // ==================== Variable Reference Functions ====================
 
@@ -83,7 +86,7 @@ public final class CSSVariables {
      * @param fallback the fallback value if variable is not defined
      * @return CSSValue representing var(--name, fallback)
      */
-    public static CSSValue var(String name, CSSValue fallback) {
+    public static CSSValue var(String name, jweb.CSSValue fallback) {
         String normalized = name.startsWith("--") ? name : "--" + name;
         return () -> "var(" + normalized + ", " + fallback.css() + ")";
     }
@@ -114,7 +117,7 @@ public final class CSSVariables {
      * @param finalFallback the final fallback value
      * @return CSSValue with nested var() fallbacks
      */
-    public static CSSValue varChain(String name1, String name2, CSSValue finalFallback) {
+    public static CSSValue varChain(String name1, String name2, jweb.CSSValue finalFallback) {
         return var(name1, var(name2, finalFallback));
     }
 
@@ -127,7 +130,7 @@ public final class CSSVariables {
      * @param finalFallback final fallback value
      * @return CSSValue with nested var() fallbacks
      */
-    public static CSSValue varChain(String name1, String name2, String name3, CSSValue finalFallback) {
+    public static CSSValue varChain(String name1, String name2, String name3, jweb.CSSValue finalFallback) {
         return var(name1, var(name2, var(name3, finalFallback)));
     }
 
@@ -171,7 +174,7 @@ public final class CSSVariables {
      * @param fallback the fallback value
      * @return CSSValue representing env(name, fallback)
      */
-    public static CSSValue env(String name, CSSValue fallback) {
+    public static CSSValue env(String name, jweb.CSSValue fallback) {
         return () -> "env(" + name + ", " + fallback.css() + ")";
     }
 
@@ -277,7 +280,7 @@ public final class CSSVariables {
          * @param values the spacing values in order
          * @return this builder for chaining
          */
-        public DesignSystemBuilder spacing(CSSValue... values) {
+        public DesignSystemBuilder spacing(jweb.CSSValue... values) {
             for (int i = 0; i < values.length; i++) {
                 variables.put(prefix + "spacing-" + (i + 1), values[i].css());
             }
@@ -324,7 +327,7 @@ public final class CSSVariables {
          * @param shades the color shades (typically 5-9 values)
          * @return this builder for chaining
          */
-        public DesignSystemBuilder colorPalette(String name, CSSValue... shades) {
+        public DesignSystemBuilder colorPalette(String name, jweb.CSSValue... shades) {
             int[] weights = {50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
             for (int i = 0; i < Math.min(shades.length, weights.length); i++) {
                 variables.put(prefix + name + "-" + weights[i], shades[i].css());
@@ -339,7 +342,7 @@ public final class CSSVariables {
          * @param sizes the font sizes in order (small to large)
          * @return this builder for chaining
          */
-        public DesignSystemBuilder fontSize(CSSValue... sizes) {
+        public DesignSystemBuilder fontSize(jweb.CSSValue... sizes) {
             for (int i = 0; i < sizes.length; i++) {
                 variables.put(prefix + "font-size-" + (i + 1), sizes[i].css());
             }
@@ -377,7 +380,7 @@ public final class CSSVariables {
          * @param radii the border radius values
          * @return this builder for chaining
          */
-        public DesignSystemBuilder borderRadius(CSSValue... radii) {
+        public DesignSystemBuilder borderRadius(jweb.CSSValue... radii) {
             for (int i = 0; i < radii.length; i++) {
                 variables.put(prefix + "radius-" + (i + 1), radii[i].css());
             }
@@ -425,7 +428,7 @@ public final class CSSVariables {
          * @param durations the duration values
          * @return this builder for chaining
          */
-        public DesignSystemBuilder duration(CSSValue... durations) {
+        public DesignSystemBuilder duration(jweb.CSSValue... durations) {
             for (int i = 0; i < durations.length; i++) {
                 variables.put(prefix + "duration-" + (i + 1), durations[i].css());
             }
@@ -484,7 +487,7 @@ public final class CSSVariables {
          * @param lineHeights the line height values
          * @return this builder for chaining
          */
-        public DesignSystemBuilder lineHeight(CSSValue... lineHeights) {
+        public DesignSystemBuilder lineHeight(jweb.CSSValue... lineHeights) {
             for (int i = 0; i < lineHeights.length; i++) {
                 variables.put(prefix + "line-height-" + (i + 1), lineHeights[i].css());
             }
@@ -520,7 +523,7 @@ public final class CSSVariables {
          * @param value the variable value
          * @return this builder for chaining
          */
-        public DesignSystemBuilder custom(String name, CSSValue value) {
+        public DesignSystemBuilder custom(String name, jweb.CSSValue value) {
             variables.put(prefix + name, value.css());
             return this;
         }
@@ -744,7 +747,7 @@ public final class CSSVariables {
      * @param fallback the fallback color
      * @return CSSValue for var(--color-name, fallback)
      */
-    public static CSSValue themeColor(String colorName, CSSValue fallback) {
+    public static CSSValue themeColor(String colorName, jweb.CSSValue fallback) {
         return var("theme-" + colorName, fallback);
     }
 
@@ -755,7 +758,7 @@ public final class CSSVariables {
      * @param fallback the fallback spacing value
      * @return CSSValue for var(--spacing-N, fallback)
      */
-    public static CSSValue spacing(int level, CSSValue fallback) {
+    public static CSSValue spacing(int level, jweb.CSSValue fallback) {
         return var("spacing-" + level, fallback);
     }
 
@@ -766,7 +769,7 @@ public final class CSSVariables {
      * @param fallback the fallback radius value
      * @return CSSValue for var(--radius-N, fallback)
      */
-    public static CSSValue radius(int level, CSSValue fallback) {
+    public static CSSValue radius(int level, jweb.CSSValue fallback) {
         return var("radius-" + level, fallback);
     }
 
@@ -777,7 +780,7 @@ public final class CSSVariables {
      * @param fallback the fallback size value
      * @return CSSValue for var(--font-size-N, fallback)
      */
-    public static CSSValue fontSizeVar(int level, CSSValue fallback) {
+    public static CSSValue fontSizeVar(int level, jweb.CSSValue fallback) {
         return var("font-size-" + level, fallback);
     }
 

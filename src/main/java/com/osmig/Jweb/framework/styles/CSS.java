@@ -26,10 +26,13 @@ import java.util.Map;
  *     rule(".btn").padding(px(10)).color(white)
  * );
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
-public final class CSS {
+@Deprecated
+public class CSS extends CSSUnits {
 
-    private CSS() {}
+    protected CSS() {}
 
     // ==================== Entry Points ====================
 
@@ -572,7 +575,7 @@ public final class CSS {
      * @param duration the transition duration (use s() or ms())
      * @return a Transition builder
      */
-    public static Transition trans(CSSValue property, CSSValue duration) {
+    public static Transition trans(jweb.CSSValue property, jweb.CSSValue duration) {
         return new Transition(property, duration, null, null);
     }
 
@@ -590,7 +593,7 @@ public final class CSS {
      * @param timing the timing function (ease, easeIn, easeOut, linear, etc.)
      * @return a Transition builder
      */
-    public static Transition trans(CSSValue property, CSSValue duration, CSSValue timing) {
+    public static Transition trans(jweb.CSSValue property, jweb.CSSValue duration, jweb.CSSValue timing) {
         return new Transition(property, duration, timing, null);
     }
 
@@ -609,7 +612,7 @@ public final class CSS {
      * @param delay the delay before transition starts
      * @return a Transition builder
      */
-    public static Transition trans(CSSValue property, CSSValue duration, CSSValue timing, CSSValue delay) {
+    public static Transition trans(jweb.CSSValue property, jweb.CSSValue duration, jweb.CSSValue timing, jweb.CSSValue delay) {
         return new Transition(property, duration, timing, delay);
     }
 
@@ -647,12 +650,12 @@ public final class CSS {
      * Contains property, duration, optional timing function, and optional delay.
      */
     public static class Transition {
-        private final CSSValue property;
-        private final CSSValue duration;
-        private final CSSValue timing;
-        private final CSSValue delay;
+        private final jweb.CSSValue property;
+        private final jweb.CSSValue duration;
+        private final jweb.CSSValue timing;
+        private final jweb.CSSValue delay;
 
-        Transition(CSSValue property, CSSValue duration, CSSValue timing, CSSValue delay) {
+        Transition(jweb.CSSValue property, jweb.CSSValue duration, jweb.CSSValue timing, jweb.CSSValue delay) {
             this.property = property;
             this.duration = duration;
             this.timing = timing;
@@ -1447,7 +1450,7 @@ public final class CSS {
      * @param fallback the fallback value if variable is not defined
      * @return a CSSValue containing the var() function with fallback
      */
-    public static CSSValue var(String name, CSSValue fallback) {
+    public static CSSValue var(String name, jweb.CSSValue fallback) {
         String normalized = name.startsWith("--") ? name : "--" + name;
         return () -> "var(" + normalized + ", " + fallback.css() + ")";
     }
@@ -1504,7 +1507,7 @@ public final class CSS {
      * @param y vertical offset
      * @return a CSSValue for the transform
      */
-    public static CSSValue translate(CSSValue x, CSSValue y) {
+    public static CSSValue translate(jweb.CSSValue x, jweb.CSSValue y) {
         return () -> "translate(" + x.css() + ", " + y.css() + ")";
     }
 
@@ -1520,7 +1523,7 @@ public final class CSS {
      * @param x horizontal offset
      * @return a CSSValue for the transform
      */
-    public static CSSValue translateX(CSSValue x) {
+    public static CSSValue translateX(jweb.CSSValue x) {
         return () -> "translateX(" + x.css() + ")";
     }
 
@@ -1530,7 +1533,7 @@ public final class CSS {
      * @param y vertical offset
      * @return a CSSValue for the transform
      */
-    public static CSSValue translateY(CSSValue y) {
+    public static CSSValue translateY(jweb.CSSValue y) {
         return () -> "translateY(" + y.css() + ")";
     }
 
@@ -1593,7 +1596,7 @@ public final class CSS {
      * @param angle rotation angle (use deg(), rad(), or turn())
      * @return a CSSValue for the transform
      */
-    public static CSSValue rotate(CSSValue angle) {
+    public static CSSValue rotate(jweb.CSSValue angle) {
         return () -> "rotate(" + angle.css() + ")";
     }
 
@@ -1604,7 +1607,7 @@ public final class CSS {
      * @param y vertical skew angle
      * @return a CSSValue for the transform
      */
-    public static CSSValue skew(CSSValue x, CSSValue y) {
+    public static CSSValue skew(jweb.CSSValue x, jweb.CSSValue y) {
         return () -> "skew(" + x.css() + ", " + y.css() + ")";
     }
 
@@ -1614,7 +1617,7 @@ public final class CSS {
      * @param x horizontal skew angle
      * @return a CSSValue for the transform
      */
-    public static CSSValue skewX(CSSValue x) {
+    public static CSSValue skewX(jweb.CSSValue x) {
         return () -> "skewX(" + x.css() + ")";
     }
 
@@ -1624,7 +1627,7 @@ public final class CSS {
      * @param y vertical skew angle
      * @return a CSSValue for the transform
      */
-    public static CSSValue skewY(CSSValue y) {
+    public static CSSValue skewY(jweb.CSSValue y) {
         return () -> "skewY(" + y.css() + ")";
     }
 
@@ -1642,7 +1645,7 @@ public final class CSS {
      * @param stops color stops (colors from CSSColors)
      * @return a CSSValue for the gradient
      */
-    public static CSSValue linearGradient(CSSValue... stops) {
+    public static CSSValue linearGradient(jweb.CSSValue... stops) {
         return () -> "linear-gradient(" + joinCss(stops) + ")";
     }
 
@@ -1662,7 +1665,7 @@ public final class CSS {
      * @param stops color stops
      * @return a CSSValue for the gradient
      */
-    public static CSSValue linearGradient(String direction, CSSValue... stops) {
+    public static CSSValue linearGradient(String direction, jweb.CSSValue... stops) {
         return () -> "linear-gradient(" + direction + ", " + joinCss(stops) + ")";
     }
 
@@ -1678,7 +1681,7 @@ public final class CSS {
      * @param stops color stops
      * @return a CSSValue for the gradient
      */
-    public static CSSValue radialGradient(CSSValue... stops) {
+    public static CSSValue radialGradient(jweb.CSSValue... stops) {
         return () -> "radial-gradient(" + joinCss(stops) + ")";
     }
 
@@ -1695,7 +1698,7 @@ public final class CSS {
      * @param stops color stops
      * @return a CSSValue for the gradient
      */
-    public static CSSValue radialGradient(String shape, CSSValue... stops) {
+    public static CSSValue radialGradient(String shape, jweb.CSSValue... stops) {
         return () -> "radial-gradient(" + shape + ", " + joinCss(stops) + ")";
     }
 
@@ -1711,7 +1714,7 @@ public final class CSS {
      * @param stops color stops
      * @return a CSSValue for the gradient
      */
-    public static CSSValue conicGradient(CSSValue... stops) {
+    public static CSSValue conicGradient(jweb.CSSValue... stops) {
         return () -> "conic-gradient(" + joinCss(stops) + ")";
     }
 
@@ -1728,7 +1731,7 @@ public final class CSS {
      * @param stops color stops
      * @return a CSSValue for the gradient
      */
-    public static CSSValue conicGradient(String from, CSSValue... stops) {
+    public static CSSValue conicGradient(String from, jweb.CSSValue... stops) {
         return () -> "conic-gradient(" + from + ", " + joinCss(stops) + ")";
     }
 
@@ -1738,7 +1741,7 @@ public final class CSS {
      * Applies a Gaussian blur.
      * Example: blur(px(5)) -> blur(5px)
      */
-    public static CSSValue blur(CSSValue radius) {
+    public static CSSValue blur(jweb.CSSValue radius) {
         return () -> "blur(" + radius.css() + ")";
     }
 
@@ -1764,14 +1767,14 @@ public final class CSS {
      * Applies a drop shadow.
      * Example: dropShadow(px(2), px(2), px(4), rgba(0,0,0,0.5))
      */
-    public static CSSValue dropShadow(CSSValue offsetX, CSSValue offsetY, CSSValue blur, CSSValue color) {
+    public static CSSValue dropShadow(jweb.CSSValue offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue color) {
         return () -> "drop-shadow(" + offsetX.css() + " " + offsetY.css() + " " + blur.css() + " " + color.css() + ")";
     }
 
     /**
      * Applies a drop shadow without blur.
      */
-    public static CSSValue dropShadow(CSSValue offsetX, CSSValue offsetY, CSSValue color) {
+    public static CSSValue dropShadow(jweb.CSSValue offsetX, jweb.CSSValue offsetY, jweb.CSSValue color) {
         return () -> "drop-shadow(" + offsetX.css() + " " + offsetY.css() + " " + color.css() + ")";
     }
 
@@ -1788,7 +1791,7 @@ public final class CSS {
      * Rotates the hue.
      * Example: hueRotate(deg(90)) -> hue-rotate(90deg)
      */
-    public static CSSValue hueRotate(CSSValue angle) {
+    public static CSSValue hueRotate(jweb.CSSValue angle) {
         return () -> "hue-rotate(" + angle.css() + ")";
     }
 
@@ -1843,7 +1846,7 @@ public final class CSS {
      * @param axis the scroll axis (block, inline, x, y)
      * @return a CSSValue for the timeline
      */
-    public static CSSValue scroll(CSSValue scroller, CSSValue axis) {
+    public static CSSValue scroll(jweb.CSSValue scroller, jweb.CSSValue axis) {
         return () -> "scroll(" + scroller.css() + " " + axis.css() + ")";
     }
 
@@ -1853,7 +1856,7 @@ public final class CSS {
      * @param axis the scroll axis (block, inline, x, y)
      * @return a CSSValue for the timeline
      */
-    public static CSSValue scroll(CSSValue axis) {
+    public static CSSValue scroll(jweb.CSSValue axis) {
         return () -> "scroll(" + axis.css() + ")";
     }
 
@@ -1869,7 +1872,7 @@ public final class CSS {
      * @param axis the view axis (block, inline, x, y)
      * @return a CSSValue for the timeline
      */
-    public static CSSValue view(CSSValue axis) {
+    public static CSSValue view(jweb.CSSValue axis) {
         return () -> "view(" + axis.css() + ")";
     }
 
@@ -1880,7 +1883,7 @@ public final class CSS {
      * @param inset the inset value
      * @return a CSSValue for the timeline
      */
-    public static CSSValue view(CSSValue axis, CSSValue inset) {
+    public static CSSValue view(jweb.CSSValue axis, jweb.CSSValue inset) {
         return () -> "view(" + axis.css() + " " + inset.css() + ")";
     }
 
@@ -1909,7 +1912,7 @@ public final class CSS {
      * @param radius the circle radius
      * @return a CSSValue for the clip-path
      */
-    public static CSSValue circleClip(CSSValue radius) {
+    public static CSSValue circleClip(jweb.CSSValue radius) {
         return () -> "circle(" + radius.css() + ")";
     }
 
@@ -1926,7 +1929,7 @@ public final class CSS {
      * @param position the center position (e.g., "center", "top left")
      * @return a CSSValue for the clip-path
      */
-    public static CSSValue circleClip(CSSValue radius, String position) {
+    public static CSSValue circleClip(jweb.CSSValue radius, String position) {
         return () -> "circle(" + radius.css() + " at " + position + ")";
     }
 
@@ -1943,7 +1946,7 @@ public final class CSS {
      * @param radiusY vertical radius
      * @return a CSSValue for the clip-path
      */
-    public static CSSValue ellipseClip(CSSValue radiusX, CSSValue radiusY) {
+    public static CSSValue ellipseClip(jweb.CSSValue radiusX, jweb.CSSValue radiusY) {
         return () -> "ellipse(" + radiusX.css() + " " + radiusY.css() + ")";
     }
 
@@ -1978,7 +1981,7 @@ public final class CSS {
      * @param all the inset amount from all edges
      * @return a CSSValue for the clip-path
      */
-    public static CSSValue insetClip(CSSValue all) {
+    public static CSSValue insetClip(jweb.CSSValue all) {
         return () -> "inset(" + all.css() + ")";
     }
 
@@ -1995,7 +1998,7 @@ public final class CSS {
      * @param borderRadius the corner radius
      * @return a CSSValue for the clip-path
      */
-    public static CSSValue insetClip(CSSValue all, CSSValue borderRadius) {
+    public static CSSValue insetClip(jweb.CSSValue all, jweb.CSSValue borderRadius) {
         return () -> "inset(" + all.css() + " round " + borderRadius.css() + ")";
     }
 
@@ -2053,7 +2056,7 @@ public final class CSS {
 
     // ========== Helper Methods ==========
 
-    private static String joinCss(CSSValue[] values) {
+    private static String joinCss(jweb.CSSValue[] values) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < values.length; i++) {
             if (i > 0) sb.append(", ");
@@ -2199,7 +2202,7 @@ public final class CSS {
         /**
          * Adds a CSS property with CSSValue.
          */
-        public NestedCSS prop(String name, CSSValue value) {
+        public NestedCSS prop(String name, jweb.CSSValue value) {
             return prop(name, value.css());
         }
 

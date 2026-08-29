@@ -77,7 +77,7 @@ public final class Response {
      * @param element the element to render
      * @return HTML response
      */
-    public static ResponseEntity<String> html(Element element) {
+    public static ResponseEntity<String> html(jweb.Element element) {
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(element.toHtml());
@@ -102,7 +102,7 @@ public final class Response {
      * @param element the element to render
      * @return HTML response
      */
-    public static ResponseEntity<String> html(HttpStatus status, Element element) {
+    public static ResponseEntity<String> html(HttpStatus status, jweb.Element element) {
         return ResponseEntity.status(status)
                 .contentType(MediaType.TEXT_HTML)
                 .body(element.toHtml());

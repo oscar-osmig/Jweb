@@ -19,7 +19,7 @@ public class Router {
         return this;
     }
 
-    public Router get(String path, Supplier<Element> handler) {
+    public Router get(String path, Supplier<? extends jweb.Element> handler) {
         return addRoute(Route.get(path, handler));
     }
 

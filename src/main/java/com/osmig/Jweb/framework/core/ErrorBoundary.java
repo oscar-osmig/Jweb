@@ -57,11 +57,11 @@ import java.util.function.Supplier;
  */
 public class ErrorBoundary implements Element {
 
-    private final Supplier<Element> content;
-    private Function<Throwable, Element> fallback;
+    private final Supplier<? extends jweb.Element> content;
+    private Function<Throwable, ? extends jweb.Element> fallback;
     private java.util.function.Consumer<Throwable> errorHandler;
 
-    private ErrorBoundary(Supplier<Element> content) {
+    private ErrorBoundary(Supplier<? extends jweb.Element> content) {
         this.content = content;
         this.fallback = error -> () -> new VFragment(List.of()); // Empty by default
     }
@@ -72,7 +72,7 @@ public class ErrorBoundary implements Element {
      * @param content supplier that produces the element to render
      * @return a new ErrorBoundary builder
      */
-    public static ErrorBoundary of(Supplier<Element> content) {
+    public static ErrorBoundary of(Supplier<? extends jweb.Element> content) {
         return new ErrorBoundary(content);
     }
 
@@ -101,7 +101,7 @@ public class ErrorBoundary implements Element {
      * @param fallback the fallback if an error occurs
      * @return the rendered element or fallback
      */
-    public static Element wrap(Supplier<Element> content, Function<Throwable, Element> fallback) {
+    public static Element wrap(Supplier<? extends jweb.Element> content, Function<Throwable, ? extends jweb.Element> fallback) {
         return new ErrorBoundary(content).fallback(fallback);
     }
 
@@ -112,7 +112,7 @@ public class ErrorBoundary implements Element {
      * @param fallback the static fallback element
      * @return the rendered element or fallback
      */
-    public static Element wrap(Supplier<Element> content, Element fallback) {
+    public static Element wrap(Supplier<? extends jweb.Element> content, jweb.Element fallback) {
         return new ErrorBoundary(content).fallback(e -> fallback);
     }
 
@@ -122,7 +122,7 @@ public class ErrorBoundary implements Element {
      * @param fallback function that receives the error and returns a fallback element
      * @return this builder for chaining
      */
-    public ErrorBoundary fallback(Function<Throwable, Element> fallback) {
+    public ErrorBoundary fallback(Function<Throwable, ? extends jweb.Element> fallback) {
         this.fallback = fallback;
         return this;
     }
@@ -133,7 +133,7 @@ public class ErrorBoundary implements Element {
      * @param fallback the static fallback element
      * @return this builder for chaining
      */
-    public ErrorBoundary fallback(Element fallback) {
+    public ErrorBoundary fallback(jweb.Element fallback) {
         this.fallback = e -> fallback;
         return this;
     }
@@ -155,7 +155,7 @@ public class ErrorBoundary implements Element {
      *
      * @return the content element or fallback if an error occurred
      */
-    public Element render() {
+    public jweb.Element render() {
         try {
             return content.get();
         } catch (Throwable t) {
@@ -182,7 +182,7 @@ public class ErrorBoundary implements Element {
      * @param content the content to render
      * @return an element that renders content or nothing on error
      */
-    public static Element silent(Supplier<Element> content) {
+    public static Element silent(Supplier<? extends jweb.Element> content) {
         return new ErrorBoundary(content);
     }
 
@@ -193,7 +193,7 @@ public class ErrorBoundary implements Element {
      * @param message the fallback message
      * @return an element that renders content or the message on error
      */
-    public static Element withMessage(Supplier<Element> content, String message) {
+    public static Element withMessage(Supplier<? extends jweb.Element> content, String message) {
         return new ErrorBoundary(content)
             .fallback(e -> () -> new com.osmig.Jweb.framework.vdom.VText(message));
     }

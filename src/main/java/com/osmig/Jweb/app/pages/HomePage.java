@@ -1,13 +1,10 @@
 package com.osmig.Jweb.app.pages;
 
-import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.template.Template;
+import jweb.Element;
+import jweb.Template;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSGrid.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 public class HomePage implements Template {

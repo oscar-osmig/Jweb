@@ -16,9 +16,12 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * // With String (quick)
  * debounce("timer", 300).wrap("search()")
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Js} — shorter import, same API. Existing code keeps working.
  */
-public final class Events {
-    private Events() {}
+@Deprecated
+public class Events extends Runtime {
+    protected Events() {}
 
     public static Delegate delegate(String parent, String event, String child) {
         return new Delegate(parent, event, child);

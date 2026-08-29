@@ -1,7 +1,7 @@
 package com.osmig.Jweb.app;
 
-import com.osmig.Jweb.framework.JWeb;
-import com.osmig.Jweb.framework.JWebRoutes;
+import jweb.JWeb;
+import jweb.JWebRoutes;
 import com.osmig.Jweb.framework.openapi.OpenApi;
 import com.osmig.Jweb.framework.routing.RouteHandler;
 import com.osmig.Jweb.framework.security.Csrf;

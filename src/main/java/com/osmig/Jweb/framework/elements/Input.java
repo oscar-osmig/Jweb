@@ -22,7 +22,10 @@ import com.osmig.Jweb.framework.vdom.VNode;
  * Input.file("avatar").accept("image/*")
  * Input.hidden("csrf", token)
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Input} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Input implements Element {
 
     private String type = "text";
@@ -47,7 +50,7 @@ public class Input implements Element {
     private boolean multiple;
     private String form;
 
-    private Input() {}
+    protected Input() {}
 
     // ==================== Factory Methods ====================
 

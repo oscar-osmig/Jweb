@@ -161,7 +161,7 @@ public final class CSSNested {
          * @param value the CSS value
          * @return this builder
          */
-        public NestedRule prop(String name, CSSValue value) {
+        public NestedRule prop(String name, jweb.CSSValue value) {
             properties.add(name + ": " + value.css());
             return this;
         }
@@ -390,7 +390,7 @@ public final class CSSNested {
         /**
          * Adds a property using CSSValue.
          */
-        public BEMBlock prop(String name, CSSValue value) {
+        public BEMBlock prop(String name, jweb.CSSValue value) {
             current.prop(name, value);
             return this;
         }

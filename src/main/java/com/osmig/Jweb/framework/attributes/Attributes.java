@@ -299,10 +299,10 @@ public class Attributes implements TransitionReceiver {
     public Attributes style(String value) { return set("style", value); }
 
     /** Sets inline style from a Style builder. @param style the Style object */
-    public Attributes style(Style<?> style) { return set("style", style.build()); }
+    public Attributes style(jweb.Style<?> style) { return set("style", style.build()); }
 
     /** Sets inline style from a CSSValue. @param style the CSSValue */
-    public Attributes style(CSSValue style) { return set("style", style.css()); }
+    public Attributes style(jweb.CSSValue style) { return set("style", style.css()); }
 
     /**
      * Sets inline style using a lambda builder - NO .done() needed!

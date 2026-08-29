@@ -45,10 +45,13 @@ import static com.osmig.Jweb.framework.js.JS.*;
  *     .call("render", variable("users"), variable("posts"))
  * ).build();
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Js} — shorter import, same API. Existing code keeps working.
  */
-public final class Async {
+@Deprecated
+public class Async {
 
-    private Async() {}
+    protected Async() {}
 
     // ==================== Fetch Builder ====================
 

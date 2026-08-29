@@ -1,14 +1,12 @@
 package com.osmig.Jweb.app.pages.admin;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.framework.security.Csrf;
 import com.osmig.Jweb.framework.security.CsrfToken;
-import com.osmig.Jweb.framework.template.Template;
+import jweb.Template;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 import static com.osmig.Jweb.app.forms.FormComponents.*;
 

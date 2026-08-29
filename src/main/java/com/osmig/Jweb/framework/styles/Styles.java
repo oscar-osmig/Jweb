@@ -25,7 +25,7 @@ public final class Styles {
     /**
      * Creates a new Style builder.
      */
-    public static Style<?> style() {
+    public static jweb.Style<?> style() {
         return new Style<>();
     }
 }

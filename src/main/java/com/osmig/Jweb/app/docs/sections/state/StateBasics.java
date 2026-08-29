@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.state;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class StateBasics {
@@ -11,7 +11,7 @@ public final class StateBasics {
             h3Title("Creating State"),
             para("Use useState to create reactive state in components."),
             codeBlock("""
-import static com.osmig.Jweb.framework.state.StateHooks.*;
+import static jweb.State.*;
 
 public class Counter implements Template {
     private final State<Integer> count = useState(0);

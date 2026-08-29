@@ -1,12 +1,11 @@
 package com.osmig.Jweb.app.layout;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.framework.dev.DevServer;
-import com.osmig.Jweb.framework.template.Template;
+import jweb.Template;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 
 /**
  * Main layout wrapper with nav and footer.

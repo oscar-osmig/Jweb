@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class IntroSection {
@@ -21,7 +21,7 @@ public final class IntroSection {
                 "Reactive state - Built-in state management for dynamic UIs"
             ),
 
-            docTip("JWeb uses static imports for a clean DSL. Add: import static ...Elements.*;"),
+            docTip("JWeb uses static imports for a clean DSL. Add: import static jweb.El.*;"),
 
             docSubtitle("Hello World"),
             codeBlock("""

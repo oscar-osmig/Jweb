@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.routing;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class RoutingParams {

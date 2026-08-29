@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.styling;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class StylingAnimations {
@@ -12,7 +12,7 @@ public final class StylingAnimations {
             para("Create custom CSS animations."),
 
             codeBlock("""
-import static com.osmig.Jweb.framework.styles.CSSAnimations.*;
+import static jweb.Css.*;
 
 // Define keyframes
 String fadeInKeyframes = keyframes("fadeIn")

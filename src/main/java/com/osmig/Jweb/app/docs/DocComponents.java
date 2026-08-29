@@ -1,10 +1,9 @@
 package com.osmig.Jweb.app.docs;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import java.util.List;
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.docs.DocStyles.*;
 
 public final class DocComponents {

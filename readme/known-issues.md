@@ -20,9 +20,14 @@ By design (know them, don't "fix" them):
   controllers under `/api/v*` and router/page routes elsewhere.
 - **Page routes are exact-match only** — no `:param` support (use Router routes for that).
   They are GET/HEAD-only (other methods get a 405).
-- **`JS.*` and `Actions.*` wildcard imports collide** (`script`, `query`, `fetch`, ...), and
-  `CSSColors.*` + `CSSUnits.*` collide on `lightDark`/`colorMix`. Import one wildcard and
-  qualify the other.
+- **`Js.*` and `Actions.*` wildcard imports collide** (`script`, `query`, `fetch`, ...) —
+  that's why they remain two facades in the `jweb` surface. Import one wildcard and qualify
+  the other. (The old `CSSColors.*`+`CSSUnits.*` collisions on `lightDark`/`colorMix` are
+  resolved inside `jweb.Css`.)
+- **`jweb.El.*` + `jweb.Css.*` share a few names** (`id`, `fill`, `style`, `em`, `s`, ...).
+  Most uses resolve by arity/argument types; when the compiler reports an ambiguous
+  reference, use `attrs().id(...)`-style instance calls or qualify one side
+  (`Css.id(...)`).
 - **Single-`String` calls to `q`/`abbr`/`blockquote`** resolve to the varargs (child)
   overload, not the `(citeUrl, ...)` overload — pass `Attributes` explicitly when you need
   the cite URL.
@@ -31,6 +36,27 @@ By design (know them, don't "fix" them):
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
 - The AI/Spring AI integration is still planned, not shipped (deps commented out in pom.xml).
+
+## 2026-08-29 — short-import surface (`jweb.*`)
+
+The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2html-style):
+`jweb.El` (HTML: union of legacy `El`+`Elements`), `jweb.Css` (union of `CSS`+`CSSUnits`+
+`CSSColors`+`CSSGrid`+`CSSAnimations`+`CSSVariables` + `media()`/`keyframes()`/`stylesheet()`),
+`jweb.Js` (`JS`+`Events`+`Runtime`+`Async`), `jweb.Actions`, `jweb.State`, `jweb.UI`,
+`jweb.Layout`, `jweb.Input`, `jweb.Form`, `jweb.Mongo`/`Schema`/`Doc`, and the types
+`jweb.Element`, `jweb.Template`, `jweb.Style`, `jweb.CSSValue`, `jweb.JWeb`, `jweb.JWebRoutes`.
+
+- The legacy `com.osmig.Jweb.framework.*` entry points are `@Deprecated` aliases — **existing
+  source keeps compiling** (`LegacyImportsCompatTest` locks this in).
+- The change is source-compatible but **not binary-compatible** (several parameter types
+  widened to `jweb.Element`/`jweb.CSSValue`); dependents must recompile — automatic with
+  JitPack source builds; locally, run a `clean` build after pulling.
+- One semantic pick in the `El` merge: `data(name, value)` = `data-*` attribute (the
+  `Elements` meaning); the `<data>` element is `data_(...)`.
+- Internally, `CSSColors←CSSGrid←CSSAnimations←CSSVariables←CSSUnits←CSS` and
+  `Async←Runtime←Events←JS` now form inheritance chains purely for static-import
+  aggregation; duplicate helpers (`lightDark`, `colorMix`, `var`, `env`) resolve to the
+  subclass-most declaration.
 
 Fixed in the 2026-08-09 follow-up pass:
 

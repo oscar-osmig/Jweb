@@ -1,6 +1,6 @@
 package com.osmig.Jweb.app.docs.sections;
 
-import com.osmig.Jweb.framework.core.Element;
+import jweb.Element;
 import com.osmig.Jweb.app.docs.sections.javascript.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
@@ -16,13 +16,12 @@ public final class JavaScriptSection {
             docSubtitle("Import Statements"),
             codeBlock("""
 // Core JS DSL
-import static com.osmig.Jweb.framework.js.JS.*;
+import static jweb.Js.*;
 
 // High-level UI actions
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Actions.*;
 
 // Event handling patterns
-import static com.osmig.Jweb.framework.js.Events.*;
 
 // Async/await and fetch
 import static com.osmig.Jweb.framework.js.Async.*;"""),

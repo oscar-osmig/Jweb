@@ -1,7 +1,6 @@
 package com.osmig.Jweb.app.sandbox;
 
-import static com.osmig.Jweb.framework.js.Runtime.*;
-import static com.osmig.Jweb.framework.js.Events.*;
+import static jweb.Js.*;
 
 /**
  * Client side of the live editor. The textarea is authoritative: renders go

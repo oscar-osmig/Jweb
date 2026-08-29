@@ -82,7 +82,7 @@ public class Route {
     public RouteHandler getHandler() { return handler; }
     public List<String> getParamNames() { return Collections.unmodifiableList(paramNames); }
 
-    public static Route get(String path, Supplier<Element> elementSupplier) {
+    public static Route get(String path, Supplier<? extends jweb.Element> elementSupplier) {
         return new Route("GET", path, req -> elementSupplier.get());
     }
 

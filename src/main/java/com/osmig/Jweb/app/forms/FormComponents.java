@@ -1,12 +1,10 @@
 package com.osmig.Jweb.app.forms;
 
-import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.styles.CSSValue;
+import jweb.Element;
+import jweb.CSSValue;
 
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static jweb.El.*;
+import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 /**

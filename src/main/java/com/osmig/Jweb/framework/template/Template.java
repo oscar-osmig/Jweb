@@ -83,7 +83,7 @@ public interface Template extends Element {
      *
      * @return the rendered Element
      */
-    Element render();
+    jweb.Element render();
 
     @Override
     default VNode toVNode() {

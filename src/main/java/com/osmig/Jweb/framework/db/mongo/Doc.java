@@ -31,18 +31,21 @@ import java.util.*;
  * List&lt;String&gt; roles = user.getList("roles");
  * Doc address = user.getDoc("address");
  * </pre>
+ *
+ * @deprecated Replaced by {@code jweb.Doc} — shorter import, same API. Existing code keeps working.
  */
+@Deprecated
 public class Doc {
 
     private final String collectionName;
     private final Map<String, Object> data;
 
-    private Doc(String collectionName) {
+    protected Doc(String collectionName) {
         this.collectionName = collectionName;
         this.data = new LinkedHashMap<>();
     }
 
-    private Doc(String collectionName, Map<String, Object> data) {
+    protected Doc(String collectionName, Map<String, Object> data) {
         this.collectionName = collectionName;
         this.data = new LinkedHashMap<>(data);
     }
