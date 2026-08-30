@@ -57,16 +57,21 @@ div(attrs()
 
 // Shortcuts
 div(attrs().style(s -> s
-    .size(px(100))           // width + height: 100px
-    .shadow()                // default shadow preset
-    .roundedLg()             // border-radius preset
+    .size(px(100))                          // width + height: 100px
+    .boxShadow("0 4px 6px rgba(0,0,0,.1)")
+    .borderRadius(px(8))
 ))
 ```
 
-**Sizing shortcuts:** `size`, `minSize`, `maxSize`, `widthRange(min,max)`, `fullWidth()`,
-`fullViewportHeight()`.
-**Shadow presets:** `shadowXs` … `shadowXl`, `shadowInner`, `shadowNone`.
-**Radius presets:** `roundedNone` … `rounded3xl`, `roundedFull`.
+**Kept, because they express a multi-property pattern rather than one value:** `size`,
+`full`, `fullWidth`, `fullHeight`, `flexCenter`, `flexCol`, `flexRow`, `flexBetween`,
+`grid(n)`, `grid(n, gap)`, `truncate`, `srOnly`, `borderMask`, `absolute`, `centerX`.
+
+**Deprecated, because each was one value under an invented name:** the `shadowXs`…`shadowXl`
+and `roundedNone`…`roundedFull` scales, plus `bold`, `clickable`, `textCenter`, `noSelect`,
+`relative`, `fixed`, `sticky`, `minSize`, `maxSize`, `widthRange`, `heightRange`,
+`fullViewportWidth`, `fullViewportHeight`. Write the property: `borderRadius(px(8))`,
+`fontWeight(700)`, `cursor("pointer")`, `height("100vh")`.
 
 `Style` covers ~55 property sections: box model, flexbox, grid, typography, backgrounds,
 borders, transforms, transitions, animations, filters, positioning, overflow, columns,
@@ -110,9 +115,22 @@ style().backdropFilter(blur(px(10)))   // emits -webkit- prefix automatically
 style().backgroundPosition(percent(0), percent(50))
 ```
 
-Every keyword is a constant — never write `() -> "center"` or `prop("border", "none")`:
-`display(flex)`, `border(none)`, `alignItems(center)`, `justifyContent(spaceBetween)`,
-`border(px(1), solid, hex("#e5e7eb"))`, `gridTemplateColumns(repeat(autoFit(), minmax(px(250), fr(1))))`.
+Every keyword has a constant: `display(flex)`, `border(none)`, `alignItems(center)`,
+`justifyContent(spaceBetween)`, `border(px(1), solid, hex("#e5e7eb"))`,
+`gridTemplateColumns(repeat(autoFit(), minmax(px(250), fr(1))))`.
+
+**Every property also takes a plain String**, so anything you can write in CSS you can
+write here without hunting for the constant — and the CSS you already know transfers
+directly:
+
+```java
+style().display("flex").cursor("copy").margin("0 auto")
+       .transition("color .2s ease, transform .3s ease-out")
+       .gridTemplateColumns("repeat(3, 1fr)")
+```
+
+`prop(name, value)` remains the escape hatch for anything with no method at all. (It is no
+longer deprecated; `unsafeProp` is, since there was never anything unsafe about it.)
 
 ### Bare styles as element arguments
 
@@ -250,7 +268,9 @@ import static jweb.css.MediaQuery.*;
 
 media().minWidth(px(768)).rule(".container", style().maxWidth(px(720))).build()
 md().rule(".sidebar", style().display(block)).build()      // presets: xs sm md lg xl xxl
-mobile(); tablet(); desktop();
+
+// mobile()/tablet()/desktop() are deprecated: they were a second breakpoint set
+// that overlapped xs()-xxl() with different pixel values.
 
 media().prefersDark()
     .rule("body", style().backgroundColor(hex("#1a1a1a")).color(white)).build()
@@ -370,25 +390,36 @@ theme.toStyleElement();   // ready-to-place <style> Element
 theme.color("primary");   // CSSValue reference: var(--color-primary)
 ```
 
-## `Utility` — Tailwind-style class generator
+## `Utility` — Tailwind-style class generator (deprecated)
 
-Generates utility-class CSS from a `Theme` (`Utility.generateCss(theme)`) and provides ~400
-class-name builder methods for markup that prefers utility classes over inline styles.
+Generates utility-class CSS from a `Theme` and provides ~400 class-name builder methods.
+
+Deprecated: it is a design opinion rather than CSS parity, and its coverage was uneven —
+the `hover:`, `dark:` and responsive variant builders emitted class names for which
+`generateCss` produced no CSS at all, so those classes silently did nothing. Use the
+`Style` builder, or `Theme.create()` for design tokens.
 
 ## CSS Animations (`CSSAnimations`)
 
 ```java
 import static jweb.Css.*;   // CSSAnimations is folded into the Css facade
 
-// 39 presets: fadeIn/Out, fadeInUp/Down/Left/Right, slideIn*/slideOut*, zoomIn/Out,
-// scaleIn/Out, pulse, heartbeat, bounce, rotate360, flipX/Y, shake, wobble, jello,
-// swing, rubberBand, flash, tada, headShake, ...
-// The preset builders implement CSSValue; Style.animation(...) only has the
-// 3–7-arg (name, duration, timing, ...) forms, so presets go through prop():
+// 11 presets, each with matching @keyframes in `Keyframes`: fadeIn, fadeOut,
+// slideInLeft, slideInRight, zoomIn, zoomOut, pulse, bounce, spin, shake, plus
+// rotate360 (deprecated — it emits `spin`).
+//
+// 29 further presets (fadeInUp, flipX, jello, tada, ...) were deleted: they had no
+// keyframes behind them, so they animated nothing at all.
+//
+// The preset builders implement CSSValue; Style.animation(...) has the multi-arg
+// (name, duration, timing, ...) forms, so presets go through prop():
 style().prop("animation", fadeIn(s(1)))
 style().prop("animation", slideInLeft(s(0.6)))
-style().prop("animation", pulse(s(1.5)).iterationCount(iterationInfinite))
-style().prop("animation", rotate360(s(2)).timing(timingLinear))
+style().prop("animation", pulse(s(1.5)).iterationCount(infinite))
+style().prop("animation", spin(s(2)).timing(linear))
+
+// Ship the matching keyframes:
+stylesheet().add(Keyframes.fadeIn()).add(Keyframes.spin())
 
 // Builder chain: .timing() .delay() .iterationCount() .direction() .fillMode() .playState()
 
@@ -416,31 +447,34 @@ templateAreas("header header", "sidebar main", "footer footer")
 
 ## The Six Property-String Modules (anchor positioning, scroll snap, text wrap, subgrid, masking, logical properties)
 
-These modules (`CSSAnchorPositioning`, `CSSScrollSnap`, `CSSTextWrap`, `CSSSubgrid`,
-`CSSMasking`, `CSSLogicalProperties`) return complete `"property:value"` **strings**.
-
-> Use them with the single-argument `prop(String)` overload, which splits the string at the
-> first colon: `.prop(anchorName("--x"))`. The two-arg
-> `prop(name, value)` form also still works:
+These six modules (`CSSAnchorPositioning`, `CSSScrollSnap`, `CSSTextWrap`, `CSSSubgrid`,
+`CSSMasking`, `CSSLogicalProperties`) returned complete `"property:value"` **strings** that
+had to be wrapped in `.prop(...)`, and took raw strings so typed units did not fit. They are
+now deprecated: every property they covered is a method on `Style`, taking a `CSSValue` or a
+plain `String` like every other property.
 
 ```java
 // Anchor positioning
-rule(".trigger").prop("anchor-name", "--my-trigger")
+// Anchor positioning, scroll-snap, masking, logical properties and text-wrap are
+// now first-class Style methods — the string-property modules that required
+// prop(...) wrapping are deprecated.
+rule(".trigger").anchorName("--my-trigger")
 rule(".tooltip")
-    .prop("position-anchor", "--my-trigger")
-    .prop("position-area", "top")
+    .positionAnchor("--my-trigger")
+    .positionArea("top")
     .position(absolute)
-    .prop("top", "anchor(--my-trigger bottom)")
+    .top("anchor(--my-trigger bottom)")
 
-// Scroll snap
+// Scroll snap — note these are scroll-padding/scroll-margin in CSS, which is why
+// the old snapPadding()/snapMargin() names were dropped
 rule(".carousel")
-    .prop("scroll-snap-type", "x mandatory")
-    .prop("scroll-padding", "0 20px")
+    .scrollSnapType("x mandatory")
+    .scrollPadding("0 20px")
     .display(flex)
     .overflowX(auto)
 rule(".carousel > .slide")
-    .prop("scroll-snap-align", "start")
-    .prop("scroll-snap-stop", "always")
+    .scrollSnapAlign("start")
+    .scrollSnapStop("always")
 
 // Text wrapping
 rule("h1, h2, h3").prop("text-wrap", "balance")
