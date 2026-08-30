@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 1.2.0** | **Last Updated: 2026-08-29**
+**Version 1.2.1** | **Last Updated: 2026-08-29**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v1.2.0</version>
+    <version>v1.2.1</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.2.0' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.2.1' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -247,10 +247,10 @@ under `framework-src/`.
 
 # Runnable showcase build (includes the sample app, produces an exec jar)
 ./mvnw clean package -Pdemo
-java -jar target/Jweb-1.2.0-exec.jar
+java -jar target/Jweb-1.2.1-exec.jar
 
 # With specific profile
-java -jar target/Jweb-1.2.0-exec.jar --spring.profiles.active=prod
+java -jar target/Jweb-1.2.1-exec.jar --spring.profiles.active=prod
 ```
 
 Then open `http://localhost:8085` in your browser (port is `${PORT:8085}` in `application.yaml`;
