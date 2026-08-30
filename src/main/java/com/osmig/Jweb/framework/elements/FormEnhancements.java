@@ -98,11 +98,13 @@ public class FormEnhancements {
      * @param label the group label
      * @param children option elements
      * @return a Tag
+     * @deprecated Use {@code optgroup(attr("label", label), disabled(), ...)} instead.
      */
+    @Deprecated
     public static Tag optgroupDisabled(String label, Object... children) {
         return Tag.create("optgroup",
             new Attr("label", label),
-            new Attr("disabled", ""),
+            new Attr("disabled", null),
             children);
     }
 
@@ -134,9 +136,11 @@ public class FormEnhancements {
      *
      * @param children form elements
      * @return a Tag
+     * @deprecated Use {@code fieldset(disabled(), ...)} instead.
      */
+    @Deprecated
     public static Tag fieldsetDisabled(Object... children) {
-        return Tag.create("fieldset", new Attr("disabled", ""), children);
+        return Tag.create("fieldset", new Attr("disabled", null), children);
     }
 
     /**
@@ -161,37 +165,34 @@ public class FormEnhancements {
     }
 
     // ==================== Specialized Input Helpers ====================
+    // One canonical implementation lives in Elements; these delegate so both
+    // entry points always agree. ID POLICY: id defaults to name, so
+    // label(name, ...) pairs with the control. (These helpers used to set no
+    // id at all, which silently broke label-for pairing.)
 
     /**
-     * Creates a color input.
+     * Creates a color input. The id defaults to the name.
      *
      * @param name the input name
      * @param defaultColor the default color value (e.g., "#ff0000")
      * @return a Tag
      */
     public static Tag colorInput(String name, String defaultColor) {
-        return Tag.create("input",
-            new Attr("type", "color"),
-            new Attr("name", name),
-            new Attr("value", defaultColor)
-        );
+        return Elements.colorInput(name, defaultColor);
     }
 
     /**
-     * Creates a date input.
+     * Creates a date input. The id defaults to the name.
      *
      * @param name the input name
      * @return a Tag
      */
     public static Tag dateInput(String name) {
-        return Tag.create("input",
-            new Attr("type", "date"),
-            new Attr("name", name)
-        );
+        return Elements.dateInput(name);
     }
 
     /**
-     * Creates a date input with min/max constraints.
+     * Creates a date input with min/max constraints. The id defaults to the name.
      *
      * @param name the input name
      * @param min the minimum date (YYYY-MM-DD)
@@ -199,68 +200,51 @@ public class FormEnhancements {
      * @return a Tag
      */
     public static Tag dateInput(String name, String min, String max) {
-        return Tag.create("input",
-            new Attr("type", "date"),
-            new Attr("name", name),
-            new Attr("min", min),
-            new Attr("max", max)
-        );
+        return Elements.dateInput(name, min, max);
     }
 
     /**
-     * Creates a time input.
+     * Creates a time input. The id defaults to the name.
      *
      * @param name the input name
      * @return a Tag
      */
     public static Tag timeInput(String name) {
-        return Tag.create("input",
-            new Attr("type", "time"),
-            new Attr("name", name)
-        );
+        return Elements.timeInput(name);
     }
 
     /**
-     * Creates a datetime-local input.
+     * Creates a datetime-local input. The id defaults to the name.
      *
      * @param name the input name
      * @return a Tag
      */
     public static Tag datetimeInput(String name) {
-        return Tag.create("input",
-            new Attr("type", "datetime-local"),
-            new Attr("name", name)
-        );
+        return Elements.datetimeInput(name);
     }
 
     /**
-     * Creates a month input.
+     * Creates a month input. The id defaults to the name.
      *
      * @param name the input name
      * @return a Tag
      */
     public static Tag monthInput(String name) {
-        return Tag.create("input",
-            new Attr("type", "month"),
-            new Attr("name", name)
-        );
+        return Elements.monthInput(name);
     }
 
     /**
-     * Creates a week input.
+     * Creates a week input. The id defaults to the name.
      *
      * @param name the input name
      * @return a Tag
      */
     public static Tag weekInput(String name) {
-        return Tag.create("input",
-            new Attr("type", "week"),
-            new Attr("name", name)
-        );
+        return Elements.weekInput(name);
     }
 
     /**
-     * Creates a range input (slider).
+     * Creates a range input (slider). The id defaults to the name.
      *
      * @param name the input name
      * @param min the minimum value
@@ -269,17 +253,11 @@ public class FormEnhancements {
      * @return a Tag
      */
     public static Tag rangeInput(String name, int min, int max, int value) {
-        return Tag.create("input",
-            new Attr("type", "range"),
-            new Attr("name", name),
-            new Attr("min", String.valueOf(min)),
-            new Attr("max", String.valueOf(max)),
-            new Attr("value", String.valueOf(value))
-        );
+        return Elements.rangeInput(name, min, max, value);
     }
 
     /**
-     * Creates a range input with step.
+     * Creates a range input with step. The id defaults to the name.
      *
      * @param name the input name
      * @param min the minimum value
@@ -289,14 +267,7 @@ public class FormEnhancements {
      * @return a Tag
      */
     public static Tag rangeInput(String name, int min, int max, int value, int step) {
-        return Tag.create("input",
-            new Attr("type", "range"),
-            new Attr("name", name),
-            new Attr("min", String.valueOf(min)),
-            new Attr("max", String.valueOf(max)),
-            new Attr("value", String.valueOf(value)),
-            new Attr("step", String.valueOf(step))
-        );
+        return Elements.rangeInput(name, min, max, value, step);
     }
 
     // ==================== Form Action Attributes ====================
@@ -347,6 +318,6 @@ public class FormEnhancements {
      * @return the Attr
      */
     public static Attr formnovalidate() {
-        return new Attr("formnovalidate", "");
+        return new Attr("formnovalidate", null);
     }
 }

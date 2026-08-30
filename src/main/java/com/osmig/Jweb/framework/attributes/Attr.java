@@ -29,6 +29,10 @@ public record Attr(String name, String value) {
     public static Attr readonly() { return new Attr("readonly", null); }
     public static Attr hidden() { return new Attr("hidden", null); }
     public static Attr autofocus() { return new Attr("autofocus", null); }
+    /** The {@code datetime} attribute of {@code <time>}/{@code <ins>}/{@code <del>}. */
+    public static Attr datetime(String value) { return new Attr("datetime", value); }
+    /** The {@code loading} attribute of {@code <img>}/{@code <iframe>}: "lazy" or "eager". */
+    public static Attr loading(String value) { return new Attr("loading", value); }
     public static Attr data(String name, String value) { return new Attr("data-" + name, value); }
     public static Attr aria(String name, String value) { return new Attr("aria-" + name, value); }
     public static Attr attr(String name, String value) { return new Attr(name, value); }

@@ -57,11 +57,36 @@ public class PopoverElements {
     }
 
     /**
-     * Creates a popovertarget attribute that links a button to its popover.
+     * Creates a popovertarget attribute that links a button to its popover
+     * (exact HTML spelling).
      *
      * @param targetId the ID of the popover element
      * @return the popovertarget Attr
      */
+    public static Attr popovertarget(String targetId) {
+        return new Attr("popovertarget", targetId);
+    }
+
+    /**
+     * Creates a popovertargetaction attribute to control button behavior
+     * (exact HTML spelling).
+     *
+     * @param action "toggle" (default), "show", or "hide"
+     * @return the popovertargetaction Attr
+     */
+    public static Attr popovertargetaction(String action) {
+        return new Attr("popovertargetaction", action);
+    }
+
+    /**
+     * Creates a popovertarget attribute that links a button to its popover.
+     *
+     * @param targetId the ID of the popover element
+     * @return the popovertarget Attr
+     * @deprecated Use {@link #popovertarget(String)} — attribute helpers use the
+     *             exact HTML spelling.
+     */
+    @Deprecated
     public static Attr popoverTarget(String targetId) {
         return new Attr("popovertarget", targetId);
     }
@@ -71,7 +96,10 @@ public class PopoverElements {
      *
      * @param action "toggle" (default), "show", or "hide"
      * @return the popovertargetaction Attr
+     * @deprecated Use {@link #popovertargetaction(String)} — attribute helpers use
+     *             the exact HTML spelling.
      */
+    @Deprecated
     public static Attr popoverTargetAction(String action) {
         return new Attr("popovertargetaction", action);
     }
@@ -84,7 +112,9 @@ public class PopoverElements {
      * @param id the popover ID
      * @param children the popover content
      * @return a Tag with popover attribute
+     * @deprecated Use {@code div(id(id), popover("auto"), ...)} instead.
      */
+    @Deprecated
     public static Tag autoPopover(String id, Object... children) {
         return Tag.create("div", withAttrs(children, new Attr("id", id), new Attr("popover", "auto")));
     }
@@ -95,7 +125,9 @@ public class PopoverElements {
      * @param id the popover ID
      * @param children the popover content
      * @return a Tag with popover="manual" attribute
+     * @deprecated Use {@code div(id(id), popover("manual"), ...)} instead.
      */
+    @Deprecated
     public static Tag manualPopover(String id, Object... children) {
         return Tag.create("div", withAttrs(children, new Attr("id", id), new Attr("popover", "manual")));
     }
@@ -115,7 +147,9 @@ public class PopoverElements {
      * @param targetId the popover ID to toggle
      * @param children button content
      * @return a Tag button
+     * @deprecated Use {@code button(popovertarget(targetId), ...)} instead.
      */
+    @Deprecated
     public static Tag popoverToggleButton(String targetId, Object... children) {
         return Tag.create("button", new Attr("popovertarget", targetId), children);
     }
@@ -126,7 +160,9 @@ public class PopoverElements {
      * @param targetId the popover ID to show
      * @param children button content
      * @return a Tag button
+     * @deprecated Use {@code button(popovertarget(targetId), popovertargetaction("show"), ...)} instead.
      */
+    @Deprecated
     public static Tag popoverShowButton(String targetId, Object... children) {
         return Tag.create("button",
             new Attr("popovertarget", targetId),
@@ -140,7 +176,9 @@ public class PopoverElements {
      * @param targetId the popover ID to hide
      * @param children button content
      * @return a Tag button
+     * @deprecated Use {@code button(popovertarget(targetId), popovertargetaction("hide"), ...)} instead.
      */
+    @Deprecated
     public static Tag popoverHideButton(String targetId, Object... children) {
         return Tag.create("button",
             new Attr("popovertarget", targetId),

@@ -161,7 +161,7 @@ public final class ErrorHandler {
                     h1().class_("error-code").style("color: " + color).text(String.valueOf(statusCode)),
                     h2().class_("error-title").text(title),
                     p().class_("error-message").text(message),
-                    a("/").class_("home-link").text("Go Home")
+                    a(href("/")).class_("home-link").text("Go Home")
                 )
             )
         );
@@ -213,7 +213,7 @@ public final class ErrorHandler {
                     h1("Validation Error"),
                     p("Please correct the following errors:"),
                     errorList,
-                    a("/").class_("home-link").text("Go Back")
+                    a(href("/")).class_("home-link").text("Go Back")
                 )
             )
         );

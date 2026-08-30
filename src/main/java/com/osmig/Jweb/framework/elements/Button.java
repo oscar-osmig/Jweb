@@ -1,7 +1,15 @@
 package com.osmig.Jweb.framework.elements;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.events.Event;
+import com.osmig.Jweb.framework.events.EventHandler;
+import com.osmig.Jweb.framework.events.EventRegistry;
+import com.osmig.Jweb.framework.js.Actions.Action;
 import com.osmig.Jweb.framework.vdom.VNode;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Fluent builder for button elements.
@@ -14,14 +22,19 @@ import com.osmig.Jweb.framework.vdom.VNode;
  * // Regular button
  * Button.of("Click Me").id("myBtn").class_("btn btn-primary")
  *
- * // Button with icon (using raw HTML or child elements)
- * Button.submit("Save").class_("btn")
+ * // Click handlers — server handler or Actions DSL, mirroring attrs()
+ * Button.of("Save").onClick(e -&gt; save())
+ * Button.of("Show").onClick(show("panel"))
  *
  * // Reset button
  * Button.reset("Clear Form")
  *
  * // Disabled button
  * Button.submit("Processing...").disabled()
+ *
+ * // Anything this builder does not model — no rewrite needed
+ * Button.of("More").attr("popovertarget", "menu").data("role", "menu").aria("expanded", "false")
+ * Button.of("More").toTag().addClass("wide")   // continue with the full Tag API
  * </pre>
  */
 public class Button implements Element {
@@ -37,6 +50,8 @@ public class Button implements Element {
     private String form;
     private String formAction;
     private String formMethod;
+    /** Anything this builder does not model: attr()/data()/aria()/on* land here. */
+    private final Map<String, String> extra = new LinkedHashMap<>();
 
     private Button() {}
 
@@ -195,10 +210,100 @@ public class Button implements Element {
         return this;
     }
 
+    // ==================== Event Handlers ====================
+
+    /**
+     * Registers a click handler — the same contract as
+     * {@code attrs().onClick(Consumer)}.
+     *
+     * @param handler the handler to execute on click
+     * @return this for chaining
+     */
+    public Button onClick(Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register("click", handler);
+        return attr("onclick", eh.toJsAttribute());
+    }
+
+    /**
+     * Sets a click handler from the JavaScript Actions DSL — the same contract
+     * as {@code attrs().onClick(Action)}.
+     *
+     * @param action the action to execute on click
+     * @return this for chaining
+     */
+    public Button onClick(Action action) {
+        return attr("onclick", action.inline());
+    }
+
+    /**
+     * Registers a handler for any DOM event type.
+     *
+     * @param eventType the DOM event type (click, focus, …)
+     * @param handler the handler to execute
+     * @return this for chaining
+     */
+    public Button on(String eventType, Consumer<Event> handler) {
+        EventHandler eh = EventRegistry.register(eventType, handler);
+        return attr("on" + eventType, eh.toJsAttribute());
+    }
+
+    /**
+     * Sets a handler for any DOM event type from the Actions DSL.
+     *
+     * @param eventType the DOM event type
+     * @param action the action to execute
+     * @return this for chaining
+     */
+    public Button on(String eventType, Action action) {
+        return attr("on" + eventType, action.inline());
+    }
+
+    // ==================== Escape Hatches ====================
+
+    /**
+     * Sets any HTML attribute this builder does not model — no rewrite to
+     * {@code button(attrs()...)} needed.
+     *
+     * @param name the attribute name
+     * @param value the value (null for a bare boolean attribute)
+     * @return this for chaining
+     */
+    public Button attr(String name, String value) {
+        extra.put(name, value);
+        return this;
+    }
+
+    /**
+     * Sets a {@code data-*} attribute.
+     *
+     * @param name the data name (without the "data-" prefix)
+     * @param value the value
+     * @return this for chaining
+     */
+    public Button data(String name, String value) {
+        return attr("data-" + name, value);
+    }
+
+    /**
+     * Sets an {@code aria-*} attribute.
+     *
+     * @param name the aria name (without the "aria-" prefix)
+     * @param value the value
+     * @return this for chaining
+     */
+    public Button aria(String name, String value) {
+        return attr("aria-" + name, value);
+    }
+
     // ==================== Build ====================
 
-    @Override
-    public VNode toVNode() {
+    /**
+     * Materialises this builder as a {@link Tag}, so the full Tag API stays
+     * available instead of dead-ending here.
+     *
+     * @return a {@code <button>} Tag carrying every attribute and the text
+     */
+    public Tag toTag() {
         Tag button = new Tag("button");
 
         button.attr("type", type);
@@ -206,16 +311,22 @@ public class Button implements Element {
         if (className != null) button.attr("class", className);
         if (name != null) button.attr("name", name);
         if (value != null) button.attr("value", value);
-        if (disabled) button.attr("disabled", "");
-        if (autofocus) button.attr("autofocus", "");
+        if (disabled) button.disabled();
+        if (autofocus) button.autofocus();
         if (form != null) button.attr("form", form);
         if (formAction != null) button.attr("formaction", formAction);
         if (formMethod != null) button.attr("formmethod", formMethod);
+        extra.forEach(button::attr);
 
         if (text != null) {
             button.text(text);
         }
 
-        return button.toVNode();
+        return button;
+    }
+
+    @Override
+    public VNode toVNode() {
+        return toTag().toVNode();
     }
 }

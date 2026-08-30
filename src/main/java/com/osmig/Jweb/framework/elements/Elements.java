@@ -2,7 +2,6 @@ package com.osmig.Jweb.framework.elements;
 
 import com.osmig.Jweb.framework.attributes.Attr;
 import com.osmig.Jweb.framework.attributes.Attributes;
-import com.osmig.Jweb.framework.attributes.Attributes.InlineStyle;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.vdom.VFragment;
 import com.osmig.Jweb.framework.vdom.VNode;
@@ -46,6 +45,21 @@ import java.util.function.Function;
  * // Conditional rendering
  * when(isLoggedIn, () -&gt; span("Welcome, " + user.getName()))
  * </pre>
+ *
+ * <h2>Two rules cover the whole element surface</h2>
+ * <ol>
+ *   <li><b>Every element is {@code name(Object... itemsAndAttrs)}</b> — attributes
+ *       ({@link Attr}, {@link Attributes}, a style builder) and children may be
+ *       mixed freely in one call. There is no separate {@code (Attributes, ...)}
+ *       overload family; it was redundant.</li>
+ *   <li><b>A lone String argument is escaped text</b> — {@code a("Home")} renders
+ *       {@code <a>Home</a>}, {@code label("Email:")} renders
+ *       {@code <label>Email:</label>}. Attribute-first forms keep their meaning
+ *       when there is more than one argument ({@code a("/home", "Home")}).
+ *       The two void-element exceptions are {@code img(src)} and
+ *       {@code img(src, alt)}: an {@code <img>} cannot contain text, so a
+ *       String there can only be a URL.</li>
+ * </ol>
  *
  * <p>This class provides factory methods for all standard HTML elements organized by category:</p>
  * <ul>
@@ -126,6 +140,10 @@ public class Elements {
     public static Attr for_(String value) { return Attr.for_(value); }
     /** Creates a role attribute for ARIA. @param value the ARIA role */
     public static Attr role(String value) { return Attr.role(value); }
+    /** Creates a datetime attribute for {@code <time>}. @param value machine-readable datetime */
+    public static Attr datetime(String value) { return Attr.datetime(value); }
+    /** Creates a loading attribute for images/iframes. @param value "lazy" or "eager" */
+    public static Attr loading(String value) { return Attr.loading(value); }
     /** Creates a disabled boolean attribute. */
     public static Attr disabled() { return Attr.disabled(); }
     /** Creates a checked boolean attribute for checkboxes/radios. */
@@ -148,16 +166,13 @@ public class Elements {
     // ==================== Document Structure ====================
 
     public static Tag html(Object... children) { return tag("html", children); }
-    public static Tag html(Attributes attrs, Object... children) { return tag("html", attrs, children); }
     public static Tag head(Object... children) { return tag("head", children); }
     public static Tag body(Object... children) { return tag("body", children); }
-    public static Tag body(Attributes attrs, Object... children) { return tag("body", attrs, children); }
 
     // ==================== Head Elements ====================
 
     public static Tag title(String text) { return tag("title", text); }
     public static Tag meta(Object... attrs) { return tag("meta", attrs); }
-    public static Tag meta(Attributes attrs) { return new Tag("meta", attrs); }
     /** {@code <meta charset="UTF-8">} */
     public static Tag metaCharset() { return DocumentElements.metaCharset(); }
     /** The standard responsive viewport meta tag. */
@@ -166,109 +181,93 @@ public class Elements {
         return tag("meta", new Attributes().name(name).set("content", content));
     }
     public static Tag link(Object... attrs) { return tag("link", attrs); }
-    public static Tag link(Attributes attrs) { return new Tag("link", attrs); }
     public static Tag css(String href) {
         return tag("link", new Attributes().set("rel", "stylesheet").href(href));
     }
+
+    /**
+     * A {@code <script>} element from attributes and children:
+     * {@code script(src("/app.js"), attr("defer", ""))}.
+     *
+     * <p>Content is not escaped for you — use {@link #inlineScript(String)}
+     * (or a {@code raw(...)} child) for inline JavaScript.</p>
+     */
+    public static Tag script(Object... attrs) { return tag("script", attrs); }
+
+    /**
+     * A {@code <script src="...">} element.
+     *
+     * @deprecated Use {@code script(src("..."))} instead — a lone String
+     *             argument means text everywhere else in this DSL.
+     */
+    @Deprecated
     public static Tag script(String src) { return tag("script", new Attributes().src(src)); }
+
+    /** Inline JavaScript. The code is emitted verbatim (never HTML-escaped). */
     public static Tag inlineScript(String code) { return tag("script", TextElement.raw(code)); }
+    /** Inline CSS in a {@code <style>} element. The CSS is emitted verbatim. */
     public static Tag style(String css) { return tag("style", TextElement.raw(css)); }
 
     // ==================== Semantic Structure ====================
 
     public static Tag header(Object... children) { return tag("header", children); }
-    public static Tag header(Attributes attrs, Object... children) { return tag("header", attrs, children); }
     public static Tag footer(Object... children) { return tag("footer", children); }
-    public static Tag footer(Attributes attrs, Object... children) { return tag("footer", attrs, children); }
     public static Tag nav(Object... children) { return tag("nav", children); }
-    public static Tag nav(Attributes attrs, Object... children) { return tag("nav", attrs, children); }
     public static Tag main(Object... children) { return tag("main", children); }
-    public static Tag main(Attributes attrs, Object... children) { return tag("main", attrs, children); }
     public static Tag section(Object... children) { return tag("section", children); }
-    public static Tag section(Attributes attrs, Object... children) { return tag("section", attrs, children); }
     public static Tag article(Object... children) { return tag("article", children); }
-    public static Tag article(Attributes attrs, Object... children) { return tag("article", attrs, children); }
     public static Tag aside(Object... children) { return tag("aside", children); }
-    public static Tag aside(Attributes attrs, Object... children) { return tag("aside", attrs, children); }
     public static Tag figure(Object... children) { return tag("figure", children); }
-    public static Tag figure(Attributes attrs, Object... children) { return tag("figure", attrs, children); }
     public static Tag figcaption(Object... children) { return tag("figcaption", children); }
     public static Tag hgroup(Object... children) { return tag("hgroup", children); }
-    public static Tag hgroup(Attributes attrs, Object... children) { return tag("hgroup", attrs, children); }
     public static Tag search(Object... children) { return tag("search", children); }
-    public static Tag search(Attributes attrs, Object... children) { return tag("search", attrs, children); }
 
     // ==================== Headings ====================
 
     public static Tag h1(Object... children) { return tag("h1", children); }
-    public static Tag h1(Attributes attrs, Object... children) { return tag("h1", attrs, children); }
     public static Tag h2(Object... children) { return tag("h2", children); }
-    public static Tag h2(Attributes attrs, Object... children) { return tag("h2", attrs, children); }
     public static Tag h3(Object... children) { return tag("h3", children); }
-    public static Tag h3(Attributes attrs, Object... children) { return tag("h3", attrs, children); }
     public static Tag h4(Object... children) { return tag("h4", children); }
-    public static Tag h4(Attributes attrs, Object... children) { return tag("h4", attrs, children); }
     public static Tag h5(Object... children) { return tag("h5", children); }
-    public static Tag h5(Attributes attrs, Object... children) { return tag("h5", attrs, children); }
     public static Tag h6(Object... children) { return tag("h6", children); }
-    public static Tag h6(Attributes attrs, Object... children) { return tag("h6", attrs, children); }
 
     // ==================== Text Content ====================
 
     public static Tag p(Object... children) { return tag("p", children); }
-    public static Tag p(Attributes attrs, Object... children) { return tag("p", attrs, children); }
     public static Tag span(Object... children) { return tag("span", children); }
-    public static Tag span(Attributes attrs, Object... children) { return tag("span", attrs, children); }
     public static Tag div(Object... children) { return tag("div", children); }
-    public static Tag div(Attributes attrs, Object... children) { return tag("div", attrs, children); }
     public static Tag strong(Object... children) { return tag("strong", children); }
-    public static Tag strong(Attributes attrs, Object... children) { return tag("strong", attrs, children); }
     public static Tag em(Object... children) { return tag("em", children); }
-    public static Tag em(Attributes attrs, Object... children) { return tag("em", attrs, children); }
     public static Tag b(Object... children) { return tag("b", children); }
-    public static Tag b(Attributes attrs, Object... children) { return tag("b", attrs, children); }
     public static Tag i(Object... children) { return tag("i", children); }
-    public static Tag i(Attributes attrs, Object... children) { return tag("i", attrs, children); }
     public static Tag u(Object... children) { return tag("u", children); }
-    public static Tag u(Attributes attrs, Object... children) { return tag("u", attrs, children); }
     public static Tag small(Object... children) { return tag("small", children); }
-    public static Tag small(Attributes attrs, Object... children) { return tag("small", attrs, children); }
     public static Tag mark(Object... children) { return tag("mark", children); }
-    public static Tag mark(Attributes attrs, Object... children) { return tag("mark", attrs, children); }
     public static Tag del(Object... children) { return tag("del", children); }
-    public static Tag del(Attributes attrs, Object... children) { return tag("del", attrs, children); }
     public static Tag ins(Object... children) { return tag("ins", children); }
-    public static Tag ins(Attributes attrs, Object... children) { return tag("ins", attrs, children); }
     public static Tag sub(Object... children) { return tag("sub", children); }
-    public static Tag sub(Attributes attrs, Object... children) { return tag("sub", attrs, children); }
     public static Tag sup(Object... children) { return tag("sup", children); }
-    public static Tag sup(Attributes attrs, Object... children) { return tag("sup", attrs, children); }
     public static Tag code(Object... children) { return tag("code", children); }
-    public static Tag code(Attributes attrs, Object... children) { return tag("code", attrs, children); }
     public static Tag pre(Object... children) { return tag("pre", children); }
-    public static Tag pre(Attributes attrs, Object... children) { return tag("pre", attrs, children); }
     public static Tag blockquote(Object... children) { return tag("blockquote", children); }
-    public static Tag blockquote(Attributes attrs, Object... children) { return tag("blockquote", attrs, children); }
-    public static Tag hr() { return tag("hr"); }
-    public static Tag hr(Attributes attrs) { return new Tag("hr", attrs); }
+    /** {@code blockquote("Quote")} renders {@code <blockquote>Quote</blockquote>}. For a source URL use {@code blockquote(attr("cite", url), text(...))}. */
+    public static Tag blockquote(String text) { return tag("blockquote", TextElement.of(text)); }
+    public static Tag hr(Object... attrs) { return tag("hr", attrs); }
     public static Tag br() { return tag("br"); }
     public static Tag abbr(Object... children) { return tag("abbr", children); }
-    public static Tag abbr(Attributes attrs, Object... children) { return tag("abbr", attrs, children); }
     public static Tag address(Object... children) { return tag("address", children); }
-    public static Tag address(Attributes attrs, Object... children) { return tag("address", attrs, children); }
     public static Tag cite(Object... children) { return tag("cite", children); }
     public static Tag kbd(Object... children) { return tag("kbd", children); }
     public static Tag samp(Object... children) { return tag("samp", children); }
     public static Tag var_(Object... children) { return tag("var", children); }
     public static Tag time(Object... children) { return tag("time", children); }
-    public static Tag time(Attributes attrs, Object... children) { return tag("time", attrs, children); }
     public static Tag data_(Object... children) { return tag("data", children); }
-    public static Tag data_(Attributes attrs, Object... children) { return tag("data", attrs, children); }
     public static Tag wbr() { return tag("wbr"); }
     public static Tag bdi(Object... children) { return tag("bdi", children); }
-    public static Tag bdo(Attributes attrs, Object... children) { return tag("bdo", attrs, children); }
+    public static Tag bdo(Object... children) { return tag("bdo", children); }
     public static Tag q(Object... children) { return tag("q", children); }
-    public static Tag q(Attributes attrs, Object... children) { return tag("q", attrs, children); }
+    /** {@code q("Hello")} renders {@code <q>Hello</q>}. For a source URL use {@code q(attr("cite", url), text(...))}. */
+    public static Tag q(String text) { return tag("q", TextElement.of(text)); }
     public static Tag dfn(Object... children) { return tag("dfn", children); }
     public static Tag ruby(Object... children) { return tag("ruby", children); }
     public static Tag rt(Object... children) { return tag("rt", children); }
@@ -278,28 +277,26 @@ public class Elements {
     // ==================== Interactive ====================
 
     public static Tag details(Object... children) { return tag("details", children); }
-    public static Tag details(Attributes attrs, Object... children) { return tag("details", attrs, children); }
     public static Tag summary(Object... children) { return tag("summary", children); }
     public static Tag dialog(Object... children) { return tag("dialog", children); }
-    public static Tag dialog(Attributes attrs, Object... children) { return tag("dialog", attrs, children); }
     public static Tag menu(Object... children) { return tag("menu", children); }
 
     // ==================== Links ====================
 
+    /** {@code a("Home")} renders {@code <a>Home</a>} — a lone String is text. */
+    public static Tag a(String text) { return tag("a", TextElement.of(text)); }
+    /** {@code a("/home", "Home")} renders {@code <a href="/home">Home</a>}. */
     public static Tag a(String href, Object... children) {
         return tag("a", new Attributes().href(href), children);
     }
-    public static Tag a(Attributes attrs, Object... children) { return tag("a", attrs, children); }
-    public static Tag link(String href, String text) { return a(href, text); }
+    /** {@code a(href("/home"), class_("nav"), text("Home"))}. */
+    public static Tag a(Object... children) { return tag("a", children); }
 
     // ==================== Lists ====================
 
     public static Tag ul(Object... children) { return tag("ul", children); }
-    public static Tag ul(Attributes attrs, Object... children) { return tag("ul", attrs, children); }
     public static Tag ol(Object... children) { return tag("ol", children); }
-    public static Tag ol(Attributes attrs, Object... children) { return tag("ol", attrs, children); }
     public static Tag li(Object... children) { return tag("li", children); }
-    public static Tag li(Attributes attrs, Object... children) { return tag("li", attrs, children); }
     public static Tag dl(Object... children) { return tag("dl", children); }
     public static Tag dt(Object... children) { return tag("dt", children); }
     public static Tag dd(Object... children) { return tag("dd", children); }
@@ -307,63 +304,60 @@ public class Elements {
     // ==================== Tables ====================
 
     public static Tag table(Object... children) { return tag("table", children); }
-    public static Tag table(Attributes attrs, Object... children) { return tag("table", attrs, children); }
     public static Tag thead(Object... children) { return tag("thead", children); }
     public static Tag tbody(Object... children) { return tag("tbody", children); }
     public static Tag tfoot(Object... children) { return tag("tfoot", children); }
     public static Tag tr(Object... children) { return tag("tr", children); }
-    public static Tag tr(Attributes attrs, Object... children) { return tag("tr", attrs, children); }
     public static Tag th(Object... children) { return tag("th", children); }
-    public static Tag th(Attributes attrs, Object... children) { return tag("th", attrs, children); }
     public static Tag td(Object... children) { return tag("td", children); }
-    public static Tag td(Attributes attrs, Object... children) { return tag("td", attrs, children); }
     public static Tag caption(Object... children) { return tag("caption", children); }
     public static Tag colgroup(Object... children) { return tag("colgroup", children); }
-    public static Tag colgroup(Attributes attrs, Object... children) { return tag("colgroup", attrs, children); }
-    public static Tag col(Attributes attrs) { return new Tag("col", attrs); }
-    public static Tag col() { return tag("col"); }
+    public static Tag col(Object... attrs) { return tag("col", attrs); }
 
     // ==================== Forms ====================
 
     public static Tag form(Object... children) { return tag("form", children); }
-    public static Tag form(Attributes attrs, Object... children) { return tag("form", attrs, children); }
     public static Tag input(Object... attrs) { return tag("input", attrs); }
-    public static Tag input(Attributes attrs) { return new Tag("input", attrs); }
     public static Tag input(String type, String name) {
         return tag("input", new Attributes().type(type).name(name));
     }
     public static Tag textarea(Object... items) { return tag("textarea", items); }
-    public static Tag textarea(Attributes attrs, Object... children) { return tag("textarea", attrs, children); }
-    public static Tag textarea(String name) { return tag("textarea", new Attributes().name(name)); }
-    public static Tag select(Attributes attrs, Object... children) { return tag("select", attrs, children); }
+    /** {@code textarea("Hello")} renders {@code <textarea>Hello</textarea>}. For the name use {@code textarea(name("bio"))}. */
+    public static Tag textarea(String text) { return tag("textarea", TextElement.of(text)); }
+    public static Tag select(Object... children) { return tag("select", children); }
+    public static Tag option(Object... children) { return tag("option", children); }
     public static Tag option(String value, String text) {
         return tag("option", new Attributes().value(value), text);
     }
-    public static Tag option(Attributes attrs, String text) { return tag("option", attrs, text); }
-    public static Tag optgroup(Attributes attrs, Object... children) { return tag("optgroup", attrs, children); }
+    public static Tag optgroup(Object... children) { return tag("optgroup", children); }
+    /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. For the label use {@code optgroup(attr("label", "Cars"), ...)}. */
+    public static Tag optgroup(String text) { return tag("optgroup", TextElement.of(text)); }
     public static Tag label(Object... children) { return tag("label", children); }
-    public static Tag label(Attributes attrs, Object... children) { return tag("label", attrs, children); }
+    /** {@code label("Email:")} renders {@code <label>Email:</label>}. For the target use {@code label(for_("email"), text(...))}. */
+    public static Tag label(String text) { return tag("label", TextElement.of(text)); }
+    /** {@code label("email", "Email:")} renders {@code <label for="email">Email:</label>}. */
     public static Tag label(String forId, Object... children) {
         return tag("label", new Attributes().for_(forId), children);
     }
     public static Tag button(Object... children) { return tag("button", children); }
-    public static Tag button(Attributes attrs, Object... children) { return tag("button", attrs, children); }
     public static Tag fieldset(Object... children) { return tag("fieldset", children); }
-    public static Tag fieldset(Attributes attrs, Object... children) { return tag("fieldset", attrs, children); }
     public static Tag legend(Object... children) { return tag("legend", children); }
-    public static Tag progress(Attributes attrs) { return new Tag("progress", attrs); }
-    public static Tag progress(Attributes attrs, Object... children) { return tag("progress", attrs, children); }
-    public static Tag meter(Attributes attrs) { return new Tag("meter", attrs); }
-    public static Tag meter(Attributes attrs, Object... children) { return tag("meter", attrs, children); }
+    public static Tag progress(Object... attrs) { return tag("progress", attrs); }
+    public static Tag meter(Object... attrs) { return tag("meter", attrs); }
     public static Tag output(Object... children) { return tag("output", children); }
-    public static Tag output(Attributes attrs, Object... children) { return tag("output", attrs, children); }
     public static Tag datalist(Object... children) { return tag("datalist", children); }
-    public static Tag datalist(Attributes attrs, Object... children) { return tag("datalist", attrs, children); }
-    public static Tag select(Object... children) { return tag("select", children); }
+    /** {@code datalist("Browsers")} renders {@code <datalist>Browsers</datalist>}. For the id use {@code datalist(id("browsers"), ...)}. */
+    public static Tag datalist(String text) { return tag("datalist", TextElement.of(text)); }
 
     // ==================== Convenient Form Input Builders ====================
     // These provide concise shortcuts for common form inputs.
     // The full attrs() API remains available for complex cases.
+    //
+    // ID POLICY (uniform across every xxxInput helper): the input's id is set
+    // to its name, so label(name, "...") pairs with it out of the box. The one
+    // documented variation is radio(), whose id is "name-value" because a radio
+    // group shares one name. hiddenInput() sets no id (nothing labels it).
+    // Pass .id(...) via attrs() instead of the helper when you need another id.
 
     /**
      * Creates a text input with name (id defaults to name).
@@ -379,7 +373,7 @@ public class Elements {
     }
 
     /**
-     * Creates a text input with name and placeholder.
+     * Creates a text input with name and placeholder (id defaults to name).
      *
      * <p>Example:</p>
      * <pre>
@@ -403,9 +397,7 @@ public class Elements {
         return input(attrs().type("email").name(name).id(name));
     }
 
-    /**
-     * Creates an email input with name and placeholder.
-     */
+    /** Creates an email input with name and placeholder (id defaults to name). */
     public static Tag emailInput(String name, String placeholder) {
         return input(attrs().type("email").name(name).id(name).placeholder(placeholder));
     }
@@ -422,9 +414,7 @@ public class Elements {
         return input(attrs().type("password").name(name).id(name));
     }
 
-    /**
-     * Creates a password input with name and placeholder.
-     */
+    /** Creates a password input with name and placeholder (id defaults to name). */
     public static Tag passwordInput(String name, String placeholder) {
         return input(attrs().type("password").name(name).id(name).placeholder(placeholder));
     }
@@ -441,15 +431,13 @@ public class Elements {
         return input(attrs().type("number").name(name).id(name));
     }
 
-    /**
-     * Creates a number input with name, min, and max values.
-     */
+    /** Creates a number input with name, min, and max values (id defaults to name). */
     public static Tag numberInput(String name, int min, int max) {
         return input(attrs().type("number").name(name).id(name).min(min).max(max));
     }
 
     /**
-     * Creates a checkbox input with name and value.
+     * Creates a checkbox input with name and value (id defaults to name).
      *
      * <p>Example:</p>
      * <pre>
@@ -461,15 +449,14 @@ public class Elements {
         return input(attrs().type("checkbox").name(name).value(value).id(name));
     }
 
-    /**
-     * Creates a checkbox input with name, value, and checked state.
-     */
+    /** Creates a checkbox input with name, value, and checked state (id defaults to name). */
     public static Tag checkbox(String name, String value, boolean checked) {
         return input(attrs().type("checkbox").name(name).value(value).id(name).checked(checked));
     }
 
     /**
      * Creates a radio input with name and value.
+     * A radio group shares one name, so the id is {@code name-value}.
      *
      * <p>Example:</p>
      * <pre>
@@ -478,18 +465,22 @@ public class Elements {
      * </pre>
      */
     public static Tag radio(String name, String value) {
-        return input(attrs().type("radio").name(name).value(value).id(name + "-" + value));
+        return input(attrs().type("radio").name(name).value(value).id(radioId(name, value)));
     }
 
-    /**
-     * Creates a radio input with name, value, and checked state.
-     */
+    /** Creates a radio input with name, value, and checked state (id is {@code name-value}). */
     public static Tag radio(String name, String value, boolean checked) {
-        return input(attrs().type("radio").name(name).value(value).id(name + "-" + value).checked(checked));
+        return input(attrs().type("radio").name(name).value(value)
+            .id(radioId(name, value)).checked(checked));
+    }
+
+    /** The one id scheme for radio buttons: {@code name-value}. */
+    public static String radioId(String name, String value) {
+        return name + "-" + value;
     }
 
     /**
-     * Creates a hidden input with name and value.
+     * Creates a hidden input with name and value (no id — nothing labels it).
      *
      * <p>Example:</p>
      * <pre>
@@ -501,7 +492,7 @@ public class Elements {
     }
 
     /**
-     * Creates a file input with name.
+     * Creates a file input with name (id defaults to name).
      *
      * <p>Example:</p>
      * <pre>
@@ -513,7 +504,7 @@ public class Elements {
     }
 
     /**
-     * Creates a file input with name and accepted file types.
+     * Creates a file input with name and accepted file types (id defaults to name).
      *
      * <p>Example:</p>
      * <pre>
@@ -525,50 +516,53 @@ public class Elements {
         return input(attrs().type("file").name(name).id(name).accept(accept));
     }
 
-    /**
-     * Creates a date input with name.
-     */
+    /** Creates a date input with name (id defaults to name). */
     public static Tag dateInput(String name) {
         return input(attrs().type("date").name(name).id(name));
     }
 
-    /**
-     * Creates a time input with name.
-     */
+    /** Creates a date input with name and min/max bounds (id defaults to name). */
+    public static Tag dateInput(String name, String min, String max) {
+        return input(attrs().type("date").name(name).id(name).min(min).max(max));
+    }
+
+    /** Creates a time input with name (id defaults to name). */
     public static Tag timeInput(String name) {
         return input(attrs().type("time").name(name).id(name));
     }
 
-    /**
-     * Creates a datetime-local input with name.
-     */
+    /** Creates a datetime-local input with name (id defaults to name). */
     public static Tag datetimeInput(String name) {
         return input(attrs().type("datetime-local").name(name).id(name));
     }
 
-    /**
-     * Creates a search input with name and placeholder.
-     */
+    /** Creates a month input with name (id defaults to name). */
+    public static Tag monthInput(String name) {
+        return input(attrs().type("month").name(name).id(name));
+    }
+
+    /** Creates a week input with name (id defaults to name). */
+    public static Tag weekInput(String name) {
+        return input(attrs().type("week").name(name).id(name));
+    }
+
+    /** Creates a search input with name and placeholder (id defaults to name). */
     public static Tag searchInput(String name, String placeholder) {
         return input(attrs().type("search").name(name).id(name).placeholder(placeholder));
     }
 
-    /**
-     * Creates a tel input with name and placeholder.
-     */
+    /** Creates a tel input with name and placeholder (id defaults to name). */
     public static Tag telInput(String name, String placeholder) {
         return input(attrs().type("tel").name(name).id(name).placeholder(placeholder));
     }
 
-    /**
-     * Creates a URL input with name and placeholder.
-     */
+    /** Creates a URL input with name and placeholder (id defaults to name). */
     public static Tag urlInput(String name, String placeholder) {
         return input(attrs().type("url").name(name).id(name).placeholder(placeholder));
     }
 
     /**
-     * Creates a range/slider input with name, min, max, and value.
+     * Creates a range/slider input with name, min, max, and value (id defaults to name).
      *
      * <p>Example:</p>
      * <pre>
@@ -577,18 +571,22 @@ public class Elements {
      */
     public static Tag rangeInput(String name, int min, int max, int value) {
         return input(attrs().type("range").name(name).id(name)
-            .min(min).max(max).value(String.valueOf(value)));
+            .min(min).max(max).value(value));
     }
 
-    /**
-     * Creates a color input with name.
-     */
+    /** Creates a range/slider input with an explicit step (id defaults to name). */
+    public static Tag rangeInput(String name, int min, int max, int value, int step) {
+        return input(attrs().type("range").name(name).id(name)
+            .min(min).max(max).value(value).step(step));
+    }
+
+    /** Creates a color input with name (id defaults to name). */
     public static Tag colorInput(String name) {
         return input(attrs().type("color").name(name).id(name));
     }
 
     /**
-     * Creates a color input with name and default value.
+     * Creates a color input with name and default value (id defaults to name).
      *
      * <p>Example:</p>
      * <pre>
@@ -602,25 +600,29 @@ public class Elements {
     /**
      * Creates a submit button with text.
      *
-     * <p>Example:</p>
-     * <pre>
-     * submitButton("Sign Up")
-     * </pre>
+     * @deprecated Use {@code button(type("submit"), text)} instead.
      */
+    @Deprecated
     public static Tag submitButton(String text) {
         return button(attrs().type("submit"), text);
     }
 
     /**
      * Creates a submit button with attributes and text.
+     *
+     * @deprecated Use {@code button(attrs().type("submit")..., text)} instead.
      */
+    @Deprecated
     public static Tag submitButton(Attributes attrs, String text) {
         return button(new Attributes(attrs.toMap()).type("submit"), text);
     }
 
     /**
      * Creates a reset button with text.
+     *
+     * @deprecated Use {@code button(type("reset"), text)} instead.
      */
+    @Deprecated
     public static Tag resetButton(String text) {
         return button(attrs().type("reset"), text);
     }
@@ -659,32 +661,45 @@ public class Elements {
 
     // ==================== Media ====================
 
+    /**
+     * {@code img("/logo.png")} renders {@code <img src="/logo.png">}.
+     *
+     * <p>Deliberate exception to the "a lone String is text" rule: {@code <img>}
+     * is a void element, so a String argument can only be a URL.</p>
+     */
     public static Tag img(String src) { return tag("img", new Attributes().src(src)); }
+    /**
+     * {@code img("/logo.png", "Logo")} renders {@code <img src="/logo.png" alt="Logo">}.
+     *
+     * <p>Deliberate exception to the "a lone String is text" rule: {@code <img>}
+     * is a void element and cannot contain text.</p>
+     */
     public static Tag img(String src, String alt) { return tag("img", new Attributes().src(src).alt(alt)); }
-    public static Tag img(Attributes attrs) { return new Tag("img", attrs); }
-    public static Tag video(Attributes attrs, Object... children) { return tag("video", attrs, children); }
-    public static Tag audio(Attributes attrs, Object... children) { return tag("audio", attrs, children); }
-    public static Tag source(Attributes attrs) { return new Tag("source", attrs); }
-    public static Tag canvas(Attributes attrs) { return tag("canvas", attrs); }
-    public static Tag svg(Attributes attrs, Object... children) { return tag("svg", attrs, children); }
-    public static Tag iframe(Attributes attrs) { return tag("iframe", attrs); }
-    public static Tag iframe(Attributes attrs, Object... children) { return tag("iframe", attrs, children); }
+    /** {@code img(src("/a.png"), alt("A"), loading("lazy"))}. */
+    public static Tag img(Object... attrs) { return tag("img", attrs); }
+    public static Tag video(Object... children) { return tag("video", children); }
+    public static Tag audio(Object... children) { return tag("audio", children); }
+    public static Tag source(Object... attrs) { return tag("source", attrs); }
+    public static Tag canvas(Object... children) { return tag("canvas", children); }
+    public static Tag svg(Object... children) { return tag("svg", children); }
+    public static Tag iframe(Object... children) { return tag("iframe", children); }
     public static Tag picture(Object... children) { return tag("picture", children); }
-    public static Tag track(Attributes attrs) { return new Tag("track", attrs); }
-    public static Tag embed(Attributes attrs) { return new Tag("embed", attrs); }
-    public static Tag object(Attributes attrs, Object... children) { return tag("object", attrs, children); }
-    public static Tag param(Attributes attrs) { return new Tag("param", attrs); }
-    public static Tag map(Attributes attrs, Object... children) { return tag("map", attrs, children); }
-    public static Tag area(Attributes attrs) { return new Tag("area", attrs); }
+    public static Tag track(Object... attrs) { return tag("track", attrs); }
+    public static Tag embed(Object... attrs) { return tag("embed", attrs); }
+    public static Tag object(Object... children) { return tag("object", children); }
+    public static Tag param(Object... attrs) { return tag("param", attrs); }
+    public static Tag map(Object... children) { return tag("map", children); }
+    public static Tag area(Object... attrs) { return tag("area", attrs); }
 
     // ==================== Scripting ====================
 
     public static Tag noscript(Object... children) { return tag("noscript", children); }
+    /** A {@code <template>} element. */
+    public static Tag template(Object... children) { return tag("template", children); }
+    /** @deprecated Use {@link #template(Object...)} — {@code template} is not a Java keyword. */
+    @Deprecated
     public static Tag template_(Object... children) { return tag("template", children); }
-    public static Tag template_(Attributes attrs, Object... children) { return tag("template", attrs, children); }
     public static Tag slot(Object... children) { return tag("slot", children); }
-    public static Tag slot(Attributes attrs, Object... children) { return tag("slot", attrs, children); }
-    public static Tag canvas(Object... children) { return tag("canvas", children); }
 
     // ==================== Text Helpers ====================
 
@@ -745,18 +760,14 @@ public class Elements {
     /**
      * Starts a conditional chain for if/elif/else rendering.
      *
-     * <p>Usage:</p>
-     * <pre>
-     * when(isAdmin)
-     *     .then(adminPanel())
-     *     .elif(isModerator, modPanel())
-     *     .elif(isUser, userPanel())
-     *     .otherwise(loginPrompt())
-     * </pre>
-     *
      * @param condition the initial condition to check
      * @return a Condition builder for chaining
+     * @deprecated Use {@code match(cond(a, ...), cond(b, ...), otherwise(...))} —
+     *             one of the two blessed conditional systems, alongside
+     *             {@code when(cond, element)}. The chain eagerly evaluates every
+     *             branch unless you remember to pass a Supplier.
      */
+    @Deprecated
     public static Condition when(boolean condition) {
         return new Condition(condition);
     }
@@ -764,12 +775,7 @@ public class Elements {
     /**
      * Conditionally renders one of two elements (lazy evaluation).
      *
-     * <p>Usage:</p>
-     * <pre>
-     * ifElse(isLoggedIn, () -&gt; span("Welcome!"), () -&gt; link("/login", "Sign In"))
-     * </pre>
-     *
-     * @deprecated Use {@link #when(boolean)} with .then().otherwise() for cleaner syntax
+     * @deprecated Use {@code match(cond(c, ifTrue), otherwise(ifFalse))} instead.
      */
     @Deprecated
     public static Element ifElse(
@@ -784,15 +790,9 @@ public class Elements {
     /**
      * Builder for if/elif/else conditional rendering chains.
      *
-     * <p>Example:</p>
-     * <pre>
-     * when(isAdmin)
-     *     .then(adminPanel())
-     *     .elif(isModerator, modPanel())
-     *     .elif(isUser, userPanel())
-     *     .otherwise(loginPrompt())
-     * </pre>
+     * @deprecated Use {@code match(cond(...), ..., otherwise(...))} instead.
      */
+    @Deprecated
     public static class Condition {
         private boolean matched = false;
         private Element result = null;
@@ -981,57 +981,6 @@ public class Elements {
         return new Tag(name, attrs, Tag.toVNodes(children));
     }
 
-    /**
-     * Creates an element with InlineStyle (auto-finalizes to Attributes).
-     * This enables fluent styling without .done():
-     *
-     * <pre>
-     * div(attrs().style()
-     *         .display(flex)
-     *         .padding(px(10)),
-     *     p("Hello"))
-     * </pre>
-     */
-    public static Tag tag(String name, InlineStyle style, Object... children) {
-        return new Tag(name, style.toAttrs(), Tag.toVNodes(children));
-    }
-
-    // ==================== InlineStyle Overloads ====================
-    // These allow using attrs().style()... directly without .done()
-
-    public static Tag div(InlineStyle style, Object... children) { return tag("div", style, children); }
-    public static Tag span(InlineStyle style, Object... children) { return tag("span", style, children); }
-    public static Tag p(InlineStyle style, Object... children) { return tag("p", style, children); }
-    public static Tag a(InlineStyle style, Object... children) { return tag("a", style, children); }
-    public static Tag button(InlineStyle style, Object... children) { return tag("button", style, children); }
-    public static Tag section(InlineStyle style, Object... children) { return tag("section", style, children); }
-    public static Tag article(InlineStyle style, Object... children) { return tag("article", style, children); }
-    public static Tag header(InlineStyle style, Object... children) { return tag("header", style, children); }
-    public static Tag footer(InlineStyle style, Object... children) { return tag("footer", style, children); }
-    public static Tag nav(InlineStyle style, Object... children) { return tag("nav", style, children); }
-    public static Tag main(InlineStyle style, Object... children) { return tag("main", style, children); }
-    public static Tag aside(InlineStyle style, Object... children) { return tag("aside", style, children); }
-    public static Tag h1(InlineStyle style, Object... children) { return tag("h1", style, children); }
-    public static Tag h2(InlineStyle style, Object... children) { return tag("h2", style, children); }
-    public static Tag h3(InlineStyle style, Object... children) { return tag("h3", style, children); }
-    public static Tag h4(InlineStyle style, Object... children) { return tag("h4", style, children); }
-    public static Tag h5(InlineStyle style, Object... children) { return tag("h5", style, children); }
-    public static Tag h6(InlineStyle style, Object... children) { return tag("h6", style, children); }
-    public static Tag ul(InlineStyle style, Object... children) { return tag("ul", style, children); }
-    public static Tag ol(InlineStyle style, Object... children) { return tag("ol", style, children); }
-    public static Tag li(InlineStyle style, Object... children) { return tag("li", style, children); }
-    public static Tag form(InlineStyle style, Object... children) { return tag("form", style, children); }
-    public static Tag input(InlineStyle style) { return new Tag("input", style.toAttrs()); }
-    public static Tag textarea(InlineStyle style, Object... children) { return tag("textarea", style, children); }
-    public static Tag select(InlineStyle style, Object... children) { return tag("select", style, children); }
-    public static Tag label(InlineStyle style, Object... children) { return tag("label", style, children); }
-    public static Tag table(InlineStyle style, Object... children) { return tag("table", style, children); }
-    public static Tag tr(InlineStyle style, Object... children) { return tag("tr", style, children); }
-    public static Tag th(InlineStyle style, Object... children) { return tag("th", style, children); }
-    public static Tag td(InlineStyle style, Object... children) { return tag("td", style, children); }
-    public static Tag img(InlineStyle style) { return new Tag("img", style.toAttrs()); }
-    public static Tag video(InlineStyle style, Object... children) { return tag("video", style, children); }
-
     // ==================== Error Boundary ====================
 
     /**
@@ -1077,17 +1026,4 @@ public class Elements {
     public static Element tryCatch(java.util.function.Supplier<? extends jweb.Element> content) {
         return ErrorBoundary.silent(content);
     }
-    public static Tag audio(InlineStyle style, Object... children) { return tag("audio", style, children); }
-    public static Tag canvas(InlineStyle style) { return new Tag("canvas", style.toAttrs()); }
-    public static Tag svg(InlineStyle style, Object... children) { return tag("svg", style, children); }
-    public static Tag iframe(InlineStyle style, Object... children) { return tag("iframe", style, children); }
-    public static Tag pre(InlineStyle style, Object... children) { return tag("pre", style, children); }
-    public static Tag code(InlineStyle style, Object... children) { return tag("code", style, children); }
-    public static Tag blockquote(InlineStyle style, Object... children) { return tag("blockquote", style, children); }
-    public static Tag figure(InlineStyle style, Object... children) { return tag("figure", style, children); }
-    public static Tag figcaption(InlineStyle style, Object... children) { return tag("figcaption", style, children); }
-    public static Tag hgroup(InlineStyle style, Object... children) { return tag("hgroup", style, children); }
-    public static Tag search(InlineStyle style, Object... children) { return tag("search", style, children); }
-    public static Tag strong(InlineStyle style, Object... children) { return tag("strong", style, children); }
-    public static Tag em(InlineStyle style, Object... children) { return tag("em", style, children); }
 }

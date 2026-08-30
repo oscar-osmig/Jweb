@@ -64,11 +64,15 @@ public final class TableElements {
         return new Tag("colgroup", attrs, Tag.toVNodes(children));
     }
 
-    public static Tag col() {
-        return Tag.create("col");
+    public static Tag col(Object... attrs) {
+        return Tag.create("col", attrs);
     }
 
-    public static Tag col(Attributes attrs) {
-        return new Tag("col", attrs);
+    public static Tag caption(Attributes attrs, Object... children) {
+        return new Tag("caption", attrs, Tag.toVNodes(children));
+    }
+
+    public static Tag tfoot(Attributes attrs, Object... children) {
+        return new Tag("tfoot", attrs, Tag.toVNodes(children));
     }
 }

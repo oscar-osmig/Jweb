@@ -111,7 +111,7 @@ public class SandboxPage implements Template {
         SandboxFile f = SandboxFiles.byId(id);
         return div(attrs()
                 .class_("sandbox-file sandbox-depth-" + depth)
-                .addClass(id.equals(activeId), "active")
+                .classIf("active", id.equals(activeId))
                 .data("file", id).data("path", f.path()),
             text(name));
     }
