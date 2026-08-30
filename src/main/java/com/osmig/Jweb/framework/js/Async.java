@@ -16,24 +16,24 @@ import static com.osmig.Jweb.framework.js.JS.*;
  * // Fetch with fluent API
  * String js = fetch("/api/users")
  *     .get()
- *     .then(callback("response").ret(variable("response").dot("json").invoke()))
- *     .then(callback("data").call("renderUsers", variable("data")))
- *     .catch_(callback("err").call("console.error", variable("err")))
+ *     .then(callback("response").return_(v("response").json()))
+ *     .then(callback("data").call("renderUsers", v("data")))
+ *     .catch_(callback("err").call("console.error", v("err")))
  *     .build();
  *
  * // POST request with body
  * fetch("/api/users")
  *     .post()
  *     .json(obj("name", "John", "email", "john@example.com"))
- *     .then(callback("r").ret(variable("r").dot("json").invoke()))
- *     .then(callback("user").call("onUserCreated", variable("user")))
+ *     .then(callback("r").return_(v("r").json()))
+ *     .then(callback("user").call("onUserCreated", v("user")))
  *     .build();
  *
  * // Async function
  * asyncFunc("loadData")
  *     .await_("response", fetch("/api/data").get().toVal())
- *     .await_("data", variable("response").dot("json").invoke())
- *     .ret(variable("data"));
+ *     .await_("data", v("response").json())
+ *     .return_(v("data"));
  *
  * // Promise.all
  * promiseAll(
@@ -657,7 +657,12 @@ public class Async {
 
     /**
      * Creates Promise.all() with multiple promises.
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#all}.
      */
+    @Deprecated
     public static PromiseBuilder promiseAll(Val... promises) {
         StringBuilder sb = new StringBuilder("Promise.all([");
         for (int i = 0; i < promises.length; i++) {
@@ -670,7 +675,12 @@ public class Async {
 
     /**
      * Creates Promise.race() with multiple promises.
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#race}.
      */
+    @Deprecated
     public static PromiseBuilder promiseRace(Val... promises) {
         StringBuilder sb = new StringBuilder("Promise.race([");
         for (int i = 0; i < promises.length; i++) {
@@ -683,7 +693,12 @@ public class Async {
 
     /**
      * Creates Promise.allSettled() with multiple promises.
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#allSettled}.
      */
+    @Deprecated
     public static PromiseBuilder promiseAllSettled(Val... promises) {
         StringBuilder sb = new StringBuilder("Promise.allSettled([");
         for (int i = 0; i < promises.length; i++) {
@@ -696,7 +711,12 @@ public class Async {
 
     /**
      * Creates Promise.any() with multiple promises.
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#any}.
      */
+    @Deprecated
     public static PromiseBuilder promiseAny(Val... promises) {
         StringBuilder sb = new StringBuilder("Promise.any([");
         for (int i = 0; i < promises.length; i++) {
@@ -709,14 +729,24 @@ public class Async {
 
     /**
      * Creates Promise.resolve() with a value.
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#resolve}.
      */
+    @Deprecated
     public static Val promiseResolve(Object value) {
         return new Val("Promise.resolve(" + JS.toJs(value) + ")");
     }
 
     /**
      * Creates Promise.reject() with an error.
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#reject}.
      */
+    @Deprecated
     public static Val promiseReject(Object error) {
         return new Val("Promise.reject(" + JS.toJs(error) + ")");
     }
@@ -727,7 +757,12 @@ public class Async {
      * @param resolveParam name of resolve parameter (usually "resolve")
      * @param rejectParam name of reject parameter (usually "reject")
      * @return a PromiseExecutorBuilder
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code JSPromise#newPromise}.
      */
+    @Deprecated
     public static PromiseExecutorBuilder newPromise(String resolveParam, String rejectParam) {
         return new PromiseExecutorBuilder(resolveParam, rejectParam);
     }
@@ -767,10 +802,6 @@ public class Async {
             }
             sb.append("}");
             body.add(sb.toString());
-            return this;
-        }
-
-        public PromiseExecutorBuilder setTimeout(int ms) {
             return this;
         }
 
@@ -845,7 +876,12 @@ public class Async {
      * Creates a sleep function that can be awaited.
      * @param ms milliseconds to sleep
      * @return a Val representing the sleep promise
+     *
+     * @deprecated Promise helpers live in {@code JSPromise} — one home per
+     *     platform API, so a wildcard import of both no longer clashes.
+     *     Use {@code #delay(int)}.
      */
+    @Deprecated
     public static Val sleep(int ms) {
         return delay(ms);
     }

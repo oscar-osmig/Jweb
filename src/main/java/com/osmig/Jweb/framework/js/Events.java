@@ -27,26 +27,79 @@ public class Events extends Runtime {
         return new Delegate(parent, event, child);
     }
 
+    /**
+     * A debounced version of {@code action} — a self-contained function
+     * expression, so there is no timer variable to declare or name.
+     *
+     * <pre>
+     * query("#search").on("input", debounce(300, callback("e").call("doSearch")))
+     * </pre>
+     *
+     * @param delayMs quiet period before the action runs
+     * @param action the action to debounce
+     */
+    public static Val debounce(int delayMs, Func action) {
+        return debounce(delayMs, "(" + action.toExpr() + ").apply(_c,_a)");
+    }
+
+    /** A debounced function expression wrapping raw JavaScript. */
+    public static Val debounce(int delayMs, String actionCode) {
+        return new Val("(function(){let _t;return function(){const _c=this,_a=arguments;"
+                + "clearTimeout(_t);_t=setTimeout(function(){" + actionCode + "}," + delayMs + ")}})()");
+    }
+
+    /**
+     * A throttled version of {@code action} — a self-contained function
+     * expression, so there is no timestamp variable to declare or name.
+     *
+     * @param intervalMs minimum time between runs
+     * @param action the action to throttle
+     */
+    public static Val throttle(int intervalMs, Func action) {
+        return throttle(intervalMs, "(" + action.toExpr() + ").apply(_c,_a)");
+    }
+
+    /** A throttled function expression wrapping raw JavaScript. */
+    public static Val throttle(int intervalMs, String actionCode) {
+        return new Val("(function(){let _last=0;return function(){const _c=this,_a=arguments,_n=Date.now();"
+                + "if(_n-_last>=" + intervalMs + "){_last=_n;" + actionCode + "}}})()");
+    }
+
+    /** @deprecated Use {@link #debounce(int, Func)} — it needs no timer variable. */
+    @Deprecated
     public static Debounce debounce(String timerVar, int delayMs) {
         return new Debounce(timerVar, delayMs);
     }
 
+    /** @deprecated Use {@link #throttle(int, Func)} — it needs no timestamp variable. */
+    @Deprecated
     public static Throttle throttle(String lastVar, int intervalMs) {
         return new Throttle(lastVar, intervalMs);
     }
 
+    /**
+     * @deprecated Use {@code JSHistory.onPopState(Func)} — a plain listener,
+     *     without the window-flag guard convention.
+     */
+    @Deprecated
     public static PopState onPopState(String guardVar) {
         return new PopState(guardVar);
     }
 
+    /** @deprecated Use {@code JSHistory.pushState(String)} — history lives in one module. */
+    @Deprecated
     public static Val pushState(String url) {
         return new Val("history.pushState(null,''," + JS.toJs(url) + ")");
     }
 
+    /** @deprecated Use {@code JSHistory.pushState}. */
+    @Deprecated
     public static Val pushStateExpr(Val urlExpr) {
         return new Val("history.pushState(null,''," + urlExpr.js() + ")");
     }
 
+    /** @deprecated Use {@code query(selector).setHtml(valueExpr)} — DOM work belongs on {@code El}. */
+    @Deprecated
     public static Val setInnerHTML(String selector, Val valueExpr) {
         return new Val("document.querySelector('" + JS.esc(selector) + "').innerHTML=" + valueExpr.js());
     }

@@ -11,11 +11,11 @@ import java.util.List;
  * import static com.osmig.Jweb.framework.js.JS.*;
  *
  * Func formatTime = func("formatTime", "seconds")
- *     .var_("hrs", floor(variable("seconds").div(3600)))
- *     .ret(variable("hrs").padStart(2, "0"));
+ *     .var_("hrs", floor(v("seconds").div(3600)))
+ *     .return_(v("hrs").padStart(2, "0"));
  *
  * Func startTimer = func("startTimer")
- *     .if_(variable("running"), ret())
+ *     .if_(v("running"), return_())
  *     .set("running", true)
  *     .set("interval", setInterval(callback().inc("count").call("update"), 1000));
  *
@@ -52,6 +52,11 @@ public class JS extends Events {
 
     /** Variable reference: variable("count") -> count */
     public static Val variable(String name) {
+        return new Val(name);
+    }
+
+    /** Variable reference, short form: {@code v("count")} -> {@code count} */
+    public static Val v(String name) {
         return new Val(name);
     }
 
@@ -180,8 +185,13 @@ public class JS extends Events {
     // ==================== DOM ====================
 
     /** document.getElementById('id') */
-    public static El getElem(String id) {
+    public static El byId(String id) {
         return new El("document.getElementById('" + esc(id) + "')");
+    }
+
+    /** document.getElementById('id') — prefer {@link #byId(String)} (matches the platform name). */
+    public static El getElem(String id) {
+        return byId(id);
     }
 
     /** Shorthand for getElem - simpler to write: $("myId") instead of getElem("myId") */
@@ -325,10 +335,24 @@ public class JS extends Events {
 
     // ==================== Statements ====================
 
+    /** {@code return} — matches the {@code if_}/{@code while_} keyword convention. */
+    public static Stmt return_() {
+        return new Stmt("return");
+    }
+
+    /** {@code return <value>} */
+    public static Stmt return_(Object value) {
+        return new Stmt("return " + toJs(value));
+    }
+
+    /** @deprecated Use {@link #return_()} — every Java-keyword name in this DSL ends with {@code _}. */
+    @Deprecated
     public static Stmt ret() {
         return new Stmt("return");
     }
 
+    /** @deprecated Use {@link #return_(Object)} — every Java-keyword name in this DSL ends with {@code _}. */
+    @Deprecated
     public static Stmt ret(Object value) {
         return new Stmt("return " + toJs(value));
     }
@@ -480,14 +504,28 @@ public class JS extends Events {
             return new IfBuilder(this, condition);
         }
 
-        public Func ret() {
+        /** {@code return} — matches the {@code if_}/{@code while_} keyword convention. */
+        public Func return_() {
             body.add("return");
             return this;
         }
 
-        public Func ret(Object value) {
+        /** {@code return <value>} */
+        public Func return_(Object value) {
             body.add("return " + toJs(value));
             return this;
+        }
+
+        /** @deprecated Use {@link #return_()}. */
+        @Deprecated
+        public Func ret() {
+            return return_();
+        }
+
+        /** @deprecated Use {@link #return_(Object)}. */
+        @Deprecated
+        public Func ret(Object value) {
+            return return_(value);
         }
 
         /**
@@ -631,6 +669,57 @@ public class JS extends Events {
             return new DoWhileBuilder(this);
         }
 
+        // ==================== Loops (one-call form) ====================
+        // Same loops as above, with the body passed inline — no matching
+        // end-call to remember, and the nesting reads like the JS it emits.
+
+        /**
+         * {@code for (let i = 0; i < n; i++) { ... }} in one call.
+         *
+         * <pre>
+         * func("render")
+         *     .for_("i", 0, variable("items").length(),
+         *         call("draw", variable("items").at(variable("i"))))
+         * </pre>
+         */
+        public Func for_(String varName, int start, Val endCondition, Object... body) {
+            return block("for(let " + varName + "=" + start + ";" + varName + "<"
+                    + endCondition.code + ";" + varName + "++)", body);
+        }
+
+        /** {@code for (const x of iterable) { ... }} in one call. */
+        public Func forOf(String varName, Val iterable, Object... body) {
+            return block("for(const " + varName + " of " + iterable.code + ")", body);
+        }
+
+        /** {@code for (const k in object) { ... }} in one call. */
+        public Func forIn(String varName, Val object, Object... body) {
+            return block("for(const " + varName + " in " + object.code + ")", body);
+        }
+
+        /** {@code while (cond) { ... }} in one call. */
+        public Func while_(Val condition, Object... body) {
+            return block("while(" + condition.code + ")", body);
+        }
+
+        /** {@code do { ... } while (cond)} in one call. */
+        public Func doWhile(Val condition, Object... body) {
+            StringBuilder sb = new StringBuilder("do{");
+            for (Object s : body) appendStmt(sb, s);
+            sb.append("}while(").append(condition.code).append(")");
+            this.body.add(sb.toString());
+            return this;
+        }
+
+        /** Emits {@code <header>{ <body> }} and appends it to this function. */
+        private Func block(String header, Object[] stmts) {
+            StringBuilder sb = new StringBuilder(header).append("{");
+            for (Object s : stmts) appendStmt(sb, s);
+            sb.append("}");
+            body.add(sb.toString());
+            return this;
+        }
+
         // ==================== Try/Catch ====================
 
         /**
@@ -674,7 +763,8 @@ public class JS extends Events {
             return new SwitchBuilder(this, value);
         }
 
-        String toExpr() {
+        /** Renders this function as an expression: {@code function(a){...}} */
+        public String toExpr() {
             StringBuilder sb = new StringBuilder("function(");
             sb.append(String.join(",", params)).append("){");
             for (String s : body) {
@@ -684,7 +774,8 @@ public class JS extends Events {
             return sb.append("}").toString();
         }
 
-        String toDecl() {
+        /** Renders this function as a declaration: {@code function name(a){...}} */
+        public String toDecl() {
             StringBuilder sb = new StringBuilder("function ");
             if (name != null) sb.append(name);
             sb.append("(").append(String.join(",", params)).append("){");
@@ -932,6 +1023,26 @@ public class JS extends Events {
             return new CatchBuilder(this);
         }
 
+        /**
+         * Catch block with its body inline — closes the try/catch, so there is
+         * no {@code endTry()} to remember.
+         *
+         * <pre>
+         * func("save")
+         *     .try_().body(call("risky"))
+         *     .catch_("e", call("console.error", variable("e")))
+         * </pre>
+         */
+        public Func catch_(String varName, Object... body) {
+            this.catchVar = varName;
+            for (Object s : body) {
+                if (s instanceof Stmt st) catchStmts.add(st.code);
+                else if (s instanceof Val val) catchStmts.add(val.code);
+                else if (s instanceof String str) catchStmts.add(str);
+            }
+            return endTry();
+        }
+
         /** Ends the try/catch block. */
         public Func endTry() {
             StringBuilder sb = new StringBuilder("try{");
@@ -1037,9 +1148,29 @@ public class JS extends Events {
             return new CaseBuilder(this, toJs(caseValue));
         }
 
+        /**
+         * Case clause with its statements inline. JavaScript cases fall through,
+         * so pass {@code "break"} as the last statement when you want a break.
+         *
+         * <pre>
+         * .switch_(variable("action"))
+         *     .case_("add", call("add"), "break")
+         *     .default_(call("noop"))
+         * </pre>
+         */
+        public SwitchBuilder case_(Object caseValue, Object... stmts) {
+            return new CaseBuilder(this, toJs(caseValue)).then_(stmts);
+        }
+
         /** Adds the default clause. */
         public CaseBuilder default_() {
             return new CaseBuilder(this, null);
+        }
+
+        /** Default clause with its statements inline — closes the switch. */
+        public Func default_(Object... stmts) {
+            new CaseBuilder(this, null).then_(stmts);
+            return endSwitch();
         }
 
         /** Ends the switch statement. */
@@ -1249,14 +1380,16 @@ public class JS extends Events {
             return new Val(code + ".repeat(" + count.code + ")");
         }
 
-        /** Slices string: str.slice(start, end) */
+        /** @deprecated Use {@link #slice(int, int)} — it emits exactly the same {@code .slice()} call. */
+        @Deprecated
         public Val sliceStr(int start, int end) {
-            return new Val(code + ".slice(" + start + "," + end + ")");
+            return slice(start, end);
         }
 
-        /** Slices string: str.slice(start) */
+        /** @deprecated Use {@link #slice(int)} — it emits exactly the same {@code .slice()} call. */
+        @Deprecated
         public Val sliceStr(int start) {
-            return new Val(code + ".slice(" + start + ")");
+            return slice(start);
         }
 
         /** Searches for regex: str.search(regex) */
@@ -1604,10 +1737,17 @@ public class JS extends Events {
         }
 
         /**
-         * Finds indexOf: arr.indexOf(value)
+         * Finds indexOf: {@code arr.indexOf(value)} — same platform method as
+         * {@link #indexOf(String)}, overloaded on the argument type.
          */
-        public Val indexOfVal(Val value) {
+        public Val indexOf(Val value) {
             return new Val(code + ".indexOf(" + value.code + ")");
+        }
+
+        /** @deprecated Use {@link #indexOf(Val)}. */
+        @Deprecated
+        public Val indexOfVal(Val value) {
+            return indexOf(value);
         }
 
         // ==================== Object Methods ====================
@@ -2070,5 +2210,10 @@ public class JS extends Events {
     public static class Stmt {
         final String code;
         Stmt(String code) { this.code = code; }
+
+        /** The generated JavaScript — same accessor as {@link Val#js()}. */
+        public String js() { return code; }
+
+        @Override public String toString() { return code; }
     }
 }

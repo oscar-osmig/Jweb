@@ -49,6 +49,7 @@ public class Actions {
     }
 
     /** Handle form submission with external service (e.g., emailjs). */
+    @Deprecated
     public static ExternalServiceFormHandler onSubmitExternal(String formId) {
         return new ExternalServiceFormHandler(formId);
     }
@@ -119,7 +120,11 @@ public class Actions {
     /**
      * Show a styled confirm dialog.
      * Usage: confirmDialog("modal-id").message("Delete this?").onConfirm(action)
+     *
+     * @deprecated Renders framework-specific markup. Build the dialog with the HTML DSL and
+     *     drive it with {@link #dom(String)}.
      */
+    @Deprecated
     public static ConfirmDialog confirmDialog(String modalId) {
         return new ConfirmDialog(modalId);
     }
@@ -144,9 +149,20 @@ public class Actions {
         return () -> "{const e=$_('" + elementId + "');e.style.display=e.style.display==='none'?'':'none'}";
     }
 
-    /** Set element text content. */
+    /** Set element text content to a literal string. */
     public static Action setText(String elementId, String text) {
         return () -> "$_('" + elementId + "').textContent='" + esc(text) + "'";
+    }
+
+    /**
+     * Set element text content from a JavaScript expression.
+     *
+     * <pre>
+     * setText("greeting", str("Hi ").plus(variable("name")))
+     * </pre>
+     */
+    public static Action setText(String elementId, JS.Val expression) {
+        return () -> "$_('" + esc(elementId) + "').textContent=" + expression.js();
     }
 
     /**
@@ -157,10 +173,14 @@ public class Actions {
         return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent='" + esc(text) + "';_e.style.color='" + esc(color) + "';}";
     }
 
-    /**
-     * Set element text and color from JS expressions.
-     * Usage: setTextAndColorExpr("status", "msg", "'#065f46'")
-     */
+    /** Set element text and color from JavaScript expressions. */
+    public static Action setTextAndColor(String elementId, JS.Val textExpr, JS.Val colorExpr) {
+        return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent=" + textExpr.js()
+                + ";_e.style.color=" + colorExpr.js() + ";}";
+    }
+
+    /** @deprecated Use {@link #setTextAndColor(String, JS.Val, JS.Val)}. */
+    @Deprecated
     public static Action setTextAndColorExpr(String elementId, String textExpr, String colorExpr) {
         return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent=" + textExpr + ";_e.style.color=" + colorExpr + ";}";
     }
@@ -184,7 +204,10 @@ public class Actions {
     /**
      * Status feedback element for loading/success/error states.
      * Usage: statusFeedback("status-el").loading("Sending...").success("Done!").error("Failed")
+     *
+     * @deprecated Widget-level helper. Use {@link #dom(String)} chains for the same effect.
      */
+    @Deprecated
     public static StatusFeedback statusFeedback(String elementId) {
         return new StatusFeedback(elementId);
     }
@@ -192,7 +215,10 @@ public class Actions {
     /**
      * Call an external service (like emailjs).
      * Usage: externalService("emailjs").call("send", "'service_id'", "'template_id'", "{email:email}")
+     *
+     * @deprecated Use {@link #actions()} with raw JS, or call the library through {@link #call(String, String...)}.
      */
+    @Deprecated
     public static ExternalServiceCall externalService(String serviceName) {
         return new ExternalServiceCall(serviceName);
     }
@@ -256,7 +282,10 @@ public class Actions {
     /**
      * Set up tab switching behavior.
      * Usage: tabs(".tab-btn").activeClass("active").onSwitch(action)
+     *
+     * @deprecated Widget-level helper outside HTML/JS parity. Wire tabs with {@link #onClick(String)} + {@link #dom(String)}.
      */
+    @Deprecated
     public static TabHandler tabs(String selector) {
         return new TabHandler(selector);
     }
@@ -264,7 +293,11 @@ public class Actions {
     /**
      * Render a list of items into a container.
      * Usage: renderList("container").from("dataVar").using("templateFunc").empty("No items")
+     *
+     * @deprecated Rendering belongs on the server: return an HTML fragment and swap it in
+     *     (see {@code attrs().swap(...)}), or build the markup with the HTML DSL.
      */
+    @Deprecated
     public static ListRenderer renderList(String containerId) {
         return new ListRenderer(containerId);
     }
@@ -280,28 +313,40 @@ public class Actions {
     /**
      * Build a JS template function for rendering items.
      * Usage: template("r").div().style("...").text(field("email")).end()
+     *
+     * @deprecated String-template engine outside HTML/JS parity. Render server-side with the HTML DSL.
      */
+    @Deprecated
     public static TemplateBuilder template(String itemVar) {
         return new TemplateBuilder(itemVar);
     }
 
     /**
      * Reference a field from the item in a template.
+     *
+     * @deprecated Part of the deprecated {@link #template(String)} engine.
      */
+    @Deprecated
     public static TemplateField field(String name) {
         return new TemplateField(name);
     }
 
     /**
      * Reference a field with escaping for safe HTML.
+     *
+     * @deprecated Part of the deprecated {@link #template(String)} engine.
      */
+    @Deprecated
     public static TemplateField escapedField(String name) {
         return new TemplateField(name, true);
     }
 
     /**
      * Format a timestamp field as a date.
+     *
+     * @deprecated Part of the deprecated {@link #template(String)} engine.
      */
+    @Deprecated
     public static TemplateDateField dateField(String name) {
         return new TemplateDateField(name);
     }
@@ -309,7 +354,10 @@ public class Actions {
     /**
      * Create a color switch based on a value.
      * Usage: colorSwitch("status").when("PENDING", "#fef3c7").when("APPROVED", "#d1fae5").otherwise("#fee2e2")
+     *
+     * @deprecated Styling decision expressed as JS. Use a CSS class per state instead.
      */
+    @Deprecated
     public static ColorSwitch colorSwitch(String fieldName) {
         return new ColorSwitch(fieldName);
     }
@@ -333,7 +381,10 @@ public class Actions {
     /**
      * Show modal with dynamic HTML content.
      * Usage: showModalHtml("modal-overlay", "modal-body").html("<h3>Success!</h3>")
+     *
+     * @deprecated Renders framework-specific markup. Use {@link #dom(String)} with your own modal.
      */
+    @Deprecated
     public static ModalHtmlBuilder showModalHtml(String modalId, String bodyRef) {
         return new ModalHtmlBuilder(modalId, bodyRef);
     }
@@ -341,7 +392,10 @@ public class Actions {
     /**
      * Create an alert/result modal (success, error, info).
      * Usage: alertModal("modal-overlay", "modal-body").success("Approved!").detail("Token: xyz")
+     *
+     * @deprecated Renders framework-specific markup. Use {@link #dom(String)} with your own modal.
      */
+    @Deprecated
     public static AlertModalBuilder alertModal(String modalId, String bodyRef) {
         return new AlertModalBuilder(modalId, bodyRef);
     }
@@ -397,29 +451,45 @@ public class Actions {
             this.varName = varName;
         }
 
-        /** Check if variable equals a string value. */
-        public WhenVarCondition equals(String value) {
+        /** Check if variable equals a string value: {@code name === 'value'} */
+        public WhenVarCondition eq(String value) {
             this.condition = varName + "==='" + esc(value) + "'";
             return new WhenVarCondition(condition);
         }
 
         /** Check if variable equals a number. */
-        public WhenVarCondition equals(int value) {
+        public WhenVarCondition eq(int value) {
             this.condition = varName + "===" + value;
             return new WhenVarCondition(condition);
         }
 
         /** Check if variable equals a boolean. */
-        public WhenVarCondition equals(boolean value) {
+        public WhenVarCondition eq(boolean value) {
             this.condition = varName + "===" + value;
             return new WhenVarCondition(condition);
         }
 
-        /** Check if variable does not equal a string value. */
-        public WhenVarCondition notEquals(String value) {
+        /** Check if variable does not equal a string value: {@code name !== 'value'} */
+        public WhenVarCondition neq(String value) {
             this.condition = varName + "!=='" + esc(value) + "'";
             return new WhenVarCondition(condition);
         }
+
+        /** @deprecated Use {@link #eq(String)} — {@code equals} shadows {@link Object#equals}. */
+        @Deprecated
+        public WhenVarCondition equals(String value) { return eq(value); }
+
+        /** @deprecated Use {@link #eq(int)} — {@code equals} shadows {@link Object#equals}. */
+        @Deprecated
+        public WhenVarCondition equals(int value) { return eq(value); }
+
+        /** @deprecated Use {@link #eq(boolean)} — {@code equals} shadows {@link Object#equals}. */
+        @Deprecated
+        public WhenVarCondition equals(boolean value) { return eq(value); }
+
+        /** @deprecated Use {@link #neq(String)}. */
+        @Deprecated
+        public WhenVarCondition notEquals(String value) { return neq(value); }
 
         /** Check if variable is truthy. */
         public WhenVarCondition isTruthy() {
@@ -538,17 +608,30 @@ public class Actions {
     }
 
     /**
-     * Assign a value to a variable.
-     * Usage: assignVar("requests", "_data") or assignVar("isLoggedIn", "true")
+     * Assign a JavaScript expression to a variable.
+     *
+     * <pre>
+     * assign("requests", response("items"))   // requests=_data.items
+     * assign("adminKey", str(""))             // adminKey=''
+     * </pre>
      */
+    public static Action assign(String varName, JS.Val value) {
+        return () -> varName + "=" + value.js();
+    }
+
+    /** Assign a literal string value to a variable: {@code adminKey=''} */
+    public static Action assign(String varName, String literal) {
+        return () -> varName + "='" + esc(literal) + "'";
+    }
+
+    /** @deprecated Use {@link #assign(String, JS.Val)}. */
+    @Deprecated
     public static Action assignVar(String varName, String expression) {
         return () -> varName + "=" + expression;
     }
 
-    /**
-     * Assign a literal string value to a variable.
-     * Usage: assignStr("adminKey", "") sets adminKey=''
-     */
+    /** @deprecated Use {@link #assign(String, String)}. */
+    @Deprecated
     public static Action assignStr(String varName, String value) {
         return () -> varName + "='" + esc(value) + "'";
     }
@@ -561,10 +644,8 @@ public class Actions {
         return new InputValueGetter(elementId);
     }
 
-    /**
-     * Set text content of an element from an expression.
-     * Usage: setTextExpr("login-error", "_res?.status===401?'Invalid':'Error'")
-     */
+    /** @deprecated Use {@link #setText(String, JS.Val)}. */
+    @Deprecated
     public static Action setTextExpr(String elementId, String expression) {
         return () -> "$_('" + esc(elementId) + "').textContent=" + expression;
     }
@@ -598,7 +679,11 @@ public class Actions {
      * Hide element when clicking on backdrop (the element itself, not children).
      * Usage: hideOnBackdropClick("modalOverlay")
      * Common pattern for closing modals by clicking outside content.
+     *
+     * @deprecated Use {@link #onClick(String)} with an explicit target check, or the native
+     *     {@code <dialog>} helpers in {@code DialogHelper}.
      */
+    @Deprecated
     public static Action hideOnBackdropClick(String refName) {
         return () -> "if(e.target===" + refName + ")" + refName + ".style.display='none'";
     }
@@ -633,6 +718,16 @@ public class Actions {
     // ==================== Script Builder ====================
 
     /** Build a complete script from multiple handlers. */
+    public static ScriptBuilder actions() {
+        return new ScriptBuilder();
+    }
+
+    /**
+     * @deprecated Use {@link #actions()}. {@code script} clashes with
+     *     {@code Js.script} under a wildcard import, which is why
+     *     {@code jweb.Actions} and {@code jweb.Js} could not be used together.
+     */
+    @Deprecated
     public static ScriptBuilder script() {
         return new ScriptBuilder();
     }
@@ -1927,6 +2022,14 @@ public class Actions {
          * @param jsExpr the JavaScript expression producing JSON
          * @return this builder
          */
+        public FetchBuilder json(JS.Val jsExpr) {
+            this.body = jsExpr.js();
+            this.contentType = "application/json";
+            return this;
+        }
+
+        /** @deprecated Use {@link #json(JS.Val)}. */
+        @Deprecated
         public FetchBuilder jsonExpr(String jsExpr) {
             this.body = jsExpr;
             this.contentType = "application/json";
@@ -1986,6 +2089,13 @@ public class Actions {
          * @param valueExpr the JavaScript expression for the value
          * @return this builder
          */
+        public FetchBuilder header(String name, JS.Val valueExpr) {
+            headers.add("'" + esc(name) + "':" + valueExpr.js());
+            return this;
+        }
+
+        /** @deprecated Use {@link #header(String, JS.Val)}. */
+        @Deprecated
         public FetchBuilder headerExpr(String name, String valueExpr) {
             headers.add("'" + esc(name) + "':" + valueExpr);
             return this;
@@ -2007,8 +2117,14 @@ public class Actions {
          * @param tokenExpr the JavaScript expression for the token
          * @return this builder
          */
+        public FetchBuilder bearer(JS.Val tokenExpr) {
+            return header("Authorization", JS.expr("'Bearer '+(" + tokenExpr.js() + ")"));
+        }
+
+        /** @deprecated Use {@link #bearer(JS.Val)}. */
+        @Deprecated
         public FetchBuilder bearerExpr(String tokenExpr) {
-            return headerExpr("Authorization", "'Bearer '+(" + tokenExpr + ")");
+            return header("Authorization", JS.expr("'Bearer '+(" + tokenExpr + ")"));
         }
 
         /**
@@ -2195,7 +2311,7 @@ public class Actions {
      * @param selector CSS selector
      * @return a DOMQuery builder
      */
-    public static DOMQuery query(String selector) {
+    public static DOMQuery dom(String selector) {
         return new DOMQuery(selector);
     }
 
@@ -2205,6 +2321,22 @@ public class Actions {
      * @param selector CSS selector
      * @return a DOMQueryAll builder
      */
+    public static DOMQueryAll domAll(String selector) {
+        return new DOMQueryAll(selector);
+    }
+
+    /**
+     * @deprecated Use {@link #dom(String)}. {@code query} clashes with
+     *     {@code Js.query} under a wildcard import, which is why
+     *     {@code jweb.Actions} and {@code jweb.Js} could not be used together.
+     */
+    @Deprecated
+    public static DOMQuery query(String selector) {
+        return new DOMQuery(selector);
+    }
+
+    /** @deprecated Use {@link #domAll(String)} — see {@link #query(String)}. */
+    @Deprecated
     public static DOMQueryAll queryAll(String selector) {
         return new DOMQueryAll(selector);
     }
@@ -2255,6 +2387,13 @@ public class Actions {
         /**
          * Sets text content from expression.
          */
+        public DOMQuery setText(JS.Val expr) {
+            operations.add(".textContent=" + expr.js());
+            return this;
+        }
+
+        /** @deprecated Use {@link #setText(JS.Val)}. */
+        @Deprecated
         public DOMQuery setTextExpr(String expr) {
             operations.add(".textContent=" + expr);
             return this;
@@ -2271,6 +2410,13 @@ public class Actions {
         /**
          * Sets inner HTML from expression.
          */
+        public DOMQuery setHtml(JS.Val expr) {
+            operations.add(".innerHTML=" + expr.js());
+            return this;
+        }
+
+        /** @deprecated Use {@link #setHtml(JS.Val)}. */
+        @Deprecated
         public DOMQuery setHtmlExpr(String expr) {
             operations.add(".innerHTML=" + expr);
             return this;
@@ -3383,9 +3529,10 @@ public class Actions {
         private boolean helpersAdded = false;
 
         /**
-         * Add helper functions ($_, esc, fmtDate). Optional — build() detects
-         * generated code that uses the helpers and prepends them automatically.
+         * @deprecated No longer needed — {@link #build()} detects generated code
+         *     that uses the helpers and prepends them automatically.
          */
+        @Deprecated
         public ScriptBuilder withHelpers() {
             if (!helpersAdded) {
                 parts.add(HELPERS);
