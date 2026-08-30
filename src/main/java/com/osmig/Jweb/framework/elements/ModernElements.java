@@ -156,7 +156,11 @@ public final class ModernElements {
 
     /**
      * Creates an indeterminate progress element (no value).
+     *
+     * @deprecated Use {@code progress()} — a progress element with no value
+     *             attribute is already indeterminate.
      */
+    @Deprecated
     public static Tag progressIndeterminate() {
         return new Tag("progress", new Attributes());
     }
@@ -211,7 +215,10 @@ public final class ModernElements {
      * Creates a named slot element.
      *
      * @param name the slot name
+     * @deprecated Use {@code slot(name("header"))} instead — a lone String
+     *             argument means escaped text everywhere else in this DSL.
      */
+    @Deprecated
     public static Tag slot(String name) {
         return new Tag("slot", new Attributes().name(name));
     }
@@ -256,7 +263,9 @@ public final class ModernElements {
      *
      * @param datetime machine-readable datetime
      * @param displayText human-readable text
+     * @deprecated Use {@code time(datetime("2026-01-21"), text("January 21, 2026"))} instead.
      */
+    @Deprecated
     public static Tag timeWithDatetime(String datetime, String displayText) {
         return new Tag("time", new Attributes().set("datetime", datetime), Tag.toVNodes(new Object[]{displayText}));
     }

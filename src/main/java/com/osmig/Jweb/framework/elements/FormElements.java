@@ -4,7 +4,12 @@ import com.osmig.Jweb.framework.attributes.Attributes;
 
 /**
  * HTML form elements with helper methods for common input types.
+ *
+ * <p>The {@code xxxInput} helpers here are thin delegates to the canonical
+ * implementations in {@link Elements}, so every entry point produces byte-identical
+ * markup. See {@link Elements} for the id policy (id defaults to name).</p>
  */
+@SuppressWarnings("deprecation")
 public final class FormElements {
     private FormElements() {}
 
@@ -15,6 +20,8 @@ public final class FormElements {
     public static Tag input(Object... attrs) { return Tag.create("input", attrs); }
     public static Tag input(Attributes attrs) { return new Tag("input", attrs); }
     public static Tag textarea(Object... items) { return Tag.create("textarea", items); }
+    /** {@code textarea("Hello")} renders {@code <textarea>Hello</textarea>} — a lone String is text. */
+    public static Tag textarea(String text) { return Tag.create("textarea", TextElement.of(text)); }
     public static Tag textarea(Attributes attrs, Object... children) { return new Tag("textarea", attrs, Tag.toVNodes(children)); }
     public static Tag select(Object... children) { return Tag.create("select", children); }
     public static Tag select(Attributes attrs, Object... children) { return new Tag("select", attrs, Tag.toVNodes(children)); }
@@ -28,8 +35,13 @@ public final class FormElements {
         return option(valueAndText, valueAndText);
     }
 
+    public static Tag optgroup(Object... children) { return Tag.create("optgroup", children); }
+    /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. */
+    public static Tag optgroup(String text) { return Tag.create("optgroup", TextElement.of(text)); }
     public static Tag optgroup(Attributes attrs, Object... children) { return new Tag("optgroup", attrs, Tag.toVNodes(children)); }
     public static Tag label(Object... children) { return Tag.create("label", children); }
+    /** {@code label("Email:")} renders {@code <label>Email:</label>} — a lone String is text. */
+    public static Tag label(String text) { return Tag.create("label", TextElement.of(text)); }
     public static Tag label(Attributes attrs, Object... children) { return new Tag("label", attrs, Tag.toVNodes(children)); }
 
     public static Tag label(String forId, Object... children) {
@@ -44,21 +56,40 @@ public final class FormElements {
     public static Tag output(Object... children) { return Tag.create("output", children); }
 
     // ==================== Input Helpers ====================
+    // One canonical implementation lives in Elements; these delegate so both
+    // entry points always agree. ID POLICY: id defaults to name (so
+    // label(name, ...) pairs with it); radio ids are "name-value" because a
+    // radio group shares one name; hiddenInput sets no id.
 
-    public static Tag textInput(String name) { return input(new Attributes().type("text").name(name).id(name)); }
-    public static Tag textInput(String name, String placeholder) { return input(new Attributes().type("text").name(name).id(name).placeholder(placeholder)); }
-    public static Tag emailInput(String name) { return input(new Attributes().type("email").name(name).id(name)); }
-    public static Tag passwordInput(String name) { return input(new Attributes().type("password").name(name).id(name)); }
-    public static Tag numberInput(String name) { return input(new Attributes().type("number").name(name).id(name)); }
-    public static Tag checkbox(String name, String value) { return input(new Attributes().type("checkbox").name(name).value(value).id(name)); }
-    public static Tag radio(String name, String value) { return input(new Attributes().type("radio").name(name).value(value).id(name + "-" + value)); }
-    public static Tag hiddenInput(String name, String value) { return input(new Attributes().type("hidden").name(name).value(value)); }
-    public static Tag fileInput(String name) { return input(new Attributes().type("file").name(name).id(name)); }
-    public static Tag dateInput(String name) { return input(new Attributes().type("date").name(name).id(name)); }
-    public static Tag searchInput(String name, String placeholder) { return input(new Attributes().type("search").name(name).id(name).placeholder(placeholder)); }
+    /** Text input; id defaults to name. */
+    public static Tag textInput(String name) { return Elements.textInput(name); }
+    /** Text input with placeholder; id defaults to name. */
+    public static Tag textInput(String name, String placeholder) { return Elements.textInput(name, placeholder); }
+    /** Email input; id defaults to name. */
+    public static Tag emailInput(String name) { return Elements.emailInput(name); }
+    /** Password input; id defaults to name. */
+    public static Tag passwordInput(String name) { return Elements.passwordInput(name); }
+    /** Number input; id defaults to name. */
+    public static Tag numberInput(String name) { return Elements.numberInput(name); }
+    /** Checkbox; id defaults to name. */
+    public static Tag checkbox(String name, String value) { return Elements.checkbox(name, value); }
+    /** Radio button; id is {@code name-value}. */
+    public static Tag radio(String name, String value) { return Elements.radio(name, value); }
+    /** Hidden input; no id. */
+    public static Tag hiddenInput(String name, String value) { return Elements.hiddenInput(name, value); }
+    /** File input; id defaults to name. */
+    public static Tag fileInput(String name) { return Elements.fileInput(name); }
+    /** Date input; id defaults to name. */
+    public static Tag dateInput(String name) { return Elements.dateInput(name); }
+    /** Search input; id defaults to name. */
+    public static Tag searchInput(String name, String placeholder) { return Elements.searchInput(name, placeholder); }
 
     // ==================== Button Helpers ====================
 
+    /** @deprecated Use {@code button(type("submit"), text)} instead. */
+    @Deprecated
     public static Tag submitButton(String text) { return button(new Attributes().type("submit"), text); }
+    /** @deprecated Use {@code button(type("reset"), text)} instead. */
+    @Deprecated
     public static Tag resetButton(String text) { return button(new Attributes().type("reset"), text); }
 }

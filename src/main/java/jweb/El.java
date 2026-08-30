@@ -41,7 +41,11 @@ public class El extends com.osmig.Jweb.framework.elements.Elements {
     public static Tag video(Object... a) { return com.osmig.Jweb.framework.elements.El.video(a); }
     public static Tag audio(Object... a) { return com.osmig.Jweb.framework.elements.El.audio(a); }
     public static Attr srcset(String a) { return com.osmig.Jweb.framework.elements.El.srcset(a); }
+    /** @deprecated Use {@code img(src(a), alt(b), srcset(a + " 1x," + c + " 2x"))} instead. */
+    @Deprecated
     public static Tag responsiveImg(String a, String b, String c) { return com.osmig.Jweb.framework.elements.El.responsiveImg(a, b, c); }
+    /** @deprecated Use {@code img(src(a), alt(b), attr("loading", "lazy"), attr("width", ...), attr("height", ...))} instead. */
+    @Deprecated
     public static Tag lazyImg(String a, String b, int c, int d) { return com.osmig.Jweb.framework.elements.El.lazyImg(a, b, c, d); }
     public static Tag svg(Object... a) { return com.osmig.Jweb.framework.elements.El.svg(a); }
     public static Tag path(Object... a) { return com.osmig.Jweb.framework.elements.El.path(a); }
@@ -61,9 +65,15 @@ public class El extends com.osmig.Jweb.framework.elements.Elements {
     public static Tag meter(double a, double b, double c) { return com.osmig.Jweb.framework.elements.El.meter(a, b, c); }
     public static Tag progress(Object... a) { return com.osmig.Jweb.framework.elements.El.progress(a); }
     public static Tag progress(double a, double b) { return com.osmig.Jweb.framework.elements.El.progress(a, b); }
+    /** @deprecated Use {@code progress()} — a progress element with no value is already indeterminate. */
+    @Deprecated
     public static Tag progressIndeterminate() { return com.osmig.Jweb.framework.elements.El.progressIndeterminate(); }
     public static Tag template(Object... a) { return com.osmig.Jweb.framework.elements.El.template(a); }
+    /** @deprecated Use {@code slot(name("..."))} instead — a lone String means text everywhere else. */
+    @Deprecated
     public static Tag slot(String a) { return com.osmig.Jweb.framework.elements.El.slot(a); }
+    /** @deprecated Use {@code time(datetime("2026-01-21"), text("January 21, 2026"))} instead. */
+    @Deprecated
     public static Tag timeWithDatetime(String a, String b) { return com.osmig.Jweb.framework.elements.El.timeWithDatetime(a, b); }
     public static Tag bdo(Object... a) { return com.osmig.Jweb.framework.elements.El.bdo(a); }
     public static Tag figcaption(Attributes a, Object... b) { return com.osmig.Jweb.framework.elements.El.figcaption(a, b); }
@@ -79,9 +89,23 @@ public class El extends com.osmig.Jweb.framework.elements.Elements {
     public static Tag legend(Attributes a, Object... b) { return com.osmig.Jweb.framework.elements.El.legend(a, b); }
     public static Attr popover() { return com.osmig.Jweb.framework.elements.El.popover(); }
     public static Attr popover(String a) { return com.osmig.Jweb.framework.elements.El.popover(a); }
-    public static Attr popoverTarget(String a) { return com.osmig.Jweb.framework.elements.El.popoverTarget(a); }
-    public static Attr popoverTargetAction(String a) { return com.osmig.Jweb.framework.elements.El.popoverTargetAction(a); }
+    /** The {@code popovertarget} attribute (exact HTML spelling). */
+    public static Attr popovertarget(String a) { return com.osmig.Jweb.framework.elements.El.popovertarget(a); }
+    /** The {@code popovertargetaction} attribute (exact HTML spelling). */
+    public static Attr popovertargetaction(String a) { return com.osmig.Jweb.framework.elements.El.popovertargetaction(a); }
+    /** @deprecated Use {@link #popovertarget(String)} — attribute names use exact HTML spelling. */
+    @Deprecated
+    public static Attr popoverTarget(String a) { return com.osmig.Jweb.framework.elements.El.popovertarget(a); }
+    /** @deprecated Use {@link #popovertargetaction(String)} — attribute names use exact HTML spelling. */
+    @Deprecated
+    public static Attr popoverTargetAction(String a) { return com.osmig.Jweb.framework.elements.El.popovertargetaction(a); }
+    /** @deprecated Use {@code div(id(a), popover("auto"), ...)} instead. */
+    @Deprecated
     public static Tag autoPopover(String a, Object... b) { return com.osmig.Jweb.framework.elements.El.autoPopover(a, b); }
+    /** @deprecated Use {@code div(id(a), popover("manual"), ...)} instead. */
+    @Deprecated
     public static Tag manualPopover(String a, Object... b) { return com.osmig.Jweb.framework.elements.El.manualPopover(a, b); }
+    /** @deprecated Use {@code button(popovertarget(a), ...)} instead. */
+    @Deprecated
     public static Tag popoverToggleButton(String a, Object... b) { return com.osmig.Jweb.framework.elements.El.popoverToggleButton(a, b); }
 }

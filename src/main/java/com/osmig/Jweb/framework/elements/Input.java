@@ -3,6 +3,9 @@ package com.osmig.Jweb.framework.elements;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.vdom.VNode;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * Fluent builder for input elements.
  *
@@ -12,7 +15,7 @@ import com.osmig.Jweb.framework.vdom.VNode;
  * Input.text("email").placeholder("Enter email").required()
  *
  * // Password input
- * Input.password("password").placeholder("Password").minLength(8)
+ * Input.password("password").placeholder("Password").minlength(8)
  *
  * // Other types
  * Input.email("email").required()
@@ -21,7 +24,18 @@ import com.osmig.Jweb.framework.vdom.VNode;
  * Input.radio("gender", "male")
  * Input.file("avatar").accept("image/*")
  * Input.hidden("csrf", token)
+ *
+ * // Anything this builder does not model — escape hatches, no rewrite needed
+ * Input.text("q").attr("list", "suggestions").data("role", "search").aria("label", "Search")
+ * Input.text("q").toTag().onInput(e -&gt; ...)      // continue with the full Tag API
  * </pre>
+ *
+ * <p>ID POLICY: every factory sets {@code id = name} so
+ * {@code label(name, ...)} pairs with the control. The two documented
+ * variations are {@link #radio(String, String)}, whose id is
+ * {@code name-value} because a radio group shares one name, and
+ * {@link #hidden(String, String)}, which sets no id. Override with
+ * {@link #id(String)}.</p>
  *
  * @deprecated Replaced by {@code jweb.Input} — shorter import, same API. Existing code keeps working.
  */
@@ -49,6 +63,8 @@ public class Input implements Element {
     private String accept;
     private boolean multiple;
     private String form;
+    /** Anything this builder does not model: attr()/data()/aria() land here. */
+    private final Map<String, String> extra = new LinkedHashMap<>();
 
     protected Input() {}
 
@@ -220,14 +236,15 @@ public class Input implements Element {
     }
 
     /**
-     * Creates a radio input.
+     * Creates a radio input. A radio group shares one name, so the id is
+     * {@code name-value} (the same scheme {@code Elements.radio} uses).
      */
     public static Input radio(String name, String value) {
         Input input = new Input();
         input.type = "radio";
         input.name = name;
         input.value = value;
-        input.id = name + "_" + value;
+        input.id = Elements.radioId(name, value);
         return input;
     }
 
@@ -403,9 +420,17 @@ public class Input implements Element {
     }
 
     /**
-     * Sets step value (for number, range).
+     * Sets step value (for number, range). Renders {@code step="2"}, not {@code "2.0"}.
      */
     public Input step(int value) {
+        this.step = String.valueOf(value);
+        return this;
+    }
+
+    /**
+     * Sets a fractional step value (mirrors {@code Attributes.step(double)}).
+     */
+    public Input step(double value) {
         this.step = String.valueOf(value);
         return this;
     }
@@ -419,19 +444,41 @@ public class Input implements Element {
     }
 
     /**
-     * Sets minimum length.
+     * Sets the minlength attribute (exact HTML spelling).
      */
-    public Input minLength(int length) {
+    public Input minlength(int length) {
         this.minLength = length;
         return this;
     }
 
     /**
-     * Sets maximum length.
+     * Sets the maxlength attribute (exact HTML spelling).
      */
-    public Input maxLength(int length) {
+    public Input maxlength(int length) {
         this.maxLength = length;
         return this;
+    }
+
+    /**
+     * Sets minimum length.
+     *
+     * @deprecated Use {@link #minlength(int)} — attribute helpers use the exact
+     *             HTML spelling.
+     */
+    @Deprecated
+    public Input minLength(int length) {
+        return minlength(length);
+    }
+
+    /**
+     * Sets maximum length.
+     *
+     * @deprecated Use {@link #maxlength(int)} — attribute helpers use the exact
+     *             HTML spelling.
+     */
+    @Deprecated
+    public Input maxLength(int length) {
+        return maxlength(length);
     }
 
     /**
@@ -458,10 +505,56 @@ public class Input implements Element {
         return this;
     }
 
+    // ==================== Escape Hatches ====================
+
+    /**
+     * Sets any HTML attribute this builder does not model — no rewrite to
+     * {@code input(attrs()...)} needed.
+     *
+     * @param name the attribute name
+     * @param value the value (null for a bare boolean attribute)
+     * @return this for chaining
+     */
+    public Input attr(String name, String value) {
+        extra.put(name, value);
+        return this;
+    }
+
+    /**
+     * Sets a {@code data-*} attribute.
+     *
+     * @param name the data name (without the "data-" prefix)
+     * @param value the value
+     * @return this for chaining
+     */
+    public Input data(String name, String value) {
+        return attr("data-" + name, value);
+    }
+
+    /**
+     * Sets an {@code aria-*} attribute.
+     *
+     * @param name the aria name (without the "aria-" prefix)
+     * @param value the value
+     * @return this for chaining
+     */
+    public Input aria(String name, String value) {
+        return attr("aria-" + name, value);
+    }
+
     // ==================== Build ====================
 
-    @Override
-    public VNode toVNode() {
+    /**
+     * Materialises this builder as a {@link Tag}, so the full Tag API
+     * (event handlers, styles, {@code addClass}, …) stays available:
+     *
+     * <pre>
+     * Input.text("q").required().toTag().onInput(e -&gt; search(e.value()))
+     * </pre>
+     *
+     * @return an {@code <input>} Tag carrying every attribute set here
+     */
+    public Tag toTag() {
         Tag input = new Tag("input");
 
         input.attr("type", type);
@@ -470,11 +563,11 @@ public class Input implements Element {
         if (className != null) input.attr("class", className);
         if (value != null) input.attr("value", value);
         if (placeholder != null) input.attr("placeholder", placeholder);
-        if (required) input.attr("required", "");
-        if (disabled) input.attr("disabled", "");
-        if (readonly) input.attr("readonly", "");
-        if (checked) input.attr("checked", "");
-        if (autofocus) input.attr("autofocus", "");
+        if (required) input.required();
+        if (disabled) input.disabled();
+        if (readonly) input.readonly();
+        if (checked) input.checked();
+        if (autofocus) input.autofocus();
         if (autocomplete != null) input.attr("autocomplete", autocomplete);
         if (pattern != null) input.attr("pattern", pattern);
         if (min != null) input.attr("min", min);
@@ -483,9 +576,15 @@ public class Input implements Element {
         if (minLength != null) input.attr("minlength", String.valueOf(minLength));
         if (maxLength != null) input.attr("maxlength", String.valueOf(maxLength));
         if (accept != null) input.attr("accept", accept);
-        if (multiple) input.attr("multiple", "");
+        if (multiple) input.attr("multiple", null);
         if (form != null) input.attr("form", form);
+        extra.forEach(input::attr);
 
-        return input.toVNode();
+        return input;
+    }
+
+    @Override
+    public VNode toVNode() {
+        return toTag().toVNode();
     }
 }

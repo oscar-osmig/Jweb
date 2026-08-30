@@ -66,7 +66,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionBackground(s(0.2))
-            .onClick(onClick),
+            .done().onClick(onClick),
             text(btnText));
     }
 
@@ -84,7 +84,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionAll(s(0.2))
-            .onClick(onClick),
+            .done().onClick(onClick),
             text(btnText));
     }
 
@@ -102,7 +102,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionBackground(s(0.2))
-            .onClick(onClick),
+            .done().onClick(onClick),
             text(btnText));
     }
 
@@ -120,7 +120,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionBackground(s(0.2))
-            .onClick(onClick),
+            .done().onClick(onClick),
             text(btnText));
     }
 
@@ -136,7 +136,7 @@ public class UI {
                 .fontSize(rem(0.875))
                 .clickable()
                 .textDecoration(underline)
-            .onClick(onClick),
+            .done().onClick(onClick),
             text(btnText));
     }
 
@@ -156,7 +156,7 @@ public class UI {
                 .flex()
                 .alignItems(center)
                 .gap(rem(0.5))
-            .onClick(onClick),
+            .done().onClick(onClick),
             span(text(icon)),
             span(text(btnText)));
     }
@@ -220,7 +220,7 @@ public class UI {
             onRemove != null ? span(attrs().style()
                     .clickable()
                     .opacity(0.6)
-                .onClick(onRemove),
+                .done().onClick(onRemove),
                 text("\u00D7")) : null);
     }
 
@@ -388,7 +388,7 @@ public class UI {
                 .flexCenter()
                 .fontSize(rem(0.875))
                 .fontWeight(600)
-            .title(name),
+            .done().title(name),
             text(initials));
     }
 
@@ -408,7 +408,7 @@ public class UI {
                 .height(size)
                 .rounded(px(9999))
                 .objectFit(cover)
-            .src(src).alt(alt));
+            .done().src(src).alt(alt));
     }
 
     private static String getInitials(String name) {
@@ -478,7 +478,7 @@ public class UI {
         return span(attrs().style()
                 .position(relative)
                 .display(inlineBlock)
-            .title(text),
+            .done().title(text),
             content);
     }
 
@@ -732,7 +732,7 @@ public class UI {
                         .fontSize(rem(1.5))
                         .clickable()
                         .color(hex("#6b7280"))
-                    .data("modal-close", id),
+                    .done().data("modal-close", id),
                     text("\u00D7")));
             }
 
@@ -775,7 +775,7 @@ public class UI {
                     .maxWidth(percent(90))
                     .maxHeight(vh(90))
                     .overflow(auto)
-                .data("modal-content", id),
+                .done().data("modal-content", id),
                 content.toArray());
 
             // Overlay
@@ -786,7 +786,7 @@ public class UI {
                     .flexCenter()
                     .zIndex(1000)
                     .display(none)
-                .id(id)
+                .done().id(id)
                 .data("modal-overlay", closeOnOverlay ? "close" : ""),
                 modal);
         }
@@ -836,7 +836,7 @@ public class UI {
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
-            .data("modal-open", modalId),
+            .done().data("modal-open", modalId),
             text(buttonText));
     }
 
@@ -911,7 +911,7 @@ public class UI {
                             .fontWeight(500)
                             .clickable()
                             .transitionAll(s(0.2))
-                        .data("tab", tab.id)
+                        .done().data("tab", tab.id)
                         .data("tab-group", id),
                         tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
                         text(tab.label));
@@ -926,7 +926,7 @@ public class UI {
                             .fontSize(rem(0.875))
                             .fontWeight(500)
                             .clickable()
-                        .data("tab", tab.id)
+                        .done().data("tab", tab.id)
                         .data("tab-group", id),
                         tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
                         text(tab.label));
@@ -941,7 +941,7 @@ public class UI {
                             .fontWeight(isDefault ? 600 : 500)
                             .clickable()
                             .transitionAll(s(0.2))
-                        .data("tab", tab.id)
+                        .done().data("tab", tab.id)
                         .data("tab-group", id),
                         tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
                         text(tab.label));
@@ -952,7 +952,7 @@ public class UI {
                 tabPanels.add(div(attrs().style()
                         .display(isDefault ? block : none)
                         .padding(rem(1))
-                    .data("tab-panel", tab.id)
+                    .done().data("tab-panel", tab.id)
                     .data("tab-group", id),
                     tab.content));
             }
@@ -1091,7 +1091,7 @@ public class UI {
                             .fontSize(rem(0.875))
                             .clickable()
                             .transitionBackground(s(0.15))
-                        .data("dropdown-item", id)
+                        .done().data("dropdown-item", id)
                         .onClick(item.onClick),
                         item.icon != null ? span(text(item.icon)) : null,
                         text(item.label));
@@ -1118,7 +1118,7 @@ public class UI {
                     .padding(rem(0.25))
                     .zIndex(50)
                     .display(none)
-                .data("dropdown-menu", id),
+                .done().data("dropdown-menu", id),
                 menuItems.toArray());
 
             Element triggerWrapper = div(attrs()
@@ -1128,7 +1128,7 @@ public class UI {
             return div(attrs().style()
                     .position(relative)
                     .display(inlineBlock)
-                .id(id),
+                .done().id(id),
                 triggerWrapper,
                 menu);
         }
@@ -1225,14 +1225,14 @@ public class UI {
                         .fontWeight(500)
                         .textAlign(left)
                         .clickable()
-                    .data("accordion-trigger", item.id)
+                    .done().data("accordion-trigger", item.id)
                     .data("accordion-group", id)
                     .data("accordion-multiple", String.valueOf(allowMultiple)),
                     text(item.title),
                     span(attrs().style()
                             .transitionTransform(s(0.2))
                             .transform(rotate(deg(isOpen ? 180 : 0)))
-                        .data("accordion-icon", item.id),
+                        .done().data("accordion-icon", item.id),
                         text("\u25BC")));
 
                 Element content = div(attrs().style()
@@ -1240,7 +1240,7 @@ public class UI {
                         .padding(rem(1))
                         .backgroundColor(white)
                         .borderBottom(px(1), solid, hex("#e5e7eb"))
-                    .data("accordion-content", item.id),
+                    .done().data("accordion-content", item.id),
                     item.content);
 
                 sections.add(div(header, content));
@@ -1250,7 +1250,7 @@ public class UI {
                     .border(px(1), solid, hex("#e5e7eb"))
                     .rounded(px(8))
                     .overflow(hidden)
-                .id(id),
+                .done().id(id),
                 sections.toArray());
         }
 
@@ -1321,7 +1321,7 @@ public class UI {
                     .fontWeight(700)
                     .color(hex("#111827"))
                     .textDecoration(none)
-                .href(href),
+                .done().href(href),
                 text(name));
             return this;
         }
@@ -1360,7 +1360,7 @@ public class UI {
                         .textDecoration(none)
                         .padding(rem(0.5), rem(0.75))
                         .transitionColors(s(0.15))
-                    .href(link.href),
+                    .done().href(link.href),
                     text(link.label)));
             }
 
@@ -1519,7 +1519,7 @@ public class UI {
                 .padding(rem(0.5), rem(1.25))
                 .textDecoration(none)
                 .transitionAll(s(0.15))
-            .href(href),
+            .done().href(href),
             text(label));
     }
 
@@ -1538,7 +1538,7 @@ public class UI {
                 .padding(rem(0.5), rem(1.25))
                 .textDecoration(none)
                 .transitionAll(s(0.15))
-            .href(href),
+            .done().href(href),
             span(text(icon)),
             text(label));
     }
@@ -1697,7 +1697,7 @@ public class UI {
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .clickable()
-            .disabled(currentPage == 1)
+            .done().disabled(currentPage == 1)
             .onClick(e -> onPageChange.accept(currentPage - 1)),
             text("\u2190 Prev")));
 
@@ -1738,7 +1738,7 @@ public class UI {
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .clickable()
-            .disabled(currentPage == totalPages)
+            .done().disabled(currentPage == totalPages)
             .onClick(e -> onPageChange.accept(currentPage + 1)),
             text("Next \u2192")));
 
@@ -1761,7 +1761,7 @@ public class UI {
                 .fontWeight(isCurrent ? 600 : 400)
                 .minWidth(rem(2.5))
                 .clickable()
-            .onClick(e -> onPageChange.accept(page)),
+            .done().onClick(e -> onPageChange.accept(page)),
             text(String.valueOf(page)));
     }
 

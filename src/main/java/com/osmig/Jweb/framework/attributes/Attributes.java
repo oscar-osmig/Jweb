@@ -127,42 +127,8 @@ public class Attributes implements TransitionReceiver {
     }
 
     /**
-     * Conditionally sets the class attribute.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * attrs().class_(isActive, "active")
-     * // Output: class="active" if isActive is true, no class attribute otherwise
-     * </pre>
-     *
-     * @param condition whether to apply the class
-     * @param className the class name to apply if condition is true
-     * @return this for chaining
-     */
-    public Attributes class_(boolean condition, String className) {
-        return condition ? set("class", className) : this;
-    }
-
-    /**
-     * Conditionally adds a CSS class to existing classes.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * attrs().class_("btn").addClass(isActive, "active")
-     * // Output: class="btn active" if isActive is true, class="btn" otherwise
-     * </pre>
-     *
-     * @param condition whether to add the class
-     * @param className the class name to add if condition is true
-     * @return this for chaining
-     */
-    public Attributes addClass(boolean condition, String className) {
-        return condition ? addClass(className) : this;
-    }
-
-    /**
-     * Fluent conditional class adding.
-     * More readable than addClass(boolean, String) for simple conditions.
+     * Fluent conditional class adding — the one conditional-class API
+     * (together with {@link #classToggle(boolean, String, String)}).
      *
      * <p>Example:</p>
      * <pre>
@@ -196,103 +162,117 @@ public class Attributes implements TransitionReceiver {
         return addClass(condition ? trueClass : falseClass);
     }
 
-    // ==================== Layout Shortcuts ====================
+    // ==================== Layout Shortcuts (deprecated) ====================
+
+    /**
+     * Appends CSS declarations to the {@code style} attribute instead of
+     * replacing it, so an existing style (set before or after) survives.
+     *
+     * @param declarations {@code "prop:value;prop:value"} without a trailing {@code ;}
+     * @return this for chaining
+     */
+    private Attributes appendStyle(String declarations) {
+        String existing = attributes.get("style");
+        if (existing == null || existing.isBlank()) {
+            return set("style", declarations);
+        }
+        String trimmed = existing.stripTrailing();
+        String separator = trimmed.endsWith(";") ? "" : ";";
+        return set("style", trimmed + separator + declarations);
+    }
 
     /**
      * Applies flexbox centering styles (display: flex; justify-content: center; align-items: center).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * div(attrs().flexCenter(), ...)
-     * </pre>
+     * Merges into any style already set.
      *
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.flexCenter())} instead.
      */
+    @Deprecated
     public Attributes flexCenter() {
-        return set("style", "display:flex;justify-content:center;align-items:center");
+        return appendStyle("display:flex;justify-content:center;align-items:center");
     }
 
     /**
-     * Applies flexbox column layout with optional gap.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * div(attrs().flexColumn("1rem"), ...)
-     * </pre>
+     * Applies flexbox column layout with a gap. Merges into any style already set.
      *
      * @param gap the gap between items (CSS value like "1rem" or "10px")
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.display(flex).flexDirection(column).gap(...))} instead.
      */
+    @Deprecated
     public Attributes flexColumn(String gap) {
-        return set("style", "display:flex;flex-direction:column;gap:" + gap);
+        return appendStyle("display:flex;flex-direction:column;gap:" + gap);
     }
 
     /**
-     * Applies flexbox column layout without gap.
+     * Applies flexbox column layout without gap. Merges into any style already set.
      *
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.flexCol())} instead.
      */
+    @Deprecated
     public Attributes flexColumn() {
-        return set("style", "display:flex;flex-direction:column");
+        return appendStyle("display:flex;flex-direction:column");
     }
 
     /**
-     * Applies flexbox row layout with optional gap.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * div(attrs().flexRow("1rem"), ...)
-     * </pre>
+     * Applies flexbox row layout with a gap. Merges into any style already set.
      *
      * @param gap the gap between items
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.flexRow().gap(...))} instead.
      */
+    @Deprecated
     public Attributes flexRow(String gap) {
-        return set("style", "display:flex;flex-direction:row;gap:" + gap);
+        return appendStyle("display:flex;flex-direction:row;gap:" + gap);
     }
 
     /**
-     * Applies flexbox row layout without gap.
+     * Applies flexbox row layout without gap. Merges into any style already set.
      *
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.flexRow())} instead.
      */
+    @Deprecated
     public Attributes flexRow() {
-        return set("style", "display:flex;flex-direction:row");
+        return appendStyle("display:flex;flex-direction:row");
     }
 
     /**
-     * Applies flexbox with space-between.
+     * Applies flexbox with space-between. Merges into any style already set.
      *
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.flexBetween())} instead.
      */
+    @Deprecated
     public Attributes flexBetween() {
-        return set("style", "display:flex;justify-content:space-between;align-items:center");
+        return appendStyle("display:flex;justify-content:space-between;align-items:center");
     }
 
     /**
-     * Applies CSS grid with specified number of equal columns.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * div(attrs().gridCols(3, "1rem"), ...)  // 3-column grid with 1rem gap
-     * </pre>
+     * Applies CSS grid with a number of equal columns. Merges into any style already set.
      *
      * @param cols the number of columns
      * @param gap the gap between items
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.display(grid).gridTemplateColumns(...).gap(...))} instead.
      */
+    @Deprecated
     public Attributes gridCols(int cols, String gap) {
-        return set("style", "display:grid;grid-template-columns:repeat(" + cols + ",1fr);gap:" + gap);
+        return appendStyle("display:grid;grid-template-columns:repeat(" + cols + ",1fr);gap:" + gap);
     }
 
     /**
-     * Applies CSS grid with specified number of equal columns without gap.
+     * Applies CSS grid with a number of equal columns, no gap. Merges into any style already set.
      *
      * @param cols the number of columns
      * @return this for chaining
+     * @deprecated Use {@code attrs().style(s -> s.display(grid).gridTemplateColumns(...))} instead.
      */
+    @Deprecated
     public Attributes gridCols(int cols) {
-        return set("style", "display:grid;grid-template-columns:repeat(" + cols + ",1fr)");
+        return appendStyle("display:grid;grid-template-columns:repeat(" + cols + ",1fr)");
     }
 
     /** Sets inline style from a string. @param value the CSS style string */
@@ -353,11 +333,11 @@ public class Attributes implements TransitionReceiver {
      * Fluent inline style builder that integrates with Attributes.
      * Extends Style to inherit ALL CSS properties automatically.
      *
-     * <p>Three ways to use InlineStyle:</p>
+     * <p>Two ways to use InlineStyle:</p>
      * <ol>
-     *   <li>Pass directly to element - auto-finalizes when used</li>
-     *   <li>Chain attributes directly after style (href, id, class_, onClick, etc.)</li>
-     *   <li>Call {@link #done()} to explicitly return to Attributes</li>
+     *   <li>Pass directly to an element - auto-finalizes when used</li>
+     *   <li>Call {@link #done()} to explicitly return to Attributes and keep
+     *       chaining attributes</li>
      * </ol>
      *
      * <p>Example - Direct use (preferred, no .done() needed):</p>
@@ -368,11 +348,10 @@ public class Attributes implements TransitionReceiver {
      *     p("Hello"))
      * </pre>
      *
-     * <p>Example - Chaining attributes after style (NEW!):</p>
+     * <p>Example - To keep chaining attributes, prefer the lambda form:</p>
      * <pre>
-     * a(attrs().style()
-     *         .color(blue)
-     *         .textDecoration(none)
+     * a(attrs()
+     *     .style(s -&gt; s.color(blue).textDecoration(none))
      *     .href("/home")
      *     .class_("nav-link"),
      *     text("Home"))
@@ -444,304 +423,12 @@ public class Attributes implements TransitionReceiver {
             return complete().build();
         }
 
-        // ==================== Core Attribute Shortcuts ====================
-
-        /** Sets the id attribute. @param value the element ID */
-        public Attributes id(String value) { return complete().id(value); }
-
-        /** Sets the class attribute. @param value the CSS class(es) */
-        public Attributes class_(String value) { return complete().class_(value); }
-
-        /** Adds a CSS class to existing classes. @param className the class to add */
-        public Attributes addClass(String className) { return complete().addClass(className); }
-
-        /** Sets the title attribute (tooltip). @param value the title text */
-        public Attributes title(String value) { return complete().title(value); }
-
-        // ==================== Link Attribute Shortcuts ====================
-
-        /** Sets the href attribute for links. @param value the URL */
-        public Attributes href(String value) { return complete().href(value); }
-
-        /** Sets the target attribute for links. @param value the target window/frame */
-        public Attributes target(String value) { return complete().target(value); }
-
-        /** Sets target="_blank" with proper security attributes. */
-        public Attributes targetBlank() { return complete().targetBlank(); }
-
-        // ==================== Media Attribute Shortcuts ====================
-
-        /** Sets the src attribute for images/scripts. @param value the source URL */
-        public Attributes src(String value) { return complete().src(value); }
-
-        /** Sets the alt attribute for images. @param value the alt text */
-        public Attributes alt(String value) { return complete().alt(value); }
-
-        // ==================== Form Attribute Shortcuts ====================
-
-        /** Sets the type attribute for inputs. @param value the input type */
-        public Attributes type(String value) { return complete().type(value); }
-
-        /** Sets the name attribute for form elements. @param value the name */
-        public Attributes name(String value) { return complete().name(value); }
-
-        /** Sets the value attribute. @param value the value */
-        public Attributes value(String value) { return complete().value(value); }
-
-        /** Sets the placeholder attribute for inputs. @param value the placeholder text */
-        public Attributes placeholder(String value) { return complete().placeholder(value); }
-
-        /** Sets the action attribute for forms. @param value the form action URL */
-        public Attributes action(String value) { return complete().action(value); }
-
-        /** Sets the method attribute for forms. @param value the HTTP method */
-        public Attributes method(String value) { return complete().method(value); }
-
-        /** Sets the for attribute for labels. @param value the target element ID */
-        public Attributes for_(String value) { return complete().for_(value); }
-
-        // ==================== Boolean Attribute Shortcuts ====================
-
-        /** Adds the disabled boolean attribute. */
-        public Attributes disabled() { return complete().disabled(); }
-
-        /** Conditionally adds the disabled attribute. @param isDisabled whether to disable */
-        public Attributes disabled(boolean isDisabled) { return complete().disabled(isDisabled); }
-
-        /** Adds the checked boolean attribute for checkboxes/radios. */
-        public Attributes checked() { return complete().checked(); }
-
-        /** Conditionally adds the checked attribute. @param isChecked whether to check */
-        public Attributes checked(boolean isChecked) { return complete().checked(isChecked); }
-
-        /** Adds the required boolean attribute. */
-        public Attributes required() { return complete().required(); }
-
-        /** Adds the readonly boolean attribute. */
-        public Attributes readonly() { return complete().readonly(); }
-
-        /** Adds the hidden boolean attribute. */
-        public Attributes hidden() { return complete().hidden(); }
-
-        /** Conditionally adds the hidden attribute. @param isHidden whether to hide */
-        public Attributes hidden(boolean isHidden) { return complete().hidden(isHidden); }
-
-        /** Adds the autofocus boolean attribute. */
-        public Attributes autofocus() { return complete().autofocus(); }
-
-        // ==================== Data & ARIA Attribute Shortcuts ====================
-
-        /** Sets a data-* attribute. @param name the data name (without "data-") @param value the value */
-        public Attributes data(String name, String value) { return complete().data(name, value); }
-
-        /** Sets an aria-* attribute. @param name the aria name (without "aria-") @param value the value */
-        public Attributes aria(String name, String value) { return complete().aria(name, value); }
-
-        /** Sets the role attribute for ARIA. @param value the ARIA role */
-        public Attributes role(String value) { return complete().role(value); }
-
-        // ==================== Table Attribute Shortcuts ====================
-
-        /** Sets the colspan attribute for table cells. @param value the number of columns to span */
-        public Attributes colspan(int value) { return complete().colspan(value); }
-
-        /** Sets the rowspan attribute for table cells. @param value the number of rows to span */
-        public Attributes rowspan(int value) { return complete().rowspan(value); }
-
-        // ==================== Event Handler Shortcuts ====================
-
-        /** Registers a click event handler. @param handler the handler to execute on click */
-        public Attributes onClick(Consumer<Event> handler) { return complete().onClick(handler); }
-
-        /** Registers a change event handler. @param handler the handler to execute on change */
-        public Attributes onChange(Consumer<Event> handler) { return complete().onChange(handler); }
-
-        /** Registers an input event handler. @param handler the handler to execute on input */
-        public Attributes onInput(Consumer<Event> handler) { return complete().onInput(handler); }
-
-        /** Registers a submit event handler. @param handler the handler to execute on submit */
-        public Attributes onSubmit(Consumer<Event> handler) { return complete().onSubmit(handler); }
-
-        /** Registers a focus event handler. @param handler the handler to execute on focus */
-        public Attributes onFocus(Consumer<Event> handler) { return complete().onFocus(handler); }
-
-        /** Registers a blur event handler. @param handler the handler to execute on blur */
-        public Attributes onBlur(Consumer<Event> handler) { return complete().onBlur(handler); }
-
-        /** Registers a keydown event handler. @param handler the handler to execute on keydown */
-        public Attributes onKeyDown(Consumer<Event> handler) { return complete().onKeyDown(handler); }
-
-        /** Registers a keyup event handler. @param handler the handler to execute on keyup */
-        public Attributes onKeyUp(Consumer<Event> handler) { return complete().onKeyUp(handler); }
-
-        /** Registers a mouseenter event handler. @param handler the handler to execute on mouseenter */
-        public Attributes onMouseEnter(Consumer<Event> handler) { return complete().onMouseEnter(handler); }
-
-        /** Registers a mouseleave event handler. @param handler the handler to execute on mouseleave */
-        public Attributes onMouseLeave(Consumer<Event> handler) { return complete().onMouseLeave(handler); }
-
-        /** Registers a double-click event handler. @param handler the handler to execute on double-click */
-        public Attributes onDoubleClick(Consumer<Event> handler) { return complete().onDoubleClick(handler); }
-
-        /** Registers a generic event handler. @param eventType the DOM event type @param handler the handler */
-        public Attributes on(String eventType, Consumer<Event> handler) { return complete().on(eventType, handler); }
-
-        // ==================== Additional Mouse Event Shortcuts ====================
-
-        /** Registers a mousedown event handler. @param handler the handler to execute on mousedown */
-        public Attributes onMouseDown(Consumer<Event> handler) { return complete().onMouseDown(handler); }
-
-        /** Registers a mouseup event handler. @param handler the handler to execute on mouseup */
-        public Attributes onMouseUp(Consumer<Event> handler) { return complete().onMouseUp(handler); }
-
-        /** Registers a mousemove event handler. @param handler the handler to execute on mousemove */
-        public Attributes onMouseMove(Consumer<Event> handler) { return complete().onMouseMove(handler); }
-
-        /** Registers a mouseover event handler. @param handler the handler to execute on mouseover */
-        public Attributes onMouseOver(Consumer<Event> handler) { return complete().onMouseOver(handler); }
-
-        /** Registers a mouseout event handler. @param handler the handler to execute on mouseout */
-        public Attributes onMouseOut(Consumer<Event> handler) { return complete().onMouseOut(handler); }
-
-        /** Registers a contextmenu (right-click) event handler. @param handler the handler to execute */
-        public Attributes onContextMenu(Consumer<Event> handler) { return complete().onContextMenu(handler); }
-
-        /** Registers a wheel event handler. @param handler the handler to execute on wheel */
-        public Attributes onWheel(Consumer<Event> handler) { return complete().onWheel(handler); }
-
-        // ==================== Keyboard Event Shortcuts ====================
-
-        /** Registers a keypress event handler. @param handler the handler to execute on keypress */
-        public Attributes onKeyPress(Consumer<Event> handler) { return complete().onKeyPress(handler); }
-
-        // ==================== Drag & Drop Event Shortcuts ====================
-
-        /** Registers a drag event handler. @param handler the handler to execute during drag */
-        public Attributes onDrag(Consumer<Event> handler) { return complete().onDrag(handler); }
-
-        /** Registers a dragstart event handler. @param handler the handler to execute on drag start */
-        public Attributes onDragStart(Consumer<Event> handler) { return complete().onDragStart(handler); }
-
-        /** Registers a dragend event handler. @param handler the handler to execute on drag end */
-        public Attributes onDragEnd(Consumer<Event> handler) { return complete().onDragEnd(handler); }
-
-        /** Registers a dragenter event handler. @param handler the handler to execute when dragged item enters */
-        public Attributes onDragEnter(Consumer<Event> handler) { return complete().onDragEnter(handler); }
-
-        /** Registers a dragleave event handler. @param handler the handler to execute when dragged item leaves */
-        public Attributes onDragLeave(Consumer<Event> handler) { return complete().onDragLeave(handler); }
-
-        /** Registers a dragover event handler. @param handler the handler to execute when dragged item is over */
-        public Attributes onDragOver(Consumer<Event> handler) { return complete().onDragOver(handler); }
-
-        /** Registers a drop event handler. @param handler the handler to execute on drop */
-        public Attributes onDrop(Consumer<Event> handler) { return complete().onDrop(handler); }
-
-        // ==================== Touch Event Shortcuts ====================
-
-        /** Registers a touchstart event handler. @param handler the handler to execute on touch start */
-        public Attributes onTouchStart(Consumer<Event> handler) { return complete().onTouchStart(handler); }
-
-        /** Registers a touchmove event handler. @param handler the handler to execute on touch move */
-        public Attributes onTouchMove(Consumer<Event> handler) { return complete().onTouchMove(handler); }
-
-        /** Registers a touchend event handler. @param handler the handler to execute on touch end */
-        public Attributes onTouchEnd(Consumer<Event> handler) { return complete().onTouchEnd(handler); }
-
-        /** Registers a touchcancel event handler. @param handler the handler to execute on touch cancel */
-        public Attributes onTouchCancel(Consumer<Event> handler) { return complete().onTouchCancel(handler); }
-
-        // ==================== Scroll Event Shortcut ====================
-
-        /** Registers a scroll event handler. @param handler the handler to execute on scroll */
-        public Attributes onScroll(Consumer<Event> handler) { return complete().onScroll(handler); }
-
-        // ==================== Details & Dialog Event Shortcuts ====================
-
-        /** Registers a toggle event handler for details elements. @param handler the handler to execute on toggle */
-        public Attributes onToggle(Consumer<Event> handler) { return complete().onToggle(handler); }
-
-        /** Registers a cancel event handler for dialog elements. @param handler the handler to execute on cancel */
-        public Attributes onCancel(Consumer<Event> handler) { return complete().onCancel(handler); }
-
-        /** Registers a close event handler for dialog elements. @param handler the handler to execute on close */
-        public Attributes onClose(Consumer<Event> handler) { return complete().onClose(handler); }
-
-        // ==================== Animation & Transition Event Shortcuts ====================
-
-        /** Registers an animationstart event handler. @param handler the handler to execute when animation starts */
-        public Attributes onAnimationStart(Consumer<Event> handler) { return complete().onAnimationStart(handler); }
-
-        /** Registers an animationend event handler. @param handler the handler to execute when animation ends */
-        public Attributes onAnimationEnd(Consumer<Event> handler) { return complete().onAnimationEnd(handler); }
-
-        /** Registers an animationiteration event handler. @param handler the handler to execute on animation iteration */
-        public Attributes onAnimationIteration(Consumer<Event> handler) { return complete().onAnimationIteration(handler); }
-
-        /** Registers a transitionend event handler. @param handler the handler to execute when transition ends */
-        public Attributes onTransitionEnd(Consumer<Event> handler) { return complete().onTransitionEnd(handler); }
-
-        // ==================== Media Event Shortcuts ====================
-
-        /** Registers a load event handler. @param handler the handler to execute on load */
-        public Attributes onLoad(Consumer<Event> handler) { return complete().onLoad(handler); }
-
-        /** Registers an error event handler. @param handler the handler to execute on error */
-        public Attributes onError(Consumer<Event> handler) { return complete().onError(handler); }
-
-        // ==================== Clipboard Event Shortcuts ====================
-
-        /** Registers a copy event handler. @param handler the handler to execute on copy */
-        public Attributes onCopy(Consumer<Event> handler) { return complete().onCopy(handler); }
-
-        /** Registers a cut event handler. @param handler the handler to execute on cut */
-        public Attributes onCut(Consumer<Event> handler) { return complete().onCut(handler); }
-
-        /** Registers a paste event handler. @param handler the handler to execute on paste */
-        public Attributes onPaste(Consumer<Event> handler) { return complete().onPaste(handler); }
-
-        // ==================== JavaScript Action Event Handler Shortcuts ====================
-
-        /** Sets a click handler using a JavaScript Action. @param action the action to execute on click */
-        public Attributes onClick(Action action) { return complete().onClick(action); }
-
-        /** Sets a change handler using a JavaScript Action. @param action the action to execute on change */
-        public Attributes onChange(Action action) { return complete().onChange(action); }
-
-        /** Sets an input handler using a JavaScript Action. @param action the action to execute on input */
-        public Attributes onInput(Action action) { return complete().onInput(action); }
-
-        /** Sets a submit handler using a JavaScript Action. @param action the action to execute on submit */
-        public Attributes onSubmit(Action action) { return complete().onSubmit(action); }
-
-        /** Sets a focus handler using a JavaScript Action. @param action the action to execute on focus */
-        public Attributes onFocus(Action action) { return complete().onFocus(action); }
-
-        /** Sets a blur handler using a JavaScript Action. @param action the action to execute on blur */
-        public Attributes onBlur(Action action) { return complete().onBlur(action); }
-
-        /** Sets a keydown handler using a JavaScript Action. @param action the action to execute on keydown */
-        public Attributes onKeyDown(Action action) { return complete().onKeyDown(action); }
-
-        /** Sets a keyup handler using a JavaScript Action. @param action the action to execute on keyup */
-        public Attributes onKeyUp(Action action) { return complete().onKeyUp(action); }
-
-        /** Sets a mouseenter handler using a JavaScript Action. @param action the action to execute on mouseenter */
-        public Attributes onMouseEnter(Action action) { return complete().onMouseEnter(action); }
-
-        /** Sets a mouseleave handler using a JavaScript Action. @param action the action to execute on mouseleave */
-        public Attributes onMouseLeave(Action action) { return complete().onMouseLeave(action); }
-
-        /** Sets a double-click handler using a JavaScript Action. @param action the action to execute on dblclick */
-        public Attributes onDoubleClick(Action action) { return complete().onDoubleClick(action); }
-
-        /** Sets any event handler using a JavaScript Action. @param eventType the event type @param action the action */
-        public Attributes on(String eventType, Action action) { return complete().on(eventType, action); }
-
-        // ==================== Generic Setter Shortcut ====================
-
-        /** Sets any HTML attribute by name. @param name the attribute name @param value the attribute value */
-        public Attributes set(String name, String value) { return complete().set(name, value); }
+        // The ~100 chain-through shims that used to live here (every attribute
+        // and event method re-declared on InlineStyle so it could call
+        // complete()) are gone. Finish the style first, then keep chaining:
+        //
+        //   attrs().style(s -> s.display(flex).padding(px(10))).id("main")   // lambda
+        //   attrs().style().display(flex).done().id("main")                  // done()
     }
 
     // ==================== Common Attributes ====================
@@ -794,6 +481,9 @@ public class Attributes implements TransitionReceiver {
     public Attributes for_(String value) { return set("for", value); }
 
     // ==================== Boolean Attributes ====================
+    // Uniform rule: every boolean attribute has a no-arg form and a
+    // (boolean) conditional form, and is stored with a null value so it
+    // renders bare — <input required> — matching Attr and Tag.
 
     /** Adds the disabled boolean attribute. */
     public Attributes disabled() { return set("disabled", null); }
@@ -805,14 +495,20 @@ public class Attributes implements TransitionReceiver {
     public Attributes checked(boolean isChecked) { return isChecked ? checked() : this; }
     /** Adds the required boolean attribute. */
     public Attributes required() { return set("required", null); }
+    /** Conditionally adds the required attribute. @param isRequired whether the field is required */
+    public Attributes required(boolean isRequired) { return isRequired ? required() : this; }
     /** Adds the readonly boolean attribute. */
     public Attributes readonly() { return set("readonly", null); }
+    /** Conditionally adds the readonly attribute. @param isReadonly whether the field is read-only */
+    public Attributes readonly(boolean isReadonly) { return isReadonly ? readonly() : this; }
     /** Adds the hidden boolean attribute. */
     public Attributes hidden() { return set("hidden", null); }
     /** Conditionally adds the hidden attribute. @param isHidden whether to hide */
     public Attributes hidden(boolean isHidden) { return isHidden ? hidden() : this; }
     /** Adds the autofocus boolean attribute. */
     public Attributes autofocus() { return set("autofocus", null); }
+    /** Conditionally adds the autofocus attribute. @param isAutofocus whether to autofocus */
+    public Attributes autofocus(boolean isAutofocus) { return isAutofocus ? autofocus() : this; }
 
     // ==================== Data & ARIA Attributes ====================
 
@@ -848,6 +544,8 @@ public class Attributes implements TransitionReceiver {
     public Attributes max(int value) { return set("max", String.valueOf(value)); }
     /** Sets the step attribute for numeric inputs. @param value the step increment */
     public Attributes step(String value) { return set("step", value); }
+    /** Sets the step attribute with a whole number: {@code step(2)} renders {@code step="2"}. @param value the step increment */
+    public Attributes step(int value) { return set("step", String.valueOf(value)); }
     /** Sets the step attribute with number. @param value the step increment */
     public Attributes step(double value) { return set("step", String.valueOf(value)); }
     /** Sets the minlength attribute for text inputs. @param value minimum number of characters */
@@ -856,6 +554,8 @@ public class Attributes implements TransitionReceiver {
     public Attributes maxlength(int value) { return set("maxlength", String.valueOf(value)); }
     /** Adds the multiple boolean attribute for file/select inputs. */
     public Attributes multiple() { return set("multiple", null); }
+    /** Conditionally adds the multiple attribute. @param isMultiple whether multiple values are allowed */
+    public Attributes multiple(boolean isMultiple) { return isMultiple ? multiple() : this; }
     /** Sets the accept attribute for file inputs. @param value acceptable MIME types */
     public Attributes accept(String value) { return set("accept", value); }
     /** Sets the autocomplete attribute. @param value on, off, or specific tokens */
@@ -870,6 +570,8 @@ public class Attributes implements TransitionReceiver {
     public Attributes enctype(String value) { return set("enctype", value); }
     /** Adds the novalidate boolean attribute to skip form validation. */
     public Attributes novalidate() { return set("novalidate", null); }
+    /** Conditionally adds the novalidate attribute. @param skipValidation whether to skip validation */
+    public Attributes novalidate(boolean skipValidation) { return skipValidation ? novalidate() : this; }
     /** Sets the size attribute for inputs/selects. @param value the visible size */
     public Attributes size(int value) { return set("size", String.valueOf(value)); }
     /** Sets the cols attribute for textareas. @param value number of columns */
@@ -903,6 +605,8 @@ public class Attributes implements TransitionReceiver {
     public Attributes enterkeyhint(String value) { return set("enterkeyhint", value); }
     /** Sets the inert attribute (non-interactive). */
     public Attributes inert() { return set("inert", null); }
+    /** Conditionally adds the inert attribute. @param isInert whether the subtree is inert */
+    public Attributes inert(boolean isInert) { return isInert ? inert() : this; }
     /** Sets the popover attribute. @param value auto or manual */
     public Attributes popover(String value) { return set("popover", value); }
     /** Sets the popovertarget attribute. @param elementId the ID of the popover element */
@@ -920,6 +624,8 @@ public class Attributes implements TransitionReceiver {
     public Attributes rel(String value) { return set("rel", value); }
     /** Adds the download attribute for forcing downloads. */
     public Attributes download() { return set("download", null); }
+    /** Conditionally adds the download attribute. @param isDownload whether the link downloads */
+    public Attributes download(boolean isDownload) { return isDownload ? download() : this; }
     /** Sets the download attribute with a filename. @param filename the suggested filename */
     public Attributes download(String filename) { return set("download", filename); }
     /** Sets the hreflang attribute for link language. @param value language code */
@@ -958,18 +664,28 @@ public class Attributes implements TransitionReceiver {
 
     /** Adds the controls boolean attribute for media players. */
     public Attributes controls() { return set("controls", null); }
+    /** Conditionally adds the controls attribute. @param showControls whether to show controls */
+    public Attributes controls(boolean showControls) { return showControls ? controls() : this; }
     /** Adds the autoplay boolean attribute for media. */
     public Attributes autoplay() { return set("autoplay", null); }
+    /** Conditionally adds the autoplay attribute. @param isAutoplay whether to autoplay */
+    public Attributes autoplay(boolean isAutoplay) { return isAutoplay ? autoplay() : this; }
     /** Adds the loop boolean attribute for media. */
     public Attributes loop() { return set("loop", null); }
+    /** Conditionally adds the loop attribute. @param isLoop whether to loop */
+    public Attributes loop(boolean isLoop) { return isLoop ? loop() : this; }
     /** Adds the muted boolean attribute for media. */
     public Attributes muted() { return set("muted", null); }
+    /** Conditionally adds the muted attribute. @param isMuted whether the media is muted */
+    public Attributes muted(boolean isMuted) { return isMuted ? muted() : this; }
     /** Sets the preload attribute for media. @param value none, metadata, or auto */
     public Attributes preload(String value) { return set("preload", value); }
     /** Sets the poster attribute for video thumbnails. @param url the poster image URL */
     public Attributes poster(String url) { return set("poster", url); }
     /** Adds the playsinline boolean attribute for inline video playback. */
     public Attributes playsinline() { return set("playsinline", null); }
+    /** Conditionally adds the playsinline attribute. @param isInline whether playback stays inline */
+    public Attributes playsinline(boolean isInline) { return isInline ? playsinline() : this; }
     /** Adds the disablepictureinpicture attribute. */
     public Attributes disablepictureinpicture() { return set("disablepictureinpicture", null); }
 
@@ -1016,7 +732,10 @@ public class Attributes implements TransitionReceiver {
     /**
      * Rounds stroke ends and joins — sets both {@code stroke-linecap} and
      * {@code stroke-linejoin} to {@code round}. The usual choice for line icons.
+     *
+     * @deprecated Use {@code .set("stroke-linecap", "round").set("stroke-linejoin", "round")} instead.
      */
+    @Deprecated
     public Attributes strokeRound() {
         return set("stroke-linecap", "round").set("stroke-linejoin", "round");
     }
@@ -1027,9 +746,14 @@ public class Attributes implements TransitionReceiver {
      * <pre>
      * svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2), path(...))
      * </pre>
+     *
+     * @deprecated Use {@code .fill("none").stroke("currentColor").strokeWidth(w)}
+     *             plus the two {@code stroke-line*} attributes instead.
      */
+    @Deprecated
     public Attributes lineIcon(int strokeWidth) {
-        return fill("none").stroke("currentColor").strokeWidth(strokeWidth).strokeRound();
+        return fill("none").stroke("currentColor").strokeWidth(strokeWidth)
+            .set("stroke-linecap", "round").set("stroke-linejoin", "round");
     }
     /** Sets the d attribute for SVG path. @param value path data */
     public Attributes d(String value) { return set("d", value); }
@@ -1060,6 +784,8 @@ public class Attributes implements TransitionReceiver {
 
     /** Sets the itemscope boolean attribute for microdata. */
     public Attributes itemscope() { return set("itemscope", null); }
+    /** Conditionally adds the itemscope attribute. @param isScope whether this element is an item scope */
+    public Attributes itemscope(boolean isScope) { return isScope ? itemscope() : this; }
     /** Sets the itemtype attribute for microdata. @param value schema type URL */
     public Attributes itemtype(String value) { return set("itemtype", value); }
     /** Sets the itemprop attribute for microdata. @param value property name */
@@ -1078,6 +804,8 @@ public class Attributes implements TransitionReceiver {
 
     // ==================== Meter & Progress Attributes ====================
 
+    /** Sets the value attribute from a whole number: {@code value(3)} renders {@code value="3"}. @param value current value */
+    public Attributes value(int value) { return set("value", String.valueOf(value)); }
     /** Sets the value attribute for meter/progress. @param value current value */
     public Attributes value(double value) { return set("value", String.valueOf(value)); }
     /** Sets the low attribute for meter. @param value low threshold */
@@ -1105,6 +833,8 @@ public class Attributes implements TransitionReceiver {
     public Attributes allow(String value) { return set("allow", value); }
     /** Adds the allowfullscreen boolean attribute. */
     public Attributes allowfullscreen() { return set("allowfullscreen", null); }
+    /** Conditionally adds the allowfullscreen attribute. @param allowed whether fullscreen is allowed */
+    public Attributes allowfullscreen(boolean allowed) { return allowed ? allowfullscreen() : this; }
     /** Sets the srcdoc attribute for inline iframe content. @param html the HTML content */
     public Attributes srcdoc(String html) { return set("srcdoc", html); }
     /** Sets the name attribute for iframe targeting. @param value frame name */
@@ -1887,11 +1617,14 @@ public class Attributes implements TransitionReceiver {
     // ==================== Build ====================
 
     /**
-     * Returns an immutable copy of the attributes map.
+     * Returns an unmodifiable copy of the attributes map.
+     * Null values (bare boolean attributes) are preserved.
      *
-     * @return immutable map of attribute name-value pairs
+     * @return unmodifiable map of attribute name-value pairs
      */
-    public Map<String, String> build() { return Map.copyOf(attributes); }
+    public Map<String, String> build() {
+        return java.util.Collections.unmodifiableMap(new LinkedHashMap<>(attributes));
+    }
 
     /**
      * Returns the mutable attributes map (for internal use).

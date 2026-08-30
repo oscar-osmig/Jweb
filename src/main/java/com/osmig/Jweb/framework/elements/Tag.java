@@ -104,15 +104,21 @@ public class Tag implements Element {
     public Tag for_(String value) { return attr("for", value); }
     public Tag role(String value) { return attr("role", value); }
 
-    // Boolean attributes
-    public Tag disabled() { return attr("disabled", ""); }
-    public Tag disabled(boolean value) { if (value) attr("disabled", ""); return this; }
-    public Tag checked() { return attr("checked", ""); }
-    public Tag checked(boolean value) { if (value) attr("checked", ""); return this; }
-    public Tag required() { return attr("required", ""); }
-    public Tag readonly() { return attr("readonly", ""); }
-    public Tag hidden() { return attr("hidden", ""); }
-    public Tag autofocus() { return attr("autofocus", ""); }
+    // Boolean attributes.
+    // A boolean attribute is stored with a null value so it renders bare
+    // ({@code <input required>}) — the same convention Attr and Attributes use.
+    public Tag disabled() { return attr("disabled", null); }
+    public Tag disabled(boolean value) { return value ? disabled() : this; }
+    public Tag checked() { return attr("checked", null); }
+    public Tag checked(boolean value) { return value ? checked() : this; }
+    public Tag required() { return attr("required", null); }
+    public Tag required(boolean value) { return value ? required() : this; }
+    public Tag readonly() { return attr("readonly", null); }
+    public Tag readonly(boolean value) { return value ? readonly() : this; }
+    public Tag hidden() { return attr("hidden", null); }
+    public Tag hidden(boolean value) { return value ? hidden() : this; }
+    public Tag autofocus() { return attr("autofocus", null); }
+    public Tag autofocus(boolean value) { return value ? autofocus() : this; }
 
     // Data and ARIA
     public Tag data(String name, String value) { return attr("data-" + name, value); }
@@ -340,7 +346,11 @@ public class Tag implements Element {
     /**
      * Conditionally add one of two children.
      * div().ifElse(isLoggedIn, () -> span().text("Welcome"), () -> a().href("/login").text("Sign In"))
+     *
+     * @deprecated Use {@code .when(cond, ...)} twice, or
+     *             {@code .child(match(cond(c, a), otherwise(b)))} instead.
      */
+    @Deprecated
     public Tag ifElse(boolean condition,
                       java.util.function.Supplier<Element> ifTrue,
                       java.util.function.Supplier<Element> ifFalse) {
@@ -381,28 +391,56 @@ public class Tag implements Element {
 
     // ==================== Static Helpers ====================
 
+    /**
+     * Converts one varargs item into a child node.
+     *
+     * <p>Accepts {@code null} (renders nothing), {@link VNode}, any
+     * {@link jweb.Element} / {@link com.osmig.Jweb.framework.core.Renderable},
+     * {@link String} (escaped text), {@link Number} and {@link Boolean}.
+     * Anything else throws instead of silently rendering {@code toString()}.
+     * ({@link Iterable} and {@code Object[]} arguments are flattened by
+     * {@link #toVNodes(Object...)} before reaching this method.)</p>
+     *
+     * @throws IllegalArgumentException if the value is not a renderable child
+     */
     public static VNode toVNode(Object child) {
         if (child == null) return new VText("");
         if (child instanceof VNode vnode) return vnode;
-        if (child instanceof Element element) return element.toVNode();
+        if (child instanceof jweb.Element element) return element.toVNode();
+        if (child instanceof com.osmig.Jweb.framework.core.Renderable renderable) return renderable.toVNode();
         if (child instanceof String text) return new VText(text);
-        return new VText(child.toString());
+        if (child instanceof Number || child instanceof Boolean) return new VText(String.valueOf(child));
+        throw new IllegalArgumentException(
+            "Cannot render " + child.getClass().getName() + " as an element child. "
+                + "Pass an Element, VNode, String, Number or Boolean — "
+                + "use text(String) for escaped text or raw(String) for trusted HTML.");
+    }
+
+    /** True for the varargs items that are attributes, not children. */
+    private static boolean isAttributeItem(Object item) {
+        return item instanceof Attr
+            || item instanceof Attributes
+            || item instanceof InlineStyle
+            || item instanceof com.osmig.Jweb.framework.styles.Style;
+    }
+
+    /** An Iterable or Object[] argument is a group of items, not one child. */
+    private static Iterable<?> asGroup(Object item) {
+        if (item instanceof Iterable<?> iterable) return iterable;
+        if (item instanceof Object[] array) return java.util.Arrays.asList(array);
+        return null;
     }
 
     public static List<VNode> toVNodes(Object... children) {
         List<VNode> nodes = new ArrayList<>();
         for (Object child : children) {
             if (child == null) continue;
-            if (child instanceof Attr) continue;
-            if (child instanceof Attributes) continue;
-            if (child instanceof InlineStyle) continue;
-            if (child instanceof com.osmig.Jweb.framework.styles.Style) continue;
+            if (isAttributeItem(child)) continue;
 
-            if (child instanceof Iterable<?> iterable) {
-                for (Object item : iterable) {
-                    if (!(item instanceof Attr) && !(item instanceof Attributes)
-                            && !(item instanceof InlineStyle)
-                            && !(item instanceof com.osmig.Jweb.framework.styles.Style)) {
+            Iterable<?> group = asGroup(child);
+            if (group != null) {
+                for (Object item : group) {
+                    if (!isAttributeItem(item)) {
                         nodes.add(toVNode(item));
                     }
                 }
@@ -426,12 +464,20 @@ public class Tag implements Element {
                 // A bare style() builder as an argument becomes the style
                 // attribute: div(style().padding(px(4)), text("hi"))
                 attrs.put("style", style.build());
-            } else if (item instanceof Iterable<?> iterable) {
-                for (Object subItem : iterable) {
+            } else {
+                // Same extraction rules inside a group (Iterable or Object[]) as
+                // at the top level — InlineStyle/Style used to be silently dropped.
+                Iterable<?> group = asGroup(item);
+                if (group == null) continue;
+                for (Object subItem : group) {
                     if (subItem instanceof Attr attr) {
                         attrs.put(attr.name(), attr.value());
+                    } else if (subItem instanceof InlineStyle inlineStyle) {
+                        attrs.putAll(inlineStyle.toMap());
                     } else if (subItem instanceof Attributes attributes) {
                         attrs.putAll(attributes.toMap());
+                    } else if (subItem instanceof com.osmig.Jweb.framework.styles.Style<?> style) {
+                        attrs.put("style", style.build());
                     }
                 }
             }

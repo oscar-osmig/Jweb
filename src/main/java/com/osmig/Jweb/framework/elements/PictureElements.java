@@ -158,12 +158,22 @@ public class PictureElements {
         return new Attr("loading", value);
     }
 
-    /** Lazy loading attribute. */
+    /**
+     * Lazy loading attribute.
+     *
+     * @deprecated Use {@code loading("lazy")} instead.
+     */
+    @Deprecated
     public static Attr lazyLoad() {
         return new Attr("loading", "lazy");
     }
 
-    /** Eager loading attribute (default). */
+    /**
+     * Eager loading attribute (default).
+     *
+     * @deprecated Use {@code loading("eager")} instead.
+     */
+    @Deprecated
     public static Attr eagerLoad() {
         return new Attr("loading", "eager");
     }
@@ -179,11 +189,24 @@ public class PictureElements {
     }
 
     /**
-     * Creates a fetchpriority attribute.
+     * Creates a fetchpriority attribute (exact HTML spelling).
      *
      * @param value "high", "low", or "auto"
      * @return the Attr
      */
+    public static Attr fetchpriority(String value) {
+        return new Attr("fetchpriority", value);
+    }
+
+    /**
+     * Creates a fetchpriority attribute.
+     *
+     * @param value "high", "low", or "auto"
+     * @return the Attr
+     * @deprecated Use {@link #fetchpriority(String)} — attribute helpers use the
+     *             exact HTML spelling.
+     */
+    @Deprecated
     public static Attr fetchPriority(String value) {
         return new Attr("fetchpriority", value);
     }
@@ -197,7 +220,10 @@ public class PictureElements {
      * @param alt the alt text
      * @param src2x the 2x resolution source
      * @return a Tag img with srcset
+     * @deprecated Use {@code img(src(src), alt(alt), srcset(src + " 1x," + src2x + " 2x"))}
+     *             — every element now takes a plain {@code (Object...)} form.
      */
+    @Deprecated
     public static Tag responsiveImg(String src, String alt, String src2x) {
         return Tag.create("img",
             new Attr("src", src),
@@ -214,7 +240,10 @@ public class PictureElements {
      * @param w the width
      * @param h the height
      * @return a Tag img with lazy loading and dimensions
+     * @deprecated Use {@code img(src(src), alt(alt), loading("lazy"), width(w), height(h))}
+     *             — every element now takes a plain {@code (Object...)} form.
      */
+    @Deprecated
     public static Tag lazyImg(String src, String alt, int w, int h) {
         return Tag.create("img",
             new Attr("src", src),

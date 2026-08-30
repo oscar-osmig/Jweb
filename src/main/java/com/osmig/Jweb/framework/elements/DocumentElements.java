@@ -67,10 +67,24 @@ public final class DocumentElements {
         return new Tag("link", new Attributes().set("rel", "stylesheet").href(href));
     }
 
+    /**
+     * A {@code <script>} element from attributes and children:
+     * {@code script(src("/app.js"))}. Content is never HTML-escaped.
+     */
+    public static Tag script(Object... attrs) {
+        return Tag.create("script", attrs);
+    }
+
+    /**
+     * @deprecated Use {@code script(src("..."))} instead — a lone String
+     *             argument means text everywhere else in this DSL.
+     */
+    @Deprecated
     public static Tag script(String src) {
         return new Tag("script", new Attributes().src(src));
     }
 
+    /** Inline JavaScript — emitted verbatim, never HTML-escaped. */
     public static Tag inlineScript(String code) {
         return Tag.create("script", TextElement.raw(code));
     }

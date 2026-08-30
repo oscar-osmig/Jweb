@@ -212,7 +212,7 @@ public class Form implements Element {
         if (id != null) form.attr("id", id);
         if (className != null) form.attr("class", className);
         if (enctype != null) form.attr("enctype", enctype);
-        if (novalidate) form.attr("novalidate", "");
+        if (novalidate) form.attr("novalidate", null);
         if (target != null) form.attr("target", target);
         if (autocomplete != null) form.attr("autocomplete", autocomplete);
 
