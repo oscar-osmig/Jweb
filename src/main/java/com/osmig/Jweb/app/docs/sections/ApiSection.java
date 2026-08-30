@@ -22,13 +22,13 @@ public class UserApi {
         return userService.findAll();
     }
 
-    @GET("/:id")
-    public User get(@Path("id") Long id) {
+    @GET("/{id}")
+    public User get(@PathVariable Long id) {
         return userService.findById(id);
     }
 
     @POST
-    public User create(@Body User user) {
+    public User create(@RequestBody User user) {
         return userService.save(user);
     }
 }"""),
@@ -38,11 +38,14 @@ public class UserApi {
 @REST("/api")    // Base path for controller
 @GET             // GET request
 @POST            // POST request
-@PUT             // PUT request
+@UPDATE          // PUT request
+@PATCH           // PATCH request
 @DEL             // DELETE request
-@Path("id")      // Path parameter
-@Body            // Request body (JSON)
-@Query("q")      // Query parameter"""),
+
+// Parameters use the Spring annotations:
+@PathVariable    // Path parameter ({id})
+@RequestBody     // Request body (JSON)
+@RequestParam    // Query parameter"""),
 
             docSubtitle("Response Types"),
             codeBlock("""
@@ -52,7 +55,7 @@ public List<User> users() { ... }  // Auto-JSON
 @GET("/download")
 public ResponseEntity<byte[]> file() { ... }"""),
 
-            docTip("API docs auto-generated at /api/docs when openapi.enabled=true"),
+            docTip("Mount OpenApi.create().addApi(UserApi.class).mount(app) to serve interactive API docs at /docs."),
 
             ApiSse.render(),
             ApiJobs.render()

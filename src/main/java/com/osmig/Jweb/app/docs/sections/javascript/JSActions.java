@@ -26,12 +26,8 @@ onSubmit("login-form")
     .ok(navigateTo("/dashboard"))
     .fail(showMessage("error").text("Invalid credentials"))
 
-// With validation
+// Reset the form after success
 onSubmit("register-form")
-    .validate(v -> v
-        .field("email").required().email()
-        .field("password").required().minLength(8)
-    )
     .loading("Creating account...")
     .post("/api/register").withFormData()
     .ok(all(
@@ -55,7 +51,7 @@ onClick("delete-btn")
 // Chain actions
 onClick("logout-btn")
     .then(all(
-        clearStorage(),
+        hide("user-menu"),
         navigateTo("/login")
     ))"""),
 
@@ -68,7 +64,8 @@ toggle("dropdown")
 
 // Set content
 setText("label", "Updated text")
-setHtml("container", variable("html"))
+setHtml("container", "<strong>Updated</strong>")
+setInnerHtml("container").fromVar("htmlVar")
 
 // CSS classes
 addClass("card", "highlighted")
@@ -90,40 +87,35 @@ navigateTo("/dashboard")
 // Reload page
 reload()
 
-// Open in new tab
-openInNewTab("https://example.com")
+// Trigger a file download
+download("/files/report.pdf")
 
-// Scroll to element
-scrollTo("section-id")
-
-// Smooth scroll
-scrollTo("section-id", "smooth")"""),
+// Smooth-scroll to element
+query("#section-id").scrollIntoView()"""),
 
             h3Title("Fetch Requests"),
             codeBlock("""
-// GET request
+// GET request (fetch defaults to GET)
 fetch("/api/users")
-    .get()
-    .ok(setHtml("user-list"))
+    .ok(setInnerHtml("user-list").fromVar("_data.html"))
     .fail(showMessage("error").text("Failed to load"))
 
-// POST with JSON
+// POST with JSON body
 fetch("/api/users")
     .post()
-    .json("name", "John", "email", "john@example.com")
-    .ok(callback("user").call("addUserToList", variable("user")))
+    .json("{\\"name\\":\\"John\\",\\"email\\":\\"john@example.com\\"}")
+    .ok(call("addUserToList", "_data.user"))
 
 // POST with form data
 fetch("/api/upload")
     .post()
-    .withFormData("upload-form")
+    .formData("upload-form")
     .ok(showMessage("status").text("Uploaded!"))
 
 // With headers
 fetch("/api/protected")
-    .get()
     .header("Authorization", "Bearer " + token)
-    .ok(setHtml("data"))"""),
+    .ok(setTextFromResponse("data", "value"))"""),
 
             h3Title("Modals & Dialogs"),
             codeBlock("""
@@ -138,11 +130,11 @@ confirmDialog("modal")
     .onConfirm(fetch("/api/delete/" + id).post().ok(reload()))
     .onCancel(log("Cancelled"))
 
-// Alert modal
-alertModal("modal")
+// Alert modal (modal id + body element ref)
+alertModal("modal", "modal-body")
     .success("Operation completed!")
 
-alertModal("modal")
+alertModal("modal", "modal-body")
     .error("Something went wrong")"""),
 
             h3Title("Messages & Toasts"),
@@ -155,10 +147,12 @@ showMessage("status-div")
 showMessage("result")
     .fromResponse("message")
 
-// Clear after delay
+// Styled variants
 showMessage("notification")
-    .text("Saved!")
-    .clearAfter(3000)  // 3 seconds"""),
+    .success("Saved!")
+
+showMessage("notification")
+    .error("Failed to save")"""),
 
             h3Title("Conditional Actions"),
             codeBlock("""
@@ -172,11 +166,12 @@ whenResponse("success")
     .then(showMessage("status").text("Done!"))
     .otherwise(showMessage("error").text("Failed"))
 
-// Based on variable
-whenVar("status")
+// Based on variable (builds a JS ternary expression)
+String targetUrl = whenVar("status")
     .equals("approved").thenUrl("/success")
-    .equals("pending").thenUrl("/pending")
-    .otherwise(showMessage("error").text("Unknown status"))""")
+    .elseUrl("/pending");
+
+assignVar("nextUrl", targetUrl)""")
         );
     }
 }

@@ -15,16 +15,11 @@ public final class JavaScriptSection {
 
             docSubtitle("Import Statements"),
             codeBlock("""
-// Core JS DSL
+// Core JS DSL — script building, DOM, events, async/fetch
 import static jweb.Js.*;
 
-// High-level UI actions
-import static jweb.Actions.*;
-
-// Event handling patterns
-
-// Async/await and fetch
-import static jweb.Js.*;"""),
+// High-level UI actions (separate import — shares names with Js)
+import static jweb.Actions.*;"""),
 
             docSubtitle("Two Approaches"),
             para("Use Actions DSL for common UI patterns, or JS DSL for custom logic."),
@@ -47,9 +42,8 @@ onClick("delete-btn")
 
 // Input change handler
 onChange("search-input")
-    .then(fetch("/api/search?q=" + variable("this").dot("value"))
-        .get()
-        .ok(setHtml("results")))"""),
+    .then(fetch("/api/search?q=").appendVar("this.value")
+        .ok(setInnerHtml("results").fromVar("_data.html")))"""),
 
             h3Title("JS DSL (Low-Level)"),
             para("Full control over generated JavaScript."),

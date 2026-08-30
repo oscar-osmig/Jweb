@@ -67,7 +67,7 @@ public final class StylingEffects {
             para("Animate property changes."),
             codeBlock("""
 // Simple transition
-.transition(propAll, s(0.3), ease)
+.transition(all, s(0.3), ease)
 //          property, duration, timing
 
 // Specific property
@@ -76,10 +76,14 @@ public final class StylingEffects {
 .transition(propTransform, s(0.2), easeOut)
 
 // Multiple properties
-.transition("color 0.2s, background 0.3s, transform 0.2s")
+.transition(transitions(
+    trans(propColor, s(0.2)),
+    trans(propBackground, s(0.3)),
+    trans(propTransform, s(0.2))
+))
 
 // Individual settings
-.transitionProperty(propAll)
+.transitionProperty(all)
 .transitionDuration(s(0.3))
 .transitionTimingFunction(easeInOut)
 .transitionDelay(ms(100))
@@ -102,17 +106,17 @@ ease, linear, easeIn, easeOut, easeInOut
 // Contrast
 .filter(contrast(1.5))
 
-// Grayscale
-.filter(grayscale(percent(100)))
+// Grayscale (0 to 1)
+.filter(grayscale(1))
 
-// Opacity filter
-.filter(opacity(percent(50)))
+// Opacity filter (0 to 1)
+.filter(filterOpacity(0.5))
 
-// Saturate
-.filter(saturate(percent(200)))
+// Saturate (1 = normal)
+.filter(saturate(2))
 
-// Sepia
-.filter(sepia(percent(100)))
+// Sepia (0 to 1)
+.filter(sepia(1))
 
 // Drop shadow (for transparent images)
 .filter(dropShadow(px(2), px(4), px(6), rgba(0, 0, 0, 0.3)))

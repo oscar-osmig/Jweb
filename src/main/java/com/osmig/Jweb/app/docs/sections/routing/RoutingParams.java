@@ -70,9 +70,9 @@ app.get("/files/:fileId", req -> {
             codeBlock("""
 // GET /search?q=java&page=2&sort=date
 app.get("/search", req -> {
-    String query = req.query("q");
-    int page = req.queryInt("page", 1);
-    String sort = req.query("sort", "relevance");
+    String query = req.query("q");            // null when absent
+    int page = req.queryInt("page", 1);       // with default
+    String sort = req.query("sort") != null ? req.query("sort") : "relevance";
 
     List<Result> results = searchService.search(query, page, sort);
     return searchResults(results, query, page);
@@ -80,8 +80,8 @@ app.get("/search", req -> {
 
 // Check if parameter exists
 app.get("/products", req -> {
-    boolean inStock = req.hasQuery("inStock");
-    String category = req.query("category", "all");
+    boolean inStock = req.query("inStock") != null;
+    String category = req.query("category") != null ? req.query("category") : "all";
     return productListing(category, inStock);
 });""")
         );

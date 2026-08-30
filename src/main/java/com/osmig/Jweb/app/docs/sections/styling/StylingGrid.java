@@ -26,7 +26,7 @@ public final class StylingGrid {
 .gridTemplateColumns(fr(1), fr(2), fr(1))  // 1:2:1 ratio
 
 // Auto-fit responsive grid
-.gridTemplateColumns(repeat(autoFit, minmax(px(250), fr(1))))
+.gridTemplateColumns(repeat(autoFit(), minmax(px(250), fr(1))))
 
 // Mixed
 .gridTemplateColumns(px(250), fr(1), px(300))  // sidebar, content, aside"""),
@@ -53,11 +53,9 @@ public final class StylingGrid {
 .gridColumn("span 2")
 .gridRow("span 3")
 
-// Explicit placement
-.gridColumnStart(1)
-.gridColumnEnd(3)
-.gridRowStart(1)
-.gridRowEnd(2)""")
+// Explicit placement (start line, end line)
+.gridColumn(1, 3)
+.gridRow(1, 2)""")
         );
     }
 }

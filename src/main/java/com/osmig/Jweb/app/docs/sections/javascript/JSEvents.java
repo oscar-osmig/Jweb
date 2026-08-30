@@ -17,7 +17,7 @@ public final class JSEvents {
 // Delegate clicks within a container
 delegate("todo-list", "click", "li")
     .handler(callback("e", "target")
-        .call("toggleTodo", variable("target").getData("id"))
+        .call("toggleTodo", variable("target").dot("dataset").dot("id"))
     )
 
 // Works for dynamically added items
@@ -26,37 +26,33 @@ delegate("todo-list", "click", "li")
             h3Title("Debouncing"),
             para("Delay execution until user stops typing/scrolling."),
             codeBlock("""
-// Search input - wait 300ms after typing stops
-onChange("search-input")
-    .then(debounce("searchTimer", 300).wrap(
-        fetch("/api/search?q=" + variable("this").dot("value"))
-            .get()
-            .ok(setHtml("results"))
-    ))
+// Build a debounced handler body (runs 300ms after the last event)
+Val debounced = debounce("searchTimer", 300).wrap(
+    callback().call("runSearch")
+);
 
-// Resize handler - wait for resize to stop
-onResize(debounce("resizeTimer", 200).wrap(
-    callback().call("recalculateLayout")
-))"""),
+// Attach it inside an input listener
+getElem("search-input").addEventListener("input",
+    callback("e").raw(debounced.js())
+)"""),
 
             h3Title("Throttling"),
             para("Limit execution frequency."),
             codeBlock("""
-// Scroll handler - run at most every 100ms
-onScroll(throttle("scrollTimer", 100).wrap(
+// Throttled handler body - runs at most every 100ms
+Val throttled = throttle("scrollLast", 100).wrap(
     callback().call("updateScrollPosition")
-))
+);
 
-// Mouse move - limit to 60fps
-onMouseMove("canvas", throttle("moveTimer", 16).wrap(
-    callback("e").call("draw", variable("e").dot("clientX"), variable("e").dot("clientY"))
-))"""),
+getElem("feed").addEventListener("scroll",
+    callback("e").raw(throttled.js())
+)"""),
 
             h3Title("Keyboard Events"),
             codeBlock("""
 // Key combinations
 onKeyCombo("ctrl+s", callback("e")
-    .call("preventDefault", variable("e"))
+    .raw("e.preventDefault()")
     .call("save")
 )
 
@@ -70,9 +66,8 @@ onEnter(callback().call("submit"))
 onKey("Delete", callback().call("deleteSelected"))
 
 // Arrow navigation
-onArrowKeys(callback("direction")
-    .call("navigate", variable("direction"))
-)"""),
+onKey("ArrowLeft", callback().call("prevItem"))
+onKey("ArrowRight", callback().call("nextItem"))"""),
 
             h3Title("Touch & Swipe"),
             codeBlock("""
@@ -86,8 +81,8 @@ swipe(variable("carousel"))
     .build()
 
 // Touch events
-onTouchStart("element", callback("e")
-    .let_("touch", variable("e").dot("touches").at(0))
+onTouchStart(getElem("canvas"), callback("e")
+    .let_("touch", firstTouch(variable("e")))
     .call("startDrag", variable("touch"))
 )"""),
 
@@ -97,7 +92,7 @@ onTouchStart("element", callback("e")
 // Connect to SSE endpoint
 sse("/api/notifications")
     .onMessage(callback("e")
-        .let_("data", jsonParse(variable("e").dot("data")))
+        .let_("data", JSJson.parse(variable("e").dot("data")))
         .call("showNotification", variable("data"))
     )
     .onError(callback()
@@ -105,25 +100,24 @@ sse("/api/notifications")
     )
     .build()
 
-// With auto-reconnect
+// With open handler
 sse("/api/events")
-    .reconnectDelay(3000)
     .onOpen(callback().log("Connected"))
     .onMessage(handler)
     .build()"""),
 
             h3Title("Custom Events"),
             codeBlock("""
-// Create and dispatch custom event
+// Create and dispatch custom event (target element first)
 dispatchCustomEvent(
-    variable("element"),
+    getElem("item-list"),
     "item-selected",
     obj("id", itemId, "name", itemName)
 )
 
 // Listen for custom event
-on("item-selected", callback("e")
-    .call("handleSelection", variable("e").dot("detail"))
+onCustomEvent(getElem("item-list"), "item-selected", callback("e")
+    .call("handleSelection", eventDetail(variable("e")))
 )"""),
 
             h3Title("Event Utilities"),
@@ -135,12 +129,12 @@ preventDefault(variable("event"))
 stopPropagation(variable("event"))
 
 // Once - remove after first call
-once("button", "click", callback()
+once(getElem("button"), "click", callback()
     .call("initializeOnce")
 )
 
 // Remove listener
-removeListener(variable("element"), "click", variable("handler"))""")
+getElem("button").removeEventListener("click", variable("handler"))""")
         );
     }
 }

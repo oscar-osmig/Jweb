@@ -135,7 +135,7 @@ button(attrs()
     .class_("icon-btn")
     .aria("label", "Close")
     .title("Close window"),
-    icon("x")
+    span("x")
 )"""),
 
             h3Title("Boolean Attributes"),
@@ -163,7 +163,7 @@ video(attrs()
 details(attrs().open())   // Expanded by default
 script(attrs().defer())   // Defer loading
 script(attrs().async())   // Async loading
-option(attrs().selected()) // Pre-selected option"""),
+input(attrs().checked())  // Pre-checked checkbox/radio"""),
 
             h3Title("Link & Navigation"),
             para("Attributes for links and navigation."),
@@ -242,22 +242,25 @@ picture(
 button(attrs().onClick(call("handleClick")), "Click")
 button(attrs().onClick(call("deleteItem", id)), "Delete")
 
-// Form events
-form(attrs().onsubmit("return handleSubmit(event)"))
-input(attrs().onchange("updateValue(this.value)"))
-input(attrs().oninput("search(this.value)"))
-input(attrs().onfocus("showHint()"))
-input(attrs().onblur("hideHint()"))
+// Form events (server-side Java handlers)
+form(attrs().onSubmit(e -> handleSubmit(e)))
+input(attrs().onChange(e -> updateValue(e.value())))
+input(attrs().onInput(e -> search(e.value())))
+input(attrs().onFocus(e -> showHint()))
+input(attrs().onBlur(e -> hideHint()))
 
 // Mouse events
 div(attrs()
-    .onmouseenter("showTooltip()")
-    .onmouseleave("hideTooltip()")
+    .onMouseEnter(e -> showTooltip())
+    .onMouseLeave(e -> hideTooltip())
 )
 
 // Keyboard events
-input(attrs().onkeydown("handleKey(event)"))
-input(attrs().onkeyup("handleKeyUp(event)"))
+input(attrs().onKeyDown(e -> handleKey(e)))
+input(attrs().onKeyUp(e -> handleKeyUp(e)))
+
+// Raw JS strings when needed
+form(attrs().set("onsubmit", "return handleSubmit(event)"))
 
 // Using JS DSL actions
 import static jweb.Actions.*;

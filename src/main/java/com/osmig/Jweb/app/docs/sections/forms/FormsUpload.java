@@ -27,13 +27,13 @@ app.post("/upload", req -> {
 
             h3Title("Upload Form"),
             codeBlock("""
-form(
-    action("/upload"),
-    method("post"),
-    enctype("multipart/form-data"),
+form(attrs()
+        .action("/upload")
+        .method("post")
+        .enctype("multipart/form-data"),
 
-    input(type("file"), name("document")),
-    button(type("submit"), "Upload")
+    input(attrs().type("file").name("document")),
+    button(attrs().type("submit"), "Upload")
 )"""),
 
             h3Title("File Properties"),
@@ -44,9 +44,9 @@ UploadedFile file = FileUpload.getFile(req, "document");
 if (file.isEmpty()) return error("No file");
 
 // File info
-String name = file.getOriginalFilename();  // "report.pdf"
-String type = file.getContentType();       // "application/pdf"
-long size = file.getSize();                // bytes
+String name = file.getFilename();     // "report.pdf"
+String type = file.getContentType();  // "application/pdf"
+long size = file.getSize();           // bytes
 
 // Get content
 byte[] bytes = file.getBytes();
@@ -76,7 +76,7 @@ FileUpload.validate(file)
             h3Title("Multiple Files"),
             codeBlock("""
 // HTML
-input(type("file"), name("images"), multiple(), accept("image/*"))
+input(attrs().type("file").name("images").multiple().accept("image/*"))
 
 // Handler
 List<UploadedFile> images = FileUpload.getFiles(req, "images");
@@ -84,22 +84,21 @@ List<UploadedFile> images = FileUpload.getFiles(req, "images");
 for (UploadedFile image : images) {
     var v = FileUpload.validate(image).maxSizeMB(5).imagesOnly();
     if (v.isValid()) {
-        String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
-        image.saveAs(Path.of("uploads/gallery", filename));
+        String filename = UUID.randomUUID() + "_" + image.getFilename();
+        image.saveTo(Path.of("uploads/gallery"), filename);
     }
 }"""),
 
             h3Title("Save Options"),
             codeBlock("""
-// Save to directory (keeps original name)
+// Save to directory (generates a unique name)
 file.saveTo(Path.of("uploads"));
 
 // Save with custom name
-file.saveAs(Path.of("uploads/custom-name.pdf"));
+file.saveTo(Path.of("uploads"), "custom-name.pdf");
 
-// Save with unique name
-String unique = UUID.randomUUID() + "_" + file.getOriginalFilename();
-file.saveAs(Path.of("uploads", unique));"""),
+// Save preserving the original filename
+file.saveWithOriginalName(Path.of("uploads"));"""),
 
             docTip("Configure max file size in application.yaml: spring.servlet.multipart.max-file-size")
         );

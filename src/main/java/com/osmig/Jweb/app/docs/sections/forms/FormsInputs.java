@@ -40,7 +40,7 @@ textarea(attrs()
     .rows(4)
     .cols(50)
     .placeholder("Tell us about yourself...")
-    .maxlength("500"))""")
+    .maxlength(500))""")
         );
     }
 }

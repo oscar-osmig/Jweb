@@ -58,10 +58,10 @@ public Optional<String> metaDescription() {
 @Override
 public Optional<Element> extraHead() {
     return Optional.of(fragment(
-        meta(name("og:title"), content(getTitle())),
-        meta(name("og:image"), content(getImageUrl())),
-        link(rel("preconnect"), href("https://fonts.googleapis.com")),
-        link(rel("stylesheet"), href("/css/page.css"))
+        meta(attrs().name("og:title").content(getTitle())),
+        meta(attrs().name("og:image").content(getImageUrl())),
+        link(attrs().rel("preconnect").href("https://fonts.googleapis.com")),
+        link(attrs().rel("stylesheet").href("/css/page.css"))
     ));
 }"""),
 

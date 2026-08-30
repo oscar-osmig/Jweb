@@ -88,7 +88,7 @@ String buttonCss = rule(".btn")
     .backgroundColor(blue)
     .color(white)
     .borderRadius(px(4))
-    .render();
+    .toRule();
 
 // Multiple rules
 String css = styles(

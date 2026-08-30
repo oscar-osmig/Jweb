@@ -38,7 +38,7 @@ button(attrs().onClick(toggle("confirm-dialog")), "Toggle")
 // Close on backdrop click
 dialog(attrs()
     .id("my-dialog")
-    .onclick(closeOnBackdropClick("my-dialog")),
+    .onClick(closeOnBackdropClick("my-dialog")),
     div(class_("dialog-content"),
         h2("Click outside to close"),
         p("Dialog content here")
@@ -155,7 +155,7 @@ slot()                  // Default slot
 slot("header")          // Named slot
 
 // Output (for calculation results)
-form(attrs().oninput("result.value = a.valueAsNumber + b.valueAsNumber"),
+form(attrs().set("oninput", "result.value = a.valueAsNumber + b.valueAsNumber"),
     input(attrs().type("number").name("a").value("0")),
     text(" + "),
     input(attrs().type("number").name("b").value("0")),

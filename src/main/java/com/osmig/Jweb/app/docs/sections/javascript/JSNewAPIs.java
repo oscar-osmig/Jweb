@@ -18,17 +18,19 @@ import static jweb.js.JSIndexedDB.*;
 
 // Open a database (creates if not exists)
 openDB("myApp", 1)
-    .onUpgrade(createStore(variable("db"), "users")
-        .keyPath("id").autoIncrement()
-        .index("email", "email")
-        .uniqueIndex("username", "username")
-        .build())
+    .onUpgrade(callback("db").raw(
+        createStore(variable("db"), "users")
+            .keyPath("id").autoIncrement()
+            .index("email", "email")
+            .uniqueIndex("username", "username")
+            .build().js()
+    ))
     .onSuccess(callback("db").log(str("DB opened")))
     .build()
 
 // Transaction: add and read data
 transaction(variable("db"), "users", "readwrite")
-    .put(obj("id", num(1), "name", str("John")))
+    .put(obj("id", 1, "name", str("John")))
     .getAll()
     .onComplete(callback("results").log(variable("results")))
     .build()
@@ -126,8 +128,8 @@ tiltX(variable("e"))          // Pen tilt angle
 isPrimary(variable("e"))      // Is primary pointer?
 
 // Multi-pointer tracking (pinch, multi-touch)
-multiPointer("canvas")
-    .onUpdate(callback("pointers")
+multiPointerTracker("canvas")
+    .onMove(callback("pointers")
         .log(variable("pointers").dot("size")))
     .build()"""),
 

@@ -34,11 +34,11 @@ manualPopover("info-pop",
     p("This stays open until explicitly closed.")
 )
 
-// Popover with attributes on custom elements
-div(attrs().attr(popover()).id("custom-pop"),
+// Popover attributes on custom elements (Attr args)
+div(popover(), id("custom-pop"),
     p("Custom popover content")
 )
-button(attrs().attr(popoverTarget("custom-pop")),
+button(popoverTarget("custom-pop"),
     "Toggle Custom"
 )
 
@@ -175,7 +175,7 @@ import static jweb.el.FormEnhancements.*;
 import static jweb.El.*;
 
 // Autocomplete with datalist
-input(attrs().attr("list", "browsers").name("browser")),
+input(attrs().list("browsers").name("browser")),
 datalist("browsers",
     option("Chrome", "Chrome"),
     option("Firefox", "Firefox"),

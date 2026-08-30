@@ -47,8 +47,8 @@ table(
         td(user.getName()),
         td(user.getEmail()),
         td(
-            button(attrs().onClick("edit(" + user.getId() + ")"), "Edit"),
-            button(attrs().onClick("delete(" + user.getId() + ")"), "Delete")
+            button(attrs().onClick(call("editUser", String.valueOf(user.getId()))), "Edit"),
+            button(attrs().onClick(call("deleteUser", String.valueOf(user.getId()))), "Delete")
         )
     )))
 )"""),

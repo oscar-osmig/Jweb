@@ -49,16 +49,16 @@ cancellable(fetch("/api/data").get().toVal())
 import static jweb.js.JSWorker.*;
 
 // Create dedicated worker
-dedicatedWorker("/worker.js")
+worker("/worker.js")
     .onMessage(callback("e").call("handleResult", variable("e").dot("data")))
     .onError(callback("err").log(variable("err")))
     .build("worker")
 
 // Send data to worker
-workerPostMessage(variable("worker"), obj("task", "compute", "data", bigData))
+postMessage(variable("worker"), obj("task", "compute", "data", bigData))
 
 // Terminate worker
-workerTerminate(variable("worker"))
+terminate(variable("worker"))
 
 // SharedWorker (multiple tabs)
 sharedWorker("/shared-worker.js").build("sw")"""),
@@ -68,34 +68,40 @@ sharedWorker("/shared-worker.js").build("sw")"""),
 import static jweb.js.JSServiceWorker.*;
 
 // Register service worker
-registerServiceWorker("/sw.js")
+register("/sw.js")
     .onSuccess(callback("reg").log("SW registered"))
     .onError(callback("err").log(variable("err")))
+    .build()
 
 // Check for updates
-checkForUpdates(variable("registration"))
+update(variable("registration"))
 
 // Unregister
-unregisterServiceWorker()"""),
+unregister(variable("registration"))"""),
 
             h3Title("Web Crypto"),
             codeBlock("""
 import static jweb.js.JSCrypto.*;
 
 // Random values
-cryptoRandomUUID()     // UUID v4
-cryptoRandomBytes(16)  // Random bytes
+randomUUID()     // UUID v4
+randomBytes(16)  // Random bytes
 
 // Hashing
 sha256(variable("data"))  // Returns promise
-sha512(variable("data"))
+digest().sha512().data(variable("data")).build()
 
-// Encryption (AES)
-aesEncrypt(variable("key"), variable("data"), variable("iv"))
-aesDecrypt(variable("key"), variable("encrypted"), variable("iv"))
+// Encryption (AES-GCM)
+encrypt().aesGcm(variable("key"), variable("iv"))
+    .data(variable("data"))
+    .build()
+
+decrypt().aesGcm(variable("key"), variable("iv"))
+    .data(variable("encrypted"))
+    .build()
 
 // Generate key
-generateAESKey().then(callback("key").call("storeKey", variable("key")))"""),
+generateKey().aesGcm(256).build()"""),
 
             h3Title("Canvas 2D"),
             codeBlock("""
@@ -129,65 +135,61 @@ drawImage(variable("ctx"), variable("img"), 0, 0)"""),
 import static jweb.js.JSPerformance.*;
 
 // High-resolution timing
-performanceNow()
+now()
 
 // User timing marks
-performanceMark("start")
+mark("start")
 // ... operation ...
-performanceMark("end")
-performanceMeasure("operation", "start", "end")
+mark("end")
+measure("operation", "start", "end")
 
-// Observe performance entries
-performanceObserver(callback("entries")
-    .forEach(callback("entry")
-        .log(variable("entry").dot("name"), variable("entry").dot("duration"))
-    )
-).observe(obj("entryTypes", array("measure")))"""),
+// Read recorded entries
+getEntriesByName("operation")
+clearMarks()
+clearMeasures()"""),
 
             h3Title("JSON & Data"),
             codeBlock("""
 import static jweb.js.JSJson.*;
 
 // Parse/stringify
-jsonParse(variable("jsonString"))
-jsonStringify(variable("obj"))
-jsonStringifyPretty(variable("obj"), 2)
+parse(variable("jsonString"))
+stringify(variable("obj"))
+stringify(variable("obj"), 2)  // pretty-printed
+safeParse(variable("jsonString"), obj())  // with fallback
 
 // FormData
 import static jweb.js.JSFormData.*;
 
-formData(variable("formElement"))
-formDataEmpty()
-formDataAppend(variable("fd"), "key", "value")
+formData("checkout-form")   // from a form element
+formData()                  // empty FormData
+append(variable("fd"), "key", str("value"))
 
 // URL
 import static jweb.js.JSUrl.*;
 
-urlParse(str("/path?q=search"))
-urlSearchParams(obj("q", "search", "page", 1))
-urlSearchParamsGet(variable("params"), "q")"""),
+url("/path?q=search")
+currentUrl()
+pathname(url("/path?q=search"))"""),
 
             h3Title("Internationalization"),
             codeBlock("""
 import static jweb.js.JSIntl.*;
 
 // Number formatting
-numberFormat("en-US", obj(
-    "style", "currency",
-    "currency", "USD"
-)).format(variable("amount"))
+formatCurrency(variable("amount"), "USD", "en-US")
 // Output: $1,234.56
 
+formatNumber(variable("num"), "en-US")
+formatPercent(variable("ratio"), "en-US")
+formatCompact(variable("big"), "en-US")   // 1.2M
+
 // Date formatting
-dateTimeFormat("en-US", obj(
-    "dateStyle", "long",
-    "timeStyle", "short"
-)).format(variable("date"))
+formatDateTime(variable("date"), "en-US", "long", "short")
 // Output: January 21, 2026 at 3:30 PM
 
 // Relative time
-relativeTimeFormat("en", obj("numeric", "auto"))
-    .format(-1, "day")  // "yesterday" """),
+formatRelativeTime(-1, "day", "en")  // "yesterday" """),
 
             docTip("Advanced APIs may require feature detection. Check browser support before using.")
         );

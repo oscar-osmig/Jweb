@@ -22,7 +22,9 @@ public final class ConditionalsSection {
 when(condition, () -> element())
 
 // Either/or
-cond(condition, trueElement(), falseElement())
+when(condition)
+    .then(trueElement())
+    .otherwise(falseElement())
 
 // Iterate
 each(list, item -> renderItem(item))"""),

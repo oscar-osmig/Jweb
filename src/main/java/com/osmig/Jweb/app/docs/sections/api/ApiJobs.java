@@ -28,18 +28,18 @@ app.post("/register", req -> {
 
             h3Title("Scheduled Jobs"),
             codeBlock("""
-// Run every 5 minutes
-Jobs.every(Duration.ofMinutes(5), () -> {
+// Run every 5 minutes (named, so it can be cancelled)
+Jobs.schedule("session-cleanup", Duration.ofMinutes(5), () -> {
     cleanupExpiredSessions();
 });
 
 // Run every hour
-Jobs.every(Duration.ofHours(1), () -> {
+Jobs.schedule("hourly-report", Duration.ofHours(1), () -> {
     generateDailyReport();
 });
 
-// Run at specific time (cron-like)
-Jobs.daily(LocalTime.of(2, 0), () -> {
+// Initial delay, then repeat every 24 hours
+Jobs.schedule("nightly-backup", Duration.ofHours(2), Duration.ofHours(24), () -> {
     runNightlyBackup();
 });"""),
 
@@ -81,10 +81,9 @@ Jobs.run(() -> {
     }
 });
 
-// With retry
-Jobs.retry(3, Duration.ofSeconds(5), () -> {
-    callExternalApi(data);
-});"""),
+// Cancel or inspect scheduled jobs
+Jobs.cancel("session-cleanup");
+Jobs.isScheduled("session-cleanup");"""),
 
             docTip("Use Jobs for anything that doesn't need to block the HTTP response.")
         );

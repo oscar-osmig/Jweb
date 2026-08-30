@@ -47,7 +47,7 @@ table(
 th(attrs()
     .class_("sortable")
     .data("sort", "name")
-    .onClick("sortTable('name')"),
+    .set("onclick", "sortTable('name')"),
     text("Name "), span(attrs().class_("sort-icon")))""")
         );
     }

@@ -25,7 +25,7 @@ fetch("").urlFromVar("apiEndpoint + '/search?q=' + query")
 // Generates: fetch(apiEndpoint + '/search?q=' + query)
 
 // Multiple parameters
-fetch("/api/users/").appendVar("userId").append("/posts")
+fetch("").urlFromVar("'/api/users/' + userId + '/posts'")
     .ok(assignVar("posts", "_data"))
 // Generates: fetch('/api/users/' + userId + '/posts')"""),
 

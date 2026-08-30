@@ -30,12 +30,12 @@ query("#user-panel")
     .removeClass("loading")
     .addClass("loaded")
     .attr("data-ready", "true")
-    .show("flex")
+    .show()
 
 // Style manipulation
 query(".card")
-    .setStyle("background", "#f0f0f0")
-    .setStyle("border-radius", "8px")
+    .style("background", "#f0f0f0")
+    .style("border-radius", "8px")
     .addClass("elevated")
 
 // Content manipulation
@@ -48,16 +48,13 @@ query("#message")
             para("Select and manipulate multiple elements."),
             codeBlock("""
 // Query all matching elements
-queryAll(".notification")
-    .forEach(el -> el.addClass("fade-out"))
+queryAll(".notification").addClass("fade-out")
 
 // Hide all items
-queryAll(".list-item")
-    .forEach(el -> el.hide())
+queryAll(".list-item").hide()
 
 // Toggle class on all
-queryAll(".tab")
-    .forEach(el -> el.removeClass("active"))
+queryAll(".tab").removeClass("active")
 
 // Then activate one
 query("#tab-1")
@@ -68,13 +65,11 @@ query("#tab-1")
             codeBlock("""
 // Visibility
 query("#modal").show()
-query("#modal").show("flex")  // with display mode
 query("#modal").hide()
-query("#panel").toggle()
+toggle("panel")  // toggle by element id
 
 // Classes
 query("#btn")
-    .hasClass("active")       // returns boolean
     .addClass("loading")
     .removeClass("enabled")
     .toggleClass("expanded")
@@ -89,9 +84,8 @@ query("#input")
             para("Use query builder within action handlers."),
             codeBlock("""
 windowFunc("togglePanel")
-    .params("panelId")
     .does(
-        raw(query("#" + "panelId").toggle()),
+        toggle("panel"),
         query("#toggle-btn").toggleClass("active")
     )
 
@@ -99,7 +93,7 @@ onClick("search-btn").then(all(
     query("#search-input").addClass("loading"),
     fetch("/api/search?q=").appendVar("searchQuery")
         .ok(all(
-            query("#results").setHtml("_data.html"),
+            query("#results").setHtmlExpr("_data.html"),
             query("#search-input").removeClass("loading")
         ))
 ))"""),

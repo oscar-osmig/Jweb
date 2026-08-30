@@ -13,40 +13,43 @@ public final class SecuritySection {
 
             docSubtitle("Password Hashing"),
             codeBlock("""
-                    // Hash password
-                    String hash = Passwords.hash("secret123");
-                    
+                    // Hash password (BCrypt)
+                    String hash = Password.hash("secret123");
+
                     // Verify password
-                    boolean valid = Passwords.verify("secret123", hash);"""),
+                    boolean valid = Password.verify("secret123", hash);"""),
 
             docSubtitle("JWT Authentication"),
             codeBlock("""
+                    // Configure the signing key once at startup
+                    Jwt.init(System.getenv("JWT_SECRET"));
+
                     // Generate token
-                    String token = JWT.create()
+                    String token = Jwt.create()
                         .subject(user.getId())
                         .claim("role", user.getRole())
                         .expiresIn(Duration.ofHours(24))
-                        .sign(SECRET_KEY);
+                        .sign();
 
                     // Verify token
-                    Claims claims = JWT.verify(token, SECRET_KEY);
-                    String userId = claims.getSubject();"""),
+                    Jwt.Token parsed = Jwt.parse(token);
+                    String userId = parsed.subject();"""),
 
             docSubtitle("Protected Routes"),
             codeBlock("""
-                        app.use("/admin/**", Auth.required());
-                        app.use("/api/**", Auth.jwt(SECRET_KEY));
-                        
+                        app.use("/admin", Auth.requireAuth("/login"));
+                        app.use("/api", Jwt.protect());
+
                         // In handler
                         app.get("/profile", req -> {
-                            User user = req.user();  // Current user
+                            Principal user = Auth.requirePrincipal(req);
                             return profilePage(user);
                         });"""),
 
             docSubtitle("Rate Limiting"),
             codeBlock("""
-                        app.use(RateLimit.perMinute(100));
-                        app.use("/api/**", RateLimit.perMinute(30));"""),
+                        app.use(RateLimit.perMinute(100).byIp().build());
+                        app.use("/api", RateLimit.perMinute(30).byIp().build());"""),
 
             warn("Always use HTTPS in production and store secrets in environment variables.")
         );

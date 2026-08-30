@@ -30,22 +30,22 @@ when(cart.hasItems(), () ->
     )
 )"""),
 
-            h3Title("unless() - Inverse Conditional"),
-            para("Show elements only when a condition is false."),
+            h3Title("Inverse Conditions"),
+            para("Negate the condition to show elements only when it is false."),
             codeBlock("""
 // Show login link when NOT logged in
-unless(isLoggedIn, () ->
+when(!isLoggedIn, () ->
     a(attrs().href("/login"), text("Please log in"))
 )
 
 // Show empty state
-unless(items.isEmpty(), () -> itemList(items))
-unless(!items.isEmpty(), () -> emptyState())
+when(!items.isEmpty(), () -> itemList(items))
+when(items.isEmpty(), () -> emptyState())
 
-// Combine with when
+// Combine both branches
 div(
     when(isLoggedIn, () -> userMenu()),
-    unless(isLoggedIn, () -> loginButton())
+    when(!isLoggedIn, () -> loginButton())
 )""")
         );
     }

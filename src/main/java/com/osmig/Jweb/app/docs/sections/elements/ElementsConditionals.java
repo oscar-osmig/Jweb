@@ -88,20 +88,19 @@ div(
     )
 )"""),
 
-            h3Title("ternary() - Inline Conditional"),
-            para("For simple inline conditions."),
+            h3Title("Inline Ternary Conditions"),
+            para("Java's native ternary operator works for simple inline conditions."),
             codeBlock("""
 // Ternary pattern
-span(ternary(isActive, "Active", "Inactive"))
+span(isActive ? "Active" : "Inactive")
 
 // With elements
-div(ternary(hasError,
-    span(class_("error"), errorMessage),
-    span(class_("success"), "All good!")
-))
+div(hasError
+    ? span(class_("error"), errorMessage)
+    : span(class_("success"), "All good!"))
 
 // Styling
-div(attrs().class_(ternary(isDark, "dark-theme", "light-theme")))"""),
+div(attrs().class_(isDark ? "dark-theme" : "light-theme"))"""),
 
             h3Title("each() - Iteration"),
             para("Render a list of items."),
@@ -129,10 +128,10 @@ div(class_("user-list"),
 
 // With index (if needed)
 ul(
-    each(items, (item, index) ->
-        li(attrs().data("index", String.valueOf(index)),
-            strong((index + 1) + ". "),
-            text(item)
+    each(IntStream.range(0, items.size()).boxed().toList(), i ->
+        li(attrs().data("index", String.valueOf(i)),
+            strong((i + 1) + ". "),
+            text(items.get(i))
         )
     )
 )"""),

@@ -33,21 +33,21 @@ app.get("/error", req -> Response.serverError());"""),
 
             h3Title("Custom Responses"),
             codeBlock("""
-// Custom status and headers
-app.get("/custom", req -> Response.status(201)
+// Custom headers
+app.get("/custom", req -> Response.ok()
     .header("X-Custom-Header", "value")
-    .body("Created"));
+    .body("Hello"));
+
+// 201 Created with Location header
+app.post("/items", req -> Response.created("/items/42"));
 
 // File download
 app.get("/download/:file", req -> {
     byte[] data = fileService.read(req.param("file"));
-    return Response.file(data, "report.pdf");
-});
-
-// Stream response
-app.get("/stream", req -> Response.stream(outputStream -> {
-    // Write to outputStream
-}));""")
+    return Response.ok()
+        .header("Content-Disposition", "attachment; filename=report.pdf")
+        .body(data);
+});""")
         );
     }
 }

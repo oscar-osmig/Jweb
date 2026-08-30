@@ -8,34 +8,28 @@ public final class CondTernary {
 
     public static Element render() {
         return section(
-            h3Title("cond() - Either/Or"),
-            para("Choose between two elements based on a condition."),
+            h3Title("Either/Or"),
+            para("Choose between two elements with when().then().otherwise()."),
             codeBlock("""
-// Basic ternary: condition ? ifTrue : ifFalse
-cond(isAdmin, adminDashboard(), userDashboard())
+// condition ? ifTrue : ifFalse
+when(isAdmin)
+    .then(adminDashboard())
+    .otherwise(userDashboard())
 
 // Status display
-cond(user.isActive(),
-    span(attrs().class_("text-green"), text("Active")),
-    span(attrs().class_("text-red"), text("Inactive"))
-)
+when(user.isActive())
+    .then(span(attrs().class_("text-green"), text("Active")))
+    .otherwise(span(attrs().class_("text-red"), text("Inactive")))
 
-// Toggle button text
-button(
-    cond(isExpanded,
-        text("Show Less"),
-        text("Show More")
-    )
-)
+// Toggle button text (Java ternary)
+button(isExpanded ? text("Show Less") : text("Show More"))
 
 // Nested conditions
-cond(isPremium,
-    premiumContent(),
-    cond(isRegistered,
-        basicContent(),
-        guestContent()
-    )
-)"""),
+when(isPremium)
+    .then(premiumContent())
+    .otherwise(when(isRegistered)
+        .then(basicContent())
+        .otherwise(guestContent()))"""),
 
             h3Title("Using Java Ternary"),
             para("Standard Java ternary works too."),

@@ -74,14 +74,14 @@ List<I18n.LocaleInfo> locales = I18n.getSupportedLocales();
 
 // In template
 form(method("post"), action("/language"),
-    select(name("lang"), onChange("this.form.submit()"),
-        each(locales, locale ->
-            option(
-                value(locale.code()),
-                selected(locale.code().equals(I18n.current().getLanguage())),
-                text(locale.nativeName())  // "Español" for Spanish
-            )
-        )
+    select(attrs().name("lang").set("onchange", "this.form.submit()"),
+        each(locales, locale -> {
+            var a = attrs().value(locale.code());
+            if (locale.code().equals(I18n.current().getLanguage())) {
+                a.set("selected", "");
+            }
+            return option(a, locale.nativeName());  // "Español" for Spanish
+        })
     )
 )"""),
 

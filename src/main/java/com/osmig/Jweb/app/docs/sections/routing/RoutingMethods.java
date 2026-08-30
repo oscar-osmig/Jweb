@@ -17,31 +17,22 @@ app.get("/users/:id", req -> userDetail(req.param("id")));
 
 // POST - create new resource
 app.post("/users", req -> {
-    User user = req.bodyAs(User.class);
-    User saved = userService.save(user);
+    User saved = userService.save(req.formParam("name"), req.formParam("email"));
     return Response.redirect("/users/" + saved.getId());
 });
 
 // PUT - update entire resource
 app.put("/users/:id", req -> {
     Long id = req.paramLong("id");
-    User user = req.bodyAs(User.class);
-    userService.update(id, user);
-    return Response.ok();
-});
-
-// PATCH - partial update
-app.patch("/users/:id", req -> {
-    Long id = req.paramLong("id");
-    Map<String, Object> updates = req.bodyAsMap();
-    userService.partialUpdate(id, updates);
-    return Response.ok();
+    String json = req.body();  // raw request body
+    userService.update(id, json);
+    return Response.noContent();
 });
 
 // DELETE - remove resource
 app.delete("/users/:id", req -> {
     userService.delete(req.paramLong("id"));
-    return Response.ok();
+    return Response.noContent();
 });""")
         );
     }

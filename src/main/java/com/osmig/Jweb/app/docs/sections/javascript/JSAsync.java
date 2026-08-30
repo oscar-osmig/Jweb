@@ -32,14 +32,14 @@ asyncFunc("loadDashboard")
 asyncTry(
     await_(fetch("/api/data").ok(processData()))
 )
-.catch_("error",
-    logError("error"),
+.catch_(all(
+    log("Load failed"),
     showMessage("status").error("Failed to load")
-)
-.finally_(
+))
+.finally_(all(
     hide("loading"),
     assignVar("isLoading", "false")
-)"""),
+))"""),
 
             h3Title("Promise.all"),
             para("Execute multiple async operations in parallel."),
@@ -62,7 +62,7 @@ asyncFunc("loadAll")
             ),
             call("renderAll")
         )
-        .catch_("e", showMessage("error").error("Load failed"))
+        .catch_(showMessage("error").error("Load failed"))
         .finally_(hide("loading"))
     )"""),
 
@@ -85,8 +85,10 @@ asyncFunc("search")
     .params("query")
     .does(
         assignVar("searchQuery", "query"),
-        sleep(300),
-        raw("if(searchQuery !== query) return"),
+        sleep(300)
+    )
+    .raw("if(searchQuery !== query) return;")
+    .does(
         await_(fetch("/api/search?q=").appendVar("query")
             .ok(call("showResults", "_data")))
     )"""),

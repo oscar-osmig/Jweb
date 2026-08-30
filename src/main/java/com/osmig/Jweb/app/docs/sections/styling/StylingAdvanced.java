@@ -20,11 +20,8 @@ public final class StylingAdvanced {
 .boxShadow(px(0), px(2), px(4), rgba(0, 0, 0, 0.1))
 .boxShadow(px(0), px(4), px(6), px(-1), rgba(0, 0, 0, 0.1))
 
-// Multiple shadows
-.boxShadow(
-    shadow(px(0), px(1), px(2), rgba(0,0,0,0.05)),
-    shadow(px(0), px(4), px(6), rgba(0,0,0,0.1))
-)"""),
+// Multiple shadows (string form)
+.boxShadow("0 1px 2px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.1)")"""),
 
             h3Title("Transforms & Transitions"),
             codeBlock("""
@@ -34,11 +31,11 @@ public final class StylingAdvanced {
 .transform(rotate(deg(45)))
 
 // Transitions
-.transition("all 0.2s ease")
-.transition("transform 0.15s ease-in-out")
-.transitionProperty("background-color, border-color")
-.transitionDuration("0.2s")
-.transitionTimingFunction("ease-out")"""),
+.transition(all, s(0.2), ease)
+.transition(propTransform, s(0.15), easeInOut)
+.transitionProperty(propBackgroundColor)
+.transitionDuration(s(0.2))
+.transitionTimingFunction(easeOut)"""),
 
             h3Title("Positioning"),
             codeBlock("""

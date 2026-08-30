@@ -25,26 +25,26 @@ div(each(users, user ->
     )
 ))"""),
 
-            h3Title("eachWithIndex() - With Index"),
-            para("Access the index while iterating."),
+            h3Title("Iterating With an Index"),
+            para("Iterate over an index range to access positions."),
             codeBlock("""
 // Numbered list
-ol(eachWithIndex(items, (item, index) ->
-    li((index + 1) + ". " + item)
+ol(each(IntStream.range(0, items.size()).boxed().toList(), i ->
+    li((i + 1) + ". " + items.get(i))
 ))
 
 // Alternating rows
-table(tbody(eachWithIndex(users, (user, i) ->
+table(tbody(each(IntStream.range(0, users.size()).boxed().toList(), i ->
     tr(attrs().class_(i % 2 == 0 ? "even" : "odd"),
-        td(user.getName()),
-        td(user.getEmail())
+        td(users.get(i).getName()),
+        td(users.get(i).getEmail())
     )
 )))
 
-// First/last handling
-div(eachWithIndex(items, (item, i) ->
+// Separator between items
+div(each(IntStream.range(0, items.size()).boxed().toList(), i ->
     span(
-        text(item),
+        text(items.get(i)),
         when(i < items.size() - 1, () -> text(", "))
     )
 ))"""),
@@ -52,10 +52,9 @@ div(eachWithIndex(items, (item, i) ->
             h3Title("Empty State"),
             codeBlock("""
 // Show empty state when list is empty
-cond(items.isEmpty(),
-    div(attrs().class_("empty"), text("No items found")),
-    ul(each(items, item -> li(item)))
-)""")
+when(items.isEmpty())
+    .then(div(attrs().class_("empty"), text("No items found")))
+    .otherwise(ul(each(items, item -> li(item))))""")
         );
     }
 }

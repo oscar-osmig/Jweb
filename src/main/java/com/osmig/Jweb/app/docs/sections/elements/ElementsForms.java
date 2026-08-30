@@ -92,7 +92,7 @@ select(attrs().name("country"),
 // With selected option
 select(attrs().name("size"),
     option("sm", "Small"),
-    option(attrs().value("md").selected(), "Medium"),
+    option(attrs().value("md").set("selected", ""), "Medium"),
     option("lg", "Large")
 )
 
@@ -105,11 +105,11 @@ select(attrs().name("colors").multiple(),
 
 // Optgroup
 select(attrs().name("car"),
-    optgroup(attrs().label("Swedish Cars"),
+    optgroup("Swedish Cars",
         option("volvo", "Volvo"),
         option("saab", "Saab")
     ),
-    optgroup(attrs().label("German Cars"),
+    optgroup("German Cars",
         option("mercedes", "Mercedes"),
         option("audi", "Audi")
     )
@@ -126,7 +126,7 @@ button(attrs().type("submit"), "Save")
 button(attrs().type("reset"), "Clear Form")
 
 // Regular button (for JS actions)
-button(attrs().type("button").onclick("handleClick()"), "Click Me")
+button(attrs().type("button").set("onclick", "handleClick()"), "Click Me")
 
 // Disabled button
 button(attrs().disabled(), "Cannot Click")

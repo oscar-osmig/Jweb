@@ -17,27 +17,28 @@ public final class UIComponentsSection {
                         .title("Confirm Action")
                         .body(p("Are you sure?"))
                         .footer(
-                            button(attrs().onClick("Modal.close('confirm-modal')"), "Cancel"),
-                            button(attrs().onClick("handleConfirm()"), "Confirm")
+                            button(attrs().set("onclick", Modal.closeJs("confirm-modal")), "Cancel"),
+                            button(attrs().set("onclick", "handleConfirm()"), "Confirm")
                         )
-                        .render()"""),
+                        .build()"""),
 
             docSubtitle("Tabs"),
             codeBlock("""
-                        Tabs.create()
+                        Tabs.create("main-tabs")
                             .tab("overview", "Overview", overviewContent())
                             .tab("details", "Details", detailsContent())
                             .tab("settings", "Settings", settingsContent())
-                            .render()"""),
+                            .build()"""),
 
             docSubtitle("Dropdown"),
             codeBlock("""
-                        Dropdown.create("Actions")
-                            .item("Edit", "/edit")
-                            .item("Delete", "handleDelete()")
+                        Dropdown.create("actions-menu")
+                            .trigger("Actions")
+                            .item("Edit", e -> editItem())
+                            .item("Delete", e -> deleteItem())
                             .divider()
-                            .item("Settings", "/settings")
-                            .render()"""),
+                            .item("Settings", e -> openSettings())
+                            .build()"""),
 
             docSubtitle("Toast Notifications"),
             codeBlock("""

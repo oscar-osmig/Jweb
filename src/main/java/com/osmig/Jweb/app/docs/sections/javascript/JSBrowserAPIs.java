@@ -32,8 +32,8 @@ session().get("temp")
 
 // Cross-tab communication
 onStorageChange(callback("e")
-    .if_(variable("e").dot("key").eq("theme"))
-    .then(call("updateTheme", variable("e").dot("newValue")))
+    .if_(variable("e").dot("key").eq("theme"),
+        call("updateTheme", variable("e").dot("newValue")))
 )"""),
 
             h3Title("WebSocket"),
@@ -63,29 +63,31 @@ close(variable("ws"))"""),
 import static jweb.js.JSClipboard.*;
 
 // Write to clipboard
-clipboardWrite(str("Copied text"))
+copyText("Copied text")
 
-// Copy from element
-clipboardWriteFromElement(variable("inputElem"))
+// Copy an element's text or value
+copyElementText("code-snippet")
+copyElementValue("share-url")
 
 // Read (returns promise)
-clipboardRead().then(callback("text").log(variable("text")))"""),
+readText().then(callback("text").log(variable("text")))"""),
 
             h3Title("Notifications"),
             codeBlock("""
 import static jweb.js.JSNotification.*;
 
 // Check permission
-notificationPermission()
+permission()
+hasPermission()
 
 // Request permission
-requestNotificationPermission()
+requestPermission()
 
 // Show notification
-showNotification("New Message", obj(
-    "body", "You have a new message",
-    "icon", "/icon.png"
-))"""),
+notification("New Message")
+    .body("You have a new message")
+    .icon("/icon.png")
+    .build()"""),
 
             h3Title("Geolocation"),
             codeBlock("""
@@ -102,24 +104,28 @@ getCurrentPosition()
     .build()
 
 // Watch position (continuous updates)
-watchPosition(callback("pos")
-    .call("updatePosition", variable("pos").dot("coords"))
-)"""),
+watchPosition()
+    .onSuccess(callback("pos")
+        .call("updatePosition", variable("pos").dot("coords"))
+    )
+    .build("watchId")"""),
 
             h3Title("Web Share"),
             codeBlock("""
 import static jweb.js.JSShare.*;
 
 // Share content
-share(obj(
-    "title", "Check this out",
-    "text", "Interesting article",
-    "url", window.location.href
-))
+share()
+    .title("Check this out")
+    .text("Interesting article")
+    .url("/article/42")
+    .build()
+
+// Quick URL share
+shareUrl("/article/42")
 
 // Check if sharing is supported
-if_(canShare())
-    .then(showShareButton())"""),
+canShare()   // boolean Val for use in conditions"""),
 
             h3Title("Fullscreen"),
             codeBlock("""
@@ -139,41 +145,47 @@ isFullscreen()"""),
 import static jweb.js.JSVisibility.*;
 
 // Check if visible
-isPageVisible()
+isVisible()
+isHidden()
 
 // Handle visibility change
 onVisibilityChange(callback()
-    .if_(isPageVisible())
-        .then(call("resumeVideo"))
+    .if_(isVisible())
+        .then_(call("resumeVideo"))
     .else_(call("pauseVideo"))
-)"""),
+)
+
+// Or use the dedicated helpers
+onVisible(callback().call("resumeVideo"))
+onHidden(callback().call("pauseVideo"))"""),
 
             h3Title("Observers"),
             codeBlock("""
 import static jweb.js.JSObservers.*;
 
 // IntersectionObserver (lazy loading, infinite scroll)
-intersectionObserver(callback("entries")
-    .forEach(callback("entry")
-        .if_(variable("entry").dot("isIntersecting"))
-        .then(call("lazyLoad", variable("entry").dot("target")))
+intersection()
+    .onIntersect(callback("entries")
+        .call("lazyLoadVisible", variable("entries"))
     )
-).observe(queryAll("img[data-src]"))
+    .threshold(0.5)
+    .observe("hero-img", "heroObserver")
 
 // ResizeObserver
-resizeObserver(callback("entries")
-    .forEach(callback("entry")
-        .call("handleResize", variable("entry").dot("contentRect"))
+resize()
+    .onResize(callback("entries")
+        .call("handleResize", variable("entries"))
     )
-).observe(variable("container"))
+    .observe("container", "containerObserver")
 
 // MutationObserver
-mutationObserver(callback("mutations")
-    .call("handleDOMChanges", variable("mutations"))
-).observe(variable("element"), obj(
-    "childList", true,
-    "subtree", true
-))""")
+mutation()
+    .onMutate(callback("mutations")
+        .call("handleDOMChanges", variable("mutations"))
+    )
+    .childList()
+    .subtree()
+    .observe("content", "contentObserver")""")
         );
     }
 }

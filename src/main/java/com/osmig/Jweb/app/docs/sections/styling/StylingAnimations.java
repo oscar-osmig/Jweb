@@ -42,8 +42,8 @@ String bounceKeyframes = keyframes("bounce")
 .animationDirection(directionAlternate)
 .animationFillMode(fillModeForwards)
 
-// Shorthand
-.animation("fadeIn 0.5s ease-out forwards")"""),
+// Shorthand (raw CSS string)
+.prop("animation", "fadeIn 0.5s ease-out forwards")"""),
 
             h3Title("Pre-built Animations"),
             para("40+ ready-to-use animations."),
@@ -95,29 +95,27 @@ tada(s(1))"""),
             codeBlock("""
 // Style with pre-built animation
 style()
-    .animation(fadeIn(s(0.5)))
+    .prop("animation", fadeIn(s(0.5)))
 
 // With modifiers
 style()
-    .animation(
+    .prop("animation",
         slideInUp(s(0.6))
             .delay(ms(200))
-            .timing(easeOut)
+            .timing(timingEaseOut)
     )
 
 // Infinite animation
 style()
-    .animation(
+    .prop("animation",
         pulse(s(1.5))
-            .iterations(infinite)
+            .iterationCount(iterationInfinite)
     )
 
-// Chained animation
+// Multiple animations at once
 style()
-    .animation(
-        fadeInUp(s(0.5))
-            .then(bounce(s(0.3)))  // After first completes
-    )"""),
+    .animationName(composeAnimations("fadeInUp", "bounce"))
+    .animationDuration(s(0.5))"""),
 
             h3Title("Timing Functions"),
             codeBlock("""

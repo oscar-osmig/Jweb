@@ -11,83 +11,68 @@ public final class FormsBuilders {
             h3Title("Form Input Builders"),
             para("JWeb provides type-safe input builders with validation and styling built-in."),
             codeBlock("""
-import static jweb.El.*;
+import jweb.Input;
 
-// Text inputs with labels
-textInput("username", "Username")
-textInput("fullName", "Full Name").placeholder("John Doe")
+// Fluent input builders
+Input.text("username")
+Input.text("fullName").placeholder("John Doe")
 
 // Email with validation
-emailInput("email", "Email Address").required()
+Input.email("email").required()
 
 // Password with constraints
-passwordInput("password", "Password")
+Input.password("password")
     .minLength(8)
     .required()
 
 // Number inputs
-numberInput("age", "Age").min(0).max(120)
-numberInput("price", "Price").step(0.01)"""),
+Input.number("age").min(0).max(120)
+Input.number("price").step("0.01")"""),
 
-            h3Title("Complete Field Builder"),
-            para("The field() builder creates a full form field with label, input, and error container."),
+            h3Title("Labeled Fields"),
+            para("The field() helper wraps an input with a label wired to its id."),
             codeBlock("""
+import static jweb.El.*;
+
 // Basic text field
-field("name").label("Full Name").text().required()
+field("Full Name", textInput("name"))
 
 // Email field with placeholder
-field("email")
-    .label("Email Address")
-    .email()
-    .placeholder("user@example.com")
-    .required()
+field("Email Address", emailInput("email", "user@example.com"))
 
 // Password field
-field("password")
-    .label("Password")
-    .password()
-    .minLength(8)
-    .required()
+field("Password", passwordInput("password"))
 
-// Number with range
-field("quantity")
-    .label("Quantity")
-    .number()
-    .min(1)
-    .max(100)
-    .value(1)"""),
+// Number field
+field("Quantity", numberInput("quantity"))"""),
 
             h3Title("Checkbox and Radio"),
             codeBlock("""
-// Single checkbox
-checkbox("terms", "I agree to the terms")
-checkbox("newsletter", "Subscribe to newsletter").checked()
+// Single checkbox (Input builder)
+Input.checkbox("terms")
+Input.checkbox("newsletter").checked()
 
-// Radio group
-radioGroup("gender",
-    radio("male", "Male"),
-    radio("female", "Female"),
-    radio("other", "Other")
-)
-
-// Inline radio
-radioGroup("size",
-    radio("s", "Small"),
-    radio("m", "Medium"),
-    radio("l", "Large")
-).inline()"""),
+// Radio group — same name, different values
+div(
+    label(for_("size-s"), text("Small")),
+    Input.radio("size", "s").id("size-s"),
+    label(for_("size-m"), text("Medium")),
+    Input.radio("size", "m").id("size-m").checked(),
+    label(for_("size-l"), text("Large")),
+    Input.radio("size", "l").id("size-l")
+)"""),
 
             h3Title("Select Dropdown"),
             codeBlock("""
-// Simple select
-selectField("country", "Country",
+// Labeled select
+field("Country", select(attrs().name("country").id("country"),
     option("us", "United States"),
     option("uk", "United Kingdom"),
     option("ca", "Canada")
-)
+))
 
 // With groups
-selectField("car", "Choose a car",
+select(attrs().name("car"),
     optgroup("Swedish Cars",
         option("volvo", "Volvo"),
         option("saab", "Saab")
@@ -99,8 +84,9 @@ selectField("car", "Choose a car",
 )
 
 // Multi-select
-selectField("skills", "Skills").multiple()
-    .options(skillsList)"""),
+select(attrs().name("skills").multiple(),
+    each(skillsList, s -> option(s, s))
+)"""),
 
             docTip("Input builders automatically generate IDs and wire up labels for accessibility.")
         );

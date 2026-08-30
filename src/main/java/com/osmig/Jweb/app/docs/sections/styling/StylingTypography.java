@@ -45,9 +45,12 @@ public final class StylingTypography {
 .textTransform(uppercase)
 .textTransform(capitalize)
 
-// Text overflow
+// Text overflow — truncate() preset does all three
+.truncate()  // overflow hidden + ellipsis + nowrap
+
+// Or individually
 .overflow(hidden)
-.textOverflow(ellipsis)
+.prop("text-overflow", "ellipsis")
 .whiteSpace(nowrap)
 
 // Word wrapping

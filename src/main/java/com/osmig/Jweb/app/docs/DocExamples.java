@@ -54,8 +54,8 @@ public final class DocExamples {
                     }""";
 
     public static final String SETUP_IMPORTS = """
+                    import jweb.Element;
                     import static jweb.El.*;
-                    import static jweb.Css.*;
                     import static jweb.Css.*;""";
 
     public static final String SETUP_RUN = """
@@ -91,7 +91,7 @@ public final class DocExamples {
                 // URL: /search?q=java&page=2
                 app.get("/search", req -> {
                     String query = req.query("q");
-                    String page = req.query("page", "1"); // with default
+                    int page = req.queryInt("page", 1); // with default
                     return div(
                         h1("Search: " + query),
                         p("Page: " + page)
@@ -101,12 +101,12 @@ public final class DocExamples {
     public static final String ROUTING_REQUEST_BODY = """
                 app.post("/login", req -> {
                     // Form data
-                    String email = req.body("email");
-                    String password = req.body("password");
-                
+                    String email = req.formParam("email");
+                    String password = req.formParam("password");
+
                     // Or get all form data as a Map
-                    Map<String, String> formData = req.formData();
-                
+                    Map<String, String[]> formData = req.formParams();
+
                     return authenticate(email, password);
                 });""";
 
@@ -147,10 +147,10 @@ public final class DocExamples {
                 app.use(Middlewares.csrf());
                 
                 // Apply to specific paths
-                app.use("/admin", Middlewares.auth());
-                
+                app.use("/admin", Auth.requireAuth("/login"));
+
                 // Apply conditionally
-                app.useIf(isProd, Middlewares.compression());""";
+                app.useIf(isProd, Middlewares.compressionHeaders());""";
 
     // ==================== Templates Section ====================
 
@@ -599,29 +599,27 @@ input(attrs().type("hidden").name("csrf").value(token))""";
 import jweb.FormValidator;
 
 app.post("/register", req -> {
-    Map<String, String> form = req.formData();
-
     var result = FormValidator.create()
-        .field("email", form.get("email"))
+        .field("email", req.formParam("email"))
             .required()
             .email()
-        .field("password", form.get("password"))
+        .field("password", req.formParam("password"))
             .required()
             .minLength(8)
             .maxLength(100)
-        .field("confirmPassword", form.get("confirmPassword"))
+        .field("confirmPassword", req.formParam("confirmPassword"))
             .required()
-            .matches("password", form.get("password"))
-        .field("age", form.get("age"))
+            .matches("password", req.formParam("password"))
+        .field("age", req.formParam("age"))
             .optional()
             .numeric()
         .validate();
 
     if (result.hasErrors()) {
-        return showErrors(result.getErrors());
+        return showErrors(result.getAllErrors());
     }
 
-    return createUser(form);
+    return createUser(req);
 });""";
 
     public static final String FORMS_VALIDATORS = """
@@ -731,7 +729,7 @@ Form.create()
     .disabled()                  // Disabled field
     .readonly()                  // Read-only field
     .value("default")            // Default value
-    .helpText("3-20 characters") // Help text below field
+    .help("3-20 characters")     // Help text below field
 )""";
 
     public static final String FORM_BUILDER_SELECT = """
@@ -739,21 +737,18 @@ Form.create()
     .label("Country")
     .placeholder("Select a country")
     .required()
-    .option("us", "United States")
+    .option("us", "United States", true)  // pre-selected
     .option("uk", "United Kingdom")
     .option("ca", "Canada")
     .option("de", "Germany")
-    .selected("us")  // Pre-selected value
 )""";
 
     public static final String FORM_BUILDER_RADIO = """
 .radio("plan", r -> r
     .label("Subscription Plan")
-    .required()
     .option("basic", "Basic - $9/month")
-    .option("pro", "Professional - $29/month")
+    .option("pro", "Professional - $29/month", true)  // pre-selected
     .option("enterprise", "Enterprise - $99/month")
-    .selected("pro")
 )""";
 
     public static final String FORM_BUILDER_BUTTONS = """
@@ -761,8 +756,7 @@ Form.create()
 .reset("Clear Form")          // Optional reset button
 
 // Or with custom styling:
-.submitButton(b -> b
-    .text("Sign Up")
+.submit("Sign Up", b -> b
     .class_("btn-primary")
     .disabled()
 )""";
@@ -783,7 +777,7 @@ Form.create()
         .label("Password")
         .required()
         .minLength(8)
-        .helpText("At least 8 characters"))
+        .help("At least 8 characters"))
     .password("confirmPassword", f -> f
         .label("Confirm Password")
         .required())
@@ -797,9 +791,8 @@ Form.create()
 
     .radio("plan", r -> r
         .label("Plan")
-        .option("free", "Free")
-        .option("pro", "Pro - $10/mo")
-        .selected("free"))
+        .option("free", "Free", true)  // pre-selected
+        .option("pro", "Pro - $10/mo"))
 
     .checkbox("newsletter", f -> f
         .label("Subscribe to newsletter"))
@@ -996,33 +989,32 @@ UI.dangerButton("Delete", e -> handleDelete())
 UI.ghostButton("Learn More", e -> navigate())
 UI.linkButton("View Details", e -> showDetails())
 
-// Icon button (for icons)
-UI.iconButton(iconElement, e -> handleClick())""";
+// Icon button (icon + label)
+UI.iconButton("\\u2605", "Favorite", e -> handleClick())""";
 
     public static final String UI_BADGES = """
-import static jweb.UI.Badge.*;
+import static jweb.UI.*;
 
 // Colored badges
-UI.badge("New", SUCCESS)    // green
-UI.badge("Pending", WARNING) // yellow
-UI.badge("Error", DANGER)    // red
-UI.badge("Info", INFO)       // blue
-UI.badge("Default", DEFAULT) // gray
+UI.badge("New", Badge.SUCCESS)     // green
+UI.badge("Pending", Badge.WARNING) // yellow
+UI.badge("Error", Badge.ERROR)     // red
+UI.badge("Info", Badge.INFO)       // blue
+UI.badge("Default", Badge.DEFAULT) // gray
+UI.badge("Primary", Badge.PRIMARY) // indigo
 
 // Tags (similar to badges, for categories)
-import static jweb.UI.Tag.*;
-
-UI.tag("JavaScript", PRIMARY)
-UI.tag("Tutorial", SECONDARY)""";
+UI.tag("JavaScript")
+UI.tag("Removable", e -> removeTag())  // with remove handler""";
 
     public static final String UI_ALERTS = """
-import static jweb.UI.Alert.*;
+import static jweb.UI.*;
 
 // Alert with icon
-UI.alert("Operation completed successfully!", SUCCESS)
-UI.alert("Please review your input.", WARNING)
-UI.alert("Something went wrong.", DANGER)
-UI.alert("Here's some useful information.", INFO)
+UI.alert("Operation completed successfully!", Alert.SUCCESS)
+UI.alert("Please review your input.", Alert.WARNING)
+UI.alert("Something went wrong.", Alert.ERROR)
+UI.alert("Here's some useful information.", Alert.INFO)
 
 // Shorthand methods
 UI.successAlert("Saved successfully!")
@@ -1076,11 +1068,7 @@ function hello() {
 \"\"\")""";
 
     public static final String UI_BREADCRUMB = """
-UI.breadcrumb(
-    a(attrs().href("/"), text("Home")),
-    a(attrs().href("/docs"), text("Documentation")),
-    span(text("Current Page"))
-)""";
+UI.breadcrumb("Home", "Documentation", "Current Page")""";
 
     public static final String UI_EMPTY = """
 UI.emptyState(
@@ -1103,14 +1091,15 @@ div(
 import static jweb.UI.*;
 import static jweb.Layout.*;
 
-card(
+// card() and divider() exist in both UI and Layout — qualify those
+UI.card(
     // Header with badge
     row(rem(1),
         h3("User Statistics"),
         badge("Live", Badge.SUCCESS)
     ),
 
-    divider(),
+    UI.divider(),
 
     // Progress section
     stack(rem(0.5),
@@ -1119,7 +1108,7 @@ card(
         p("65% of 100GB")
     ),
 
-    divider(),
+    UI.divider(),
 
     // Actions
     cluster(rem(0.5),
@@ -1259,7 +1248,7 @@ attrs()
     .opacity(0.8)
     .overflow(hidden)
     .cursor(pointer)
-    .transition(propAll, s(0.2), ease)
+    .transition(all, s(0.2), ease)
     .transform(scale(1.1))
 .done()""";
 
@@ -1280,9 +1269,9 @@ app.useIf(cond, middleware)     // Conditional""";
     public static final String DSL_REQUEST = """
 req.param("id")           // Path parameter
 req.query("page")         // Query parameter
-req.query("page", "1")    // With default
-req.body("email")         // Form field
-req.formData()            // All form data as Map
+req.queryInt("page", 1)   // With default
+req.formParam("email")    // Form field
+req.formParams()          // All form data as Map
 req.header("Accept")      // Request header
 req.cookie("session")     // Cookie value
 req.method()              // HTTP method
@@ -1309,7 +1298,7 @@ public class UserApi {
         return userService.findAll();
     }
 
-    @GET("/:id")
+    @GET("/{id}")
     public User getById(@PathVariable Long id) {
         return userService.findById(id);
     }
@@ -1319,7 +1308,7 @@ public class UserApi {
         return userService.save(user);
     }
 
-    @DEL("/:id")
+    @DEL("/{id}")
     public void delete(@PathVariable Long id) {
         userService.delete(id);
     }
@@ -1329,10 +1318,10 @@ public class UserApi {
 // JWeb simplified annotations
 @REST("/api")      // Marks REST controller with base path
 @GET               // GET request (list all)
-@GET("/:id")       // GET with path variable
+@GET("/{id}")      // GET with path variable
 @POST              // POST request (create)
-@UPDATE("/:id")    // PUT request (update)
-@DEL("/:id")       // DELETE request
+@UPDATE("/{id}")   // PUT request (update)
+@DEL("/{id}")      // DELETE request
 
 // These map to Spring's @RestController, @GetMapping, etc.""";
 
@@ -1352,7 +1341,7 @@ public User create(@RequestBody User user) {
     return userService.save(user);
 }
 
-@GET("/:category/:id")
+@GET("/{category}/{id}")
 public Item getItem(
     @PathVariable String category,
     @PathVariable Long id) {
@@ -1360,61 +1349,66 @@ public Item getItem(
 }""";
 
     public static final String API_OPENAPI_CONFIG = """
-# application.yaml
-jweb:
-  api:
-    base: /api/v1
-
-# Access documentation at /api-docs""";
+// Mount interactive API docs
+OpenApi.create()
+    .title("My API")
+    .version("1.0.0")
+    .addApi(UserApi.class)
+    .mount(app);  // Serves /docs, /redoc, /scalar, /openapi.json""";
 
     // ==================== Security Section ====================
 
     public static final String SECURITY_PASSWORD = """
-import jweb.Auth;
+import com.osmig.Jweb.framework.security.Password;
 
-// Hash a password
-String hashed = Auth.hashPassword("user-password");
+// Hash a password (BCrypt)
+String hashed = Password.hash("user-password");
 
 // Verify a password
-boolean valid = Auth.verifyPassword("input", hashed);""";
+boolean valid = Password.verify("input", hashed);""";
 
     public static final String SECURITY_JWT = """
 // Generate JWT token
-String token = Auth.generateToken(userId, Map.of(
-    "role", "admin"
-));
+String token = Jwt.create()
+    .subject(userId)
+    .claim("role", "admin")
+    .expiresIn(Duration.ofHours(1))
+    .sign();
 
-// Validate token
-Optional<Auth.TokenClaims> claims = Auth.validateToken(token);
-claims.ifPresent(c -> {
-    String subject = c.subject();
-    String role = c.get("role");
-});""";
+// Validate and read claims
+if (Jwt.isValid(token)) {
+    Jwt.Token parsed = Jwt.parse(token);
+    String subject = parsed.subject();
+    String role = parsed.claim("role");
+}""";
 
     public static final String SECURITY_SESSION = """
 // Store in session
-Session.set(request, "userId", user.getId());
+req.sessionAttr("userId", user.getId());
 
 // Retrieve from session
-Long userId = Session.get(request, "userId", Long.class);
+Long userId = req.sessionAttr("userId");
 
 // Clear session (logout)
-Session.clear(request);""";
+req.session().invalidate();""";
 
     public static final String SECURITY_PROTECTED = """
-// Protect routes with middleware
-app.use("/admin", req -> {
-    if (!Session.has(req, "userId")) {
+// Protect routes with the built-in middleware
+app.use("/admin", Auth.requireAuth("/login"));
+
+// Or write the check by hand
+app.use("/admin", (req, chain) -> {
+    if (!Auth.isAuthenticated(req)) {
         return Response.redirect("/login");
     }
-    return null; // Continue to route
+    return chain.next(); // Continue to route
 });""";
 
     public static final String SECURITY_CSRF = """
-String csrfToken = Auth.generateCsrfToken(session);
+import jweb.Csrf;
 
 form(attrs().action("/submit").method("POST"),
-    input(attrs().type("hidden").name("_csrf").value(csrfToken)),
+    Csrf.tokenField(req),  // hidden _csrf input
     // ... form fields
     button(type("submit"), text("Submit"))
 )""";
@@ -1422,7 +1416,7 @@ form(attrs().action("/submit").method("POST"),
     // ==================== UI Components Section ====================
 
     public static final String UI_MODAL = """
-UI.modal("confirm-modal")
+UI.Modal.create("confirm-modal")
     .title("Confirm Action")
     .body(p("Are you sure?"))
     .footer(
@@ -1435,7 +1429,7 @@ UI.modal("confirm-modal")
 // Script: UI.modalScript()""";
 
     public static final String UI_TABS = """
-UI.tabs("settings-tabs")
+UI.Tabs.create("settings-tabs")
     .tab("general", "General", generalContent)
     .tab("security", "Security", securityContent)
     .defaultTab("general")
@@ -1444,18 +1438,18 @@ UI.tabs("settings-tabs")
 // Include once: UI.tabsScript()""";
 
     public static final String UI_DROPDOWN = """
-UI.dropdown("user-menu")
+UI.Dropdown.create("user-menu")
     .trigger(div(UI.avatar("John"), span("John")))
-    .item("Profile", "/profile")
-    .item("Settings", "/settings")
+    .item("Profile", e -> goTo("/profile"))
+    .item("Settings", e -> goTo("/settings"))
     .divider()
     .item("Logout", e -> logout())
     .build()""";
 
     public static final String UI_ACCORDION = """
-UI.accordion("faq")
-    .item("q1", "What is JWeb?", p("A Java web framework."))
-    .item("q2", "Do I need Node?", p("No, just Maven."))
+UI.Accordion.create("faq")
+    .item("What is JWeb?", p("A Java web framework."))
+    .item("Do I need Node?", p("No, just Maven."))
     .allowMultiple(false)
     .build()""";
 
@@ -1463,27 +1457,28 @@ UI.accordion("faq")
 // Setup (once in layout)
 Toast.setup()
 
-// Show from JavaScript
-button(attrs().onClick("Toast.success('Saved!')"), text("Save"))
-button(attrs().onClick("Toast.error('Failed')"), text("Delete"))
+// Show from a click handler
+button(attrs().onClick(Toast.success("Saved!")), text("Save"))
+button(attrs().onClick(Toast.error("Failed")), text("Delete"))
 
 // Show on page load
 Toast.initial(Toast.Type.SUCCESS, "Welcome!")""";
 
     public static final String UI_DATATABLE = """
-UI.dataTable(users)
-    .column("Name", User::getName)
-    .column("Email", User::getEmail)
+UI.DataTable.<User>create()
+    .column("Name", u -> text(u.getName()))
+    .column("Email", u -> text(u.getEmail()))
     .column("Role", u -> UI.badge(u.getRole(), Badge.INFO))
+    .data(users)
     .striped()
     .hoverable()
     .build()""";
 
     public static final String UI_NAVBAR = """
-UI.navbar()
-    .brand("/", "MyApp")
-    .link("/", "Home")
-    .link("/docs", "Docs")
+UI.Nav.create()
+    .brand("MyApp", "/")
+    .link("Home", "/")
+    .link("Docs", "/docs")
     .right(UI.primaryButton("Sign In", e -> {}))
     .build()""";
 

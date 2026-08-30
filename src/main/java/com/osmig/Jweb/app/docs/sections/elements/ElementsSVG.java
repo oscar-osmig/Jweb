@@ -131,8 +131,8 @@ svg(viewBox("0 0 200 200"),
     )
 )
 
-// Multiple transforms
-g(transform(translate(50, 50), rotate(45), scale(1.5)),
+// Multiple transforms (space-separated string)
+g(transform(translate(50, 50) + " " + rotate(45) + " " + scale(1.5)),
     rect(x(-25), y(-25), width(50), height(50), fill("purple"))
 )
 
@@ -151,9 +151,9 @@ svg(viewBox("0 0 200 200"),
     // Define reusable elements
     defs(
         // Gradient
-        linearGradient(attrs().id("gradient1"),
-            stop(attrs().offset("0%").stopColor("blue")),
-            stop(attrs().offset("100%").stopColor("purple"))
+        linearGradient(id("gradient1"),
+            stop(offset("0%"), stopColor("blue")),
+            stop(offset("100%"), stopColor("purple"))
         ),
 
         // Reusable symbol

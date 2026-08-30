@@ -21,7 +21,7 @@ public final class StreamingSection {
                         new Layout("Dashboard", div(
                             header(),                              // paints immediately
                             Suspense.of(() -> reports.slowQuery()) // streams in when ready
-                                .loading(() -> spinner("Crunching numbers..."))
+                                .loading(() -> p("Crunching numbers..."))
                                 .render(data -> reportTable(data))
                         )).render()));"""),
 

@@ -19,7 +19,7 @@ input(attrs().type("email").name("email").required())
 
 // Min/max length
 input(attrs().type("text").name("username")
-    .minlength("3").maxlength("20"))
+    .minlength(3).maxlength(20))
 
 // Number range
 input(attrs().type("number").name("age")
@@ -48,8 +48,8 @@ input(attrs()
             h3Title("Server-Side Validation"),
             codeBlock("""
 app.post("/register", req -> {
-    String email = req.body("email");
-    String password = req.body("password");
+    String email = req.formParam("email");
+    String password = req.formParam("password");
 
     List<String> errors = new ArrayList<>();
 

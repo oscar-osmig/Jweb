@@ -62,11 +62,11 @@ rule(".carousel-item")
 rule(".page-container")
     .prop(snapTypeY("proximity"))    // snap when close
     .overflowY(scroll)
-    .height("100vh")
+    .height(vh(100))
 
 rule(".page-section")
     .prop(snapAlignStart())
-    .height("100vh")
+    .height(vh(100))
 
 // Overscroll behavior
 rule(".panel")
@@ -108,23 +108,23 @@ import static jweb.css.CSSSubgrid.*;
 
 // Parent grid
 rule(".card-grid")
-    .display("grid")
+    .display(grid)
     .prop(gridTemplateColumns("repeat(3, 1fr)"))
     .gap(rem(1))
 
 // Child inherits parent columns
 rule(".card")
-    .display("grid")
+    .display(grid)
     .prop(subgridColumns())    // grid-template-columns: subgrid
 
 // Inherit both axes
 rule(".full-child")
-    .display("grid")
+    .display(grid)
     .prop(subgridBoth())       // columns and rows from parent
 
 // Named line references
 rule(".named-child")
-    .display("grid")
+    .display(grid)
     .prop(subgridColumnsNamed("[start] [end]"))
 
 // Grid placement helpers

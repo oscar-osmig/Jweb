@@ -40,8 +40,8 @@ List<String> items = List.of("Apple", "Banana", "Cherry");
 ul(each(items, item -> li(item)))
 
 // With index
-ul(eachWithIndex(items, (item, i) ->
-    li((i + 1) + ". " + item)
+ul(each(IntStream.range(0, items.size()).boxed().toList(), i ->
+    li((i + 1) + ". " + items.get(i))
 ))
 
 // Complex list items

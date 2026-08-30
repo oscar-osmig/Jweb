@@ -149,13 +149,13 @@ variable("a").lte(10)              // a <= 10
 // Logical
 variable("a").and(variable("b"))   // a && b
 variable("a").or(variable("b"))    // a || b
-not(variable("flag"))              // !flag
+variable("flag").not()             // !flag
 
 // Arithmetic
 variable("a").plus(variable("b"))  // a + b
 variable("a").minus(5)             // a - 5
 variable("a").times(2)             // a * 2
-variable("a").divide(10)           // a / 10
+variable("a").div(10)              // a / 10
 variable("a").mod(2)               // a % 2
 
 // Optional chaining

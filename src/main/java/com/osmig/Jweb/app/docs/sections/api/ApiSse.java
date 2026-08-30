@@ -30,13 +30,17 @@ app.get("/events", req -> {
             h3Title("Event Types"),
             codeBlock("""
 // Named event (client listens with addEventListener)
-emitter.send("notification", jsonData);
+emitter.send(SseEvent.of("notification", jsonData));
 
 // Default event (client listens with onmessage)
 emitter.send(jsonData);
 
 // With event ID (for reconnection)
-emitter.sendWithId("msg-123", "message", data);"""),
+emitter.send(SseEvent.create()
+    .id("msg-123")
+    .name("message")
+    .data(data)
+    .build());"""),
 
             h3Title("Client JavaScript"),
             codeBlock("""
@@ -54,30 +58,40 @@ script()
 
             h3Title("Broadcasting"),
             codeBlock("""
-// Broadcast to all connected clients
-SSE.broadcast("notifications", "New message!");
+// Shared broadcaster for all connected clients
+SseBroadcaster broadcaster = new SseBroadcaster();
 
-// Broadcast to specific topic
-SSE.topic("orders").send("orderUpdate", orderData);
+// Broadcast to everyone
+broadcaster.broadcast("New message!");
+broadcaster.broadcast(SseEvent.of("notification", jsonData));
 
-// Client subscribes to topic
+// Broadcast to a channel
+broadcaster.broadcast("orders", SseEvent.json("orderUpdate", orderData));
+
+// Client subscribes to a channel
 app.get("/orders/updates", req -> {
-    String orderId = req.query("id");
-    return SSE.subscribe("orders-" + orderId);
+    SseEmitter emitter = SseEmitter.create();
+    broadcaster.subscribe("orders-" + req.query("id"), emitter);
+    return emitter;
 });"""),
 
             h3Title("Complete Example"),
             codeBlock("""
 // Live dashboard updates
-app.get("/dashboard/updates", req -> SSE.stream(emitter -> {
-    emitter.send("init", getDashboardData());
+app.get("/dashboard/updates", req -> {
+    SseEmitter emitter = SseEmitter.create();
 
-    while (!emitter.isClosed()) {
-        var stats = getStats();
-        emitter.send("stats", stats);
-        Thread.sleep(5000);
-    }
-}));"""),
+    Jobs.run(() -> {
+        emitter.send(SseEvent.json("init", getDashboardData()));
+
+        while (!emitter.isCompleted()) {
+            emitter.send(SseEvent.json("stats", getStats()));
+            Thread.sleep(5000);
+        }
+    });
+
+    return emitter;
+});"""),
 
             docTip("SSE auto-reconnects on connection loss. Use event IDs for message replay.")
         );
