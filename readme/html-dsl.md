@@ -11,12 +11,41 @@ import static jweb.El.*;   // every element, attribute helper, typed input,
                            // conditional, popover, SVG shape, responsive image
 ```
 
-`jweb.El` is the union of the two legacy facades (`El` + `Elements`): elements with
-`(Attributes, ...)` and `(InlineStyle, ...)` overloads, `attrs()` and the attribute
-shortcuts (`id`, `class_`, `alt`, `placeholder`, `aria`, `role`, ...), typed inputs
-(`textInput`, `emailInput`, `checkbox`, `radio`, ...), conditionals
-(`when`/`match`/`cond`/`otherwise`/`errorBoundary`), popovers, `icon`/`appleIcon`,
-`srcset`/`responsiveImg`/`lazyImg`, and the core SVG shapes.
+`jweb.El` is the union of the two legacy facades (`El` + `Elements`): every element,
+`attrs()` and the attribute shortcuts (`id`, `class_`, `alt`, `placeholder`, `aria`,
+`role`, ...), typed inputs (`textInput`, `emailInput`, `checkbox`, `radio`, ...),
+conditionals (`when`/`match`/`cond`/`otherwise`/`errorBoundary`), popovers,
+`icon`/`appleIcon`, and the core SVG shapes.
+
+## Two rules cover the whole DSL
+
+**1. Every element is `name(Object... attributesAndChildren)`.** Attributes and children mix
+freely in any order — `Attr`, `Attributes`, and a bare `style()` builder become attributes,
+everything else becomes a child:
+
+```java
+div(class_("card"), id("main"),
+    h1(text("Title")),
+    p(text("Body")))
+
+img(src("/logo.png"), alt("Logo"), loading("lazy"))
+```
+
+There are no separate `(Attributes, ...)` or `(InlineStyle, ...)` overloads any more — the
+single varargs form always did the same thing, so ~120 duplicate overloads are gone.
+
+**2. A lone String argument is always text.**
+
+```java
+a("Home")                    // <a>Home</a>
+label("Email:")              // <label>Email:</label>
+a(href("/"), "Home")         // <a href="/">Home</a>
+```
+
+Previously a single String was silently an attribute for some elements (`a` → href,
+`label` → for, `textarea` → name), which is the single biggest trap this pass removed.
+Two documented exceptions remain, because they are void elements or content-bearing:
+`img(src)`, `img(src, alt)`, and `inlineScript(code)`.
 
 Still separate on purpose:
 
@@ -47,15 +76,15 @@ tables below list the legacy `El` core; `jweb.El` adds everything from `Elements
 | **Lists** | `ul`, `ol`, `li` |
 | **Tables** | `table`, `thead`, `tbody`, `tr`, `th`, `td` |
 | **Forms** | `form`, `input`, `textarea`, `select`, `option(value,text)`, `option(valueAndText)`, `label`, `button` |
-| **Media** | `img`, `video`, `audio`, `canvas`, `iframe(attrs)`, `track(attrs)`, `srcset`, `responsiveImg`, `lazyImg` |
+| **Media** | `img`, `video`, `audio`, `canvas`, `iframe`, `track`, `embed`, `object`, `param`, `map`, `area`, `source`, `srcset` |
 | **SVG** | `svg`, `path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `g`, `d`, `viewBox`, `fill`, `stroke`, `strokeWidth` |
-| **Modern HTML5** | `dialog`, `details`, `summary`, `meter`, `progress`, `progressIndeterminate`, `template`, `slot`, `output`, `timeWithDatetime`, `data_` (the `<data>` element), `bdi`, `bdo`, `ruby`, `rt`, `rp` |
+| **Modern HTML5** | `dialog`, `details`, `summary`, `meter`, `progress`, `template`, `slot`, `output`, `data_` (the `<data>` element), `bdi`, `bdo`, `ruby`, `rt`, `rp` |
 | **Figure** | `figure`, `figcaption` |
 | **Definition** | `dl`, `dt`, `dd` |
 | **Interactive text** | `abbr`, `dfn`, `cite`, `q`, `blockquote`, `kbd`, `samp`, `var_`, `mark`, `sub`, `sup`, `ins`, `del`, `s` |
 | **Picture** | `picture`, `source`, `srcset` (the `media`/`sizes`/`loading` attrs need `PictureElements`) |
 | **Form enhancements** | `datalist`, `optgroup`, `fieldset`, `legend` (input helpers need `FormEnhancements`) |
-| **Popovers** | `popover`, `popoverTarget`, `popoverTargetAction`, `autoPopover`, `manualPopover`, `popoverToggleButton` |
+| **Popovers** | `popover`, `popovertarget`, `popovertargetaction` |
 | **Conditionals** | `when`, `match`, `cond`, `otherwise`, `errorBoundary` |
 | **Misc** | `hr` |
 | **Helpers** | `text`, `raw`, `fragment`, `each`, `tag` |
@@ -143,11 +172,13 @@ div(attrs()
 )
 
 // Layout shortcuts (inline flex/grid without a style builder)
-div(attrs().flexCenter(), ...)
-div(attrs().flexColumn("1rem"), ...)
-div(attrs().flexRow("0.5rem"), ...)
-div(attrs().flexBetween(), ...)
-div(attrs().gridCols(3, "1rem"), ...)
+// Deprecated: these live on the Style builder, where they compose with other
+// properties instead of overwriting the style attribute.
+div(attrs().style(s -> s.flexCenter()), ...)
+div(attrs().style(s -> s.flexCol().gap(rem(1))), ...)
+div(attrs().style(s -> s.flexRow().gap(rem(0.5))), ...)
+div(attrs().style(s -> s.flexBetween()), ...)
+div(attrs().style(s -> s.grid(3, rem(1))), ...)
 ```
 
 `Attributes` covers essentially every HTML attribute, grouped: validation (`pattern`, `min`,
@@ -262,11 +293,11 @@ details(attrs().name("faq"), summary("Question 2"), p("Answer 2"))
 
 // Progress and Meter
 progress(70, 100)          // determinate
-progressIndeterminate()    // loading state
+progress()                 // loading state (indeterminate)
 meter(0.6, 0, 1)           // scalar measurement
 
 // Machine-readable values
-timeWithDatetime("2026-08-08", "August 8, 2026")
+time(datetime("2026-08-08"), "August 8, 2026")
 data_(value("SKU-123"), "Product Widget")     // data(n,v) is the data-* attribute
 ```
 
@@ -284,22 +315,22 @@ import static jweb.el.PopoverElements.*;
 
 // Attribute factories
 div(popover("auto"), id("my-popover"), p("Popover content"))
-button(popoverTarget("my-popover"), "Toggle")
-button(popoverTarget("my-popover"), popoverTargetAction("show"), "Show")
+button(popovertarget("my-popover"), "Toggle")
+button(popovertarget("my-popover"), popovertargetaction("show"), "Show")
 
 // Prebuilt elements
-autoPopover("tips", p("Closes when clicking outside"))
+div(popover(), id("tips"), p("Closes when clicking outside"))
 manualPopover("pinned", p("Stays until explicitly closed"))
-popoverToggleButton("tips", "Toggle tips")
-popoverShowButton("tips", "Show")
-popoverHideButton("tips", "Hide")
+button(popovertarget("tips"), "Toggle tips")
+button(popovertarget("tips"), popovertargetaction("show"), "Show")
+button(popovertarget("tips"), popovertargetaction("hide"), "Hide")
 
 // JS helpers (return strings — attach via set() or inlineScript)
 showPopover("tips"); hidePopover("tips"); togglePopover("tips");
 ```
 
-> Note: pass `Attr`s (like `id(...)`) as direct arguments to `autoPopover`/`manualPopover` —
-> attributes nested inside child elements are ignored by the two-pass builder.
+> The `autoPopover`/`manualPopover`/`popover*Button` composites are deprecated: each saved
+> one attribute over the plain form shown above.
 
 ## Responsive Images (`PictureElements` — separate import)
 
@@ -313,11 +344,12 @@ picture(
 )
 
 // Exact signatures:
-responsiveImg("image.jpg", "Description", "image@2x.jpg")   // (src, alt, src2x)
-lazyImg("image.jpg", "Description", 640, 480)               // (src, alt, width, height)
+// Every element takes attributes directly, so these need no special helper:
+img(src("image.jpg"), alt("Description"), srcset("image@2x.jpg 2x"))
+img(src("image.jpg"), alt("Description"), width(640), height(480), loading("lazy"))
 
 // Attribute factories: srcset, media, sizes, type, width, height,
-// loading("lazy"|"eager"), lazyLoad(), eagerLoad(), decoding, fetchPriority
+// loading("lazy"|"eager"), decoding, fetchpriority (exact HTML spelling)
 ```
 
 ## Definition Lists / Figures / Interactive Text
