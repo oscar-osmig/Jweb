@@ -17,7 +17,7 @@ in one language your team already knows.
 
 | They lead with... | JWeb has it as... |
 |---|---|
-| Next.js streaming SSR + Suspense | `Streamed.of(() -> page)` — shell in ~35ms, blocks stream in parallel |
+| Next.js streaming SSR + Suspense | `Streamed.of(() -> page)` — shell flushes instantly, blocks stream in parallel |
 | HTMX fragment swaps | `attrs().swap(url, target)` / `swapForm` / `swapMorph` — typed, built in |
 | idiomorph DOM morphing | `swapMorph` + morphing hot reload — focus and input state survive |
 | TanStack type-safe routing | `TypedRoute.path("/users/:id", Long.class)` + `Query.of("page", Integer.class)` |
@@ -26,7 +26,7 @@ in one language your team already knows.
 | SvelteKit progressive forms | `swapForm` + native POST fallback — works with JS disabled |
 | Next/Astro image optimization | `/jweb/img?src=...&w=...` — ImageIO, zero deps |
 | Vercel AI SDK | `AI.ask/chat/agent` with tool loops — zero deps, any OpenAI-compatible API |
-| Tailwind design tokens | `Theme` constants + `Style.apply(fragment)` composition |
+| Tailwind design tokens | `Theme` constants + `style().apply(fragment)` composition |
 
 ## What the JS stacks can't match
 
@@ -53,7 +53,8 @@ in one language your team already knows.
 ## The 5-minute start
 
 ```bash
+# jweb = alias for: java -cp Jweb.jar com.osmig.Jweb.framework.cli.JWebCli
 jweb new myapp && cd myapp
-./mvnw spring-boot:run          # http://localhost:8080
+./mvnw spring-boot:run          # http://localhost:8085
 jweb build                      # production jar + Dockerfile
 ```

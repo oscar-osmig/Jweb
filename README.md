@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 1.1.0** | **Last Updated: 2026-08-29**
+**Version 1.2.0** | **Last Updated: 2026-08-29**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -25,7 +25,7 @@ JWeb is built on these core principles:
 ## Features
 
 - **Type-safe HTML** — 24 element modules; build HTML with Java methods, no string templates
-- **Type-safe CSS** — 35 style modules; CSS properties as methods, units, colors, animations, `@media`/`@container`/`@supports`/`@layer`/`@scope`
+- **Type-safe CSS** — 29 style modules; CSS properties as methods, units, colors, animations, `@media`/`@container`/`@supports`/`@layer`/`@scope`
 - **Type-safe JavaScript** — 43 JS modules; generate client-side JS from Java, from form handlers to IndexedDB and WebRTC
 - **Component-based** — Reusable components via the `Template` interface
 - **Virtual DOM** — `VNode` tree rendering with XSS-safe text escaping by default
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v1.1.0</version>
+    <version>v1.2.0</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.1.0' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.2.0' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -242,21 +242,25 @@ under `framework-src/`.
 # Run specific test class
 ./mvnw test -Dtest=ClassName
 
-# Production build
+# Library build (default — sample app excluded, no executable jar)
 ./mvnw clean package
-java -jar target/Jweb-1.0.0.jar
+
+# Runnable showcase build (includes the sample app, produces an exec jar)
+./mvnw clean package -Pdemo
+java -jar target/Jweb-1.2.0-exec.jar
 
 # With specific profile
-java -jar target/Jweb-1.0.0.jar --spring.profiles.active=prod
+java -jar target/Jweb-1.2.0-exec.jar --spring.profiles.active=prod
 ```
 
 Then open `http://localhost:8085` in your browser (port is `${PORT:8085}` in `application.yaml`;
-note the Dockerfile currently `EXPOSE`s 8080 — set `PORT=8080` when running in Docker, or align the two).
+the Dockerfile `EXPOSE`s the same 8085).
 
 The sample app serves:
 
 - `/`, `/about`, `/contact` — public pages
-- `/docs` — the interactive documentation site (17 sections)
+- `/docs` — the interactive documentation site (21 sections)
+- `/sandbox` — live DSL playground; `/demo/streaming` — streaming SSR demo
 - `/only-admin/log/in` — admin dashboard (token-based; configure `JWEB_ADMIN_TOKEN`/`JWEB_ADMIN_EMAIL`)
 - `/api/docs`, `/api/redoc`, `/api/scalar`, `/api/openapi.json` — generated API documentation
 
@@ -266,7 +270,7 @@ The sample app serves:
 
 - **Java 21+** (uses records, sealed interfaces, pattern matching, virtual threads)
 - **Maven 3.6+**
-- **Spring Boot 4.0.0** (parent POM)
+- **Spring Boot 4.0.8** (parent POM)
 - **MongoDB** (optional — set `jweb.data.enabled: false` to run without it)
 
 ---
@@ -274,11 +278,13 @@ The sample app serves:
 ## Project Status
 
 The HTML/CSS/JS DSLs, routing, MongoDB integration, security, and validation layers are
-functional and used by the bundled sample app. The reactive state/WebSocket round-trip and
-client hydration are **partially wired** — the server emits everything needed, but the client
-runtime is not auto-injected yet. [Known Issues](./readme/known-issues.md) tracks exactly
-what works, what doesn't, and where the sharp edges are. AI/LLM integration (Spring AI) is
-**planned but not shipped** — its dependencies are commented out in `pom.xml`.
+functional and used by the bundled sample app. The reactive state loop is fully wired: the
+client runtime (`/jweb/runtime.js`) is auto-injected into every rendered page (disable with
+`jweb.runtime.enabled: false`), and state changes patch the DOM over the WebSocket/event
+channel. AI integration ships built-in (`AI.ask/chat/agent` against any OpenAI-compatible
+API, configured via `jweb.ai.*`) — only the *optional* Spring AI starters remain commented
+out in `pom.xml`. [Known Issues](./readme/known-issues.md) tracks exactly what works, what
+doesn't, and where the sharp edges are.
 
 ---
 

@@ -44,14 +44,15 @@ Mechanics worth knowing:
   `Iterable` is flattened.
 - **Void elements** (`img`, `br`, `input`, `hr`, `meta`, `link`, …) throw
   `IllegalArgumentException` if given children.
-- Escaping asymmetry: `VText` escapes single quotes; `VElement` attribute values escape `& < > "`
-  but **not** `'` — always use double quotes in generated attribute contexts.
+- Escaping: `VText` and `VElement` attribute values both escape the same five characters
+  (`& < > " '`), so text and attribute contexts are equally XSS-safe by default.
 
 ## Application Entry Point
 
 ```java
-@JWebApplication  // = @SpringBootApplication + @ComponentScan("com.osmig.Jweb")
-                  //   + @PropertySource("classpath:jweb.yaml")
+@JWebApplication  // = @SpringBootApplication + @PropertySource("classpath:jweb.yaml");
+                  //   framework beans arrive via auto-configuration (JWebAutoConfiguration
+                  //   carries @ComponentScan("com.osmig.Jweb.framework"))
 public class App {
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
@@ -61,13 +62,18 @@ public class App {
 
 ## Auto-Configuration Chain
 
-1. `@JWebApplication` triggers Spring Boot + component scanning of `com.osmig.Jweb`.
+1. `@JWebApplication` triggers Spring Boot + loads `jweb.yaml`; framework beans come from
+   `JWebAutoConfiguration` (listed in `AutoConfiguration.imports`), which component-scans
+   `com.osmig.Jweb.framework` — your app only scans its own package.
 2. `JWebAutoConfiguration` creates the `JWeb` bean and calls `configure(app)` on every
-   `JWebRoutes` bean. **Order across multiple `JWebRoutes` beans is unspecified** — if
-   registration order matters (middleware!), use a single `Routes` class.
+   `JWebRoutes` bean in a **deterministic order**: `@Order`/`Ordered` beans first, then
+   alphabetical by bean name. If middleware ordering matters across classes, use `@Order`
+   (or keep a single `Routes` class).
 3. `JWebConfiguration` connects MongoDB (when `jweb.data.enabled: true`) via an
-   `ApplicationRunner`, exposes `Router` and `MiddlewareStack` beans, and registers static
-   resource handlers (`classpath:/static/`, `classpath:/public/`).
+   `ApplicationRunner`, exposes `Router` and `MiddlewareStack` beans, registers static
+   resource handlers (`classpath:/static/`, `classpath:/public/`), applies the
+   `jweb.dev.debug` / `jweb.runtime.enabled` / `jweb.ai.*` settings, and warms up page
+   routes in the background at startup.
 4. `JWebController` handles HTTP requests via `@RequestMapping("/**")`.
 
 ## The Three Routing Systems
@@ -78,7 +84,7 @@ single most important thing about the architecture:
 | System | Registered via | Dispatched by | Path params | Middleware applies? |
 |--------|---------------|---------------|-------------|---------------------|
 | **Page routes** | `app.layout(...).pages("/", HomePage.class, ...)` or `app.scanPages(pkg)` | `PageRegistry` — exact-string HashMap lookup | ❌ none | ✅ yes (GET/HEAD only; other methods → 405) |
-| **Router routes** | `app.get/post/put/delete/patch(path, handler)` | `Router` — linear scan, first match wins; HEAD served by GET | ✅ `:name` syntax | ✅ yes |
+| **Router routes** | `app.get/post/put/delete(path, handler)` | `Router` — linear scan, first match wins; HEAD served by GET | ✅ `:name` syntax | ✅ yes |
 | **@REST controllers** | `@REST("/api/v1/...")` classes | **Spring MVC** (not JWeb at all) | ✅ `{name}` Spring syntax | ❌ JWeb middleware does not apply — use Spring mechanisms |
 
 Key consequences:
@@ -101,11 +107,11 @@ HTTP Request
     → bypass?  path startsWith /api/v | /h2-console, path == /jweb, Upgrade: websocket
          → return (handled by Spring MVC / WebSocket instead)
     → PageRegistry.findByPath(path)          [O(1) exact match]
-         → found: instantiate page (cached no-arg ctor) → render → wrap in layout
+         → found: middleware stack runs, then instantiate page (cached no-arg ctor)
+                  → render → wrap in layout
                   → inject prefetch + hydration scripts → 200 text/html
-                  (middleware NOT executed on this path)
     → Router.match(method, path)             [O(n) linear scan]
-         → no match: 404 ErrorPage           (middleware NOT executed)
+         → no match: 404 ErrorPage           (middleware still executed)
          → match:  StateManager.createContext()
                    → MiddlewareStack.execute(request, handler)
                    → processResult(...)
@@ -115,14 +121,20 @@ HTTP Request
 `processResult` dispatch (in order):
 
 1. `null` → empty 200
-2. `ResponseEntity` → returned as-is
-3. `RawContent` → `application/json` if `isJson()` else `text/html`
-4. `Element` → `toHtml()` + hydration injection, 200 `text/html`
-5. `String` → 200 **`text/html`** (a JSON string still gets text/html — return `RawContent.json(...)` or `Response.json(...)` instead)
-6. anything else → `result.toString()` labeled `application/json` — **POJOs are not Jackson-serialized**; use `Response.json(obj)`
+2. `Template` → lifecycle hooks (`beforeRender`/`render`/`afterRender`) + template extras
+   + hydration injection, 200 `text/html`
+3. `ResponseEntity` → returned as-is
+4. `RawContent` → `application/json` if `isJson()` else `text/html`
+5. `Element` → `toHtml()` + hydration injection, 200 `text/html` (plus a navigation
+   `Cache-Control` header)
+6. `String` → content-type sniffed: strings starting with `{` or `[` are served as
+   `application/json`, everything else as `text/html`
+7. anything else → serialized with `Json.stringify(result)` as `application/json` —
+   POJOs become real JSON
 
-Errors from handlers render `ErrorPage.render(500, ...)` **including the full stack trace** —
-there is currently no dev/prod switch. See [Known Issues](./known-issues.md).
+Errors from handlers render `ErrorPage.render(500, ...)`. Stack traces are **off by
+default** (production-safe); set `jweb.dev.debug: true` to show exception details during
+development.
 
 ## Components and Templates
 
@@ -201,7 +213,8 @@ JWeb app = JWeb.create();                          // done for you by auto-confi
 
 app.use(Middleware mw)                             // global middleware
 app.useIf(boolean condition, Middleware mw)        // conditional registration
-app.use(String pathPrefix, Middleware mw)          // prefix match — startsWith, NOT globs
+app.use(String pathPrefix, Middleware mw)          // plain prefix ("/api") or glob
+                                                   // patterns ("/api/**", "/files/*.png")
 app.useForMethods(List.of("POST","PUT"), mw)       // method-scoped
 
 app.get(String path, Supplier<Element> page)       // simple page, no request access
@@ -218,8 +231,9 @@ app.layout(Class<? extends Template> layout)
 app.pages(Object... pathsAndPages)                 // alternating "/path", PageClass.class
 ```
 
-Not available (as of now): `patch()`, `head()`, `options()`, route groups, glob middleware
-paths. A method mismatch on an existing path yields **404**, not 405.
+Not available (as of now): `patch()`, `head()`, `options()`, route groups. A method
+mismatch on an existing path yields **405 with an `Allow` header** listing the methods
+the path does support.
 
 ### Route path syntax (Router routes)
 
@@ -449,13 +463,16 @@ click interception, partial swaps (`innerHTML|outerHTML|beforeend|afterbegin`), 
 when available, and `window.JWebNav.{navigate,prefetch,clearCache}`. It must be added to the
 layout explicitly — only the simpler `Prefetch` script is auto-injected by the controller.
 
-## Framework Structure (237 framework files across 45 packages + ~108 app files)
+## Framework Structure
+
+~247 framework files across ~47 packages, plus ~122 app files:
 
 ```
 framework/
 ├── accessibility/      # A11y — WCAG 2.1 HTML auditor (validate/validateHtml)
+├── ai/                 # AI, Chat, Agent, Tool, AiClient/AiConfig, AiChatEndpoint/Widget
 ├── api/                # @REST, @GET, @POST, @UPDATE, @PATCH, @DEL (Spring meta-annotations)
-├── async/              # Jobs, Scheduler, BackgroundTask, Suspense
+├── async/              # Jobs, Scheduler, BackgroundTask, Suspense, Streamed, StreamingContext
 ├── attributes/         # Attr (record), Attributes (fluent builder), Attrs (@Deprecated)
 ├── cache/              # Cache<K,V> — TTL cache with named/global instances
 ├── cli/                # JWebCli (scaffolding CLI), Templates (package-private)
@@ -475,6 +492,7 @@ framework/
 ├── i18n/               # I18n (locale resolution + middleware), Messages (in-memory bundles)
 ├── js/                 # JavaScript DSL — 43 modules (JS, Actions, Async, Events, JS*)
 ├── layout/             # Layout — ~45 static layout helpers (container/grid/stack/card/...)
+├── markdown/           # Markitdown — document→markdown conversion via the markitdown CLI
 ├── metrics/            # Metrics — counters/gauges/timers + /metrics endpoint
 ├── middleware/         # Middleware, MiddlewareChain, MiddlewareStack, Middlewares
 ├── navigation/         # Link (SPA anchors), Navigation (client nav runtime)
@@ -482,12 +500,12 @@ framework/
 ├── performance/        # Prefetch — hover-prefetch script (auto-injected)
 ├── portal/             # Portal — render content into named outlets
 ├── ref/                # Ref — element references producing JS snippets
-├── routing/            # Router, Route (:param regex), RouteHandler, PageRoute, PageRegistry, @Page
-├── security/           # Auth, Principal, Jwt, Password, Cors, Csrf, CsrfToken, RateLimit, OAuth2
-├── server/             # Request, Response, Cookie, JWebController, JWebEventController, ErrorPage
+├── routing/            # Router, Route (:param regex), RouteHandler, TypedRoute, Query, PageRoute, PageRegistry, @Page
+├── security/           # Auth, Principal, Jwt, Password, Cors, Csrf, CsrfToken, CspNonce, RateLimit, OAuth2
+├── server/             # Request, Response, Cookie, JWebController, JWebAssetsController, JWebImageController, ErrorPage
 ├── sse/                # SseBroadcaster, SseEmitter, SseEvent
-├── state/              # State<T>, StateHooks, StateBinding, StateManager, ComponentRegistry
-├── styles/             # CSS DSL — 35 modules (CSS facade, Style, units, colors, at-rules, Theme…)
+├── state/              # State<T>, StateHooks, StateBinding, StateManager, RenderableComponent
+├── styles/             # CSS DSL — 29 modules (CSS facade, Style, units, colors, at-rules, Theme…)
 ├── template/           # Template interface
 ├── testing/            # JWebTest, MockRequest, MockSession, TestClient
 ├── transition/         # Transition (show/hide animation), TransitionBuilder (CSS transitions)

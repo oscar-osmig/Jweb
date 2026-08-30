@@ -2,9 +2,10 @@
 
 # CSS DSL
 
-35 modules, ~15,700 lines. The core is `Style<T>` (the fluent property builder, ~700 methods)
-plus the `CSS` facade (selectors, keyword constants, functions). Everything that can appear on
-the right-hand side of a CSS declaration implements the one-method interface `CSSValue`.
+~30 modules, ~15,700 lines. The core is `jweb.Style<T>` (the fluent property builder, ~400
+methods) plus the `CSS` facade (selectors, keyword constants, functions). Everything that can
+appear on the right-hand side of a CSS declaration implements the one-method interface
+`CSSValue`.
 
 ## Imports
 
@@ -168,14 +169,15 @@ Stylesheet sheet = Stylesheet.stylesheet()
     .rule("body", style().margin(zero).fontFamily("system-ui, sans-serif"))
     .rule(".hero", style().padding(rem(4)).textAlign(center))
     .keyframes(Keyframes.keyframes("gradientShift")
-        .from(style().backgroundPosition("0% 50%"))
-        .to(style().backgroundPosition("100% 50%")))
+        .from(style().backgroundPosition(percent(0), percent(50)))
+        .to(style().backgroundPosition(percent(100), percent(50))))
     .mediaQuery(MediaQuery.md(), new Stylesheet.Rule(".sidebar", style().display(block)));
 
 // Emit:
 sheet.build();          // formatted CSS
 sheet.buildMinified();  // whitespace-squeezed
-sheet.toStyleTag();     // "<style>…</style>" string — used by the sample app's Head.java
+sheet.toStyleTag();     // "<style>…</style>" string (the sample app's Head.java
+                        // uses build() inside style(...) instead)
 ```
 
 Also accepts `fontFace(FontFace)`, `supports(Supports)`, `raw(css)`, `comment(text)`.
@@ -185,7 +187,7 @@ Also accepts `fontFace(FontFace)`, `supports(Supports)`, `raw(css)`, `comment(te
 ```java
 div().styled(style().padding(px(16)).backgroundColor(white))
      .hover(style().backgroundColor(hex("#f5f5f5")))
-     .focus(style().outline("2px solid blue"))
+     .focus(style().outline(px(2), solid, blue))
 ```
 
 Generates a unique class (`jweb-1`, `jweb-2`, …) and renders an adjacent
@@ -286,14 +288,14 @@ CSSLayer.order("reset", "base", "components", "utilities")
 CSSLayer.layer("components", rule(".btn").padding(px(8)))
 
 // @scope (CSSScope)
-CSSScope.scope(".card").to(".card-footer").rule("p", style().margin(zero))
+CSSScope.scope(".card").to(".card-footer").rule(rule("p").margin(zero))
 
 // @property — typed custom properties (CSSProperty)
 CSSProperty.register("--angle").syntax("<angle>").inherits(false).initialValue("0deg")
 
 // @font-face (FontFace)
-FontFace.fontFace().family("Inter").src("/fonts/inter.woff2", "woff2")
-    .weightRange(100, 900).display("swap")
+FontFace.fontFace("Inter").src("/fonts/inter.woff2", "woff2")
+    .fontWeight(100, 900).fontDisplay("swap")
 
 // @keyframes (Keyframes)
 keyframes("fadeIn")
@@ -309,7 +311,7 @@ keyframes("pulse").at(0, style().opacity(1)).at(50, style().opacity(0.5)).at(100
 Two APIs — the fluent `CSS.Selector` builder and static `Selectors` strings:
 
 ```java
-// Fluent (CSS facade): select()/tag()/cls()/id() starters, ~80 chainable methods
+// Fluent (CSS facade): select()/tag()/cls()/id() starters, ~100 chainable methods
 rule(cls("card").hover())                    // .card:hover
 rule(cls("input").focusVisible())
 rule(tag("li").nthChild("2n+1"))
@@ -330,7 +332,7 @@ import static jweb.Css.*;   // CSSVariables is folded into the Css facade
 
 var("primary-color")             // var(--primary-color)   ← named var(), not var_()
 var("spacing", "1rem")           // with fallback
-varChain("a", "b", "1rem")       // var(--a, var(--b, 1rem))
+varChain("a", "b", rem(1))       // var(--a, var(--b, 1rem)) — final fallback is a CSSValue
 
 designSystem()
     .prefix("app")
@@ -347,16 +349,20 @@ theme()                          // ThemeBuilder (not themeBuilder())
 
 ## `Theme` — token store with dark mode
 
-The class the sample app's `Theme.java` wraps:
+A framework-level token store (the sample app's `Theme.java` takes a simpler route —
+plain `CSSValue` constants — but this class adds CSS-variable emission and dark mode):
 
 ```java
 import jweb.css.Theme;
 
-Theme theme = new Theme()
+Theme theme = Theme.create()          // constructor is protected — use create()
     .color("primary", "#6366f1")
-    .darkColor("primary", "#818cf8")
     .spacing("md", "1rem")
-    .font("sans", "system-ui, sans-serif");
+    .fontSize("base", "1rem")         // also: fontWeight, lineHeight, radius, shadow,
+                                      // breakpoint, transition, zIndex, custom
+    .dark()                           // dark-mode overrides sub-builder
+        .color("primary", "#818cf8")
+    .build();
 
 theme.toCss();            // :root { --color-primary: ... }
 theme.toFullCss();        // + @media (prefers-color-scheme: dark) overrides
@@ -366,7 +372,7 @@ theme.color("primary");   // CSSValue reference: var(--color-primary)
 
 ## `Utility` — Tailwind-style class generator
 
-Generates utility-class CSS from a `Theme` (`Utility.generateCss(theme)`) and provides ~500
+Generates utility-class CSS from a `Theme` (`Utility.generateCss(theme)`) and provides ~400
 class-name builder methods for markup that prefers utility classes over inline styles.
 
 ## CSS Animations (`CSSAnimations`)
@@ -374,18 +380,20 @@ class-name builder methods for markup that prefers utility classes over inline s
 ```java
 import static jweb.Css.*;   // CSSAnimations is folded into the Css facade
 
-// 40 presets: fadeIn/Out, fadeInUp/Down/Left/Right, slideIn*/slideOut*, zoomIn/Out,
+// 39 presets: fadeIn/Out, fadeInUp/Down/Left/Right, slideIn*/slideOut*, zoomIn/Out,
 // scaleIn/Out, pulse, heartbeat, bounce, rotate360, flipX/Y, shake, wobble, jello,
 // swing, rubberBand, flash, tada, headShake, ...
-style().animation(fadeIn(s(1)))
-style().animation(slideInLeft(s(0.6)))
-style().animation(pulse(s(1.5)).iterationCount(iterationInfinite))
-style().animation(rotate360(s(2)).timing(timingLinear))
+// The preset builders implement CSSValue; Style.animation(...) only has the
+// 3–7-arg (name, duration, timing, ...) forms, so presets go through prop():
+style().prop("animation", fadeIn(s(1)))
+style().prop("animation", slideInLeft(s(0.6)))
+style().prop("animation", pulse(s(1.5)).iterationCount(iterationInfinite))
+style().prop("animation", rotate360(s(2)).timing(timingLinear))
 
 // Builder chain: .timing() .delay() .iterationCount() .direction() .fillMode() .playState()
 
 // Scroll-driven animations
-style().animation(fadeIn(s(1)))
+style().prop("animation", fadeIn(s(1)))
        .animationTimeline(scrollTimeline())
        .animationRange("entry", "exit")
 
@@ -479,12 +487,13 @@ button(attrs().transition().fade().done(), "Hover me")
 ## Nested CSS (`CSSNested`)
 
 ```java
-import static jweb.css.CSSNested.*;
+import jweb.css.CSSNested;   // CSSNested.rule() clashes with CSS.rule() — keep it qualified
 
-nested(".card")
+CSSNested.rule(".card")
     .style(rule(".card").padding(px(20)))     // base declarations via a StyleBuilder
     .nest("&:hover").prop("box-shadow", "0 2px 8px rgba(0,0,0,0.1)").parent()
     .nest("& .title").prop("font-size", "1.5rem").root()
     .build();
-// Also: .media(...)/.supports(...)/.container(...) nesting, and a BEM helper (BEMBlock)
+// Also: .media(...)/.supports(...)/.container(...) nesting, and a BEM helper
+// (CSSNested.block("card").element("title")...)
 ```

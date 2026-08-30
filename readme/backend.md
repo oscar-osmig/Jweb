@@ -189,8 +189,8 @@ public List<User> search(@RequestParam String q) { ... }
 ```
 
 Notes: the spec is built eagerly at `mount(...)` time from `getDeclaredMethods()`; POJO schemas
-degrade to `{"type":"object"}` (no property introspection); `scan(String pkg)` is currently a
-no-op stub — always use `addApi(Class)`.
+degrade to `{"type":"object"}` (no property introspection); `scan(String pkg)` does a real
+classpath scan for `@REST`-annotated classes (use it or `addApi(Class)`).
 
 ---
 
@@ -207,7 +207,7 @@ MongoDB auto-connects when `jweb.data.enabled: true` via `JWebConfiguration.mong
 | `MongoQuery` | Fluent query builder |
 | `MongoUpdate` | Fluent update builder |
 | `MongoDelete` | Fluent delete builder |
-| `Schema` | **Declarative-only** schema/index definitions (not enforced — see caveats) |
+| `Schema` | Schema/index definitions — validated on `save`/`insert` once registered (see notes) |
 
 ### CRUD
 
@@ -457,9 +457,19 @@ public class AdminApi {
 
     public boolean login(Request request, String email, String token) {
         if (adminToken == null || adminToken.isBlank()) return false;   // fail closed
-        if (!adminToken.equals(token) || !adminEmail.equals(email)) return false;
+        if (isRateLimited(request.ip())) return false;                  // 5 failures / 15 min
+        // Timing-safe comparison so the token can't be guessed byte-by-byte
+        if (!constantTimeEquals(adminToken, token)
+                || !constantTimeEquals(adminEmail, email)) return false;
         Auth.login(request, Principal.of("admin", email, "admin"));
         return true;
+    }
+
+    private static boolean constantTimeEquals(String expected, String actual) {
+        if (expected == null || actual == null) return false;
+        return java.security.MessageDigest.isEqual(
+            expected.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+            actual.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     public boolean isAuthenticated(Request request) { return Auth.isAuthenticated(request); }
@@ -502,7 +512,7 @@ app.post("/only-admin/log/in", (RouteHandler) ctx -> {   // cast disambiguates t
 | `NumberValidators` | `required`, `min`, `max`, `range`, `intRange`, `positive`, `negative`, `nonNegative` |
 
 ```java
-import static com.osmig.Jweb.framework.validation.Validators.*;
+import static jweb.Validators.*;
 
 // Composable validators
 Validator<String> emailValidator = required().and(email()).and(maxLength(100));
@@ -533,7 +543,7 @@ if (!form.isValid()) throw new ValidationException(form);
 ### `forms/Form` — fluent form builder
 
 ```java
-import com.osmig.Jweb.framework.forms.Form;
+import jweb.Form;
 
 Form.create()
     .action("/api/v1/register").method("POST")
@@ -657,8 +667,9 @@ String msg = I18n.t("greeting", user.name());     // uses current locale
 String msg2 = Messages.get("no", "greeting", "Ola");
 ```
 
-> ⚠️ The middleware clears the locale before lazily-rendered elements evaluate — call
-> `I18n.t(request, key, ...)` (explicit request) inside deferred renders.
+> The middleware intentionally leaves the locale set after the chain returns (the framework
+> clears it at the end of the request), so lazily-rendered elements can call `I18n.t(...)`
+> safely. `I18n.t(request, key, ...)` (explicit request) also works anywhere.
 
 ---
 
@@ -672,10 +683,10 @@ Request req = MockRequest.get("/users/42").pathParam("id", "42").build();
 JWebTest.TestResult result = JWebTest.testHandler(handler, MockRequest.get("/x"));
 result.getStatus(); result.bodyContains("Hello"); result.bodyAs(User.class);
 
-// Render assertions
-JWebTest.assertContains(element, "Welcome");
-JWebTest.assertHasClass(element, "card");
-JWebTest.assertHasAttribute(element, "data-id", "42");
+// Render assertions (they take the rendered HTML string)
+JWebTest.assertContains(element.toHtml(), "Welcome");
+JWebTest.assertHasClass(element.toHtml(), "card");
+JWebTest.assertHasAttribute(element.toHtml(), "data-id", "42");
 
 // Integration tests against a running server
 TestClient client = TestClient.localhost(8085).withAuth(token);
@@ -686,8 +697,9 @@ client.get("/api/v1/users")
 client.post("/api/v1/users").json(newUser).send().assertStatus(201);
 ```
 
-Note: `JWebTest.test(app, mockRequest)` exercises Router routes + middleware only — page routes
-(`app.pages(...)`) are not reachable through the test harness.
+Note: `JWebTest.test(app, mockRequest)` exercises page routes (`app.pages(...)`) and Router
+routes alike — the middleware stack and lifecycle hooks run, and method mismatches return 405,
+matching production dispatch.
 
 ---
 

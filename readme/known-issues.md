@@ -35,7 +35,10 @@ By design (know them, don't "fix" them):
   can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
-- The AI/Spring AI integration is still planned, not shipped (deps commented out in pom.xml).
+- The Spring AI starters in pom.xml are commented out **by design** — AI integration ships
+  built-in (`framework/ai`: `AI.ask/chat/agent`, zero extra dependencies, any
+  OpenAI-compatible endpoint). Don't uncomment them unless you actually want the Spring AI
+  stack as an alternative.
 
 ## 2026-08-29 — short-import surface (`jweb.*`)
 
@@ -209,7 +212,8 @@ works end-to-end:
 - The test suite runs without MongoDB (`jweb.data.enabled=false` for `contextLoads`), and
   covers Route matching, middleware ordering/scoping/headers, the state loop
   (context lifetime, scoped handlers, `useComponent`), Schema validation, and the DSL fixes
-  (30 tests).
+  (the full suite now stands at 107 tests, including the AI module and
+  `LegacyImportsCompatTest`).
 
 ## Companion documents (cleaned 2026-08-09)
 

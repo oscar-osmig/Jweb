@@ -2,19 +2,21 @@
 
 ## Required Imports
 
-App code conventionally uses the `El` facade (what the sample pages import).
-`Elements.*` also works — `El` is a curated subset of it; don't wildcard-import
-both into one file (they share many names).
+App code uses the `jweb.*` short-import surface. `jweb.El` is the union of the two
+legacy facades (`El` + `Elements`), and `jweb.Css` folds in `CSS`, `CSSUnits`,
+`CSSColors`, `CSSGrid`, `CSSAnimations` and `CSSVariables`. (The old
+`com.osmig.Jweb.framework.*` imports still compile as deprecated aliases.)
 
 ```java
-import static com.osmig.Jweb.framework.elements.El.*;
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
-import static com.osmig.Jweb.framework.styles.MediaQuery.*;
-import static com.osmig.Jweb.framework.styles.Supports.*;
-import static com.osmig.Jweb.framework.state.StateHooks.*;
-import static com.osmig.Jweb.framework.js.Actions.*;
+import jweb.Element;                // the element type render() returns
+import jweb.Template;               // pages/components implement this
+import jweb.state.State;            // the reactive state type
+
+import static jweb.El.*;            // elements, attributes, typed inputs, conditionals
+import static jweb.Css.*;           // style(), rule(), units, colors, media()
+import static jweb.css.Supports.*;  // @supports feature queries (Level 15)
+import static jweb.State.*;         // useState, useComputed, useEffect
+import static jweb.Actions.*;       // client-side actions DSL (Levels 17-19)
 ```
 
 ---
@@ -79,7 +81,7 @@ div(attrs().style()
         .alignItems(center)
         .gap(rem(1))
     .done(),
-    span("Centered content")
+    span(text("Centered content"))   // bare span(String) is the grid-line span from Css
 )
 
 // Direct InlineStyle usage (no .done() needed)
@@ -104,10 +106,12 @@ List<String> items = List.of("Apple", "Banana", "Cherry");
 ul(each(items, item -> li(item)))
 
 // Conditional rendering with when()
+// (note: with jweb.Css.* also imported, a bare span("...") resolves to the
+// grid-line span() — wrap the string in text() or lead with an Attr)
 boolean isLoggedIn = true;
 
 div(
-    when(isLoggedIn, () -> span("Welcome back!")),
+    when(isLoggedIn, () -> span(text("Welcome back!"))),
     when(!isLoggedIn, () -> a("/login", "Sign In"))
 )
 
@@ -120,7 +124,7 @@ ifElse(isLoggedIn,
 // Combining iteration with conditionals
 ul(each(users, user ->
     li(
-        span(user.getName()),
+        span(text(user.getName())),
         when(user.isAdmin(), () -> span(class_("badge"), "Admin"))
     )
 ))
@@ -165,7 +169,7 @@ input(attrs()
 ## Level 6: Reactive State
 
 ```java
-public class CounterPage implements Page {
+public class CounterPage implements Template {
     private final State<Integer> count = useState(0);
 
     @Override
@@ -185,7 +189,7 @@ public class CounterPage implements Page {
 ## Level 7: Computed State & Effects
 
 ```java
-public class ShoppingCart implements Page {
+public class ShoppingCart implements Template {
     private final State<List<Item>> items = useState(new ArrayList<>());
     private final State<Double> total = useComputed(
         () -> items.get().stream()
@@ -219,8 +223,9 @@ public class ShoppingCart implements Page {
 ## Level 8: Reusable Components
 
 ```java
-// Simple component
-public class Badge implements Component {
+// Simple component (Template supplies render(); Component/Page are marker
+// interfaces without it)
+public class Badge implements Template {
     private final String text;
     private final String color;
 
@@ -254,7 +259,7 @@ div(
 ## Level 9: Component with Props & Children
 
 ```java
-public class Card implements Component {
+public class Card implements Template {
     private final String title;
     private final Element[] children;
 
@@ -308,7 +313,7 @@ String styles = styles(
         .border(px(0), solid, transparent)
         .borderRadius(px(6))
         .cursor(pointer)
-        .transition(propAll, s(0.2), ease),
+        .transition(all, s(0.2), ease),
 
     rule(cls("btn").hover())
         .transform(translateY(px(-2)))
@@ -334,7 +339,7 @@ rule(".grid")
 ## Level 11: Full Interactive Page
 
 ```java
-public class TodoApp implements Page {
+public class TodoApp implements Template {
     private final State<List<Todo>> todos = useState(new ArrayList<>());
     private final State<String> newTodo = useState("");
     private final State<String> filter = useState("all");
@@ -455,9 +460,17 @@ public class TodoApp implements Page {
 ## Level 12: Templates with Layout
 
 ```java
+// Template.render() takes no arguments — pass content through the constructor
+// (the pattern the sample app's Layout uses)
 public class MainLayout implements Template {
+    private final Element content;
+
+    public MainLayout(Element content) {
+        this.content = content;
+    }
+
     @Override
-    public Element render(Element... content) {
+    public Element render() {
         return html(
             head(
                 title("My App"),
@@ -488,7 +501,7 @@ public class MainLayout implements Template {
                 // Main content
                 main(attrs().style().flex(1, 1, auto).padding(rem(2)),
                     div(attrs().style().maxWidth(px(1200)).margin(zero, auto),
-                        fragment(content)
+                        content
                     )
                 ),
 
@@ -504,75 +517,72 @@ public class MainLayout implements Template {
     }
 }
 
-// Usage in a Page
-public class HomePage implements Page {
+// Usage in a page
+public class HomePage implements Template {
     @Override
     public Element render() {
-        return new MainLayout().render(
+        return new MainLayout(
             section(
                 h1("Welcome to MyApp"),
                 p("Build amazing web applications with Java.")
             )
-        );
+        ).render();
     }
 }
 ```
 
 ---
 
----
-
 ## Level 13: Form Input Builders
 
 ```java
-// Type-safe form inputs
+// Type-safe form inputs. El's typed inputs return Tag (they set id=name for you);
+// validation attributes that have no Tag shortcut go through .attr(). For heavier
+// validation chains use the jweb.Input builder instead:
+// Input.text("username").minLength(3).pattern("[a-zA-Z0-9_]+")
 form(attrs().id("register-form"),
-    // Text inputs with validation
+    // Text input with validation
     field("Username",
         textInput("username")
-            .id("username")
             .required()
-            .minLength(3)
-            .maxLength(20)
-            .pattern("[a-zA-Z0-9_]+")
-            .autocomplete("username")
+            .attr("minlength", "3")
+            .attr("maxlength", "20")
+            .attr("pattern", "[a-zA-Z0-9_]+")
+            .attr("autocomplete", "username")
     ),
 
     field("Email",
         emailInput("email")
-            .id("email")
             .required()
             .placeholder("you@example.com")
     ),
 
+    // field() is (label, input) — render help text as its own element
     field("Password",
         passwordInput("password")
-            .id("password")
             .required()
-            .minLength(8),
-        "Must be at least 8 characters"
+            .attr("minlength", "8")
     ),
+    small("Must be at least 8 characters"),
 
-    // Number input with range
+    // Number input with range — the (name, min, max) overload
     field("Age",
-        numberInput("age")
-            .min(18)
-            .max(120)
-            .required()
+        numberInput("age", 18, 120).required()
     ),
 
-    // Selection inputs
+    // Selection inputs — checkbox(name, value) renders only the input
+    // (id = name); pair it with label(forId, text)
     div(attrs().style().marginBottom(rem(1)),
-        checkbox("terms", "I agree to the terms"),
-        checkbox("newsletter", "Subscribe to newsletter")
+        checkbox("terms", "yes"), label("terms", "I agree to the terms"),
+        checkbox("newsletter", "yes"), label("newsletter", "Subscribe to newsletter")
     ),
 
-    // Radio group
+    // Radio group — radio(name, value); generated ids are "name-value"
     div(attrs().style().marginBottom(rem(1)),
         p("Select plan:"),
-        radio("plan", "free", "Free Plan"),
-        radio("plan", "pro", "Pro Plan"),
-        radio("plan", "enterprise", "Enterprise Plan")
+        radio("plan", "free"), label("plan-free", "Free Plan"),
+        radio("plan", "pro"), label("plan-pro", "Pro Plan"),
+        radio("plan", "enterprise"), label("plan-enterprise", "Enterprise Plan")
     ),
 
     // Date inputs
@@ -591,44 +601,43 @@ form(attrs().id("register-form"),
 ## Level 14: Batch Classes & Conditional Styling
 
 ```java
-// Multiple classes with classes()
-div(classes("card", "shadow", "rounded"),
+// Multiple classes with attrs().classes()
+div(attrs().classes("card", "shadow", "rounded"),
     h2("Card Title"),
     p("Card content")
 )
 
-// Conditional classes
+// Conditional classes — classIf(name, condition) adds when true,
+// classToggle picks one of two
 boolean isActive = true;
 boolean isDisabled = false;
 boolean isPrimary = true;
 
-button(
-    classes(
-        "btn",
-        isActive ? "active" : null,
-        isDisabled ? "disabled" : null,
-        isPrimary ? "btn-primary" : "btn-secondary"
-    ),
+button(attrs()
+        .class_("btn")
+        .classIf("active", isActive)
+        .classIf("disabled", isDisabled)
+        .classToggle(isPrimary, "btn-primary", "btn-secondary"),
     "Click Me"
 )
 
-// Using class_() with condition
-div(
-    class_("notification"),
-    class_("success", isSuccess),
-    class_("error", isError),
-    class_("warning", isWarning),
-    class_("animate", shouldAnimate),
+// Stacking conditions on a base class
+div(attrs()
+        .class_("notification")
+        .classIf("success", isSuccess)
+        .classIf("error", isError)
+        .classIf("warning", isWarning)
+        .classIf("animate", shouldAnimate),
     span(message)
 )
 
 // Complex conditional styling
 List<String> items = getItems();
-div(
-    class_("list"),
-    class_("empty", items.isEmpty()),
-    class_("single", items.size() == 1),
-    class_("multiple", items.size() > 1),
+div(attrs()
+        .class_("list")
+        .classIf("empty", items.isEmpty())
+        .classIf("single", items.size() == 1)
+        .classIf("multiple", items.size() > 1),
     each(items, item -> li(item))
 )
 ```
@@ -638,13 +647,17 @@ div(
 ## Level 15: CSS Feature Queries (@supports)
 
 ```java
-// Progressive enhancement with @supports
-String styles = styles(
+// Progressive enhancement with @supports.
+// styles(...) only takes rule() builders — join the @supports blocks
+// (each .build() returns a String) alongside it:
+String css = String.join("\n",
     // Base flexbox layout
-    rule(".container")
-        .display(flex)
-        .flexWrap(wrap)
-        .gap(rem(1)),
+    styles(
+        rule(".container")
+            .display(flex)
+            .flexWrap(wrap)
+            .gap(rem(1))
+    ),
 
     // Grid enhancement if supported
     supports("display", "grid")
@@ -654,7 +667,7 @@ String styles = styles(
             .gap(rem(1.5)))
         .build(),
 
-    // Subgrid for complex layouts
+    // Selector support (:has)
     supportsSelector(":has(> img)")
         .rule(".card:has(> img)", style()
             .padding(zero)
@@ -691,60 +704,64 @@ String styles = styles(
 ## Level 16: Nested CSS
 
 ```java
-// Modern CSS nesting syntax
-String styles = nested(".card")
+// Modern CSS nesting — CSSNested.rule(), kept qualified because it clashes
+// with CSS.rule(). Child rules open with .nest("...") (use & for the parent)
+// and close with .parent() (or .root() to jump all the way back up).
+import jweb.css.CSSNested;
+
+String styles = CSSNested.rule(".card")
     .prop("padding", "1.5rem")
     .prop("background", "#fff")
     .prop("border-radius", "12px")
     .prop("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
 
     // Hover state
-    .hover()
+    .nest("&:hover")
         .prop("transform", "translateY(-4px)")
         .prop("box-shadow", "0 8px 24px rgba(0,0,0,0.15)")
-    .end()
+    .parent()
 
     // Focus state
-    .focus()
+    .nest("&:focus")
         .prop("outline", "2px solid #3b82f6")
         .prop("outline-offset", "2px")
-    .end()
+    .parent()
 
     // Child elements
-    .child(".title")
+    .nest("& .title")
         .prop("font-size", "1.25rem")
         .prop("font-weight", "600")
         .prop("margin-bottom", "0.5rem")
-    .end()
+    .parent()
 
-    .child(".content")
+    .nest("& .content")
         .prop("color", "#6b7280")
         .prop("line-height", "1.6")
-    .end()
+    .parent()
 
     // Direct child
-    .direct(".icon")
+    .nest("& > .icon")
         .prop("width", "24px")
         .prop("height", "24px")
-    .end()
+    .parent()
 
     // Modifier classes
-    .and(".featured")
+    .nest("&.featured")
         .prop("border", "2px solid #10b981")
         .prop("background", "#f0fdf4")
-    .end()
+    .parent()
 
-    .and(".disabled")
+    .nest("&.disabled")
         .prop("opacity", "0.5")
         .prop("pointer-events", "none")
-    .end()
+    .parent()
 
     // Pseudo-elements
-    .before()
+    .nest("&::before")
         .prop("content", "''")
         .prop("position", "absolute")
         .prop("inset", "0")
-    .end()
+    .parent()
 
     .build();
 ```
@@ -800,14 +817,14 @@ public class DashboardScripts {
                 .loading("Saving...")
                 .before(hide("error-message"))
                 .post("/api/settings")
-                .body("new FormData(e.target)")
+                .withFormData()                 // send the form as FormData
                 .ok(all(
                     alertModal("modal", "modalBody")
                         .success("Settings saved!"),
                     call("loadDashboard")
                 ))
                 .fail(responseError("error-message")
-                    .on400("Invalid settings")
+                    .onStatus(400, "Invalid settings")
                     .otherwise("Server error")))
 
             // Event listeners
@@ -832,13 +849,13 @@ public class DashboardScripts {
         setText("status", "Processing order..."),
         show("loading-spinner"),
 
-        // Async try-catch
+        // Async try-catch-finally — the caught error is available as _err
         asyncTry(
             // Validate first
-            await_(fetch("/api/orders/" + "orderId" + "/validate")
+            await_(fetch("/api/orders/validate")
                 .headerFromVar("X-Auth", "authToken")
                 .ok(noop())
-                .fail(throwError("'Validation failed'"))),
+                .fail(setText("status", "Validation failed"))),
 
             // Process payment
             await_(fetch("/api/payments")
@@ -846,20 +863,20 @@ public class DashboardScripts {
                 .headerFromVar("X-Auth", "authToken")
                 .body("{orderId: orderId}")
                 .ok(assignVar("paymentId", "_data.id"))
-                .fail(throwError("'Payment failed'"))),
+                .fail(setText("status", "Payment failed"))),
 
             // Confirm order
-            await_(fetch("/api/orders/" + "orderId" + "/confirm")
+            await_(fetch("/api/orders/confirm")
                 .post()
                 .body("{paymentId: paymentId}")
                 .ok(all(
                     setText("status", "Order confirmed!"),
                     call("refreshOrders")
                 )))
-        ).catch_("error",
-            setText("status", "Error: \" + error.message + \""),
-            logError("error")
-        ).finally_(
+        ).catch_(all(
+            setTextExpr("status", "'Error: ' + _err.message"),
+            log("submitOrder failed")
+        )).finally_(
             hide("loading-spinner")
         ),
 
@@ -888,30 +905,29 @@ public class DashboardScripts {
         query("#status-text")
             .setText("Updated!")
             .addClass("success")
-            .show(),
+            .show(),                       // show() = display:block
 
-        // Query with attribute
+        // Query with attribute selector
         query("[data-tab='active']")
             .removeClass("hidden")
             .addClass("visible"),
 
-        // Multiple elements
+        // Multiple elements — batch operations apply to every match
         queryAll(".notification")
-            .forEach(el ->
-                el.addClass("fade-out")
-                  .hide()),
+            .addClass("fade-out")
+            .hide(),
 
         // Chained operations
         query("#user-panel")
             .removeClass("loading")
             .addClass("loaded")
             .attr("data-ready", "true")
-            .show("flex"),
+            .style("display", "flex"),     // arbitrary display values via style()
 
-        // Query with action
+        // Per-element action with a named loop variable
+        // (args to call() are raw JS expressions)
         queryAll(".btn")
-            .forEach(el ->
-                el.onClick(call("handleClick", "el.id")))
+            .forEach("el", call("registerButton", "el.id"))
     ))
 ```
 
@@ -920,6 +936,8 @@ public class DashboardScripts {
 ## Level 20: Template Lifecycle Hooks
 
 ```java
+// Request is com.osmig.Jweb.framework.server.Request (kept as a long import
+// on purpose); the title/description/head/script hooks return Optionals.
 public class AdvancedPage implements Template {
     private final UserService userService;
     private User user;
@@ -927,53 +945,51 @@ public class AdvancedPage implements Template {
 
     // Called before render - setup data
     @Override
-    public void beforeRender(HttpRequest request) {
+    public void beforeRender(Request request) {
         user = userService.getCurrentUser(request);
         notifications = userService.getNotifications(user.getId());
     }
 
     // Called after render - cleanup
     @Override
-    public void afterRender(HttpRequest request) {
+    public void afterRender(Request request) {
         // Mark notifications as seen
         userService.markNotificationsSeen(user.getId());
     }
 
-    // Page title for <title> tag
+    // Page title for <title> tag (merged in by layouts)
     @Override
-    public String pageTitle() {
-        return user != null ? "Dashboard - " + user.getName() : "Dashboard";
+    public Optional<String> pageTitle() {
+        return Optional.of(user != null ? "Dashboard - " + user.getName() : "Dashboard");
     }
 
     // Meta description for SEO
     @Override
-    public String metaDescription() {
-        return "Your personal dashboard with " + notifications.size() + " notifications";
+    public Optional<String> metaDescription() {
+        return Optional.of("Your personal dashboard with " + notifications.size() + " notifications");
     }
 
     // Additional head elements
     @Override
-    public Element extraHead() {
-        return fragment(
+    public Optional<Element> extraHead() {
+        return Optional.of(fragment(
             link(attrs().rel("preconnect").href("https://fonts.googleapis.com")),
             meta(attrs().name("robots").content("noindex")),
             style(customStyles())
-        );
+        ));
     }
 
-    // Scripts to include before </body>
+    // Inline script code appended at the end of <body>
+    // (a String of JS — e.g. an Actions-DSL script().build())
     @Override
-    public Element scripts() {
-        return fragment(
-            script(attrs().src("/js/dashboard.js").defer()),
-            script(inlineScripts())
-        );
+    public Optional<String> scripts() {
+        return Optional.of(dashboardHandlers());
     }
 
-    // Enable caching
+    // Disable caching for user-specific content
     @Override
     public boolean cacheable() {
-        return false;  // User-specific content
+        return false;
     }
 
     @Override
@@ -1021,7 +1037,7 @@ public class AdvancedPage implements Template {
 | 11 | Full interactive pages |
 | 12 | Templates with layouts |
 | 13 | Form input builders (`textInput`, `emailInput`, `field`) |
-| 14 | Batch classes & conditional styling (`classes()`, `class_(name, condition)`) |
+| 14 | Batch classes & conditional styling (`attrs().classes()`, `classIf()`, `classToggle()`) |
 | 15 | CSS feature queries (`@supports`) |
 | 16 | Nested CSS with pseudo-selectors |
 | 17 | JavaScript Actions DSL (`script()`, `state()`, `refs()`) |

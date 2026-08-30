@@ -2,7 +2,7 @@
 
 # JavaScript DSL
 
-43 modules, ~23,300 lines, generating client-side JavaScript from type-safe Java. Two layers:
+43 modules, ~23,700 lines, generating client-side JavaScript from type-safe Java. Two layers:
 
 - **`Actions`** — the high-level, user-facing layer: form/click handlers, fetch chains, DOM
   actions, message boxes. This is what pages normally use.
@@ -43,7 +43,11 @@ Also: `Js.*` and `Actions.*` share many static names (`script`, `query`, `queryA
 ambiguous-reference compile errors** — that is why they stay two facades. Convention: import
 `Actions.*` in page code; qualify `Js.` explicitly when you need the low-level layer.
 
-## The standard form-submission pattern (used by the sample ContactPage)
+## The standard form-submission pattern
+
+(The sample ContactPage now uses the zero-JS `swapForm(...)` fragment pattern instead — see
+[Backend § Fragments](./backend.md) — but this remains the canonical `Actions` flow when you
+want scripted control.)
 
 ```java
 import static jweb.Actions.*;
@@ -75,7 +79,7 @@ Inside `ok(...)` / `fail(...)` actions, the generated code exposes these locals:
 | `_form` / `_btn` | the form element / its submit button |
 
 This is why `assignVar("users", "_data")` and `showMessage(...).fromResponse("field")` work.
-Typed accessors exist: `responseField("name")` → `_data.name`, `formField("email")` →
+Typed accessors exist: `response("name")` → `_data.name`, `formField("email")` →
 `_fd.get('email')`.
 
 ### FormHandler chain reference
@@ -96,40 +100,45 @@ onClick("delete-btn")
     .fail(showMessage("error").error("Delete failed"))
 
 onClick("toggle-btn").toggle("panel")     // no-network shortcuts: toggle/show/hide
-onChange("country-select").get("/api/regions").ok(...)
+onChange("country-select").then(get("/api/regions").ok(...))   // ChangeHandler wraps an action via then(...)
 ```
 
 ## Actions catalog
 
 ```java
-// Messages (renders into an element; colors are hardcoded green/red/amber)
+// Messages (renders into an element; sets jweb-msg-<type> classes, themeable via
+// --jweb-msg-<type>-bg/-fg CSS variables with green/red/amber defaults)
 showMessage("status").success("Saved!")
 showMessage("status").error("Failed!")
 showMessage("status").warning("Careful…")
 showMessage("status").fromResponse("message")
 
 // Navigation & forms
-navigateTo("/dashboard"); reload(); resetForm("contact-form"); pushState("/path")
+navigateTo("/dashboard"); reload(); resetForm("contact-form")
+pushState("admin", "true")                   // history.pushState({admin:true},'',location.href)
 
 // DOM
 show("modal"); hide("modal"); toggle("panel")
 setText("title", "New Title"); setHtml("box", "<b>hi</b>")
 addClass("card", "active"); removeClass("card", "active"); toggleClass("card", "open")
-focus("email"); copyToClipboard("text"); download("/file.pdf")
+focus("email"); copyToClipboard("token-field"); download("/file.pdf")
 
 // Composition & control flow
 all(actionA, actionB, actionC)               // run in sequence
 when(condition).then(a).otherwise(b)
-whenOk(a)  /  whenResponse(field, value).then(a)
-tryCatch().attempt(a).onError(b)
+whenOk().then(a)  /  whenResponse(field).then(a)     // _res.ok / truthy _data.<field>
+tryCatch().try_(a).catch_(b)                 // optional .finally_(c); '_err' in the catch
 
 // Response status handling
 responseError("status-box").on401(...).on403(...).on404(...).on500(...).otherwise(...)
 
 // Modals & templates
-showModal("dialog-id"); hideModal("dialog-id"); alertModal("Heads up!")
-renderList("list", "items", template("item")
-    .field("name").dateField("createdAt").build())
+showModal("dialog-id"); hideModal("dialog-id")
+alertModal("modal-overlay", "modal-body").success("Approved!")
+renderList("list").from("items")             // items = JS array variable
+    .using(template("item")
+        .div().text(field("name")).end()
+        .build())
 
 // Async
 asyncBlock(await_(get("/api/a").ok(...)), await_(get("/api/b").ok(...)))
@@ -195,7 +204,7 @@ func("check", "x")
     .if_(variable("x").gt(10)).then_(...).elif_(...).else_(...).end()
     .forOf("item", variable("list")).body(...).endFor()
     .try_().body(...).catch_("err").endTry()
-    .switch_(variable("mode")).case_("a", ...).default_(...).endSwitch();
+    .switch_(variable("mode")).case_("a").then_(...).default_().then_(...).endSwitch();
 
 // DOM
 getElem("submit")   // or $("submit")        → El (getElementById)
@@ -258,9 +267,10 @@ swipe(variable("el")).threshold(50)
     .onRight(callback().log("swiped right"))
     .build()
 
-// Custom events
-dispatchCustomEvent("cart:updated", obj("count", 3))
-onCustomEvent("cart:updated", callback("e").log(eventDetail()))
+// Custom events (element first; eventDetail takes the event)
+dispatchCustomEvent(variable("document"), "cart:updated", obj("count", 3))
+onCustomEvent(variable("document"), "cart:updated",
+    callback("e").log(eventDetail(variable("e"))))
 
 // Client-side SSE
 sse("/events")
@@ -278,7 +288,7 @@ sse("/events")
 | `Async` | Fetch builder, async funcs, await, promise combinators |
 | `Events` | Delegation, debounce/throttle, key combos, touch/swipe, custom events, SSE client |
 | `Runtime` | IIFE, run-once guard, TTL cache, memoize patterns |
-| `JWebRuntime` | The reactive-state client runtime (⚠️ currently not auto-injected — see Known Issues) |
+| `JWebRuntime` | The reactive-state client runtime (auto-injected into rendered pages; opt out with `jweb.runtime.enabled: false`) |
 | `JSAbort` | AbortController/AbortSignal (timeout/any/onAbort) |
 | `JSAnimation` | requestAnimationFrame loops, CSS transition/animation helpers, lerp/easing |
 | `JSCanvas` | Canvas 2D — paths, gradients, transforms, ImageData, OffscreenCanvas |
@@ -424,7 +434,7 @@ local().setJson("user", obj("name", "Jo"))
 local().getJsonOr("user", obj())
 session().set("draft", variable("text"))
 cookie("theme").days(30).sameLax().set("dark")
-onStorageKeyChange("user", callback("e").log(eventNewValue()))
+onStorageKeyChange("user", callback("e").log(eventNewValue(variable("e"))))
 ```
 
 ### WebSocket (client)
@@ -447,7 +457,8 @@ There is no bundler and no automatic script injection for DSL output. Three mech
    `inlineScript(script().withHelpers().add(...).build())` (unescaped `VRaw` under the hood).
 2. **Inline event attributes** — `attrs().onClick(action)` writes `action.inline()` into
    `onclick` etc.
-3. **Auto-injected framework scripts** — the controller injects only the `Prefetch` script and
-   the `__JWEB_DATA__` hydration JSON before `</body>`. The reactive-state client runtime
-   (`JWebRuntime`) is **not** auto-injected — see
-   [State & Realtime](./state-and-realtime.md) and [Known Issues](./known-issues.md).
+3. **Auto-injected framework scripts** — the controller injects three scripts before
+   `</body>`: the `Prefetch` script (external, cached `/jweb/prefetch.js`), the
+   `__JWEB_DATA__` hydration JSON (inline, per request), and the reactive-state client
+   runtime (external, cached `/jweb/runtime.js`; opt out with `jweb.runtime.enabled: false`) —
+   see [State & Realtime](./state-and-realtime.md).

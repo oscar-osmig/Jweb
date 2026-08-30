@@ -16,12 +16,13 @@ and the interactive UI utilities (transitions, portals, refs, toasts, suspense).
 ### Creating state
 
 ```java
-import com.osmig.Jweb.framework.state.StateHooks;
+import jweb.state.State;                                // the state value type
+import static jweb.State.*;                             // useState & friends (alias of StateHooks)
 import com.osmig.Jweb.framework.state.StateManager;
 
-// The constructors are package-private — create state through the hooks/manager:
-State<Integer> count = StateHooks.useState(0);
-State<String>  name  = StateHooks.useState();           // null initial
+// The constructor is internal — create state through the hooks/manager:
+State<Integer> count = useState(0);
+State<String>  name  = useState();                      // null initial
 State<Integer> other = StateManager.createState(0);     // equivalent
 State<Integer> named = StateManager.createState("cart-count", 0);
 ```
@@ -43,19 +44,20 @@ count.toJson();              // {"id":"state_1","value":5}
 
 ```java
 // Computed state — re-evaluates whenever a dependency changes
-State<Integer> total = StateHooks.useComputed(
+State<Integer> total = useComputed(
     () -> price.get() * qty.get(), price, qty);
 
 // Effect — runs immediately AND on every dependency change (no cleanup fn, no diffing)
-StateHooks.useEffect(() -> Log.framework().info("qty changed"), qty);
+useEffect(() -> Log.framework().info("qty changed"), qty);
 ```
 
 ### Contexts
 
 `StateManager` scopes states per request in a `StateContext` (ThreadLocal + a registry keyed by
-`ctx_<timestamp>_<threadId>`). `JWebController` creates a context per router request, renders,
-serializes changed state into the hydration payload, then clears the context. Contexts idle
-longer than 5 minutes are reaped by a background cleanup task.
+`ctx_<uuid>` — unguessable). `JWebController` creates a context per router request, renders,
+serializes changed state into the hydration payload, then detaches the ThreadLocal — the
+registry entry survives so WebSocket events can restore it. Contexts idle longer than
+5 minutes are reaped by a background cleanup task (WebSocket activity refreshes the TTL).
 
 ### Binding state to elements (client contract)
 
@@ -76,10 +78,11 @@ Attach Java lambdas to DOM events; the framework registers them and renders a JS
 
 ```java
 button(attrs().onClick(e -> count.update(n -> n + 1)), "Increment")
-// renders: <button onclick="JWeb.call('h_1', event)">Increment</button>
+// renders: <button onclick="JWeb.call('h_1_9f3c2a…', event)">Increment</button>
 ```
 
-- `EventRegistry.register(type, Consumer<Event>)` stores the handler globally under `h_<n>`.
+- `EventRegistry.register(type, Consumer<Event>)` stores the handler under an unguessable id
+  (`h_<n>_<random>` — counter for uniqueness, random hex suffix).
 - The `Event` interface exposes: `value()`, `targetId()`, `type()`, `key()`, `keyCode()`,
   modifier keys, `clientX/Y()`, `checked()`, `formData()`, `data(name)`/`dataset()`.
 - `preventDefault()`/`stopPropagation()` set flags on the server-side `DomEvent`; form submits
@@ -95,49 +98,42 @@ button(attrs().onClick(e -> count.update(n -> n + 1)), "Increment")
 For every `Element` response, the controller injects three scripts before `</body>`
 (prefetch, hydration data, and the JWeb client runtime):
 
-1. the `Prefetch` hover-prefetch script, and
-2. `<script id="__JWEB_DATA__" type="application/json">{"contextId":"ctx_...","vnode":null,"state":[{"id":"state_1","value":0}],"handlers":[]}</script>`
+1. the `Prefetch` hover-prefetch script (external, cached `/jweb/prefetch.js`),
+2. `<script id="__JWEB_DATA__" type="application/json">{"contextId":"ctx_...","vnode":null,"state":[{"id":"state_1","value":0}],"handlers":[]}</script>` (inline, per request), and
+3. the JWeb client runtime (external, cached `/jweb/runtime.js`).
 
 `HydrationData.builder()` supports `vnode(...)`/`handlers(...)` too, but the controller
 currently populates only `contextId` + `states`. `VNodeSerializer` (VNode → JSON:
-`{"type":"element","tag":...,"attrs":...,"children":[...]}`) exists for full-tree hydration but
-is not yet used by any caller.
+`{"type":"element","tag":...,"attrs":...,"children":[...]}`) is wired into
+`HydrationData.builder().vnode(...)`, but no caller populates a vnode yet.
 
 The consumer of this payload is `JWebRuntime` (`js/JWebRuntime.java`): it defines the global
 `JWeb` object (`JWeb.init`, `JWeb.call`, WebSocket connect with reconnect + 30s ping) and reads
-`__JWEB_DATA__` on `DOMContentLoaded`. **You must inject it manually today:**
-
-```java
-import com.osmig.Jweb.framework.js.JWebRuntime;
-
-body(
-    ...page content...,
-    raw(JWebRuntime.getScriptTag())    // enables JWeb.call / state sync
-)
-```
+`__JWEB_DATA__` on `DOMContentLoaded`. It is **auto-injected** into rendered pages; opt out
+with `jweb.runtime.enabled: false` (then `JWebRuntime.getScriptTag()` lets you inject it
+manually, e.g. for pages rendered outside the controller).
 
 ## WebSocket (`websocket/`)
 
-- `JWebSocketConfig` registers `JWebSocketHandler` at **`/jweb`** with
-  `setAllowedOrigins("*")` (tighten for production).
+- `JWebSocketConfig` registers `JWebSocketHandler` at **`/jweb`**. Origins default to
+  **same-origin only**; allow others with `jweb.websocket.allowed-origins` (comma-separated,
+  `*` for dev).
 - Message protocol (JSON, `type` discriminator):
   - client → server: `event` (handler id, contextId, event payload, formData), `init`
-    (contextId), `ping`
+    (contextId), `setState` (id, value), `ping`
   - server → client: `connected`, `stateUpdate` (`[{id,value}]`), `domUpdate`
     (`[{id,html}]`), `eventHandled`, `initState`, `pong`, `error`
 - On an `event` message the handler restores the `StateContext` by contextId, executes the
   registered handler, collects `getChangedStates()`, and pushes `stateUpdate` (+`domUpdate` for
   registered `RenderableComponent`s) back.
-- `JWebEventController` offers the same flow over HTTP: `POST /jweb/event` → 
-  `{"success":true,"states":[...]}`, plus `GET /jweb/ping`. No bundled client uses it — it's an
-  alternative transport for custom clients.
 
 ## Server-Sent Events (`sse/`)
 
 Working server-side primitives for one-way streaming:
 
 ```java
-import com.osmig.Jweb.framework.sse.*;
+import jweb.SseEmitter;
+import com.osmig.Jweb.framework.sse.*;      // SseBroadcaster, SseEvent
 
 SseBroadcaster broadcaster = new SseBroadcaster();       // 15s heartbeat comments
 SseBroadcaster quiet = new SseBroadcaster(0);            // heartbeat disabled
@@ -169,7 +165,8 @@ app.get("/events", req -> {
 });
 ```
 
-Client side, use `Events.sse("/api/v1/events").onMessage(...).build()` from the JS DSL.
+Client side, use `sse("/api/v1/events").onMessage(...).build()` from the JS DSL
+(`import static jweb.Js.*;`).
 
 ## View Transitions (`transition/`)
 
@@ -301,7 +298,7 @@ architecture doc.
 
 ```java
 import jweb.Suspense;
-import static com.osmig.Jweb.framework.async.Suspense.*;
+import static jweb.Suspense.*;
 
 // Blocking (default): loader runs inline during render
 Suspense.of(() -> userService.getUsers())

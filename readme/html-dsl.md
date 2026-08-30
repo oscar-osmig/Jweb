@@ -21,9 +21,9 @@ shortcuts (`id`, `class_`, `alt`, `placeholder`, `aria`, `role`, ...), typed inp
 Still separate on purpose:
 
 ```java
-import static jweb.Input.*;                                          // typed input DSL (names clash with El)
-import static com.osmig.Jweb.framework.elements.DialogHelper.*;      // dialog JS helpers
-import static com.osmig.Jweb.framework.elements.DetailsHelper.*;     // details JS helpers
+import static jweb.Input.*;                  // typed input DSL (names clash with El)
+import static jweb.el.DialogHelper.*;        // dialog action helpers
+import static jweb.el.DetailsHelper.*;       // details action helpers
 ```
 
 > One deliberate semantic pick in the merge: `data(name, value)` builds a `data-*`
@@ -49,27 +49,33 @@ tables below list the legacy `El` core; `jweb.El` adds everything from `Elements
 | **Forms** | `form`, `input`, `textarea`, `select`, `option(value,text)`, `option(valueAndText)`, `label`, `button` |
 | **Media** | `img`, `video`, `audio`, `canvas`, `iframe(attrs)`, `track(attrs)`, `srcset`, `responsiveImg`, `lazyImg` |
 | **SVG** | `svg`, `path`, `circle`, `rect`, `line`, `polyline`, `polygon`, `g`, `d`, `viewBox`, `fill`, `stroke`, `strokeWidth` |
-| **Modern HTML5** | `dialog`, `details`, `summary`, `meter`, `progress`, `progressIndeterminate`, `template`, `slot`, `output`, `timeWithDatetime`, `data(value,text)`, `bdi`, `bdo`, `ruby`, `rt`, `rp` |
+| **Modern HTML5** | `dialog`, `details`, `summary`, `meter`, `progress`, `progressIndeterminate`, `template`, `slot`, `output`, `timeWithDatetime`, `data_` (the `<data>` element), `bdi`, `bdo`, `ruby`, `rt`, `rp` |
 | **Figure** | `figure`, `figcaption` |
 | **Definition** | `dl`, `dt`, `dd` |
 | **Interactive text** | `abbr`, `dfn`, `cite`, `q`, `blockquote`, `kbd`, `samp`, `var_`, `mark`, `sub`, `sup`, `ins`, `del`, `s` |
-| **Picture** | `picture`, `source` (attrs like `srcset` need `PictureElements`) |
+| **Picture** | `picture`, `source`, `srcset` (the `media`/`sizes`/`loading` attrs need `PictureElements`) |
 | **Form enhancements** | `datalist`, `optgroup`, `fieldset`, `legend` (input helpers need `FormEnhancements`) |
 | **Popovers** | `popover`, `popoverTarget`, `popoverTargetAction`, `autoPopover`, `manualPopover`, `popoverToggleButton` |
 | **Conditionals** | `when`, `match`, `cond`, `otherwise`, `errorBoundary` |
 | **Misc** | `hr` |
 | **Helpers** | `text`, `raw`, `fragment`, `each`, `tag` |
 
-**NOT in `El`** (import the module named in parentheses):
+Because `jweb.El` includes all of `Elements`, the old gaps in the legacy `El` core
+(`b`, `i`, `u`, `menu`, `tfoot`, `caption`, `colgroup`, `col`, `noscript`, `tryCatch`,
+`colorInput`, `dateInput`, `timeInput`, `datetimeInput`, `rangeInput`, `ifElse`,
+`classes`-style helpers) are gone — they're all in the one import.
 
-- `b`, `i`, `u`, `menu`, `tfoot`, `caption`, `colgroup`, `col`, `noscript`, `tryCatch`
-  (→ `Elements`)
-- `media`, `sizes`, `loading` attrs (→ `PictureElements`)
-- `colorInput`, `dateInput`, `timeInput`, `datetimeInput`, `monthInput`, `weekInput`,
-  `rangeInput` (→ `FormEnhancements`); typed `Input.text("name")` builders (→ `Input` —
+**Still NOT in `jweb.El`** (import the module named in parentheses):
+
+- `media`, `sizes`, `loading` attrs (→ `jweb.el.PictureElements`)
+- `monthInput`, `weekInput`, and the submit-button overrides `formaction`/`formmethod`/…
+  (→ `jweb.el.FormEnhancements`); typed `Input.text("name")` builders (→ `jweb.Input` —
   the names collide with `El.text`/`El.time` etc.)
-- Naming note: `El.data("SKU-123", "Widget")` creates a `<data>` **element**. The `data-*`
-  attribute is `attrs().data("key", "value")`.
+- `popoverShowButton`/`popoverHideButton` and the `showPopover`/`hidePopover`/
+  `togglePopover` JS helpers (→ `jweb.el.PopoverElements`)
+- Naming note: in `jweb.El`, `data("key", "value")` builds the `data-*` **attribute**.
+  The `<data>` element is `data_(...)` — pass the value as an attr:
+  `data_(value("SKU-123"), "Widget")`.
 
 ## Elements — basics
 
@@ -165,8 +171,11 @@ button(attrs().onClick(e -> counter.update(n -> n + 1)), "Increment")
 import static jweb.Actions.*;
 button(attrs().onClick(toggle("panel")), "Toggle")
 
-// For raw JS strings, use set():
-button(attrs().set("onclick", DialogHelper.showModal("confirm-dialog")), "Open")
+// DialogHelper/DetailsHelper return Actions too — attach the same way:
+button(attrs().onClick(DialogHelper.showModal("confirm-dialog")), "Open")
+
+// For genuinely raw JS strings, use set():
+button(attrs().set("onclick", "console.log('hi')"), "Log")
 ```
 
 Available on `Attributes` for both forms: `onClick`, `onChange`, `onInput`, `onSubmit`,
@@ -193,12 +202,13 @@ svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
 Beyond `input(attrs()...)`, dedicated builders exist:
 
 ```java
-import com.osmig.Jweb.framework.elements.Input;
+import jweb.Input;
 import com.osmig.Jweb.framework.elements.Button;
-import com.osmig.Jweb.framework.elements.Form;
+import com.osmig.Jweb.framework.elements.Form;   // the small elements/Form builder — no jweb shell
+                                                 // (jweb.Form is the richer forms/Form)
 
 Input.email("email").placeholder("you@example.com").required()
-Input.password("pw").minlength(8)
+Input.password("pw").minLength(8)
 Input.range("volume")          // also: text/number/tel/url/search/date/time/color/checkbox/radio/file/hidden
 
 Button.submit("Save")
@@ -235,16 +245,16 @@ div()
 ## Modern HTML5 Elements
 
 ```java
-// Dialog (modal) — helpers return JS strings; attach via set()
-import static com.osmig.Jweb.framework.elements.DialogHelper.*;
+// Dialog (modal) — helpers return Actions; attach via onClick()
+import static jweb.el.DialogHelper.*;
 
 dialog(attrs().id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure?"),
-    button(attrs().set("onclick", close("confirm-dialog")), "Cancel"),
-    button(attrs().set("onclick", close("confirm-dialog", "confirmed")), "Confirm")
+    button(attrs().onClick(close("confirm-dialog")), "Cancel"),
+    button(attrs().onClick(close("confirm-dialog", "confirmed")), "Confirm")
 )
-button(attrs().set("onclick", showModal("confirm-dialog")), "Open Dialog")
+button(attrs().onClick(showModal("confirm-dialog")), "Open Dialog")
 
 // Details/Summary — name attribute creates an exclusive accordion
 details(attrs().name("faq"), summary("Question 1"), p("Answer 1"))
@@ -257,9 +267,11 @@ meter(0.6, 0, 1)           // scalar measurement
 
 // Machine-readable values
 timeWithDatetime("2026-08-08", "August 8, 2026")
-data("SKU-123", "Product Widget")
+data_(value("SKU-123"), "Product Widget")     // data(n,v) is the data-* attribute
 ```
 
+Both helper classes return `Action` values (the same type `jweb.Actions` produces), so
+they plug straight into `onClick(...)`/`on(type, ...)`.
 `DialogHelper`: `showModal`, `show`, `close`, `close(id, returnValue)`, `toggle`,
 `closeOnBackdropClick`, `getReturnValue`, `isOpen`.
 `DetailsHelper`: `open`, `close`, `toggle`, `isOpen`, `openExclusive`, `closeAll`, `openAll`,
@@ -268,7 +280,7 @@ data("SKU-123", "Product Widget")
 ## Popover API (`PopoverElements` — separate import)
 
 ```java
-import static com.osmig.Jweb.framework.elements.PopoverElements.*;
+import static jweb.el.PopoverElements.*;
 
 // Attribute factories
 div(popover("auto"), id("my-popover"), p("Popover content"))
@@ -292,7 +304,7 @@ showPopover("tips"); hidePopover("tips"); togglePopover("tips");
 ## Responsive Images (`PictureElements` — separate import)
 
 ```java
-import static com.osmig.Jweb.framework.elements.PictureElements.*;
+import static jweb.el.PictureElements.*;
 
 picture(
     source(srcset("image.avif"), type("image/avif")),
@@ -333,13 +345,15 @@ p(del("old price: $20"), " ", ins("new price: $15"))
 blockquote("https://example.com/source", p("Quoted text with a cite URL"))
 ```
 
-> Overload hazard: `q("Hello")` resolves to the varargs form (text child), not the
-> `(citeUrl, ...)` form. Same for `abbr` and `blockquote` — a lone String is a child.
+> Overload hazard: `q("Hello")` and `abbr("HTML")` resolve to the varargs form (text
+> child). `blockquote` goes the other way — `blockquote("text")` picks the
+> `(citeUrl, ...)` overload, so a lone String becomes the cite URL; wrap content in
+> `p(...)` as above.
 
 ## Form Enhancements (`FormEnhancements` — separate import for input helpers)
 
 ```java
-import static com.osmig.Jweb.framework.elements.FormEnhancements.*;
+import static jweb.el.FormEnhancements.*;
 
 // Datalist for autocomplete (datalist/optgroup/fieldset/legend are also in El)
 input(attrs().list("browsers")),
@@ -364,7 +378,8 @@ fieldset(
     input(attrs().type("text").name("name").id("name"))
 )
 
-// Typed input helpers (FormEnhancements only)
+// Typed input helpers (monthInput/weekInput are FormEnhancements-only;
+// the rest are also in jweb.El)
 colorInput("theme-color", "#3b82f6")
 dateInput("birthday")
 dateInput("event", "2026-01-01", "2026-12-31")   // with min/max
@@ -378,7 +393,7 @@ rangeInput("opacity", 0, 100, 50, 5)             // with step
 // Submit-button overrides: formaction, formmethod, formenctype, formtarget, formnovalidate
 ```
 
-## Conditional Rendering (`Elements` — not in `El`)
+## Conditional Rendering (in `jweb.El`)
 
 ```java
 import static jweb.El.*;
@@ -443,14 +458,15 @@ ErrorBoundary.withMessage(() -> widget.render(), "Something went wrong");
 A static utility of ~45 prebuilt layout wrappers (distinct from your app's `Layout` template):
 
 ```java
-import com.osmig.Jweb.framework.layout.Layout;
+import jweb.Layout;
 
 Layout.container(...)      // centered max-width container
 Layout.row(...) / Layout.column(...) / Layout.center(...)
 Layout.spaceBetween(...) / Layout.cluster(...) / Layout.stack(...)
-Layout.grid(3, ...) / Layout.autoGrid(...) / Layout.sidebar(side, main)
-Layout.card(...) / Layout.divider() / Layout.spacer(px(24))
-Layout.sticky(...) / Layout.scrollable(...) / Layout.aspectRatio("16/9", ...)
+Layout.grid(3, ...) / Layout.autoGrid(minColWidth, gap, ...)
+Layout.sidebar(px(280), side, main)             // (sidebarWidth, sidebar, content)
+Layout.card(...) / Layout.divider() / Layout.spacer() / Layout.space(px(24))
+Layout.sticky(top, ...) / Layout.scrollable(height, ...) / Layout.aspectRatio("16/9", ...)
 Layout.visuallyHidden(...)  // a11y: screen-reader-only content
 ```
 
