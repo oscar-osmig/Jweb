@@ -3233,7 +3233,11 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * @return an immutable copy of the property map
      */
     public Map<String, String> toMap() {
-        return Map.copyOf(properties);
+        // Insertion-ordered on purpose: MediaQuery, ContainerQuery and Keyframes
+        // iterate this to emit their declarations, and in CSS the order of
+        // declarations decides which one wins. Map.copyOf leaves the order
+        // unspecified, which made those blocks non-deterministic.
+        return java.util.Collections.unmodifiableMap(new LinkedHashMap<>(properties));
     }
 
     /**
