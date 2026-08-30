@@ -9,19 +9,22 @@
 - **`JS`** — the low-level expression/statement layer: values, functions, control flow, DOM
   access. Use it when `Actions` doesn't cover the shape you need.
 
-## ⚠️ Two `script()` builders — pick deliberately
+## Two script builders — different names now
 
-`JS.script()` and `Actions.script()` are **different builders with the same name**:
+`Js.script()` and `Actions.actions()` are different builders:
 
-| | `JS.script()` | `Actions.script()` |
+| | `Js.script()` | `Actions.actions()` |
 |---|---|---|
 | Output | bare statements | wrapped in an IIFE `(function(){...})()` |
-| `withHelpers()` | ❌ not available | ✅ available |
 | Accepts | `var_/let_/const_`, `Func`, `AsyncFunc`, raw | handlers (`onSubmit`/`onClick`/...), `state()`, `onLoad()`, raw |
 
+`Actions.actions()` was called `script()`, and `Actions.dom()`/`domAll()` were called
+`query()`/`queryAll()`. They were renamed because those names collided with `Js.*`, which
+is what made the two facades unusable in one file. The old names still work, deprecated.
+
 **Helpers are auto-injected.** Generated handlers reference `$_('id')` (plus `esc()` and
-`fmtDate()`); `build()` detects their use and prepends the definitions automatically, so
-`withHelpers()` is now optional (calling it explicitly is still fine and never duplicates).
+`fmtDate()`); `build()` detects their use and prepends the definitions automatically.
+`withHelpers()` is deprecated — it is no longer needed.
 
 **Actions plug into event attributes directly** — no raw JS strings:
 
@@ -38,10 +41,9 @@ browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) kee
 its own import but lives at `jweb.js.*` with the same class name — e.g.
 `import static jweb.js.JSClipboard.*;`.
 
-Also: `Js.*` and `Actions.*` share many static names (`script`, `query`, `queryAll`, `call`,
-`fetch`, `sleep`, `promiseAll`, `pushState`, ...). **Wildcard-importing both into one file causes
-ambiguous-reference compile errors** — that is why they stay two facades. Convention: import
-`Actions.*` in page code; qualify `Js.` explicitly when you need the low-level layer.
+`Js.*` and `Actions.*` still share a few static names (`call`, `fetch`, `sleep`), so
+wildcard-importing both can still be ambiguous for those. Convention: import `Actions.*` in
+page code and qualify `Js.` when you need the low-level layer.
 
 ## The standard form-submission pattern
 
@@ -52,8 +54,7 @@ want scripted control.)
 ```java
 import static jweb.Actions.*;
 
-String js = script()
-    .withHelpers()
+String js = actions()
     .add(onSubmit("contact-form")
         .loading("Sending...")                       // disables submit button, swaps text
         .post("/api/v1/contact").withFormData()      // serialize form fields to JSON body
@@ -78,7 +79,8 @@ Inside `ok(...)` / `fail(...)` actions, the generated code exposes these locals:
 | `_fd` | the `FormData` (form handlers) |
 | `_form` / `_btn` | the form element / its submit button |
 
-This is why `assignVar("users", "_data")` and `showMessage(...).fromResponse("field")` work.
+This is why `assign("users", response("users"))` and `showMessage(...).fromResponse("field")`
+work.
 Typed accessors exist: `response("name")` → `_data.name`, `formField("email")` →
 `_fd.get('email')`.
 
@@ -116,6 +118,7 @@ showMessage("status").fromResponse("message")
 // Navigation & forms
 navigateTo("/dashboard"); reload(); resetForm("contact-form")
 pushState("admin", "true")                   // history.pushState({admin:true},'',location.href)
+                                             // (for the real History API use jweb.js.JSHistory)
 
 // DOM
 show("modal"); hide("modal"); toggle("panel")
@@ -149,12 +152,12 @@ sleep(500)
 
 ```java
 get("/api/users")
-    .ok(assignVar("users", "_data"))
+    .ok(assign("users", response("users")))
     .fail(showMessage("error").error("Failed to load"))
 
 post("/api/users").json("{\"name\":\"John\"}").ok(...)
 post("/api/contact").formData("contact-form").ok(resetForm("contact-form"))
-put("/api/items/3").jsonExpr("payload").bearer("token").ok(...)
+put("/api/items/3").json(v("payload")).bearer("token").ok(...)
 
 // Status-code handling
 get("/api/data")
@@ -166,13 +169,14 @@ get("/api/data")
 ```
 
 Full chain: `get/post/put/patch/delete/fetch(method, url)`, `.urlFromVar`, `.appendVar`,
-`.json/.jsonExpr/.formData/.urlEncoded/.body`, `.header/.headerExpr/.bearer/.credentials/.mode`,
+`.json/.formData/.urlEncoded/.body`, `.header/.bearer/.credentials/.mode`
+(each takes a literal `String` or a `Val` expression — the old `*Expr` twins are deprecated),
 `.onStatus(...)` + named variants, `.ok/.fail/.then`.
 
 > `Actions.promiseAll(actions...)` emits a true parallel `Promise.all([...])` (stripping any
 > leading `await` from each action so calls don't serialize). To consume results, use
 > `Actions.promiseAllThen(actions...)` which returns a chainable `Async.PromiseBuilder`
-> (`.then(...)`/`.catch_(...)`), or `Async.promiseAll(vals...)`.
+> (`.then(...)`/`.catch_(...)`), or `JSPromise.all(vals...)`.
 
 ## DOM Query Builder (`Actions`)
 
@@ -188,39 +192,43 @@ queryAll(".temp").remove()
 
 ```java
 // Values
-variable("count"); str("hello"); null_(); this_()
+v("count"); str("hello"); null_(); this_()      // v() is short for variable()
 obj("name", "John", "age", 30)               // {name:'John',age:30}
 array(1, 2, 3)
 object().prop("a", 1).spread("rest").build()
 
 // Functions
 Func formatTime = func("formatTime", "seconds")
-    .var_("hrs", floor(variable("seconds").div(3600)))
-    .ret(variable("hrs").padStart(2, "0"));
-Func cb = callback("e").log("clicked", variable("e").path("target.id"));
+    .var_("hrs", floor(v("seconds").div(3600)))
+    .return_(v("hrs").padStart(2, "0"));
+Func cb = callback("e").log("clicked", v("e").path("target.id"));
 
 // Control flow on Func bodies
 func("check", "x")
-    .if_(variable("x").gt(10)).then_(...).elif_(...).else_(...).end()
-    .forOf("item", variable("list")).body(...).endFor()
-    .try_().body(...).catch_("err").endTry()
-    .switch_(variable("mode")).case_("a").then_(...).default_().then_(...).endSwitch();
+    .if_(v("x").gt(10)).then_(...).elif_(...).else_(...).end()
+    .forOf("item", v("list"), stmt1, stmt2)          // body inline — no endFor()
+    .while_(v("go"), stmt)                           // same for while_/for_/forIn/doWhile
+    .try_().body(...).catch_("err", stmt)            // catch_ with a body closes the try
+    .switch_(v("mode")).case_("a", stmt, "break").default_(stmt);   // default_ closes it
+
+// The builder forms with endFor()/endWhile()/endTry()/endSwitch() still work; the
+// inline forms above just remove the closer you had to remember.
 
 // DOM
-getElem("submit")   // or $("submit")        → El (getElementById)
-JS.query(".card")                            → El (querySelector)
+byId("submit")   // or $("submit")           → El (getElementById)
+Js.query(".card")                            → El (querySelector)
 JS.queryAll(".item")                         → Val (querySelectorAll)
 
 // Val chains (~180 methods): arithmetic, comparison, string/array/number ops
-variable("res").json()
-variable("e").path("target.result")
-variable("items").filter(...).map(...).join(", ")
+v("res").json()
+v("e").path("target.result")
+v("items").filter(...).map(...).join(", ")
 
 // El chains: setText/setValue/addClass/toggleClass/setStyle/hide/show/closest/
 //            addEventListener/scrollIntoView/getBoundingClientRect/...
 
 // Script assembly (low-level; no IIFE, no helpers)
-String js = JS.script()
+String js = Js.script()
     .var_("count", 0)
     .add(formatTime)
     .build();
@@ -231,12 +239,12 @@ String js = JS.script()
 ```java
 asyncFunc("loadData")
     .does(
-        await_(get("/api/users").ok(assignVar("users", "_data"))),
-        await_(get("/api/posts").ok(assignVar("posts", "_data"))),
+        await_(get("/api/users").ok(assign("users", response("users")))),
+        await_(get("/api/posts").ok(assign("posts", response("posts")))),
         call("renderDashboard")
     )
 
-Async.promiseAll(valA, valB).then(callback("results").log(...)).catch_(...)
+JSPromise.all(valA, valB).then(callback("results").log(...)).catch_(...)   // Promise helpers live in JSPromise
 Async.delay(500); Async.onceEvent(el, "transitionend")
 ```
 
@@ -250,10 +258,11 @@ import static jweb.Js.*;
 
 // Delegation — attach to parent, filter by selector
 delegate("container", "click", ".card").handler(callback("e")
-    .log("Clicked:", variable("e").path("target.textContent")))
+    .log("Clicked:", v("e").path("target.textContent")))
 
 // Debounce / throttle (note: they wrap handlers, taking a state-variable name)
-debounce("searchTimer", 300).wrap(callback("e").log("search"))
+debounce(300, callback("e").log("search"))   // self-contained closure; no timer variable
+throttle(100, callback("e").log("scroll"))
 throttle("lastScroll", 100).wrap(callback("e").log("scrolled"))
 
 // Keyboard
@@ -262,19 +271,19 @@ onKey("Escape", callback().log("esc"))              // there is no onKeyDown() �
 onEnter(callback().log("submitted"))
 
 // Touch / swipe — builder, not onSwipe()
-swipe(variable("el")).threshold(50)
+swipe(v("el")).threshold(50)
     .onLeft(callback().log("swiped left"))
     .onRight(callback().log("swiped right"))
     .build()
 
 // Custom events (element first; eventDetail takes the event)
-dispatchCustomEvent(variable("document"), "cart:updated", obj("count", 3))
-onCustomEvent(variable("document"), "cart:updated",
-    callback("e").log(eventDetail(variable("e"))))
+dispatchCustomEvent(v("document"), "cart:updated", obj("count", 3))
+onCustomEvent(v("document"), "cart:updated",
+    callback("e").log(eventDetail(v("e"))))
 
 // Client-side SSE
 sse("/events")
-    .onMessage(callback("e").log(variable("e").dot("data")))
+    .onMessage(callback("e").log(v("e").dot("data")))
     .onError(callback().log("SSE error"))
     .build()
 ```
@@ -341,15 +350,15 @@ openDB("myApp", 1)
     .onSuccess(callback("db").log("Database opened"))
     .build();
 
-transaction(variable("db"), "users", "readwrite")
+transaction(v("db"), "users", "readwrite")
     .store("users")
     .add(obj("id", 1, "name", "Alice"))
     .build();
 
 // Cursor iteration — the method is cursorQuery, direction via ascending()/descending()
-cursorQuery(variable("db"), "users")
+cursorQuery(v("db"), "users")
     .descending()
-    .onEach(callback("cursor").log(variable("cursor").dot("value")))
+    .onEach(callback("cursor").log(v("cursor").dot("value")))
     .build();
 ```
 
@@ -358,13 +367,13 @@ cursorQuery(variable("db"), "users")
 ```java
 import static jweb.js.JSHistory.*;
 
-pushState("/dashboard", obj("page", "dashboard"), "Dashboard")
+pushState(obj("page", str("dashboard")), "/dashboard")   // platform order: (state, url)
 replaceState("/login", obj("page", "login"))
-onPopState(callback("e").log(variable("e").dot("state")))
+onPopState(callback("e").log(v("e").dot("state")))
 
 // Navigation guards
 navigationGuard("You have unsaved changes!")
-navigationGuardWhen(variable("formDirty"), "You have unsaved changes!")  // conditional form
+navigationGuardWhen(v("formDirty"), "You have unsaved changes!")  // conditional form
 
 // Query params
 getQueryParam("page"); setQueryParam("page", "2"); removeQueryParam("filter")
@@ -384,8 +393,8 @@ draggable("card-1")
 dropZone("target-area")
     .dropEffect("move")
     .onDrop(callback("e")
-        .let_("data", getData(variable("e"), "text/plain"))
-        .log("Dropped:", variable("data")))
+        .let_("data", getData(v("e"), "text/plain"))
+        .log("Dropped:", v("data")))
     .build();
 ```
 
@@ -395,12 +404,12 @@ dropZone("target-area")
 import static jweb.js.JSPointer.*;
 
 onPointerDown("canvas", callback("e")
-    .log(pointerId(variable("e")))
-    .log(pressure(variable("e"))))
+    .log(pointerId(v("e")))
+    .log(pressure(v("e"))))
 
 multiPointerTracker("canvas")
-    .onStart(callback("e").log("down:", pointerId(variable("e"))))
-    .onMove(callback("e").log("move:", clientX(variable("e"))))
+    .onStart(callback("e").log("down:", pointerId(v("e"))))
+    .onMove(callback("e").log("move:", clientX(v("e"))))
     .onEnd(callback("e").log("up"))
     .build();
 ```
@@ -420,9 +429,9 @@ speakBuilder("Hello world")
 // Recognition — note build(varName) requires a variable name
 recognizer()
     .lang("en-US").continuous(true).interimResults(true)
-    .onResult(callback("e").log("Heard:", transcript(variable("e"))))
+    .onResult(callback("e").log("Heard:", transcript(v("e"))))
     .build("rec");
-startRecognition(variable("rec"));
+startRecognition(v("rec"));
 ```
 
 ### Storage & Cookies
@@ -432,9 +441,9 @@ import static jweb.js.JSStorage.*;
 
 local().setJson("user", obj("name", "Jo"))
 local().getJsonOr("user", obj())
-session().set("draft", variable("text"))
+session().set("draft", v("text"))
 cookie("theme").days(30).sameLax().set("dark")
-onStorageKeyChange("user", callback("e").log(eventNewValue(variable("e"))))
+onStorageKeyChange("user", callback("e").log(eventNewValue(v("e"))))
 ```
 
 ### WebSocket (client)
@@ -444,7 +453,7 @@ import static jweb.js.JSWebSocket.*;
 
 webSocket(wsUrl("/live"))
     .onOpen(callback().log("connected"))
-    .onMessage(callback("e").log(variable("e").dot("data")))
+    .onMessage(callback("e").log(v("e").dot("data")))
     .autoReconnect()
     .build();
 ```
@@ -454,7 +463,7 @@ webSocket(wsUrl("/live"))
 There is no bundler and no automatic script injection for DSL output. Three mechanisms:
 
 1. **Inline script tags** — the DSL produces a `String`; place it yourself:
-   `inlineScript(script().withHelpers().add(...).build())` (unescaped `VRaw` under the hood).
+   `inlineScript(actions().add(...).build())` (unescaped `VRaw` under the hood).
 2. **Inline event attributes** — `attrs().onClick(action)` writes `action.inline()` into
    `onclick` etc.
 3. **Auto-injected framework scripts** — the controller injects three scripts before
