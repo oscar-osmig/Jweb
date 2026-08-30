@@ -87,4 +87,31 @@ class JsModuleSimplificationTest {
         assertEquals("location.href", jweb.js.JSHistory.currentUrl().js());
         assertEquals("new URL(location.href)", jweb.js.JSUrl.currentUrlObject().js());
     }
+
+    @Test
+    void canvasPropertiesReadAndWriteUnderOneName() {
+        // ctx.fillStyle is a property: one argument reads it, two write it.
+        assertEquals("c.fillStyle", jweb.js.JSCanvas.fillStyle(v("c")).js());
+        assertEquals("c.fillStyle='#f00'", jweb.js.JSCanvas.fillStyle(v("c"), "#f00").js());
+        assertEquals(jweb.js.JSCanvas.setFillStyle(v("c"), "#f00").js(),
+                     jweb.js.JSCanvas.fillStyle(v("c"), "#f00").js());
+    }
+
+    @Test
+    void chainableContextDoesNotThreadCtxThroughEveryCall() {
+        String js = jweb.js.JSCanvas.ctx2d(byId("chart"))
+            .fillStyle("#4f46e5")
+            .fillRect(10, 10, 100, 50)
+            .stroke()
+            .build().js();
+        assertEquals("document.getElementById('chart').getContext('2d').fillStyle='#4f46e5';"
+            + "document.getElementById('chart').getContext('2d').fillRect(10,10,100,50);"
+            + "document.getElementById('chart').getContext('2d').stroke()", js);
+    }
+
+    @Test
+    void mediaPropertiesShareOneName() {
+        assertEquals(jweb.js.JSMedia.setVolume(v("audio"), 0.5).js(),
+                     jweb.js.JSMedia.volume(v("audio"), 0.5).js());
+    }
 }

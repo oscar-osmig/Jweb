@@ -234,11 +234,29 @@ public class JSCanvas {
     // ==================== Styles and Colors ====================
 
     /** Sets fill style: ctx.fillStyle = color */
+    /** {@code ctx.fillStyle = ...} */
+    public static Val fillStyle(Val ctx, String color) {
+        return setFillStyle(ctx, color);
+    }
+
+    /**
+     * @deprecated Use {@link #fillStyle} — {@code fillStyle} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setFillStyle(Val ctx, String color) {
         return new Val(ctx.js() + ".fillStyle='" + JS.esc(color) + "'");
     }
 
     /** Sets fill style with dynamic value */
+    /** {@code ctx.fillStyle = ...} */
+    public static Val fillStyle(Val ctx, Val color) {
+        return setFillStyle(ctx, color);
+    }
+
+    /**
+     * @deprecated Use {@link #fillStyle} — {@code fillStyle} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setFillStyle(Val ctx, Val color) {
         return new Val(ctx.js() + ".fillStyle=" + color.js());
     }
@@ -249,11 +267,29 @@ public class JSCanvas {
     }
 
     /** Sets stroke style: ctx.strokeStyle = color */
+    /** {@code ctx.strokeStyle = ...} */
+    public static Val strokeStyle(Val ctx, String color) {
+        return setStrokeStyle(ctx, color);
+    }
+
+    /**
+     * @deprecated Use {@link #strokeStyle} — {@code strokeStyle} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setStrokeStyle(Val ctx, String color) {
         return new Val(ctx.js() + ".strokeStyle='" + JS.esc(color) + "'");
     }
 
     /** Sets stroke style with dynamic value */
+    /** {@code ctx.strokeStyle = ...} */
+    public static Val strokeStyle(Val ctx, Val color) {
+        return setStrokeStyle(ctx, color);
+    }
+
+    /**
+     * @deprecated Use {@link #strokeStyle} — {@code strokeStyle} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setStrokeStyle(Val ctx, Val color) {
         return new Val(ctx.js() + ".strokeStyle=" + color.js());
     }
@@ -264,11 +300,29 @@ public class JSCanvas {
     }
 
     /** Sets line width: ctx.lineWidth = width */
+    /** {@code ctx.lineWidth = ...} */
+    public static Val lineWidth(Val ctx, double width) {
+        return setLineWidth(ctx, width);
+    }
+
+    /**
+     * @deprecated Use {@link #lineWidth} — {@code lineWidth} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLineWidth(Val ctx, double width) {
         return new Val(ctx.js() + ".lineWidth=" + width);
     }
 
     /** Sets line width with dynamic value */
+    /** {@code ctx.lineWidth = ...} */
+    public static Val lineWidth(Val ctx, Val width) {
+        return setLineWidth(ctx, width);
+    }
+
+    /**
+     * @deprecated Use {@link #lineWidth} — {@code lineWidth} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLineWidth(Val ctx, Val width) {
         return new Val(ctx.js() + ".lineWidth=" + width.js());
     }
@@ -279,6 +333,15 @@ public class JSCanvas {
     }
 
     /** Sets line cap: ctx.lineCap = 'butt' | 'round' | 'square' */
+    /** {@code ctx.lineCap = ...} */
+    public static Val lineCap(Val ctx, String cap) {
+        return setLineCap(ctx, cap);
+    }
+
+    /**
+     * @deprecated Use {@link #lineCap} — {@code lineCap} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLineCap(Val ctx, String cap) {
         return new Val(ctx.js() + ".lineCap='" + JS.esc(cap) + "'");
     }
@@ -289,6 +352,15 @@ public class JSCanvas {
     }
 
     /** Sets line join: ctx.lineJoin = 'miter' | 'round' | 'bevel' */
+    /** {@code ctx.lineJoin = ...} */
+    public static Val lineJoin(Val ctx, String join) {
+        return setLineJoin(ctx, join);
+    }
+
+    /**
+     * @deprecated Use {@link #lineJoin} — {@code lineJoin} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLineJoin(Val ctx, String join) {
         return new Val(ctx.js() + ".lineJoin='" + JS.esc(join) + "'");
     }
@@ -299,11 +371,29 @@ public class JSCanvas {
     }
 
     /** Sets miter limit: ctx.miterLimit = limit */
+    /** {@code ctx.miterLimit = ...} */
+    public static Val miterLimit(Val ctx, double limit) {
+        return setMiterLimit(ctx, limit);
+    }
+
+    /**
+     * @deprecated Use {@link #miterLimit} — {@code miterLimit} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setMiterLimit(Val ctx, double limit) {
         return new Val(ctx.js() + ".miterLimit=" + limit);
     }
 
     /** Sets miter limit with dynamic value */
+    /** {@code ctx.miterLimit = ...} */
+    public static Val miterLimit(Val ctx, Val limit) {
+        return setMiterLimit(ctx, limit);
+    }
+
+    /**
+     * @deprecated Use {@link #miterLimit} — {@code miterLimit} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setMiterLimit(Val ctx, Val limit) {
         return new Val(ctx.js() + ".miterLimit=" + limit.js());
     }
@@ -334,11 +424,29 @@ public class JSCanvas {
     }
 
     /** Sets line dash offset: ctx.lineDashOffset = offset */
+    /** {@code ctx.lineDashOffset = ...} */
+    public static Val lineDashOffset(Val ctx, double offset) {
+        return setLineDashOffset(ctx, offset);
+    }
+
+    /**
+     * @deprecated Use {@link #lineDashOffset} — {@code lineDashOffset} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLineDashOffset(Val ctx, double offset) {
         return new Val(ctx.js() + ".lineDashOffset=" + offset);
     }
 
     /** Sets line dash offset with dynamic value */
+    /** {@code ctx.lineDashOffset = ...} */
+    public static Val lineDashOffset(Val ctx, Val offset) {
+        return setLineDashOffset(ctx, offset);
+    }
+
+    /**
+     * @deprecated Use {@link #lineDashOffset} — {@code lineDashOffset} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLineDashOffset(Val ctx, Val offset) {
         return new Val(ctx.js() + ".lineDashOffset=" + offset.js());
     }
@@ -424,11 +532,29 @@ public class JSCanvas {
     // ==================== Shadows ====================
 
     /** Sets shadow color: ctx.shadowColor = color */
+    /** {@code ctx.shadowColor = ...} */
+    public static Val shadowColor(Val ctx, String color) {
+        return setShadowColor(ctx, color);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowColor} — {@code shadowColor} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowColor(Val ctx, String color) {
         return new Val(ctx.js() + ".shadowColor='" + JS.esc(color) + "'");
     }
 
     /** Sets shadow color with dynamic value */
+    /** {@code ctx.shadowColor = ...} */
+    public static Val shadowColor(Val ctx, Val color) {
+        return setShadowColor(ctx, color);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowColor} — {@code shadowColor} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowColor(Val ctx, Val color) {
         return new Val(ctx.js() + ".shadowColor=" + color.js());
     }
@@ -439,11 +565,29 @@ public class JSCanvas {
     }
 
     /** Sets shadow blur: ctx.shadowBlur = blur */
+    /** {@code ctx.shadowBlur = ...} */
+    public static Val shadowBlur(Val ctx, double blur) {
+        return setShadowBlur(ctx, blur);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowBlur} — {@code shadowBlur} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowBlur(Val ctx, double blur) {
         return new Val(ctx.js() + ".shadowBlur=" + blur);
     }
 
     /** Sets shadow blur with dynamic value */
+    /** {@code ctx.shadowBlur = ...} */
+    public static Val shadowBlur(Val ctx, Val blur) {
+        return setShadowBlur(ctx, blur);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowBlur} — {@code shadowBlur} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowBlur(Val ctx, Val blur) {
         return new Val(ctx.js() + ".shadowBlur=" + blur.js());
     }
@@ -454,11 +598,29 @@ public class JSCanvas {
     }
 
     /** Sets shadow offset X: ctx.shadowOffsetX = offset */
+    /** {@code ctx.shadowOffsetX = ...} */
+    public static Val shadowOffsetX(Val ctx, double offset) {
+        return setShadowOffsetX(ctx, offset);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowOffsetX} — {@code shadowOffsetX} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowOffsetX(Val ctx, double offset) {
         return new Val(ctx.js() + ".shadowOffsetX=" + offset);
     }
 
     /** Sets shadow offset X with dynamic value */
+    /** {@code ctx.shadowOffsetX = ...} */
+    public static Val shadowOffsetX(Val ctx, Val offset) {
+        return setShadowOffsetX(ctx, offset);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowOffsetX} — {@code shadowOffsetX} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowOffsetX(Val ctx, Val offset) {
         return new Val(ctx.js() + ".shadowOffsetX=" + offset.js());
     }
@@ -469,11 +631,29 @@ public class JSCanvas {
     }
 
     /** Sets shadow offset Y: ctx.shadowOffsetY = offset */
+    /** {@code ctx.shadowOffsetY = ...} */
+    public static Val shadowOffsetY(Val ctx, double offset) {
+        return setShadowOffsetY(ctx, offset);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowOffsetY} — {@code shadowOffsetY} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowOffsetY(Val ctx, double offset) {
         return new Val(ctx.js() + ".shadowOffsetY=" + offset);
     }
 
     /** Sets shadow offset Y with dynamic value */
+    /** {@code ctx.shadowOffsetY = ...} */
+    public static Val shadowOffsetY(Val ctx, Val offset) {
+        return setShadowOffsetY(ctx, offset);
+    }
+
+    /**
+     * @deprecated Use {@link #shadowOffsetY} — {@code shadowOffsetY} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setShadowOffsetY(Val ctx, Val offset) {
         return new Val(ctx.js() + ".shadowOffsetY=" + offset.js());
     }
@@ -541,11 +721,29 @@ public class JSCanvas {
     }
 
     /** Sets font: ctx.font = font */
+    /** {@code ctx.font = ...} */
+    public static Val font(Val ctx, String font) {
+        return setFont(ctx, font);
+    }
+
+    /**
+     * @deprecated Use {@link #font} — {@code font} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setFont(Val ctx, String font) {
         return new Val(ctx.js() + ".font='" + JS.esc(font) + "'");
     }
 
     /** Sets font with dynamic value */
+    /** {@code ctx.font = ...} */
+    public static Val font(Val ctx, Val font) {
+        return setFont(ctx, font);
+    }
+
+    /**
+     * @deprecated Use {@link #font} — {@code font} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setFont(Val ctx, Val font) {
         return new Val(ctx.js() + ".font=" + font.js());
     }
@@ -556,6 +754,15 @@ public class JSCanvas {
     }
 
     /** Sets text align: ctx.textAlign = 'left' | 'right' | 'center' | 'start' | 'end' */
+    /** {@code ctx.textAlign = ...} */
+    public static Val textAlign(Val ctx, String align) {
+        return setTextAlign(ctx, align);
+    }
+
+    /**
+     * @deprecated Use {@link #textAlign} — {@code textAlign} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setTextAlign(Val ctx, String align) {
         return new Val(ctx.js() + ".textAlign='" + JS.esc(align) + "'");
     }
@@ -566,6 +773,15 @@ public class JSCanvas {
     }
 
     /** Sets text baseline: ctx.textBaseline = 'top' | 'middle' | 'bottom' | 'alphabetic' | 'hanging' */
+    /** {@code ctx.textBaseline = ...} */
+    public static Val textBaseline(Val ctx, String baseline) {
+        return setTextBaseline(ctx, baseline);
+    }
+
+    /**
+     * @deprecated Use {@link #textBaseline} — {@code textBaseline} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setTextBaseline(Val ctx, String baseline) {
         return new Val(ctx.js() + ".textBaseline='" + JS.esc(baseline) + "'");
     }
@@ -576,6 +792,15 @@ public class JSCanvas {
     }
 
     /** Sets text direction: ctx.direction = 'ltr' | 'rtl' | 'inherit' */
+    /** {@code ctx.direction = ...} */
+    public static Val direction(Val ctx, String direction) {
+        return setDirection(ctx, direction);
+    }
+
+    /**
+     * @deprecated Use {@link #direction} — {@code direction} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setDirection(Val ctx, String direction) {
         return new Val(ctx.js() + ".direction='" + JS.esc(direction) + "'");
     }
@@ -752,11 +977,29 @@ public class JSCanvas {
     // ==================== Compositing ====================
 
     /** Sets global alpha: ctx.globalAlpha = alpha */
+    /** {@code ctx.globalAlpha = ...} */
+    public static Val globalAlpha(Val ctx, double alpha) {
+        return setGlobalAlpha(ctx, alpha);
+    }
+
+    /**
+     * @deprecated Use {@link #globalAlpha} — {@code globalAlpha} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setGlobalAlpha(Val ctx, double alpha) {
         return new Val(ctx.js() + ".globalAlpha=" + alpha);
     }
 
     /** Sets global alpha with dynamic value */
+    /** {@code ctx.globalAlpha = ...} */
+    public static Val globalAlpha(Val ctx, Val alpha) {
+        return setGlobalAlpha(ctx, alpha);
+    }
+
+    /**
+     * @deprecated Use {@link #globalAlpha} — {@code globalAlpha} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setGlobalAlpha(Val ctx, Val alpha) {
         return new Val(ctx.js() + ".globalAlpha=" + alpha.js());
     }
@@ -767,6 +1010,15 @@ public class JSCanvas {
     }
 
     /** Sets global composite operation: ctx.globalCompositeOperation = operation */
+    /** {@code ctx.globalCompositeOperation = ...} */
+    public static Val globalCompositeOperation(Val ctx, String operation) {
+        return setGlobalCompositeOperation(ctx, operation);
+    }
+
+    /**
+     * @deprecated Use {@link #globalCompositeOperation} — {@code globalCompositeOperation} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setGlobalCompositeOperation(Val ctx, String operation) {
         return new Val(ctx.js() + ".globalCompositeOperation='" + JS.esc(operation) + "'");
     }
@@ -784,11 +1036,29 @@ public class JSCanvas {
     }
 
     /** Sets canvas width: canvas.width = width */
+    /** {@code canvas.width = ...} */
+    public static Val width(Val canvas, int width) {
+        return setCanvasWidth(canvas, width);
+    }
+
+    /**
+     * @deprecated Use {@link #width} — {@code width} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setCanvasWidth(Val canvas, int width) {
         return new Val(canvas.js() + ".width=" + width);
     }
 
     /** Sets canvas width with dynamic value */
+    /** {@code canvas.width = ...} */
+    public static Val width(Val canvas, Val width) {
+        return setCanvasWidth(canvas, width);
+    }
+
+    /**
+     * @deprecated Use {@link #width} — {@code width} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setCanvasWidth(Val canvas, Val width) {
         return new Val(canvas.js() + ".width=" + width.js());
     }
@@ -799,11 +1069,29 @@ public class JSCanvas {
     }
 
     /** Sets canvas height: canvas.height = height */
+    /** {@code canvas.height = ...} */
+    public static Val height(Val canvas, int height) {
+        return setCanvasHeight(canvas, height);
+    }
+
+    /**
+     * @deprecated Use {@link #height} — {@code height} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setCanvasHeight(Val canvas, int height) {
         return new Val(canvas.js() + ".height=" + height);
     }
 
     /** Sets canvas height with dynamic value */
+    /** {@code canvas.height = ...} */
+    public static Val height(Val canvas, Val height) {
+        return setCanvasHeight(canvas, height);
+    }
+
+    /**
+     * @deprecated Use {@link #height} — {@code height} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setCanvasHeight(Val canvas, Val height) {
         return new Val(canvas.js() + ".height=" + height.js());
     }
@@ -841,6 +1129,15 @@ public class JSCanvas {
     // ==================== Smoothing ====================
 
     /** Sets image smoothing enabled: ctx.imageSmoothingEnabled = enabled */
+    /** {@code ctx.imageSmoothingEnabled = ...} */
+    public static Val imageSmoothingEnabled(Val ctx, boolean enabled) {
+        return setImageSmoothingEnabled(ctx, enabled);
+    }
+
+    /**
+     * @deprecated Use {@link #imageSmoothingEnabled} — {@code imageSmoothingEnabled} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setImageSmoothingEnabled(Val ctx, boolean enabled) {
         return new Val(ctx.js() + ".imageSmoothingEnabled=" + enabled);
     }
@@ -851,6 +1148,15 @@ public class JSCanvas {
     }
 
     /** Sets image smoothing quality: ctx.imageSmoothingQuality = 'low' | 'medium' | 'high' */
+    /** {@code ctx.imageSmoothingQuality = ...} */
+    public static Val imageSmoothingQuality(Val ctx, String quality) {
+        return setImageSmoothingQuality(ctx, quality);
+    }
+
+    /**
+     * @deprecated Use {@link #imageSmoothingQuality} — {@code imageSmoothingQuality} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setImageSmoothingQuality(Val ctx, String quality) {
         return new Val(ctx.js() + ".imageSmoothingQuality='" + JS.esc(quality) + "'");
     }
@@ -863,11 +1169,29 @@ public class JSCanvas {
     // ==================== Filter ====================
 
     /** Sets filter: ctx.filter = filter */
+    /** {@code ctx.filter = ...} */
+    public static Val filter(Val ctx, String filter) {
+        return setFilter(ctx, filter);
+    }
+
+    /**
+     * @deprecated Use {@link #filter} — {@code filter} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setFilter(Val ctx, String filter) {
         return new Val(ctx.js() + ".filter='" + JS.esc(filter) + "'");
     }
 
     /** Sets filter with dynamic value */
+    /** {@code ctx.filter = ...} */
+    public static Val filter(Val ctx, Val filter) {
+        return setFilter(ctx, filter);
+    }
+
+    /**
+     * @deprecated Use {@link #filter} — {@code filter} is a property on the platform object, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setFilter(Val ctx, Val filter) {
         return new Val(ctx.js() + ".filter=" + filter.js());
     }
@@ -875,5 +1199,220 @@ public class JSCanvas {
     /** Gets filter: ctx.filter */
     public static Val getFilter(Val ctx) {
         return new Val(ctx.js() + ".filter");
+    }
+
+    // ==================== Property Readers ====================
+    // Every property above reads with one argument and writes with two,
+    // exactly like the platform object it mirrors.
+
+    /** {@code ctx.direction} */
+    public static Val direction(Val ctx) {
+        return new Val(ctx.js() + ".direction");
+    }
+
+    /** {@code ctx.fillStyle} */
+    public static Val fillStyle(Val ctx) {
+        return new Val(ctx.js() + ".fillStyle");
+    }
+
+    /** {@code ctx.filter} */
+    public static Val filter(Val ctx) {
+        return new Val(ctx.js() + ".filter");
+    }
+
+    /** {@code ctx.font} */
+    public static Val font(Val ctx) {
+        return new Val(ctx.js() + ".font");
+    }
+
+    /** {@code ctx.globalAlpha} */
+    public static Val globalAlpha(Val ctx) {
+        return new Val(ctx.js() + ".globalAlpha");
+    }
+
+    /** {@code ctx.globalCompositeOperation} */
+    public static Val globalCompositeOperation(Val ctx) {
+        return new Val(ctx.js() + ".globalCompositeOperation");
+    }
+
+    /** {@code ctx.imageSmoothingEnabled} */
+    public static Val imageSmoothingEnabled(Val ctx) {
+        return new Val(ctx.js() + ".imageSmoothingEnabled");
+    }
+
+    /** {@code ctx.imageSmoothingQuality} */
+    public static Val imageSmoothingQuality(Val ctx) {
+        return new Val(ctx.js() + ".imageSmoothingQuality");
+    }
+
+    /** {@code ctx.lineCap} */
+    public static Val lineCap(Val ctx) {
+        return new Val(ctx.js() + ".lineCap");
+    }
+
+    /** {@code ctx.lineDashOffset} */
+    public static Val lineDashOffset(Val ctx) {
+        return new Val(ctx.js() + ".lineDashOffset");
+    }
+
+    /** {@code ctx.lineJoin} */
+    public static Val lineJoin(Val ctx) {
+        return new Val(ctx.js() + ".lineJoin");
+    }
+
+    /** {@code ctx.lineWidth} */
+    public static Val lineWidth(Val ctx) {
+        return new Val(ctx.js() + ".lineWidth");
+    }
+
+    /** {@code ctx.miterLimit} */
+    public static Val miterLimit(Val ctx) {
+        return new Val(ctx.js() + ".miterLimit");
+    }
+
+    /** {@code ctx.shadowBlur} */
+    public static Val shadowBlur(Val ctx) {
+        return new Val(ctx.js() + ".shadowBlur");
+    }
+
+    /** {@code ctx.shadowColor} */
+    public static Val shadowColor(Val ctx) {
+        return new Val(ctx.js() + ".shadowColor");
+    }
+
+    /** {@code ctx.shadowOffsetX} */
+    public static Val shadowOffsetX(Val ctx) {
+        return new Val(ctx.js() + ".shadowOffsetX");
+    }
+
+    /** {@code ctx.shadowOffsetY} */
+    public static Val shadowOffsetY(Val ctx) {
+        return new Val(ctx.js() + ".shadowOffsetY");
+    }
+
+    /** {@code ctx.strokeStyle} */
+    public static Val strokeStyle(Val ctx) {
+        return new Val(ctx.js() + ".strokeStyle");
+    }
+
+    /** {@code ctx.textAlign} */
+    public static Val textAlign(Val ctx) {
+        return new Val(ctx.js() + ".textAlign");
+    }
+
+    /** {@code ctx.textBaseline} */
+    public static Val textBaseline(Val ctx) {
+        return new Val(ctx.js() + ".textBaseline");
+    }
+
+    /** {@code canvas.width} */
+    public static Val width(Val canvas) {
+        return new Val(canvas.js() + ".width");
+    }
+
+    /** {@code canvas.height} */
+    public static Val height(Val canvas) {
+        return new Val(canvas.js() + ".height");
+    }
+
+    // ==================== Chainable 2D Context ====================
+
+    /**
+     * A chainable 2D context, so drawing code reads like the canvas API it
+     * emits instead of threading {@code ctx} through every call.
+     *
+     * <pre>
+     * ctx2d(byId("chart"))
+     *     .fillStyle("#4f46e5")
+     *     .fillRect(10, 10, 100, 50)
+     *     .beginPath()
+     *     .arc(80, 80, 40, 0, 6.283)
+     *     .stroke()
+     *     .build()
+     * </pre>
+     *
+     * @param canvas the canvas element
+     */
+    public static Ctx ctx2d(Val canvas) {
+        return new Ctx(getContext2D(canvas));
+    }
+
+    /** A chainable wrapper around an existing 2D context expression. */
+    public static Ctx ctx(Val context2d) {
+        return new Ctx(context2d);
+    }
+
+    /**
+     * Chainable form of the 2D context API. Each call appends one statement;
+     * {@link #build()} returns them joined.
+     */
+    public static class Ctx {
+        private final Val ctx;
+        private final StringBuilder js = new StringBuilder();
+
+        Ctx(Val ctx) { this.ctx = ctx; }
+
+        private Ctx add(Val call) {
+            if (js.length() > 0) js.append(";");
+            js.append(call.js());
+            return this;
+        }
+
+        /** The context expression itself, for calls this wrapper does not cover. */
+        public Val context() { return ctx; }
+
+        // ---- properties (write) ----
+        public Ctx fillStyle(String color) { return add(JSCanvas.fillStyle(ctx, color)); }
+        public Ctx fillStyle(Val color) { return add(JSCanvas.fillStyle(ctx, color)); }
+        public Ctx strokeStyle(String color) { return add(JSCanvas.strokeStyle(ctx, color)); }
+        public Ctx strokeStyle(Val color) { return add(JSCanvas.strokeStyle(ctx, color)); }
+        public Ctx lineWidth(double width) { return add(JSCanvas.lineWidth(ctx, width)); }
+        public Ctx lineCap(String cap) { return add(JSCanvas.lineCap(ctx, cap)); }
+        public Ctx lineJoin(String join) { return add(JSCanvas.lineJoin(ctx, join)); }
+        public Ctx font(String font) { return add(JSCanvas.font(ctx, font)); }
+        public Ctx textAlign(String align) { return add(JSCanvas.textAlign(ctx, align)); }
+        public Ctx textBaseline(String baseline) { return add(JSCanvas.textBaseline(ctx, baseline)); }
+        public Ctx globalAlpha(double alpha) { return add(JSCanvas.globalAlpha(ctx, alpha)); }
+        public Ctx filter(String filter) { return add(JSCanvas.filter(ctx, filter)); }
+        public Ctx shadowColor(String color) { return add(JSCanvas.shadowColor(ctx, color)); }
+        public Ctx shadowBlur(double blur) { return add(JSCanvas.shadowBlur(ctx, blur)); }
+
+        // ---- rectangles ----
+        public Ctx fillRect(int x, int y, int w, int h) { return add(JSCanvas.fillRect(ctx, x, y, w, h)); }
+        public Ctx strokeRect(int x, int y, int w, int h) { return add(JSCanvas.strokeRect(ctx, x, y, w, h)); }
+        public Ctx clearRect(int x, int y, int w, int h) { return add(JSCanvas.clearRect(ctx, x, y, w, h)); }
+
+        // ---- paths ----
+        public Ctx beginPath() { return add(JSCanvas.beginPath(ctx)); }
+        public Ctx closePath() { return add(JSCanvas.closePath(ctx)); }
+        public Ctx moveTo(int x, int y) { return add(JSCanvas.moveTo(ctx, x, y)); }
+        public Ctx lineTo(int x, int y) { return add(JSCanvas.lineTo(ctx, x, y)); }
+        public Ctx arc(int x, int y, int radius, double start, double end) {
+            return add(JSCanvas.arc(ctx, x, y, radius, start, end));
+        }
+        public Ctx fill() { return add(JSCanvas.fill(ctx)); }
+        public Ctx stroke() { return add(JSCanvas.stroke(ctx)); }
+
+        // ---- text ----
+        public Ctx fillText(String text, int x, int y) { return add(JSCanvas.fillText(ctx, text, x, y)); }
+
+        // ---- transforms / state ----
+        public Ctx save() { return add(JSCanvas.save(ctx)); }
+        public Ctx restore() { return add(JSCanvas.restore(ctx)); }
+        public Ctx translate(int x, int y) { return add(JSCanvas.translate(ctx, x, y)); }
+        public Ctx scale(double x, double y) { return add(JSCanvas.scale(ctx, x, y)); }
+        public Ctx rotate(double angle) { return add(JSCanvas.rotate(ctx, angle)); }
+
+        /** Any context call this wrapper does not cover. */
+        public Ctx raw(String code) {
+            if (js.length() > 0) js.append(";");
+            js.append(code);
+            return this;
+        }
+
+        /** The drawing statements, joined. */
+        public Val build() { return new Val(js.toString()); }
+
+        @Override public String toString() { return js.toString(); }
     }
 }

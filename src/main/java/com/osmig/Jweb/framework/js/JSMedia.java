@@ -84,11 +84,31 @@ public class JSMedia {
     }
 
     /** Sets currentTime: elem.currentTime = time */
+    /** {@code media.currentTime = ...} */
+    public static Val currentTime(Val media, double seconds) {
+        return setCurrentTime(media, seconds);
+    }
+
+    /**
+     * @deprecated Use {@link #currentTime} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setCurrentTime(Val media, double seconds) {
         return new Val(media.js() + ".currentTime=" + seconds);
     }
 
     /** Sets currentTime from expression: elem.currentTime = expr */
+    /** {@code media.currentTime = ...} */
+    public static Val currentTime(Val media, Val seconds) {
+        return setCurrentTime(media, seconds);
+    }
+
+    /**
+     * @deprecated Use {@link #currentTime} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setCurrentTime(Val media, Val seconds) {
         return new Val(media.js() + ".currentTime=" + seconds.js());
     }
@@ -104,11 +124,31 @@ public class JSMedia {
     }
 
     /** Sets volume: elem.volume = vol */
+    /** {@code media.volume = ...} */
+    public static Val volume(Val media, double vol) {
+        return setVolume(media, vol);
+    }
+
+    /**
+     * @deprecated Use {@link #volume} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setVolume(Val media, double vol) {
         return new Val(media.js() + ".volume=" + vol);
     }
 
     /** Sets volume from expression: elem.volume = expr */
+    /** {@code media.volume = ...} */
+    public static Val volume(Val media, Val vol) {
+        return setVolume(media, vol);
+    }
+
+    /**
+     * @deprecated Use {@link #volume} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setVolume(Val media, Val vol) {
         return new Val(media.js() + ".volume=" + vol.js());
     }
@@ -119,11 +159,31 @@ public class JSMedia {
     }
 
     /** Sets muted: elem.muted = true/false */
+    /** {@code media.muted = ...} */
+    public static Val muted(Val media, boolean muted) {
+        return setMuted(media, muted);
+    }
+
+    /**
+     * @deprecated Use {@link #muted} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setMuted(Val media, boolean muted) {
         return new Val(media.js() + ".muted=" + muted);
     }
 
     /** Sets muted from expression: elem.muted = expr */
+    /** {@code media.muted = ...} */
+    public static Val muted(Val media, Val muted) {
+        return setMuted(media, muted);
+    }
+
+    /**
+     * @deprecated Use {@link #muted} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setMuted(Val media, Val muted) {
         return new Val(media.js() + ".muted=" + muted.js());
     }
@@ -134,11 +194,31 @@ public class JSMedia {
     }
 
     /** Sets playbackRate: elem.playbackRate = rate */
+    /** {@code media.playbackRate = ...} */
+    public static Val playbackRate(Val media, double rate) {
+        return setPlaybackRate(media, rate);
+    }
+
+    /**
+     * @deprecated Use {@link #playbackRate} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setPlaybackRate(Val media, double rate) {
         return new Val(media.js() + ".playbackRate=" + rate);
     }
 
     /** Sets playbackRate from expression: elem.playbackRate = expr */
+    /** {@code media.playbackRate = ...} */
+    public static Val playbackRate(Val media, Val rate) {
+        return setPlaybackRate(media, rate);
+    }
+
+    /**
+     * @deprecated Use {@link #playbackRate} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setPlaybackRate(Val media, Val rate) {
         return new Val(media.js() + ".playbackRate=" + rate.js());
     }
@@ -169,11 +249,31 @@ public class JSMedia {
     }
 
     /** Sets src: elem.src = url */
+    /** {@code media.src = ...} */
+    public static Val src(Val media, String url) {
+        return setSrc(media, url);
+    }
+
+    /**
+     * @deprecated Use {@link #src} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setSrc(Val media, String url) {
         return new Val(media.js() + ".src='" + JS.esc(url) + "'");
     }
 
     /** Sets src from expression: elem.src = expr */
+    /** {@code media.src = ...} */
+    public static Val src(Val media, Val url) {
+        return setSrc(media, url);
+    }
+
+    /**
+     * @deprecated Use {@link #src} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setSrc(Val media, Val url) {
         return new Val(media.js() + ".src=" + url.js());
     }
@@ -189,6 +289,16 @@ public class JSMedia {
     }
 
     /** Sets loop: elem.loop = true/false */
+    /** {@code media.loop = ...} */
+    public static Val loop(Val media, boolean loop) {
+        return setLoop(media, loop);
+    }
+
+    /**
+     * @deprecated Use {@link #loop} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setLoop(Val media, boolean loop) {
         return new Val(media.js() + ".loop=" + loop);
     }
@@ -199,6 +309,16 @@ public class JSMedia {
     }
 
     /** Sets autoplay: elem.autoplay = true/false */
+    /** {@code media.autoplay = ...} */
+    public static Val autoplay(Val media, boolean autoplay) {
+        return setAutoplay(media, autoplay);
+    }
+
+    /**
+     * @deprecated Use {@link #autoplay} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setAutoplay(Val media, boolean autoplay) {
         return new Val(media.js() + ".autoplay=" + autoplay);
     }
@@ -209,6 +329,16 @@ public class JSMedia {
     }
 
     /** Sets controls: elem.controls = true/false */
+    /** {@code media.controls = ...} */
+    public static Val controls(Val media, boolean controls) {
+        return setControls(media, controls);
+    }
+
+    /**
+     * @deprecated Use {@link #controls} — it is a property on the
+     *     media element, so reading and writing share its name.
+     */
+    @Deprecated
     public static Val setControls(Val media, boolean controls) {
         return new Val(media.js() + ".controls=" + controls);
     }

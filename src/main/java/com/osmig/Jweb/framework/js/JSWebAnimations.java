@@ -80,14 +80,22 @@ public class JSWebAnimations {
     /** Gets playback rate */
     public static Val playbackRate(Val animation) { return new Val(animation.js() + ".playbackRate"); }
 
-    /** Sets playback rate */
-    public static Val setPlaybackRate(Val animation, double rate) { return new Val(animation.js() + ".playbackRate=" + rate); }
+    /** {@code animation.playbackRate = rate} */
+    public static Val playbackRate(Val animation, double rate) { return new Val(animation.js() + ".playbackRate=" + rate); }
+
+    /** @deprecated Use {@link #playbackRate(Val, double)} — one name for the property. */
+    @Deprecated
+    public static Val setPlaybackRate(Val animation, double rate) { return playbackRate(animation, rate); }
 
     /** Gets current time */
     public static Val currentTime(Val animation) { return new Val(animation.js() + ".currentTime"); }
 
-    /** Sets current time */
-    public static Val setCurrentTime(Val animation, Val time) { return new Val(animation.js() + ".currentTime=" + time.js()); }
+    /** {@code animation.currentTime = time} */
+    public static Val currentTime(Val animation, Val time) { return new Val(animation.js() + ".currentTime=" + time.js()); }
+
+    /** @deprecated Use {@link #currentTime(Val, Val)} — one name for the property. */
+    @Deprecated
+    public static Val setCurrentTime(Val animation, Val time) { return currentTime(animation, time); }
 
     /** Gets play state */
     public static Val playState(Val animation) { return new Val(animation.js() + ".playState"); }
