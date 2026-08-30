@@ -30,6 +30,21 @@ public class JSStorage {
         Storage(String storage) { this.storage = storage; }
 
         /** Gets item: storage.getItem('key') */
+        /** {@code storage.getItem(key)} — the platform name for {@link #get(String)}. */
+        public Val getItem(String key) { return get(key); }
+
+        /** {@code storage.getItem(key)} — the platform name for {@link #get(Val)}. */
+        public Val getItem(Val key) { return get(key); }
+
+        /** {@code storage.setItem(key, value)} — the platform name for {@link #set(String, String)}. */
+        public Val setItem(String key, String value) { return set(key, value); }
+
+        /** {@code storage.setItem(key, value)} — the platform name for {@link #set(String, Val)}. */
+        public Val setItem(String key, Val value) { return set(key, value); }
+
+        /** {@code storage.removeItem(key)} — the platform name for {@link #remove(String)}. */
+        public Val removeItem(String key) { return remove(key); }
+
         public Val get(String key) {
             return new Val(storage + ".getItem('" + JS.esc(key) + "')");
         }

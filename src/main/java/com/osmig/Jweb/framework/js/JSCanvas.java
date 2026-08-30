@@ -398,21 +398,25 @@ public class JSCanvas {
     }
 
     /** Creates pattern with 'repeat' */
+    @Deprecated
     public static Val createPatternRepeat(Val ctx, Val image) {
         return new Val(ctx.js() + ".createPattern(" + image.js() + ",'repeat')");
     }
 
     /** Creates pattern with 'repeat-x' */
+    @Deprecated
     public static Val createPatternRepeatX(Val ctx, Val image) {
         return new Val(ctx.js() + ".createPattern(" + image.js() + ",'repeat-x')");
     }
 
     /** Creates pattern with 'repeat-y' */
+    @Deprecated
     public static Val createPatternRepeatY(Val ctx, Val image) {
         return new Val(ctx.js() + ".createPattern(" + image.js() + ",'repeat-y')");
     }
 
     /** Creates pattern with 'no-repeat' */
+    @Deprecated
     public static Val createPatternNoRepeat(Val ctx, Val image) {
         return new Val(ctx.js() + ".createPattern(" + image.js() + ",'no-repeat')");
     }

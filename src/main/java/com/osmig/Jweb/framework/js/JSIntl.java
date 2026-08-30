@@ -40,6 +40,7 @@ public class JSIntl {
     }
 
     /** Formats as percentage */
+    @Deprecated
     public static Val formatPercent(Val num, String locale) {
         return new Val("new Intl.NumberFormat('" + JS.esc(locale) + "',{style:'percent'}).format(" + num.js() + ")");
     }
@@ -222,19 +223,32 @@ public class JSIntl {
     }
 
     // Common unit shortcuts
+    @Deprecated
     public static Val formatKilometers(Val value, String locale) { return formatUnit(value, "kilometer", locale); }
+    @Deprecated
     public static Val formatMiles(Val value, String locale) { return formatUnit(value, "mile", locale); }
+    @Deprecated
     public static Val formatMeters(Val value, String locale) { return formatUnit(value, "meter", locale); }
     public static Val formatFeet(Val value, String locale) { return formatUnit(value, "foot", locale); }
+    @Deprecated
     public static Val formatKilograms(Val value, String locale) { return formatUnit(value, "kilogram", locale); }
+    @Deprecated
     public static Val formatPounds(Val value, String locale) { return formatUnit(value, "pound", locale); }
+    @Deprecated
     public static Val formatLiters(Val value, String locale) { return formatUnit(value, "liter", locale); }
+    @Deprecated
     public static Val formatGallons(Val value, String locale) { return formatUnit(value, "gallon", locale); }
+    @Deprecated
     public static Val formatCelsius(Val value, String locale) { return formatUnit(value, "celsius", locale); }
+    @Deprecated
     public static Val formatFahrenheit(Val value, String locale) { return formatUnit(value, "fahrenheit", locale); }
+    @Deprecated
     public static Val formatBytes(Val value, String locale) { return formatUnit(value, "byte", locale); }
+    @Deprecated
     public static Val formatKilobytes(Val value, String locale) { return formatUnit(value, "kilobyte", locale); }
+    @Deprecated
     public static Val formatMegabytes(Val value, String locale) { return formatUnit(value, "megabyte", locale); }
+    @Deprecated
     public static Val formatGigabytes(Val value, String locale) { return formatUnit(value, "gigabyte", locale); }
 
     // ==================== Currency Display Options ====================

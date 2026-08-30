@@ -484,11 +484,25 @@ public class JSMedia {
     // ==================== Picture-in-Picture ====================
 
     /** Requests picture-in-picture: video.requestPictureInPicture() */
+    /** {@code video.requestPictureInPicture()} */
+    public static Val requestPictureInPicture(Val video) {
+        return requestPiP(video);
+    }
+
+    /** @deprecated Use {@link #requestPictureInPicture(Val)} — the platform name. */
+    @Deprecated
     public static Val requestPiP(Val video) {
         return new Val(video.js() + ".requestPictureInPicture()");
     }
 
     /** Exits picture-in-picture: document.exitPictureInPicture() */
+    /** {@code document.exitPictureInPicture()} */
+    public static Val exitPictureInPicture() {
+        return exitPiP();
+    }
+
+    /** @deprecated Use {@link #exitPictureInPicture()} — the platform name. */
+    @Deprecated
     public static Val exitPiP() {
         return new Val("document.exitPictureInPicture()");
     }

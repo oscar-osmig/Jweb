@@ -67,6 +67,13 @@ public class JSCrypto {
      * @param array the typed array to fill
      * @return a Val representing the filled array
      */
+    /** {@code crypto.getRandomValues(array)} */
+    public static Val getRandomValues(Val array) {
+        return randomValues(array);
+    }
+
+    /** @deprecated Use {@link #getRandomValues(Val)} — the platform name. */
+    @Deprecated
     public static Val randomValues(Val array) {
         return new Val("crypto.getRandomValues(" + array.js() + ")");
     }

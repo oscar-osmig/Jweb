@@ -504,7 +504,9 @@ public class JSWebRTC {
          * @return a Val representing the peer connection
          */
         public Val toVal() {
-            return build("pc");
+            // An expression, not a statement: build() emits "var _o=...;<handlers>",
+            // so wrap it in an IIFE that hands the object back.
+            return new Val("(function(){" + build("_o").js() + ";return _o})()");
         }
     }
 
@@ -1009,7 +1011,9 @@ public class JSWebRTC {
          * @return a Val representing the data channel
          */
         public Val toVal() {
-            return build("channel");
+            // An expression, not a statement: build() emits "var _o=...;<handlers>",
+            // so wrap it in an IIFE that hands the object back.
+            return new Val("(function(){" + build("_o").js() + ";return _o})()");
         }
     }
 

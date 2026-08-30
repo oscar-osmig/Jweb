@@ -15,15 +15,17 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * import static com.osmig.Jweb.framework.js.JSHistory.*;
  * import static com.osmig.Jweb.framework.js.JS.*;
  *
- * // Push a new history entry
- * pushState("/dashboard", obj("page", "dashboard"), "Dashboard")
+ * // Push a new history entry — argument order matches the platform:
+ * // history.pushState(state, title, url), with the dead title omitted.
+ * pushState(obj("page", str("dashboard")), "/dashboard")
+ * pushState("/users/42")                        // URL only
  *
  * // Replace current history entry
- * replaceState("/login", obj("page", "login"))
+ * replaceState(obj("page", str("login")), "/login")
  *
  * // Listen for back/forward navigation
  * onPopState(callback("e")
- *     .log(variable("e").dot("state")))
+ *     .log(v("e").dot("state")))
  *
  * // Navigate back/forward
  * back()
@@ -32,7 +34,7 @@ import com.osmig.Jweb.framework.js.JS.Func;
  *
  * // Navigation guard (confirm before leaving)
  * navigationGuard(callback("e")
- *     .ret(str("You have unsaved changes.")))
+ *     .return_(str("You have unsaved changes.")))
  *
  * // Hash change handling
  * onHashChange(callback("e")
@@ -97,92 +99,69 @@ public class JSHistory {
     }
 
     // ==================== pushState / replaceState ====================
+    //
+    // Argument order matches the platform: history.pushState(state, title, url).
+    // The `title` argument is ignored by every browser and is not exposed.
 
     /**
-     * Pushes a new history entry: history.pushState(state, title, url)
+     * {@code history.pushState(null, '', url)} — a new history entry with no state.
      *
      * @param url the URL for the new entry
-     * @param state the state object
-     * @param title the title (mostly ignored by browsers, pass empty string)
-     * @return a Val representing the pushState call
-     */
-    public static Val pushState(String url, Val state, String title) {
-        return new Val("history.pushState(" + state.js() + ",'" + JS.esc(title) + "','" + JS.esc(url) + "')");
-    }
-
-    /**
-     * Pushes a new history entry with empty title.
-     *
-     * @param url the URL
-     * @param state the state object
-     * @return a Val representing the pushState call
-     */
-    public static Val pushState(String url, Val state) {
-        return new Val("history.pushState(" + state.js() + ",'','" + JS.esc(url) + "')");
-    }
-
-    /**
-     * Pushes a new history entry with no state.
-     *
-     * @param url the URL
-     * @return a Val representing the pushState call
      */
     public static Val pushState(String url) {
         return new Val("history.pushState(null,'','" + JS.esc(url) + "')");
     }
 
     /**
-     * Pushes a new history entry with dynamic URL.
+     * {@code history.pushState(state, '', url)}.
      *
-     * @param url the URL expression
+     * <pre>
+     * pushState(obj("page", str("dashboard")), "/dashboard")
+     * </pre>
+     *
      * @param state the state object
-     * @return a Val representing the pushState call
+     * @param url the URL for the new entry
      */
-    public static Val pushState(Val url, Val state) {
+    public static Val pushState(Val state, String url) {
+        return new Val("history.pushState(" + state.js() + ",'','" + JS.esc(url) + "')");
+    }
+
+    /**
+     * {@code history.pushState(state, '', url)} with a computed URL.
+     *
+     * @param state the state object
+     * @param url the URL expression
+     */
+    public static Val pushState(Val state, Val url) {
         return new Val("history.pushState(" + state.js() + ",''," + url.js() + ")");
     }
 
     /**
-     * Replaces the current history entry: history.replaceState(state, title, url)
+     * {@code history.replaceState(null, '', url)} — replace with no state.
      *
-     * @param url the URL for the replacement entry
-     * @param state the state object
-     * @param title the title
-     * @return a Val representing the replaceState call
-     */
-    public static Val replaceState(String url, Val state, String title) {
-        return new Val("history.replaceState(" + state.js() + ",'" + JS.esc(title) + "','" + JS.esc(url) + "')");
-    }
-
-    /**
-     * Replaces the current history entry with empty title.
-     *
-     * @param url the URL
-     * @param state the state object
-     * @return a Val representing the replaceState call
-     */
-    public static Val replaceState(String url, Val state) {
-        return new Val("history.replaceState(" + state.js() + ",'','" + JS.esc(url) + "')");
-    }
-
-    /**
-     * Replaces the current history entry with no state.
-     *
-     * @param url the URL
-     * @return a Val representing the replaceState call
+     * @param url the replacement URL
      */
     public static Val replaceState(String url) {
         return new Val("history.replaceState(null,'','" + JS.esc(url) + "')");
     }
 
     /**
-     * Replaces the current history entry with dynamic URL.
+     * {@code history.replaceState(state, '', url)}.
      *
-     * @param url the URL expression
      * @param state the state object
-     * @return a Val representing the replaceState call
+     * @param url the replacement URL
      */
-    public static Val replaceState(Val url, Val state) {
+    public static Val replaceState(Val state, String url) {
+        return new Val("history.replaceState(" + state.js() + ",'','" + JS.esc(url) + "')");
+    }
+
+    /**
+     * {@code history.replaceState(state, '', url)} with a computed URL.
+     *
+     * @param state the state object
+     * @param url the URL expression
+     */
+    public static Val replaceState(Val state, Val url) {
         return new Val("history.replaceState(" + state.js() + ",''," + url.js() + ")");
     }
 
@@ -320,7 +299,11 @@ public class JSHistory {
      *
      * @param name the parameter name
      * @return a Val representing the parameter value (or null)
+     *
+     * @deprecated Use {@code JSUrl.getQueryParam(...)} — query-string
+     *     reading lives in one module.
      */
+    @Deprecated
     public static Val getQueryParam(String name) {
         return new Val("new URLSearchParams(location.search).get('" + JS.esc(name) + "')");
     }
@@ -330,7 +313,11 @@ public class JSHistory {
      *
      * @param name the parameter name expression
      * @return a Val representing the parameter value
+     *
+     * @deprecated Use {@code JSUrl.getQueryParam(...)} — query-string
+     *     reading lives in one module.
      */
+    @Deprecated
     public static Val getQueryParam(Val name) {
         return new Val("new URLSearchParams(location.search).get(" + name.js() + ")");
     }
@@ -401,17 +388,9 @@ public class JSHistory {
 
     // ==================== Back/Forward Detection ====================
 
-    /**
-     * Detects back/forward navigation direction by comparing state.
-     * Installs a popstate listener that invokes onBack or onForward callbacks.
-     *
-     * @param onBack callback when user navigates back
-     * @param onForward callback when user navigates forward
-     * @return a Val representing the detection setup
-     */
-    public static Val detectDirection(Func onBack, Func onForward) {
-        return new Val("(function(){var idx=history.length;window.addEventListener('popstate',function(){"
-            + "var newIdx=history.length;if(newIdx<idx){(" + onBack.toExpr() + ")();}else{(" + onForward.toExpr()
-            + ")();}idx=newIdx;});}())");
-    }
+    // Note: there is deliberately no detectDirection(...) helper. Detecting
+    // back-vs-forward by comparing history.length cannot work — the length does
+    // not change on back/forward navigation, so the check always reported
+    // "forward". Track a position counter in your own pushState state object
+    // and compare it in onPopState instead.
 }

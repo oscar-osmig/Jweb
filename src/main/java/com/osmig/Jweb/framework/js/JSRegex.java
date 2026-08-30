@@ -21,12 +21,12 @@ public class JSRegex {
     protected JSRegex() {}
 
     /** Creates a regex: regex("pattern") -> /pattern/ */
-    public static Regex regex(String pattern) {
+    public static final Regex regex(String pattern) {
         return new Regex(pattern, "");
     }
 
     /** Creates a regex with flags: regex("pattern", "gi") -> /pattern/gi */
-    public static Regex regex(String pattern, String flags) {
+    public static final Regex regex(String pattern, String flags) {
         return new Regex(pattern, flags);
     }
 
@@ -41,14 +41,14 @@ public class JSRegex {
     }
 
     // Common pre-built patterns
-    public static Regex EMAIL = regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-    public static Regex PHONE = regex("^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$");
-    public static Regex URL = regex("^https?://[^\\s]+$");
-    public static Regex DIGITS = regex("^\\d+$");
-    public static Regex ALPHA = regex("^[a-zA-Z]+$");
-    public static Regex ALPHANUMERIC = regex("^[a-zA-Z0-9]+$");
-    public static Regex SLUG = regex("^[a-z0-9]+(?:-[a-z0-9]+)*$");
-    public static Regex UUID = regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", "i");
+    public static final Regex EMAIL = regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
+    public static final Regex PHONE = regex("^[\\+]?[(]?[0-9]{3}[)]?[-\\s\\.]?[0-9]{3}[-\\s\\.]?[0-9]{4,6}$");
+    public static final Regex URL = regex("^https?://[^\\s]+$");
+    public static final Regex DIGITS = regex("^\\d+$");
+    public static final Regex ALPHA = regex("^[a-zA-Z]+$");
+    public static final Regex ALPHANUMERIC = regex("^[a-zA-Z0-9]+$");
+    public static final Regex SLUG = regex("^[a-z0-9]+(?:-[a-z0-9]+)*$");
+    public static final Regex UUID = regex("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", "i");
 
     public static class Regex {
         private final String pattern;
@@ -194,34 +194,34 @@ public class JSRegex {
     // ==================== Advanced Regex Patterns ====================
 
     // Lookahead and lookbehind patterns
-    public static Regex lookahead(String pattern, String ahead) {
+    public static final Regex lookahead(String pattern, String ahead) {
         return regex(pattern + "(?=" + ahead + ")");
     }
 
-    public static Regex negativeLookahead(String pattern, String ahead) {
+    public static final Regex negativeLookahead(String pattern, String ahead) {
         return regex(pattern + "(?!" + ahead + ")");
     }
 
-    public static Regex lookbehind(String behind, String pattern) {
+    public static final Regex lookbehind(String behind, String pattern) {
         return regex("(?<=" + behind + ")" + pattern);
     }
 
-    public static Regex negativeLookbehind(String behind, String pattern) {
+    public static final Regex negativeLookbehind(String behind, String pattern) {
         return regex("(?<!" + behind + ")" + pattern);
     }
 
     // ==================== Additional Pre-built Patterns ====================
 
-    public static Regex HEX_COLOR = regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
-    public static Regex IPV4 = regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$");
-    public static Regex IPV6 = regex("^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
-    public static Regex DATE_ISO = regex("^\\d{4}-\\d{2}-\\d{2}$");
-    public static Regex TIME_24H = regex("^([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$");
-    public static Regex CREDIT_CARD = regex("^\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}$");
-    public static Regex USERNAME = regex("^[a-zA-Z][a-zA-Z0-9_-]{2,19}$");
-    public static Regex PASSWORD_STRONG = regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
-    public static Regex WHITESPACE = regex("\\s+", "g");
-    public static Regex NON_ALPHANUMERIC = regex("[^a-zA-Z0-9]", "g");
+    public static final Regex HEX_COLOR = regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
+    public static final Regex IPV4 = regex("^((25[0-5]|(2[0-4]|1\\d|[1-9]|)\\d)\\.?\\b){4}$");
+    public static final Regex IPV6 = regex("^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$");
+    public static final Regex DATE_ISO = regex("^\\d{4}-\\d{2}-\\d{2}$");
+    public static final Regex TIME_24H = regex("^([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d)?$");
+    public static final Regex CREDIT_CARD = regex("^\\d{4}[- ]?\\d{4}[- ]?\\d{4}[- ]?\\d{4}$");
+    public static final Regex USERNAME = regex("^[a-zA-Z][a-zA-Z0-9_-]{2,19}$");
+    public static final Regex PASSWORD_STRONG = regex("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+    public static final Regex WHITESPACE = regex("\\s+", "g");
+    public static final Regex NON_ALPHANUMERIC = regex("[^a-zA-Z0-9]", "g");
 
     // ==================== Regex Utilities ====================
 

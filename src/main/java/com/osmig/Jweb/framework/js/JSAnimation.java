@@ -31,13 +31,13 @@ public class JSAnimation {
     }
 
     /** cancelAnimationFrame(id) */
-    public static String cancelRaf(Val id) {
-        return "cancelAnimationFrame(" + id.js() + ")";
+    public static Val cancelRaf(Val id) {
+        return new Val("cancelAnimationFrame(" + id.js() + ")");
     }
 
     /** cancelAnimationFrame(varName) */
-    public static String cancelRaf(String varName) {
-        return "cancelAnimationFrame(" + varName + ")";
+    public static Val cancelRaf(String varName) {
+        return new Val("cancelAnimationFrame(" + varName + ")");
     }
 
     /** Creates an animation loop */
@@ -62,7 +62,7 @@ public class JSAnimation {
             return this;
         }
 
-        public String build() {
+        public Val build() {
             StringBuilder sb = new StringBuilder();
             sb.append("var ").append(fnName).append("_id;");
             sb.append("function ").append(fnName).append("(time){");
@@ -71,51 +71,88 @@ public class JSAnimation {
             }
             sb.append("(").append(frameCallback.toExpr()).append(")(time);");
             sb.append(fnName).append("_id=requestAnimationFrame(").append(fnName).append(")}");
-            return sb.toString();
+            return new Val(sb.toString());
         }
 
-        public String start() {
-            return fnName + "_id=requestAnimationFrame(" + fnName + ")";
+        public Val start() {
+            return new Val(fnName + "_id=requestAnimationFrame(" + fnName + ")");
         }
 
-        public String stop() {
-            return "cancelAnimationFrame(" + fnName + "_id)";
+        public Val stop() {
+            return new Val("cancelAnimationFrame(" + fnName + "_id)");
         }
     }
 
     // ==================== CSS Transitions ====================
 
-    /** Sets up a CSS transition on an element */
-    public static String transition(Val elem, String property, String from, String to, int durationMs) {
-        return elem.js() + ".style." + property + "='" + JS.esc(from) + "';" +
-               elem.js() + ".style.transition='" + property + " " + durationMs + "ms';" +
-               "setTimeout(function(){" + elem.js() + ".style." + property + "='" + JS.esc(to) + "'}," + 0 + ")";
+    /**
+     * The DOM style-object key for a property: {@code background-color} and
+     * {@code backgroundColor} both become {@code backgroundColor}.
+     */
+    static String styleKey(String property) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < property.length(); i++) {
+            char c = property.charAt(i);
+            if (c == '-' && i + 1 < property.length()) {
+                sb.append(Character.toUpperCase(property.charAt(++i)));
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
-    /** Sets up transition with easing */
-    public static String transition(Val elem, String property, String from, String to, int durationMs, String easing) {
-        return elem.js() + ".style." + property + "='" + JS.esc(from) + "';" +
-               elem.js() + ".style.transition='" + property + " " + durationMs + "ms " + easing + "';" +
-               "setTimeout(function(){" + elem.js() + ".style." + property + "='" + JS.esc(to) + "'}," + 0 + ")";
+    /**
+     * The CSS name for a property: {@code backgroundColor} and
+     * {@code background-color} both become {@code background-color}.
+     * Needed because the {@code transition} shorthand is CSS, not JS — the
+     * camelCase spelling is silently invalid there.
+     */
+    static String cssName(String property) {
+        StringBuilder sb = new StringBuilder();
+        for (char c : property.toCharArray()) {
+            if (Character.isUpperCase(c)) sb.append('-').append(Character.toLowerCase(c));
+            else sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Sets up a CSS transition on an element. The property may be written in
+     * either CSS ({@code background-color}) or DOM ({@code backgroundColor})
+     * spelling — each half of the emitted code gets the form it needs.
+     */
+    public static Val transition(Val elem, String property, String from, String to, int durationMs) {
+        return transition(elem, property, from, to, durationMs, null);
+    }
+
+    /** Sets up transition with easing. */
+    public static Val transition(Val elem, String property, String from, String to, int durationMs, String easing) {
+        String key = styleKey(property);
+        String css = cssName(property);
+        return new Val(elem.js() + ".style." + key + "='" + JS.esc(from) + "';" +
+               elem.js() + ".style.transition='" + css + " " + durationMs + "ms"
+               + (easing != null ? " " + easing : "") + "';" +
+               "setTimeout(function(){" + elem.js() + ".style." + key + "='" + JS.esc(to) + "'},0)");
     }
 
     /** Listens for transition end */
-    public static String onTransitionEnd(Val elem, Func callback) {
-        return elem.js() + ".addEventListener('transitionend'," + callback.toExpr() + ",{once:true})";
+    public static Val onTransitionEnd(Val elem, Func callback) {
+        return new Val(elem.js() + ".addEventListener('transitionend'," + callback.toExpr() + ",{once:true})");
     }
 
     // ==================== CSS Animations ====================
 
     /** Adds animation class and removes after completion */
-    public static String animate(Val elem, String animationClass) {
-        return elem.js() + ".classList.add('" + JS.esc(animationClass) + "');" +
+    public static Val animate(Val elem, String animationClass) {
+        return new Val(elem.js() + ".classList.add('" + JS.esc(animationClass) + "');" +
                elem.js() + ".addEventListener('animationend',function(){" +
-               "this.classList.remove('" + JS.esc(animationClass) + "')},{once:true})";
+               "this.classList.remove('" + JS.esc(animationClass) + "')},{once:true})");
     }
 
     /** Listens for animation end */
-    public static String onAnimationEnd(Val elem, Func callback) {
-        return elem.js() + ".addEventListener('animationend'," + callback.toExpr() + ",{once:true})";
+    public static Val onAnimationEnd(Val elem, Func callback) {
+        return new Val(elem.js() + ".addEventListener('animationend'," + callback.toExpr() + ",{once:true})");
     }
 
     // ==================== Easing Functions ====================

@@ -45,7 +45,18 @@ public class JSUrl {
         return new Val("new URL('" + JS.esc(path) + "','" + JS.esc(base) + "')");
     }
 
-    /** Gets current page URL */
+    /** The current page URL as a {@code URL} object: {@code new URL(location.href)} */
+    public static Val currentUrlObject() {
+        return new Val("new URL(location.href)");
+    }
+
+    /**
+     * @deprecated Renamed to {@link #currentUrlObject()}. This returns a
+     *     {@code URL} object while {@code JSHistory.currentUrl()} returns the
+     *     {@code location.href} string — one name, two types, so the object
+     *     form got the explicit name.
+     */
+    @Deprecated
     public static Val currentUrl() {
         return new Val("new URL(location.href)");
     }

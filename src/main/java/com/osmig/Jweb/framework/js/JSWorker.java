@@ -491,12 +491,14 @@ public class JSWorker {
         }
 
         /**
-         * Builds the worker as an expression (without variable assignment).
+         * The worker as an expression, with every handler attached.
          *
          * @return a Val representing the worker expression
          */
         public Val toVal() {
-            return build("worker");
+            // An expression, not a statement: build() emits "var _o=...;<handlers>",
+            // so wrap it in an IIFE that hands the object back.
+            return new Val("(function(){" + build("_o").js() + ";return _o})()");
         }
     }
 
@@ -614,7 +616,9 @@ public class JSWorker {
          * @return a Val representing the worker expression
          */
         public Val toVal() {
-            return build("sharedWorker");
+            // An expression, not a statement: build() emits "var _o=...;<handlers>",
+            // so wrap it in an IIFE that hands the object back.
+            return new Val("(function(){" + build("_o").js() + ";return _o})()");
         }
     }
 

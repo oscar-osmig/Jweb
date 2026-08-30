@@ -32,6 +32,18 @@ public class JSClipboard {
     // ==================== Write Operations ====================
 
     /** Copies text to clipboard (returns Promise) */
+    /** {@code navigator.clipboard.writeText(text)} */
+    public static ClipboardPromise writeText(Val text) {
+        return copyText(text);
+    }
+
+    /** {@code navigator.clipboard.writeText('text')} */
+    public static ClipboardPromise writeText(String text) {
+        return copyText(text);
+    }
+
+    /** @deprecated Use {@link #writeText(Val)} — the platform name. */
+    @Deprecated
     public static ClipboardPromise copyText(Val text) {
         return new ClipboardPromise("navigator.clipboard.writeText(" + text.js() + ")");
     }

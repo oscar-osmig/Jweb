@@ -146,37 +146,69 @@ public class JSWebSocket {
             return this;
         }
 
-        /** Builds and assigns to variable */
-        public Val build(String varName) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("var ").append(varName).append("=new WebSocket(").append(url);
-            if (protocols != null) sb.append(",").append(protocols);
-            sb.append(");");
-
-            if (onOpenFunc != null) sb.append(varName).append(".onopen=").append(onOpenFunc.toExpr()).append(";");
-            else if (onOpenCode != null) sb.append(varName).append(".onopen=function(e){").append(onOpenCode).append("};");
-
-            if (onMessageFunc != null) sb.append(varName).append(".onmessage=").append(onMessageFunc.toExpr()).append(";");
-            else if (onMessageCode != null) sb.append(varName).append(".onmessage=function(e){").append(onMessageCode).append("};");
-
-            if (onErrorFunc != null) sb.append(varName).append(".onerror=").append(onErrorFunc.toExpr()).append(";");
-            else if (onErrorCode != null) sb.append(varName).append(".onerror=function(e){").append(onErrorCode).append("};");
-
-            if (autoReconnect) {
-                sb.append(varName).append(".onclose=function(e){");
-                if (onCloseFunc != null) sb.append("(").append(onCloseFunc.toExpr()).append(")(e);");
-                else if (onCloseCode != null) sb.append(onCloseCode);
-                sb.append("setTimeout(function(){").append(varName).append("=new WebSocket(").append(url);
-                if (protocols != null) sb.append(",").append(protocols);
-                sb.append(")},").append(reconnectDelay).append(")};");
-            } else {
-                if (onCloseFunc != null) sb.append(varName).append(".onclose=").append(onCloseFunc.toExpr()).append(";");
-                else if (onCloseCode != null) sb.append(varName).append(".onclose=function(e){").append(onCloseCode).append("};");
-            }
-
-            return new Val(sb.toString());
+        /** {@code new WebSocket(url, protocols)} */
+        private String construct() {
+            return "new WebSocket(" + url + (protocols != null ? "," + protocols : "") + ")";
         }
 
-        public Val toVal() { return build("ws"); }
+        /**
+         * Attaches every configured handler to {@code target}. When
+         * {@code reconnectFn} is non-null the close handler also schedules a
+         * reconnect through it — so the new socket gets all of these handlers
+         * again, instead of coming back deaf.
+         */
+        private String attachHandlers(String target, String reconnectFn) {
+            StringBuilder sb = new StringBuilder();
+            if (onOpenFunc != null) sb.append(target).append(".onopen=").append(onOpenFunc.toExpr()).append(";");
+            else if (onOpenCode != null) sb.append(target).append(".onopen=function(e){").append(onOpenCode).append("};");
+
+            if (onMessageFunc != null) sb.append(target).append(".onmessage=").append(onMessageFunc.toExpr()).append(";");
+            else if (onMessageCode != null) sb.append(target).append(".onmessage=function(e){").append(onMessageCode).append("};");
+
+            if (onErrorFunc != null) sb.append(target).append(".onerror=").append(onErrorFunc.toExpr()).append(";");
+            else if (onErrorCode != null) sb.append(target).append(".onerror=function(e){").append(onErrorCode).append("};");
+
+            if (reconnectFn != null) {
+                sb.append(target).append(".onclose=function(e){");
+                if (onCloseFunc != null) sb.append("(").append(onCloseFunc.toExpr()).append(")(e);");
+                else if (onCloseCode != null) sb.append(onCloseCode).append(";");
+                sb.append("setTimeout(").append(reconnectFn).append(",").append(reconnectDelay).append(")};");
+            } else if (onCloseFunc != null) {
+                sb.append(target).append(".onclose=").append(onCloseFunc.toExpr()).append(";");
+            } else if (onCloseCode != null) {
+                sb.append(target).append(".onclose=function(e){").append(onCloseCode).append("};");
+            }
+            return sb.toString();
+        }
+
+        /** Builds the socket and assigns it to {@code varName}. */
+        public Val build(String varName) {
+            if (!autoReconnect) {
+                return new Val("var " + varName + "=" + construct() + ";" + attachHandlers(varName, null));
+            }
+            // Reconnect re-runs the same connect function, so every handler is
+            // re-bound on the replacement socket.
+            String connect = "_connect_" + varName.replaceAll("[^A-Za-z0-9_$]", "_");
+            return new Val("var " + varName + ";function " + connect + "(){"
+                    + varName + "=" + construct() + ";"
+                    + attachHandlers(varName, connect)
+                    + "}" + connect + "()");
+        }
+
+        /**
+         * The socket as an expression.
+         *
+         * <p>With {@link #autoReconnect(int)} this evaluates to the first
+         * socket; later reconnects replace the internal reference, so keep a
+         * named variable via {@link #build(String)} if you need to send on it
+         * after a reconnect.</p>
+         */
+        public Val toVal() {
+            if (!autoReconnect) {
+                return new Val("(function(){var _s=" + construct() + ";" + attachHandlers("_s", null) + "return _s})()");
+            }
+            return new Val("(function(){var _s;function _c(){_s=" + construct() + ";"
+                    + attachHandlers("_s", "_c") + "}_c();return _s})()");
+        }
     }
 }

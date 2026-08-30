@@ -51,8 +51,9 @@ deleteDB("myApp")"""),
             codeBlock("""
 import static jweb.js.JSHistory.*;
 
-// Navigate without reload
-pushState("/dashboard", obj("page", str("dashboard")))
+// Navigate without reload — same argument order as the platform's
+// history.pushState(state, title, url), minus the ignored title
+pushState(obj("page", str("dashboard")), "/dashboard")
 pushState("/users/42")  // URL-only
 
 // Replace current entry (no back button)

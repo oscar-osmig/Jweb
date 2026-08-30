@@ -30,12 +30,28 @@ public class JSDate {
 
     // ==================== Creation ====================
 
-    /** Current date/time: new Date() */
+    /** Current date/time: {@code new Date()} */
+    public static Val newDate() {
+        return new Val("new Date()");
+    }
+
+    /** Current timestamp in milliseconds: {@code Date.now()} */
+    public static Val dateNow() {
+        return new Val("Date.now()");
+    }
+
+    /**
+     * @deprecated Ambiguous: this emits {@code new Date()}, but the platform's
+     *     {@code Date.now()} returns a timestamp. Use {@link #newDate()} for the
+     *     object or {@link #dateNow()} for the timestamp.
+     */
+    @Deprecated
     public static Val now() {
         return new Val("new Date()");
     }
 
-    /** Current timestamp in milliseconds: Date.now() */
+    /** @deprecated Use {@link #dateNow()} — it matches the platform name. */
+    @Deprecated
     public static Val timestamp() {
         return new Val("Date.now()");
     }

@@ -227,6 +227,11 @@ public class JSWebAnimations {
         }
 
         private String buildAnimation() {
+            if (!hasKeyframes) {
+                throw new IllegalStateException(
+                    "animation has no keyframes — call .keyframes(...) before build(); "
+                    + "element.animate([], ...) would run an animation that changes nothing");
+            }
             StringBuilder sb = new StringBuilder(element.js()).append(".animate(");
             sb.append(keyframes).append("],{");
             sb.append("duration:").append(duration);

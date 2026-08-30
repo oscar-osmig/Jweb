@@ -38,6 +38,13 @@ public class JSAbort {
     }
 
     /** Creates controller with timeout (auto-abort) */
+    /** {@code AbortSignal.timeout(ms)} */
+    public static Val signalTimeout(int timeoutMs) {
+        return abortAfterTimeout(timeoutMs);
+    }
+
+    /** @deprecated Use {@link #signalTimeout(int)} — mirrors {@code AbortSignal.timeout}. */
+    @Deprecated
     public static Val abortAfterTimeout(int timeoutMs) {
         return new Val("AbortSignal.timeout(" + timeoutMs + ")");
     }
