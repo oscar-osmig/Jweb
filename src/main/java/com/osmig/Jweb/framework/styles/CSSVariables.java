@@ -182,49 +182,52 @@ public class CSSVariables extends CSSAnimations {
 
     /**
      * Creates a scoped variable name with a prefix.
-     *
      * <p>Example:</p>
      * <pre>
      * String btnColor = scoped("btn", "color");  // "btn-color"
      * rule(".btn").var(btnColor, blue);
      * // Output: .btn { --btn-color: blue; }
      * </pre>
-     *
      * @param scope the scope/prefix for the variable
      * @param name the variable name
      * @return the scoped variable name (without "--" prefix)
+     *
+     * @deprecated String concatenation dressed as API. {@code Theme.create()} is the one canonical token builder — declare the token there and reference it with {@code var("btn-color")}.
      */
+    @Deprecated
     public static String scoped(String scope, String name) {
         return scope + "-" + name;
     }
 
     /**
      * Creates a component-scoped variable name.
-     *
      * <p>Example:</p>
      * <pre>
      * String cardPadding = component("card", "padding");  // "card-padding"
      * </pre>
-     *
      * @param component the component name
      * @param property the property name
      * @return the component-scoped variable name
+     *
+     * @deprecated String concatenation dressed as API. {@code Theme.create()} is the one canonical token builder — declare the token there and reference it with {@code var("card-padding")}.
      */
+    @Deprecated
     public static String component(String component, String property) {
         return component + "-" + property;
     }
 
     /**
      * Creates a theme variable name.
-     *
      * <p>Example:</p>
      * <pre>
      * String bgColor = theme("background");  // "theme-background"
      * </pre>
-     *
      * @param name the theme property name
      * @return the theme variable name
+     *
+     * @deprecated String concatenation dressed as API, and it collides with the {@link #theme()} builder. {@code Theme.create()} is the one canonical token builder.
      */
+    @Deprecated
     public static String theme(String name) {
         return "theme-" + name;
     }
@@ -233,25 +236,29 @@ public class CSSVariables extends CSSAnimations {
 
     /**
      * Creates a new design system builder for defining design tokens.
-     *
      * <p>Example:</p>
      * <pre>
      * String tokens = designSystem()
-     *     .spacing(rem(0.25), rem(0.5), rem(1), rem(1.5))
-     *     .colors("primary", blue, "secondary", gray)
-     *     .fontSize(rem(0.875), rem(1), rem(1.25), rem(1.5))
-     *     .build();
+     * .spacing(rem(0.25), rem(0.5), rem(1), rem(1.5))
+     * .colors("primary", blue, "secondary", gray)
+     * .fontSize(rem(0.875), rem(1), rem(1.25), rem(1.5))
+     * .build();
      * </pre>
-     *
      * @return a new DesignSystemBuilder instance
+     *
+     * @deprecated {@code Theme.create()} is the one canonical token builder — this is a third naming scheme for the same job.
      */
+    @Deprecated
     public static DesignSystemBuilder designSystem() {
         return new DesignSystemBuilder();
     }
 
     /**
      * Builder for creating comprehensive design system tokens.
+     *
+     * @deprecated {@code Theme.create()} is the one canonical token builder — this class is a third naming scheme for the same job.
      */
+    @Deprecated
     public static class DesignSystemBuilder {
         private final Map<String, String> variables = new LinkedHashMap<>();
         private String prefix = "";
@@ -593,24 +600,28 @@ public class CSSVariables extends CSSAnimations {
 
     /**
      * Creates a new theme builder for defining light/dark mode variables.
-     *
      * <p>Example:</p>
      * <pre>
      * String themes = theme()
-     *     .light("background", white, "text", black)
-     *     .dark("background", black, "text", white)
-     *     .buildBoth();
+     * .light("background", white, "text", black)
+     * .dark("background", black, "text", white)
+     * .buildBoth();
      * </pre>
-     *
      * @return a new ThemeBuilder instance
+     *
+     * @deprecated {@code Theme.create()} is the one canonical token builder — this is a second naming scheme for the same job (and {@code Theme} also handles the dark-mode selector).
      */
+    @Deprecated
     public static ThemeBuilder theme() {
         return new ThemeBuilder();
     }
 
     /**
      * Builder for creating light/dark theme variable sets.
+     *
+     * @deprecated {@code Theme.create()} is the one canonical token builder — this class is a second naming scheme for the same job.
      */
+    @Deprecated
     public static class ThemeBuilder {
         private final Map<String, String> lightVariables = new LinkedHashMap<>();
         private final Map<String, String> darkVariables = new LinkedHashMap<>();
@@ -742,55 +753,65 @@ public class CSSVariables extends CSSAnimations {
     /**
      * Creates a CSS variable reference for a color with fallback.
      * Convenience method for theming colors.
-     *
      * @param colorName the color variable name (e.g., "primary", "background")
      * @param fallback the fallback color
      * @return CSSValue for var(--color-name, fallback)
+     *
+     * @deprecated Encodes a {@code --theme-*} naming convention. {@code Theme.create()} is the one canonical token builder; reference tokens with {@code var(name, fallback)}.
      */
+    @Deprecated
     public static CSSValue themeColor(String colorName, jweb.CSSValue fallback) {
         return var("theme-" + colorName, fallback);
     }
 
     /**
      * Creates a CSS variable reference for spacing with fallback.
-     *
      * @param level the spacing level (1-9 typically)
      * @param fallback the fallback spacing value
      * @return CSSValue for var(--spacing-N, fallback)
+     *
+     * @deprecated Encodes a {@code --spacing-N} naming convention. {@code Theme.create()} is the one canonical token builder; reference tokens with {@code var(name, fallback)}.
      */
+    @Deprecated
     public static CSSValue spacing(int level, jweb.CSSValue fallback) {
         return var("spacing-" + level, fallback);
     }
 
     /**
      * Creates a CSS variable reference for border radius with fallback.
-     *
      * @param level the radius level (1-4 typically)
      * @param fallback the fallback radius value
      * @return CSSValue for var(--radius-N, fallback)
+     *
+     * @deprecated Encodes a {@code --radius-N} naming convention. {@code Theme.create()} is the one canonical token builder; reference tokens with {@code var(name, fallback)}.
      */
+    @Deprecated
     public static CSSValue radius(int level, jweb.CSSValue fallback) {
         return var("radius-" + level, fallback);
     }
 
     /**
      * Creates a CSS variable reference for font size with fallback.
-     *
      * @param level the font size level
      * @param fallback the fallback size value
      * @return CSSValue for var(--font-size-N, fallback)
+     *
+     * @deprecated Encodes a {@code --font-size-N} naming convention. {@code Theme.create()} is the one canonical token builder; reference tokens with {@code var(name, fallback)}.
      */
+    @Deprecated
     public static CSSValue fontSizeVar(int level, jweb.CSSValue fallback) {
         return var("font-size-" + level, fallback);
     }
 
     /**
      * Creates a CSS variable reference for shadow with fallback.
-     *
      * @param level the shadow level (1-5 typically)
      * @param fallback the fallback shadow value
      * @return CSSValue for var(--shadow-N, fallback)
+     *
+     * @deprecated Encodes a {@code --shadow-N} naming convention. {@code Theme.create()} is the one canonical token builder; reference tokens with {@code var(name, fallback)}.
      */
+    @Deprecated
     public static CSSValue shadow(int level, String fallback) {
         return var("shadow-" + level, fallback);
     }

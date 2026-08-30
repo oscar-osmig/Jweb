@@ -165,7 +165,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      *
      * @param value the minimum size value
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .minWidth(v).minHeight(v)}.
      */
+    @Deprecated
     public T minSize(CSSValue value) {
         return minWidth(value).minHeight(value);
     }
@@ -175,7 +178,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      *
      * @param value the maximum size value
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .maxWidth(v).maxHeight(v)}.
      */
+    @Deprecated
     public T maxSize(CSSValue value) {
         return maxWidth(value).maxHeight(value);
     }
@@ -192,7 +198,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * @param min the minimum width
      * @param max the maximum width
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .minWidth(min).maxWidth(max)}.
      */
+    @Deprecated
     public T widthRange(CSSValue min, CSSValue max) {
         return minWidth(min).maxWidth(max);
     }
@@ -203,7 +212,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * @param min the minimum height
      * @param max the maximum height
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .minHeight(min).maxHeight(max)}.
      */
+    @Deprecated
     public T heightRange(CSSValue min, CSSValue max) {
         return minHeight(min).maxHeight(max);
     }
@@ -212,7 +224,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Sets 100vw width (full viewport width).
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .width("100vw")}.
      */
+    @Deprecated
     public T fullViewportWidth() {
         return prop("width", "100vw");
     }
@@ -221,7 +236,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Sets 100vh height (full viewport height).
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .height("100vh")}.
      */
+    @Deprecated
     public T fullViewportHeight() {
         return prop("height", "100vh");
     }
@@ -419,13 +437,17 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     // ==================== Grid ====================
 
     /**
-     * Sets grid-template-columns with a raw string value.
-     * Prefer the type-safe overload with CSSValue... for better IDE support.
+     * Sets grid-template-columns from a plain CSS string.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridTemplateColumns("repeat(3, 1fr)")
+     * style().gridTemplateColumns("200px 1fr 200px")
+     * </pre>
      *
      * @param value the grid template columns value
-     * @deprecated Use {@link #gridTemplateColumns(CSSValue...)} for type-safe grid templates
+     * @return this builder for chaining
      */
-    @Deprecated
     public T gridTemplateColumns(String value) { return prop("grid-template-columns", value); }
 
     /**
@@ -456,13 +478,16 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     /**
-     * Sets grid-template-rows with a raw string value.
-     * Prefer the type-safe overload with CSSValue... for better IDE support.
+     * Sets grid-template-rows from a plain CSS string.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridTemplateRows("auto 1fr auto")
+     * </pre>
      *
      * @param value the grid template rows value
-     * @deprecated Use {@link #gridTemplateRows(CSSValue...)} for type-safe grid templates
+     * @return this builder for chaining
      */
-    @Deprecated
     public T gridTemplateRows(String value) { return prop("grid-template-rows", value); }
 
     /**
@@ -482,10 +507,11 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     /**
-     * Sets grid-column with a string value.
-     * @deprecated Use {@link #gridColumn(CSSValue)} for type-safe positioning
+     * Sets grid-column from a plain CSS string, e.g. {@code "1 / 3"} or {@code "span 2"}.
+     *
+     * @param value the grid-column value
+     * @return this builder for chaining
      */
-    @Deprecated
     public T gridColumn(String value) { return prop("grid-column", value); }
 
     /**
@@ -518,10 +544,11 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     /**
-     * Sets grid-row with a string value.
-     * @deprecated Use {@link #gridRow(CSSValue)} for type-safe positioning
+     * Sets grid-row from a plain CSS string, e.g. {@code "1 / 3"} or {@code "span 2"}.
+     *
+     * @param value the grid-row value
+     * @return this builder for chaining
      */
-    @Deprecated
     public T gridRow(String value) { return prop("grid-row", value); }
 
     /**
@@ -544,10 +571,11 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     /**
-     * Sets grid-area with a string value.
-     * @deprecated Use {@link #gridArea(CSSValue)} for type-safe areas
+     * Sets grid-area from a plain CSS string, e.g. {@code "header"} or {@code "1 / 1 / 3 / 2"}.
+     *
+     * @param value the grid-area value
+     * @return this builder for chaining
      */
-    @Deprecated
     public T gridArea(String value) { return prop("grid-area", value); }
 
     /**
@@ -741,7 +769,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: 0 1px 2px rgba(0,0,0,0.05)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("0 1px 2px rgba(0,0,0,0.05)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadowXs() { return prop("box-shadow", "0 1px 2px rgba(0,0,0,0.05)"); }
 
     /**
@@ -749,7 +780,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("0 1px 3px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadowSm() { return prop("box-shadow", "0 1px 3px rgba(0,0,0,0.1),0 1px 2px rgba(0,0,0,0.06)"); }
 
     /**
@@ -757,7 +791,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadow() { return prop("box-shadow", "0 4px 6px -1px rgba(0,0,0,0.1),0 2px 4px -1px rgba(0,0,0,0.06)"); }
 
     /**
@@ -765,7 +802,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadowMd() { return prop("box-shadow", "0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05)"); }
 
     /**
@@ -773,7 +813,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadowLg() { return prop("box-shadow", "0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04)"); }
 
     /**
@@ -781,7 +824,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("0 25px 50px -12px rgba(0,0,0,0.25)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadowXl() { return prop("box-shadow", "0 25px 50px -12px rgba(0,0,0,0.25)"); }
 
     /**
@@ -789,7 +835,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: inset 0 2px 4px rgba(0,0,0,0.06)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("inset 0 2px 4px rgba(0,0,0,0.06)")} — a design opinion, not a CSS feature.
      */
+    @Deprecated
     public T shadowInner() { return prop("box-shadow", "inset 0 2px 4px rgba(0,0,0,0.06)"); }
 
     /**
@@ -797,7 +846,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: box-shadow: none
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .boxShadow("none")}.
      */
+    @Deprecated
     public T shadowNone() { return prop("box-shadow", "none"); }
 
     // ==================== Outline ====================
@@ -876,7 +928,29 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     // ==================== Content ====================
 
+    /**
+     * Sets {@code content} to a quoted string literal.
+     *
+     * <p><b>Asymmetry warning:</b> unlike every other {@code String} overload in
+     * this class, this one does <em>not</em> pass the value through verbatim — it
+     * wraps it in single quotes, because a bare word is almost never what
+     * {@code content} wants. For an unquoted value (a keyword, {@code attr(...)},
+     * {@code counter(...)}, {@code url(...)}, or a quoted-string you built
+     * yourself) use {@link #content(CSSValue)} or
+     * {@link #prop(String, String) prop("content", ...)}.</p>
+     *
+     * <pre>
+     * style().content("→")                       // content: '→';
+     * style().content(attrContent("data-label"))  // content: attr(data-label);
+     * style().prop("content", "none")             // content: none;
+     * </pre>
+     *
+     * @param value the text to quote
+     * @return this builder for chaining
+     */
     public T content(String value) { return prop("content", "'" + value + "'"); }
+
+    /** Sets {@code content} to a value verbatim (keyword, {@code attr()}, {@code url()}, …). */
     public T content(CSSValue value) { return prop("content", value); }
 
     // ==================== Logical Properties ====================
@@ -950,6 +1024,41 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T borderBlockEnd(CSSValue width, CSSValue style, CSSValue color) {
         return prop("border-block-end", width.css() + " " + style.css() + " " + color.css());
     }
+
+    /** {@code border-inline} as one value, e.g. {@code "1px solid red"}. */
+    public T borderInline(CSSValue value) { return prop("border-inline", value); }
+    /** {@code border-inline} as one value, e.g. {@code "1px solid red"}. */
+    public T borderInline(String value) { return prop("border-inline", value); }
+    /** {@code border-inline-start} as one value. */
+    public T borderInlineStart(CSSValue value) { return prop("border-inline-start", value); }
+    /** {@code border-inline-start} as one value. */
+    public T borderInlineStart(String value) { return prop("border-inline-start", value); }
+    /** {@code border-inline-end} as one value. */
+    public T borderInlineEnd(CSSValue value) { return prop("border-inline-end", value); }
+    /** {@code border-inline-end} as one value. */
+    public T borderInlineEnd(String value) { return prop("border-inline-end", value); }
+    /** {@code border-block} as one value. */
+    public T borderBlock(CSSValue value) { return prop("border-block", value); }
+    /** {@code border-block} as one value. */
+    public T borderBlock(String value) { return prop("border-block", value); }
+    /** {@code border-block-start} as one value. */
+    public T borderBlockStart(CSSValue value) { return prop("border-block-start", value); }
+    /** {@code border-block-start} as one value. */
+    public T borderBlockStart(String value) { return prop("border-block-start", value); }
+    /** {@code border-block-end} as one value. */
+    public T borderBlockEnd(CSSValue value) { return prop("border-block-end", value); }
+    /** {@code border-block-end} as one value. */
+    public T borderBlockEnd(String value) { return prop("border-block-end", value); }
+
+    // Overflow logical properties
+    /** Sets overflow-block (the block-axis counterpart of overflow-y). */
+    public T overflowBlock(CSSValue value) { return prop("overflow-block", value); }
+    /** Sets overflow-block. */
+    public T overflowBlock(String value) { return prop("overflow-block", value); }
+    /** Sets overflow-inline (the inline-axis counterpart of overflow-x). */
+    public T overflowInline(CSSValue value) { return prop("overflow-inline", value); }
+    /** Sets overflow-inline. */
+    public T overflowInline(String value) { return prop("overflow-inline", value); }
 
     // Border radius logical properties
     public T borderStartStartRadius(CSSValue value) { return prop("border-start-start-radius", value); }
@@ -1082,42 +1191,60 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Preset: position: relative
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .position("relative")}.
      */
+    @Deprecated
     public T relative() { return position(() -> "relative"); }
 
     /**
      * Preset: position: fixed
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .position("fixed")}.
      */
+    @Deprecated
     public T fixed() { return position(() -> "fixed"); }
 
     /**
      * Preset: position: sticky
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .position("sticky")}.
      */
+    @Deprecated
     public T sticky() { return position(() -> "sticky"); }
 
     /**
      * Preset: text-align: center
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .textAlign("center")}.
      */
+    @Deprecated
     public T textCenter() { return textAlign(() -> "center"); }
 
     /**
      * Preset: font-weight: bold (700)
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .fontWeight(700)}.
      */
+    @Deprecated
     public T bold() { return fontWeight(700); }
 
     /**
      * Preset: cursor: pointer
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .cursor("pointer")}.
      */
+    @Deprecated
     public T clickable() { return cursor(() -> "pointer"); }
 
     /**
@@ -1136,7 +1263,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Prevents text selection.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .userSelect("none")}.
      */
+    @Deprecated
     public T noSelect() { return userSelect(() -> "none"); }
 
     /**
@@ -1144,7 +1274,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      *
      * @param value the border-radius value
      * @return this builder for chaining
+     *
+     * @deprecated Use {@link #borderRadius(CSSValue)} — this is a pure alias.
      */
+    @Deprecated
     public T rounded(CSSValue value) { return borderRadius(value); }
 
     // ==================== Border Radius Presets ====================
@@ -1154,7 +1287,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Equivalent to: border-radius: 0
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius("0")}.
      */
+    @Deprecated
     public T roundedNone() { return prop("border-radius", "0"); }
 
     /**
@@ -1162,7 +1298,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For subtle rounding on small elements.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(2))}.
      */
+    @Deprecated
     public T roundedXs() { return prop("border-radius", "2px"); }
 
     /**
@@ -1170,7 +1309,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For buttons and small cards.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(4))}.
      */
+    @Deprecated
     public T roundedSm() { return prop("border-radius", "4px"); }
 
     /**
@@ -1178,7 +1320,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For cards and containers.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(6))}.
      */
+    @Deprecated
     public T roundedMd() { return prop("border-radius", "6px"); }
 
     /**
@@ -1186,7 +1331,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For modals and larger elements.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(8))}.
      */
+    @Deprecated
     public T roundedLg() { return prop("border-radius", "8px"); }
 
     /**
@@ -1194,7 +1342,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For prominent elements.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(12))}.
      */
+    @Deprecated
     public T roundedXl() { return prop("border-radius", "12px"); }
 
     /**
@@ -1202,7 +1353,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For very rounded elements.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(16))}.
      */
+    @Deprecated
     public T rounded2xl() { return prop("border-radius", "16px"); }
 
     /**
@@ -1210,7 +1364,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * For pill-shaped elements.
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(24))}.
      */
+    @Deprecated
     public T rounded3xl() { return prop("border-radius", "24px"); }
 
     /**
@@ -1218,7 +1375,10 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * Creates perfect circles (when width = height) or pills (when width > height).
      *
      * @return this builder for chaining
+     *
+     * @deprecated Use {@code .borderRadius(px(9999))}.
      */
+    @Deprecated
     public T roundedFull() { return prop("border-radius", "9999px"); }
 
     /**
@@ -1349,6 +1509,42 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      * @return this builder for chaining
      */
     public T textWrapStyle(CSSValue value) { return prop("text-wrap-style", value); }
+
+    /**
+     * Sets white-space-collapse — how white space inside the element collapses.
+     *
+     * @param value "collapse", "preserve", "preserve-breaks", "preserve-spaces" or "break-spaces"
+     * @return this builder for chaining
+     */
+    public T whiteSpaceCollapse(CSSValue value) { return prop("white-space-collapse", value); }
+
+    /** Sets white-space-collapse. @param value the white-space-collapse value */
+    public T whiteSpaceCollapse(String value) { return prop("white-space-collapse", value); }
+
+    /**
+     * Clamps text to {@code lines} lines and ellipsises the overflow.
+     *
+     * <p>Emits the standard {@code line-clamp} plus the {@code -webkit-box}
+     * fallback quartet that every current browser still needs:</p>
+     * <pre>
+     * display: -webkit-box;
+     * -webkit-box-orient: vertical;
+     * -webkit-line-clamp: 3;
+     * line-clamp: 3;
+     * overflow: hidden;
+     * </pre>
+     *
+     * @param lines the maximum number of lines to show
+     * @return this builder for chaining
+     */
+    public T lineClamp(int lines) {
+        properties.put("display", "-webkit-box");
+        properties.put("-webkit-box-orient", "vertical");
+        properties.put("-webkit-line-clamp", String.valueOf(lines));
+        properties.put("line-clamp", String.valueOf(lines));
+        properties.put("overflow", "hidden");
+        return self();
+    }
 
     // ==================== View Transitions ====================
 
@@ -1513,6 +1709,75 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
         return prop("container", name + " / " + type.css());
     }
 
+    // ==================== Anchor Positioning ====================
+
+    /**
+     * Sets anchor-name — names this element so others can anchor to it.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * rule(".menu-button").anchorName("--menu")
+     * </pre>
+     *
+     * @param name the dashed-ident anchor name (e.g. {@code "--menu"})
+     * @return this builder for chaining
+     */
+    public T anchorName(String name) { return prop("anchor-name", name); }
+
+    /** Sets anchor-name. @param value the dashed-ident anchor name */
+    public T anchorName(CSSValue value) { return prop("anchor-name", value); }
+
+    /**
+     * Sets position-anchor — links this positioned element to a named anchor.
+     *
+     * @param name the dashed-ident anchor name (e.g. {@code "--menu"})
+     * @return this builder for chaining
+     */
+    public T positionAnchor(String name) { return prop("position-anchor", name); }
+
+    /** Sets position-anchor. @param value the dashed-ident anchor name */
+    public T positionAnchor(CSSValue value) { return prop("position-anchor", value); }
+
+    /**
+     * Sets position-area — places this element in a region around its anchor.
+     *
+     * @param value e.g. {@code "top"}, {@code "bottom right"}, {@code "span-all"}
+     * @return this builder for chaining
+     */
+    public T positionArea(String value) { return prop("position-area", value); }
+
+    /** Sets position-area. @param value the position-area value */
+    public T positionArea(CSSValue value) { return prop("position-area", value); }
+
+    /**
+     * Sets position-visibility — when an anchored element stays visible.
+     *
+     * @param value {@code "always"}, {@code "anchors-visible"} or {@code "no-overflow"}
+     * @return this builder for chaining
+     */
+    public T positionVisibility(String value) { return prop("position-visibility", value); }
+
+    /** Sets position-visibility. @param value the position-visibility value */
+    public T positionVisibility(CSSValue value) { return prop("position-visibility", value); }
+
+    /**
+     * Sets position-try-fallbacks — the ordered fallback positions to try
+     * when the anchored element would overflow.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().positionTryFallbacks("flip-block, flip-inline")
+     * style().positionTryFallbacks("--my-fallback")
+     * </pre>
+     *
+     * @param value a comma-separated fallback list
+     * @return this builder for chaining
+     */
+    public T positionTryFallbacks(String value) { return prop("position-try-fallbacks", value); }
+
+    /** Sets position-try-fallbacks. @param value the fallback list */
+    public T positionTryFallbacks(CSSValue value) { return prop("position-try-fallbacks", value); }
+
     // ==================== Accent Color ====================
 
     /**
@@ -1595,9 +1860,6 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     /** Sets column-width. */
     public T columnWidth(CSSValue value) { return prop("column-width", value); }
-
-    /** Sets column-gap. */
-    public T columnGapMulti(CSSValue value) { return prop("column-gap", value); }
 
     /** Sets column-rule shorthand (width, style, color). */
     public T columnRule(CSSValue width, CSSValue style, CSSValue color) {
@@ -1997,6 +2259,779 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     /** Sets all property to reset all properties. @param value initial, inherit, unset, revert */
     public T all(CSSValue value) { return prop("all", value); }
 
+    // ==================== String Value Overloads (CSS parity) ====================
+    //
+    // Every single-value property setter also accepts a plain CSS string, so
+    // anything you can write in a stylesheet you can write here verbatim:
+    //
+    //     style().display("flex")
+    //            .cursor("copy")
+    //            .margin("0 auto")
+    //            .transition("color .2s ease, transform .3s ease-out")
+    //            .gridTemplateColumns("repeat(3, 1fr)")
+    //
+    // The value is passed through verbatim. The one exception is
+    // content(String), which quotes its argument (see its javadoc).
+    //
+    // These coexist with the typed CSSValue overloads (and with the int/double
+    // ones): the constants in Css stay available as autocomplete sugar, they
+    // are simply no longer mandatory.
+
+    /** {@code display: <value>} from a plain CSS string. */
+    public T display(String value) { return prop("display", value); }
+
+    /** {@code box-sizing: <value>} from a plain CSS string. */
+    public T boxSizing(String value) { return prop("box-sizing", value); }
+
+    /** {@code width: <value>} from a plain CSS string. */
+    public T width(String value) { return prop("width", value); }
+
+    /** {@code height: <value>} from a plain CSS string. */
+    public T height(String value) { return prop("height", value); }
+
+    /** {@code min-width: <value>} from a plain CSS string. */
+    public T minWidth(String value) { return prop("min-width", value); }
+
+    /** {@code max-width: <value>} from a plain CSS string. */
+    public T maxWidth(String value) { return prop("max-width", value); }
+
+    /** {@code min-height: <value>} from a plain CSS string. */
+    public T minHeight(String value) { return prop("min-height", value); }
+
+    /** {@code max-height: <value>} from a plain CSS string. */
+    public T maxHeight(String value) { return prop("max-height", value); }
+
+    /** {@code margin: <value>} from a plain CSS string. */
+    public T margin(String value) { return prop("margin", value); }
+
+    /** {@code margin-top: <value>} from a plain CSS string. */
+    public T marginTop(String value) { return prop("margin-top", value); }
+
+    /** {@code margin-right: <value>} from a plain CSS string. */
+    public T marginRight(String value) { return prop("margin-right", value); }
+
+    /** {@code margin-bottom: <value>} from a plain CSS string. */
+    public T marginBottom(String value) { return prop("margin-bottom", value); }
+
+    /** {@code margin-left: <value>} from a plain CSS string. */
+    public T marginLeft(String value) { return prop("margin-left", value); }
+
+    /** {@code padding: <value>} from a plain CSS string. */
+    public T padding(String value) { return prop("padding", value); }
+
+    /** {@code padding-top: <value>} from a plain CSS string. */
+    public T paddingTop(String value) { return prop("padding-top", value); }
+
+    /** {@code padding-right: <value>} from a plain CSS string. */
+    public T paddingRight(String value) { return prop("padding-right", value); }
+
+    /** {@code padding-bottom: <value>} from a plain CSS string. */
+    public T paddingBottom(String value) { return prop("padding-bottom", value); }
+
+    /** {@code padding-left: <value>} from a plain CSS string. */
+    public T paddingLeft(String value) { return prop("padding-left", value); }
+
+    /** {@code border: <value>} from a plain CSS string. */
+    public T border(String value) { return prop("border", value); }
+
+    /** {@code border-width: <value>} from a plain CSS string. */
+    public T borderWidth(String value) { return prop("border-width", value); }
+
+    /** {@code border-style: <value>} from a plain CSS string. */
+    public T borderStyle(String value) { return prop("border-style", value); }
+
+    /** {@code border-color: <value>} from a plain CSS string. */
+    public T borderColor(String value) { return prop("border-color", value); }
+
+    /** {@code border-radius: <value>} from a plain CSS string. */
+    public T borderRadius(String value) { return prop("border-radius", value); }
+
+    /** {@code border-top-left-radius: <value>} from a plain CSS string. */
+    public T borderTopLeftRadius(String value) { return prop("border-top-left-radius", value); }
+
+    /** {@code border-top-right-radius: <value>} from a plain CSS string. */
+    public T borderTopRightRadius(String value) { return prop("border-top-right-radius", value); }
+
+    /** {@code border-bottom-right-radius: <value>} from a plain CSS string. */
+    public T borderBottomRightRadius(String value) { return prop("border-bottom-right-radius", value); }
+
+    /** {@code border-bottom-left-radius: <value>} from a plain CSS string. */
+    public T borderBottomLeftRadius(String value) { return prop("border-bottom-left-radius", value); }
+
+    /** {@code background: <value>} from a plain CSS string. */
+    public T background(String value) { return prop("background", value); }
+
+    /** {@code background-color: <value>} from a plain CSS string. */
+    public T backgroundColor(String value) { return prop("background-color", value); }
+
+    /** {@code background-image: <value>} from a plain CSS string. */
+    public T backgroundImage(String value) { return prop("background-image", value); }
+
+    /** {@code background-size: <value>} from a plain CSS string. */
+    public T backgroundSize(String value) { return prop("background-size", value); }
+
+    /** {@code background-position: <value>} from a plain CSS string. */
+    public T backgroundPosition(String value) { return prop("background-position", value); }
+
+    /** {@code background-repeat: <value>} from a plain CSS string. */
+    public T backgroundRepeat(String value) { return prop("background-repeat", value); }
+
+    /** {@code background-attachment: <value>} from a plain CSS string. */
+    public T backgroundAttachment(String value) { return prop("background-attachment", value); }
+
+    /** {@code color: <value>} from a plain CSS string. */
+    public T color(String value) { return prop("color", value); }
+
+    /** {@code font-size: <value>} from a plain CSS string. */
+    public T fontSize(String value) { return prop("font-size", value); }
+
+    /** {@code font-weight: <value>} from a plain CSS string. */
+    public T fontWeight(String value) { return prop("font-weight", value); }
+
+    /** {@code font-style: <value>} from a plain CSS string. */
+    public T fontStyle(String value) { return prop("font-style", value); }
+
+    /** {@code line-height: <value>} from a plain CSS string. */
+    public T lineHeight(String value) { return prop("line-height", value); }
+
+    /** {@code letter-spacing: <value>} from a plain CSS string. */
+    public T letterSpacing(String value) { return prop("letter-spacing", value); }
+
+    /** {@code word-spacing: <value>} from a plain CSS string. */
+    public T wordSpacing(String value) { return prop("word-spacing", value); }
+
+    /** {@code text-align: <value>} from a plain CSS string. */
+    public T textAlign(String value) { return prop("text-align", value); }
+
+    /** {@code text-decoration: <value>} from a plain CSS string. */
+    public T textDecoration(String value) { return prop("text-decoration", value); }
+
+    /** {@code text-transform: <value>} from a plain CSS string. */
+    public T textTransform(String value) { return prop("text-transform", value); }
+
+    /** {@code text-indent: <value>} from a plain CSS string. */
+    public T textIndent(String value) { return prop("text-indent", value); }
+
+    /** {@code white-space: <value>} from a plain CSS string. */
+    public T whiteSpace(String value) { return prop("white-space", value); }
+
+    /** {@code word-break: <value>} from a plain CSS string. */
+    public T wordBreak(String value) { return prop("word-break", value); }
+
+    /** {@code overflow-wrap: <value>} from a plain CSS string. */
+    public T overflowWrap(String value) { return prop("overflow-wrap", value); }
+
+    /** {@code flex-direction: <value>} from a plain CSS string. */
+    public T flexDirection(String value) { return prop("flex-direction", value); }
+
+    /** {@code flex-wrap: <value>} from a plain CSS string. */
+    public T flexWrap(String value) { return prop("flex-wrap", value); }
+
+    /** {@code justify-content: <value>} from a plain CSS string. */
+    public T justifyContent(String value) { return prop("justify-content", value); }
+
+    /** {@code align-items: <value>} from a plain CSS string. */
+    public T alignItems(String value) { return prop("align-items", value); }
+
+    /** {@code align-content: <value>} from a plain CSS string. */
+    public T alignContent(String value) { return prop("align-content", value); }
+
+    /** {@code align-self: <value>} from a plain CSS string. */
+    public T alignSelf(String value) { return prop("align-self", value); }
+
+    /** {@code flex: <value>} from a plain CSS string. */
+    public T flex(String value) { return prop("flex", value); }
+
+    /** {@code flex-basis: <value>} from a plain CSS string. */
+    public T flexBasis(String value) { return prop("flex-basis", value); }
+
+    /** {@code gap: <value>} from a plain CSS string. */
+    public T gap(String value) { return prop("gap", value); }
+
+    /** {@code row-gap: <value>} from a plain CSS string. */
+    public T rowGap(String value) { return prop("row-gap", value); }
+
+    /** {@code column-gap: <value>} from a plain CSS string. */
+    public T columnGap(String value) { return prop("column-gap", value); }
+
+    /** {@code grid-auto-columns: <value>} from a plain CSS string. */
+    public T gridAutoColumns(String value) { return prop("grid-auto-columns", value); }
+
+    /** {@code grid-auto-rows: <value>} from a plain CSS string. */
+    public T gridAutoRows(String value) { return prop("grid-auto-rows", value); }
+
+    /** {@code grid-auto-flow: <value>} from a plain CSS string. */
+    public T gridAutoFlow(String value) { return prop("grid-auto-flow", value); }
+
+    /** {@code justify-items: <value>} from a plain CSS string. */
+    public T justifyItems(String value) { return prop("justify-items", value); }
+
+    /** {@code place-items: <value>} from a plain CSS string. */
+    public T placeItems(String value) { return prop("place-items", value); }
+
+    /** {@code place-content: <value>} from a plain CSS string. */
+    public T placeContent(String value) { return prop("place-content", value); }
+
+    /** {@code place-self: <value>} from a plain CSS string. */
+    public T placeSelf(String value) { return prop("place-self", value); }
+
+    /** {@code position: <value>} from a plain CSS string. */
+    public T position(String value) { return prop("position", value); }
+
+    /** {@code top: <value>} from a plain CSS string. */
+    public T top(String value) { return prop("top", value); }
+
+    /** {@code right: <value>} from a plain CSS string. */
+    public T right(String value) { return prop("right", value); }
+
+    /** {@code bottom: <value>} from a plain CSS string. */
+    public T bottom(String value) { return prop("bottom", value); }
+
+    /** {@code left: <value>} from a plain CSS string. */
+    public T left(String value) { return prop("left", value); }
+
+    /** {@code inset: <value>} from a plain CSS string. */
+    public T inset(String value) { return prop("inset", value); }
+
+    /** {@code overflow: <value>} from a plain CSS string. */
+    public T overflow(String value) { return prop("overflow", value); }
+
+    /** {@code overflow-x: <value>} from a plain CSS string. */
+    public T overflowX(String value) { return prop("overflow-x", value); }
+
+    /** {@code overflow-y: <value>} from a plain CSS string. */
+    public T overflowY(String value) { return prop("overflow-y", value); }
+
+    /** {@code visibility: <value>} from a plain CSS string. */
+    public T visibility(String value) { return prop("visibility", value); }
+
+    /** {@code cursor: <value>} from a plain CSS string. */
+    public T cursor(String value) { return prop("cursor", value); }
+
+    /** {@code pointer-events: <value>} from a plain CSS string. */
+    public T pointerEvents(String value) { return prop("pointer-events", value); }
+
+    /** {@code user-select: <value>} from a plain CSS string. */
+    public T userSelect(String value) { return prop("user-select", value); }
+
+    /** {@code resize: <value>} from a plain CSS string. */
+    public T resize(String value) { return prop("resize", value); }
+
+    /** {@code transition: <value>} from a plain CSS string. */
+    public T transition(String value) { return prop("transition", value); }
+
+    /** {@code transition-property: <value>} from a plain CSS string. */
+    public T transitionProperty(String value) { return prop("transition-property", value); }
+
+    /** {@code transition-duration: <value>} from a plain CSS string. */
+    public T transitionDuration(String value) { return prop("transition-duration", value); }
+
+    /** {@code transition-timing-function: <value>} from a plain CSS string. */
+    public T transitionTimingFunction(String value) { return prop("transition-timing-function", value); }
+
+    /** {@code transition-delay: <value>} from a plain CSS string. */
+    public T transitionDelay(String value) { return prop("transition-delay", value); }
+
+    /** {@code animation-name: <value>} from a plain CSS string. */
+    public T animationName(String value) { return prop("animation-name", value); }
+
+    /** {@code animation-duration: <value>} from a plain CSS string. */
+    public T animationDuration(String value) { return prop("animation-duration", value); }
+
+    /** {@code animation-timing-function: <value>} from a plain CSS string. */
+    public T animationTimingFunction(String value) { return prop("animation-timing-function", value); }
+
+    /** {@code animation-delay: <value>} from a plain CSS string. */
+    public T animationDelay(String value) { return prop("animation-delay", value); }
+
+    /** {@code animation-iteration-count: <value>} from a plain CSS string. */
+    public T animationIterationCount(String value) { return prop("animation-iteration-count", value); }
+
+    /** {@code animation-direction: <value>} from a plain CSS string. */
+    public T animationDirection(String value) { return prop("animation-direction", value); }
+
+    /** {@code animation-fill-mode: <value>} from a plain CSS string. */
+    public T animationFillMode(String value) { return prop("animation-fill-mode", value); }
+
+    /** {@code outline: <value>} from a plain CSS string. */
+    public T outline(String value) { return prop("outline", value); }
+
+    /** {@code outline-offset: <value>} from a plain CSS string. */
+    public T outlineOffset(String value) { return prop("outline-offset", value); }
+
+    /** {@code list-style: <value>} from a plain CSS string. */
+    public T listStyle(String value) { return prop("list-style", value); }
+
+    /** {@code list-style-type: <value>} from a plain CSS string. */
+    public T listStyleType(String value) { return prop("list-style-type", value); }
+
+    /** {@code list-style-position: <value>} from a plain CSS string. */
+    public T listStylePosition(String value) { return prop("list-style-position", value); }
+
+    /** {@code object-fit: <value>} from a plain CSS string. */
+    public T objectFit(String value) { return prop("object-fit", value); }
+
+    /** {@code clip-path: <value>} from a plain CSS string. */
+    public T clipPath(String value) { return prop("clip-path", value); }
+
+    /** {@code border-collapse: <value>} from a plain CSS string. */
+    public T borderCollapse(String value) { return prop("border-collapse", value); }
+
+    /** {@code border-spacing: <value>} from a plain CSS string. */
+    public T borderSpacing(String value) { return prop("border-spacing", value); }
+
+    /** {@code table-layout: <value>} from a plain CSS string. */
+    public T tableLayout(String value) { return prop("table-layout", value); }
+
+    /** {@code vertical-align: <value>} from a plain CSS string. */
+    public T verticalAlign(String value) { return prop("vertical-align", value); }
+
+    /** {@code -webkit-font-smoothing: <value>} from a plain CSS string. */
+    public T webkitFontSmoothing(String value) { return prop("-webkit-font-smoothing", value); }
+
+    /** {@code -moz-osx-font-smoothing: <value>} from a plain CSS string. */
+    public T mozOsxFontSmoothing(String value) { return prop("-moz-osx-font-smoothing", value); }
+
+    /** {@code background-clip: <value>} from a plain CSS string. */
+    public T backgroundClip(String value) { return prop("background-clip", value); }
+
+    /** {@code -webkit-background-clip: <value>} from a plain CSS string. */
+    public T webkitBackgroundClip(String value) { return prop("-webkit-background-clip", value); }
+
+    /** {@code -webkit-text-fill-color: <value>} from a plain CSS string. */
+    public T webkitTextFillColor(String value) { return prop("-webkit-text-fill-color", value); }
+
+    /** {@code margin-inline: <value>} from a plain CSS string. */
+    public T marginInline(String value) { return prop("margin-inline", value); }
+
+    /** {@code margin-inline-start: <value>} from a plain CSS string. */
+    public T marginInlineStart(String value) { return prop("margin-inline-start", value); }
+
+    /** {@code margin-inline-end: <value>} from a plain CSS string. */
+    public T marginInlineEnd(String value) { return prop("margin-inline-end", value); }
+
+    /** {@code margin-block: <value>} from a plain CSS string. */
+    public T marginBlock(String value) { return prop("margin-block", value); }
+
+    /** {@code margin-block-start: <value>} from a plain CSS string. */
+    public T marginBlockStart(String value) { return prop("margin-block-start", value); }
+
+    /** {@code margin-block-end: <value>} from a plain CSS string. */
+    public T marginBlockEnd(String value) { return prop("margin-block-end", value); }
+
+    /** {@code padding-inline: <value>} from a plain CSS string. */
+    public T paddingInline(String value) { return prop("padding-inline", value); }
+
+    /** {@code padding-inline-start: <value>} from a plain CSS string. */
+    public T paddingInlineStart(String value) { return prop("padding-inline-start", value); }
+
+    /** {@code padding-inline-end: <value>} from a plain CSS string. */
+    public T paddingInlineEnd(String value) { return prop("padding-inline-end", value); }
+
+    /** {@code padding-block: <value>} from a plain CSS string. */
+    public T paddingBlock(String value) { return prop("padding-block", value); }
+
+    /** {@code padding-block-start: <value>} from a plain CSS string. */
+    public T paddingBlockStart(String value) { return prop("padding-block-start", value); }
+
+    /** {@code padding-block-end: <value>} from a plain CSS string. */
+    public T paddingBlockEnd(String value) { return prop("padding-block-end", value); }
+
+    /** {@code inline-size: <value>} from a plain CSS string. */
+    public T inlineSize(String value) { return prop("inline-size", value); }
+
+    /** {@code block-size: <value>} from a plain CSS string. */
+    public T blockSize(String value) { return prop("block-size", value); }
+
+    /** {@code min-inline-size: <value>} from a plain CSS string. */
+    public T minInlineSize(String value) { return prop("min-inline-size", value); }
+
+    /** {@code max-inline-size: <value>} from a plain CSS string. */
+    public T maxInlineSize(String value) { return prop("max-inline-size", value); }
+
+    /** {@code min-block-size: <value>} from a plain CSS string. */
+    public T minBlockSize(String value) { return prop("min-block-size", value); }
+
+    /** {@code max-block-size: <value>} from a plain CSS string. */
+    public T maxBlockSize(String value) { return prop("max-block-size", value); }
+
+    /** {@code inset-inline: <value>} from a plain CSS string. */
+    public T insetInline(String value) { return prop("inset-inline", value); }
+
+    /** {@code inset-inline-start: <value>} from a plain CSS string. */
+    public T insetInlineStart(String value) { return prop("inset-inline-start", value); }
+
+    /** {@code inset-inline-end: <value>} from a plain CSS string. */
+    public T insetInlineEnd(String value) { return prop("inset-inline-end", value); }
+
+    /** {@code inset-block: <value>} from a plain CSS string. */
+    public T insetBlock(String value) { return prop("inset-block", value); }
+
+    /** {@code inset-block-start: <value>} from a plain CSS string. */
+    public T insetBlockStart(String value) { return prop("inset-block-start", value); }
+
+    /** {@code inset-block-end: <value>} from a plain CSS string. */
+    public T insetBlockEnd(String value) { return prop("inset-block-end", value); }
+
+    /** {@code border-start-start-radius: <value>} from a plain CSS string. */
+    public T borderStartStartRadius(String value) { return prop("border-start-start-radius", value); }
+
+    /** {@code border-start-end-radius: <value>} from a plain CSS string. */
+    public T borderStartEndRadius(String value) { return prop("border-start-end-radius", value); }
+
+    /** {@code border-end-start-radius: <value>} from a plain CSS string. */
+    public T borderEndStartRadius(String value) { return prop("border-end-start-radius", value); }
+
+    /** {@code border-end-end-radius: <value>} from a plain CSS string. */
+    public T borderEndEndRadius(String value) { return prop("border-end-end-radius", value); }
+
+    /** {@code text-align-last: <value>} from a plain CSS string. */
+    public T textAlignLast(String value) { return prop("text-align-last", value); }
+
+    /** {@code scroll-snap-type: <value>} from a plain CSS string. */
+    public T scrollSnapType(String value) { return prop("scroll-snap-type", value); }
+
+    /** {@code scroll-snap-align: <value>} from a plain CSS string. */
+    public T scrollSnapAlign(String value) { return prop("scroll-snap-align", value); }
+
+    /** {@code scroll-snap-stop: <value>} from a plain CSS string. */
+    public T scrollSnapStop(String value) { return prop("scroll-snap-stop", value); }
+
+    /** {@code scroll-padding: <value>} from a plain CSS string. */
+    public T scrollPadding(String value) { return prop("scroll-padding", value); }
+
+    /** {@code scroll-margin: <value>} from a plain CSS string. */
+    public T scrollMargin(String value) { return prop("scroll-margin", value); }
+
+    /** {@code scroll-behavior: <value>} from a plain CSS string. */
+    public T scrollBehavior(String value) { return prop("scroll-behavior", value); }
+
+    /** {@code overscroll-behavior: <value>} from a plain CSS string. */
+    public T overscrollBehavior(String value) { return prop("overscroll-behavior", value); }
+
+    /** {@code overscroll-behavior-x: <value>} from a plain CSS string. */
+    public T overscrollBehaviorX(String value) { return prop("overscroll-behavior-x", value); }
+
+    /** {@code overscroll-behavior-y: <value>} from a plain CSS string. */
+    public T overscrollBehaviorY(String value) { return prop("overscroll-behavior-y", value); }
+
+    /** {@code text-wrap: <value>} from a plain CSS string. */
+    public T textWrap(String value) { return prop("text-wrap", value); }
+
+    /** {@code text-wrap-mode: <value>} from a plain CSS string. */
+    public T textWrapMode(String value) { return prop("text-wrap-mode", value); }
+
+    /** {@code text-wrap-style: <value>} from a plain CSS string. */
+    public T textWrapStyle(String value) { return prop("text-wrap-style", value); }
+
+    /** {@code animation-timeline: <value>} from a plain CSS string. */
+    public T animationTimeline(String value) { return prop("animation-timeline", value); }
+
+    /** {@code animation-range: <value>} from a plain CSS string. */
+    public T animationRange(String value) { return prop("animation-range", value); }
+
+    /** {@code scroll-timeline: <value>} from a plain CSS string. */
+    public T scrollTimeline(String value) { return prop("scroll-timeline", value); }
+
+    /** {@code scroll-timeline-axis: <value>} from a plain CSS string. */
+    public T scrollTimelineAxis(String value) { return prop("scroll-timeline-axis", value); }
+
+    /** {@code view-timeline: <value>} from a plain CSS string. */
+    public T viewTimeline(String value) { return prop("view-timeline", value); }
+
+    /** {@code view-timeline-axis: <value>} from a plain CSS string. */
+    public T viewTimelineAxis(String value) { return prop("view-timeline-axis", value); }
+
+    /** {@code view-timeline-inset: <value>} from a plain CSS string. */
+    public T viewTimelineInset(String value) { return prop("view-timeline-inset", value); }
+
+    /** {@code container-type: <value>} from a plain CSS string. */
+    public T containerType(String value) { return prop("container-type", value); }
+
+    /** {@code accent-color: <value>} from a plain CSS string. */
+    public T accentColor(String value) { return prop("accent-color", value); }
+
+    /** {@code color-scheme: <value>} from a plain CSS string. */
+    public T colorScheme(String value) { return prop("color-scheme", value); }
+
+    /** {@code forced-color-adjust: <value>} from a plain CSS string. */
+    public T forcedColorAdjust(String value) { return prop("forced-color-adjust", value); }
+
+    /** {@code print-color-adjust: <value>} from a plain CSS string. */
+    public T printColorAdjust(String value) { return prop("print-color-adjust", value); }
+
+    /** {@code columns: <value>} from a plain CSS string. */
+    public T columns(String value) { return prop("columns", value); }
+
+    /** {@code column-count: <value>} from a plain CSS string. */
+    public T columnCount(String value) { return prop("column-count", value); }
+
+    /** {@code column-width: <value>} from a plain CSS string. */
+    public T columnWidth(String value) { return prop("column-width", value); }
+
+    /** {@code column-rule: <value>} from a plain CSS string. */
+    public T columnRule(String value) { return prop("column-rule", value); }
+
+    /** {@code column-rule-width: <value>} from a plain CSS string. */
+    public T columnRuleWidth(String value) { return prop("column-rule-width", value); }
+
+    /** {@code column-rule-style: <value>} from a plain CSS string. */
+    public T columnRuleStyle(String value) { return prop("column-rule-style", value); }
+
+    /** {@code column-rule-color: <value>} from a plain CSS string. */
+    public T columnRuleColor(String value) { return prop("column-rule-color", value); }
+
+    /** {@code column-span: <value>} from a plain CSS string. */
+    public T columnSpan(String value) { return prop("column-span", value); }
+
+    /** {@code column-fill: <value>} from a plain CSS string. */
+    public T columnFill(String value) { return prop("column-fill", value); }
+
+    /** {@code float: <value>} from a plain CSS string. */
+    public T float_(String value) { return prop("float", value); }
+
+    /** {@code clear: <value>} from a plain CSS string. */
+    public T clear(String value) { return prop("clear", value); }
+
+    /** {@code text-decoration-line: <value>} from a plain CSS string. */
+    public T textDecorationLine(String value) { return prop("text-decoration-line", value); }
+
+    /** {@code text-decoration-color: <value>} from a plain CSS string. */
+    public T textDecorationColor(String value) { return prop("text-decoration-color", value); }
+
+    /** {@code text-decoration-style: <value>} from a plain CSS string. */
+    public T textDecorationStyle(String value) { return prop("text-decoration-style", value); }
+
+    /** {@code text-decoration-thickness: <value>} from a plain CSS string. */
+    public T textDecorationThickness(String value) { return prop("text-decoration-thickness", value); }
+
+    /** {@code text-underline-offset: <value>} from a plain CSS string. */
+    public T textUnderlineOffset(String value) { return prop("text-underline-offset", value); }
+
+    /** {@code text-underline-position: <value>} from a plain CSS string. */
+    public T textUnderlinePosition(String value) { return prop("text-underline-position", value); }
+
+    /** {@code text-decoration-skip-ink: <value>} from a plain CSS string. */
+    public T textDecorationSkipInk(String value) { return prop("text-decoration-skip-ink", value); }
+
+    /** {@code text-emphasis: <value>} from a plain CSS string. */
+    public T textEmphasis(String value) { return prop("text-emphasis", value); }
+
+    /** {@code text-emphasis-style: <value>} from a plain CSS string. */
+    public T textEmphasisStyle(String value) { return prop("text-emphasis-style", value); }
+
+    /** {@code text-emphasis-color: <value>} from a plain CSS string. */
+    public T textEmphasisColor(String value) { return prop("text-emphasis-color", value); }
+
+    /** {@code font-variant: <value>} from a plain CSS string. */
+    public T fontVariant(String value) { return prop("font-variant", value); }
+
+    /** {@code font-variant-caps: <value>} from a plain CSS string. */
+    public T fontVariantCaps(String value) { return prop("font-variant-caps", value); }
+
+    /** {@code font-variant-numeric: <value>} from a plain CSS string. */
+    public T fontVariantNumeric(String value) { return prop("font-variant-numeric", value); }
+
+    /** {@code font-variant-ligatures: <value>} from a plain CSS string. */
+    public T fontVariantLigatures(String value) { return prop("font-variant-ligatures", value); }
+
+    /** {@code font-variant-alternates: <value>} from a plain CSS string. */
+    public T fontVariantAlternates(String value) { return prop("font-variant-alternates", value); }
+
+    /** {@code font-variant-east-asian: <value>} from a plain CSS string. */
+    public T fontVariantEastAsian(String value) { return prop("font-variant-east-asian", value); }
+
+    /** {@code font-variant-position: <value>} from a plain CSS string. */
+    public T fontVariantPosition(String value) { return prop("font-variant-position", value); }
+
+    /** {@code font-optical-sizing: <value>} from a plain CSS string. */
+    public T fontOpticalSizing(String value) { return prop("font-optical-sizing", value); }
+
+    /** {@code font-kerning: <value>} from a plain CSS string. */
+    public T fontKerning(String value) { return prop("font-kerning", value); }
+
+    /** {@code font-stretch: <value>} from a plain CSS string. */
+    public T fontStretch(String value) { return prop("font-stretch", value); }
+
+    /** {@code font-size-adjust: <value>} from a plain CSS string. */
+    public T fontSizeAdjust(String value) { return prop("font-size-adjust", value); }
+
+    /** {@code writing-mode: <value>} from a plain CSS string. */
+    public T writingMode(String value) { return prop("writing-mode", value); }
+
+    /** {@code direction: <value>} from a plain CSS string. */
+    public T direction(String value) { return prop("direction", value); }
+
+    /** {@code text-orientation: <value>} from a plain CSS string. */
+    public T textOrientation(String value) { return prop("text-orientation", value); }
+
+    /** {@code unicode-bidi: <value>} from a plain CSS string. */
+    public T unicodeBidi(String value) { return prop("unicode-bidi", value); }
+
+    /** {@code mask: <value>} from a plain CSS string. */
+    public T mask(String value) { return prop("mask", value); }
+
+    /** {@code mask-image: <value>} from a plain CSS string. */
+    public T maskImage(String value) { return prop("mask-image", value); }
+
+    /** {@code mask-mode: <value>} from a plain CSS string. */
+    public T maskMode(String value) { return prop("mask-mode", value); }
+
+    /** {@code mask-repeat: <value>} from a plain CSS string. */
+    public T maskRepeat(String value) { return prop("mask-repeat", value); }
+
+    /** {@code mask-position: <value>} from a plain CSS string. */
+    public T maskPosition(String value) { return prop("mask-position", value); }
+
+    /** {@code mask-clip: <value>} from a plain CSS string. */
+    public T maskClip(String value) { return prop("mask-clip", value); }
+
+    /** {@code mask-origin: <value>} from a plain CSS string. */
+    public T maskOrigin(String value) { return prop("mask-origin", value); }
+
+    /** {@code mask-size: <value>} from a plain CSS string. */
+    public T maskSize(String value) { return prop("mask-size", value); }
+
+    /** {@code mask-composite: <value>} from a plain CSS string. */
+    public T maskComposite(String value) { return prop("mask-composite", value); }
+
+    /** {@code mask-type: <value>} from a plain CSS string. */
+    public T maskType(String value) { return prop("mask-type", value); }
+
+    /** {@code shape-outside: <value>} from a plain CSS string. */
+    public T shapeOutside(String value) { return prop("shape-outside", value); }
+
+    /** {@code shape-margin: <value>} from a plain CSS string. */
+    public T shapeMargin(String value) { return prop("shape-margin", value); }
+
+    /** {@code mix-blend-mode: <value>} from a plain CSS string. */
+    public T mixBlendMode(String value) { return prop("mix-blend-mode", value); }
+
+    /** {@code background-blend-mode: <value>} from a plain CSS string. */
+    public T backgroundBlendMode(String value) { return prop("background-blend-mode", value); }
+
+    /** {@code isolation: <value>} from a plain CSS string. */
+    public T isolation(String value) { return prop("isolation", value); }
+
+    /** {@code contain: <value>} from a plain CSS string. */
+    public T contain(String value) { return prop("contain", value); }
+
+    /** {@code content-visibility: <value>} from a plain CSS string. */
+    public T contentVisibility(String value) { return prop("content-visibility", value); }
+
+    /** {@code contain-intrinsic-size: <value>} from a plain CSS string. */
+    public T containIntrinsicSize(String value) { return prop("contain-intrinsic-size", value); }
+
+    /** {@code page-break-before: <value>} from a plain CSS string. */
+    public T pageBreakBefore(String value) { return prop("page-break-before", value); }
+
+    /** {@code page-break-after: <value>} from a plain CSS string. */
+    public T pageBreakAfter(String value) { return prop("page-break-after", value); }
+
+    /** {@code page-break-inside: <value>} from a plain CSS string. */
+    public T pageBreakInside(String value) { return prop("page-break-inside", value); }
+
+    /** {@code break-before: <value>} from a plain CSS string. */
+    public T breakBefore(String value) { return prop("break-before", value); }
+
+    /** {@code break-after: <value>} from a plain CSS string. */
+    public T breakAfter(String value) { return prop("break-after", value); }
+
+    /** {@code break-inside: <value>} from a plain CSS string. */
+    public T breakInside(String value) { return prop("break-inside", value); }
+
+    /** {@code tab-size: <value>} from a plain CSS string. */
+    public T tabSize(String value) { return prop("tab-size", value); }
+
+    /** {@code hyphens: <value>} from a plain CSS string. */
+    public T hyphens(String value) { return prop("hyphens", value); }
+
+    /** {@code caret-color: <value>} from a plain CSS string. */
+    public T caretColor(String value) { return prop("caret-color", value); }
+
+    /** {@code appearance: <value>} from a plain CSS string. */
+    public T appearance(String value) { return prop("appearance", value); }
+
+    /** {@code touch-action: <value>} from a plain CSS string. */
+    public T touchAction(String value) { return prop("touch-action", value); }
+
+    /** {@code scroll-margin-top: <value>} from a plain CSS string. */
+    public T scrollMarginTop(String value) { return prop("scroll-margin-top", value); }
+
+    /** {@code scroll-margin-right: <value>} from a plain CSS string. */
+    public T scrollMarginRight(String value) { return prop("scroll-margin-right", value); }
+
+    /** {@code scroll-margin-bottom: <value>} from a plain CSS string. */
+    public T scrollMarginBottom(String value) { return prop("scroll-margin-bottom", value); }
+
+    /** {@code scroll-margin-left: <value>} from a plain CSS string. */
+    public T scrollMarginLeft(String value) { return prop("scroll-margin-left", value); }
+
+    /** {@code scroll-padding-top: <value>} from a plain CSS string. */
+    public T scrollPaddingTop(String value) { return prop("scroll-padding-top", value); }
+
+    /** {@code scroll-padding-right: <value>} from a plain CSS string. */
+    public T scrollPaddingRight(String value) { return prop("scroll-padding-right", value); }
+
+    /** {@code scroll-padding-bottom: <value>} from a plain CSS string. */
+    public T scrollPaddingBottom(String value) { return prop("scroll-padding-bottom", value); }
+
+    /** {@code scroll-padding-left: <value>} from a plain CSS string. */
+    public T scrollPaddingLeft(String value) { return prop("scroll-padding-left", value); }
+
+    /** {@code image-rendering: <value>} from a plain CSS string. */
+    public T imageRendering(String value) { return prop("image-rendering", value); }
+
+    /** {@code text-overflow: <value>} from a plain CSS string. */
+    public T textOverflow(String value) { return prop("text-overflow", value); }
+
+    /** {@code all: <value>} from a plain CSS string. */
+    public T all(String value) { return prop("all", value); }
+
+    // --- multi-property shorthands (String forms) ---
+
+    /** Sets left and right margin from a plain CSS string. */
+    public T marginX(String value) { return marginLeft(value).marginRight(value); }
+    /** Sets top and bottom margin from a plain CSS string. */
+    public T marginY(String value) { return marginTop(value).marginBottom(value); }
+    /** Sets left and right padding from a plain CSS string. */
+    public T paddingX(String value) { return paddingLeft(value).paddingRight(value); }
+    /** Sets top and bottom padding from a plain CSS string. */
+    public T paddingY(String value) { return paddingTop(value).paddingBottom(value); }
+
+    /**
+     * {@code animation: <value>} from a plain CSS string — the whole shorthand
+     * in one go, matching what you would write in a stylesheet.
+     *
+     * <pre>
+     * style().animation("spin 2s linear infinite")
+     * </pre>
+     *
+     * @param value the animation shorthand
+     * @return this builder for chaining
+     */
+    public T animation(String value) { return prop("animation", value); }
+
+    // --- numeric properties also accept a string (keywords, var(), calc()) ---
+
+    /** {@code opacity: <value>} from a string, e.g. {@code "var(--o)"}. */
+    public T opacity(String value) { return prop("opacity", value); }
+    /** {@code z-index: <value>} from a string, e.g. {@code "auto"}. */
+    public T zIndex(String value) { return prop("z-index", value); }
+    /** {@code order: <value>} from a string. */
+    public T order(String value) { return prop("order", value); }
+    /** {@code flex-grow: <value>} from a string. */
+    public T flexGrow(String value) { return prop("flex-grow", value); }
+    /** {@code flex-shrink: <value>} from a string. */
+    public T flexShrink(String value) { return prop("flex-shrink", value); }
+    /** {@code orphans: <value>} from a string. */
+    public T orphans(String value) { return prop("orphans", value); }
+    /** {@code widows: <value>} from a string. */
+    public T widows(String value) { return prop("widows", value); }
+    /** {@code shape-image-threshold: <value>} from a string. */
+    public T shapeImageThreshold(String value) { return prop("shape-image-threshold", value); }
+
+
     // ==================== Composition ====================
 
     /**
@@ -2122,15 +3157,24 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     /**
-     * Sets any CSS property by name with a string value.
-     * Prefer using the type-safe overload with CSSValue when possible.
+     * Sets any CSS property by name with a plain string value — the blessed
+     * raw escape hatch for anything the typed methods don't cover.
      *
-     * @param name the CSS property name
+     * <p>There is nothing unsafe about it: a {@code CSSValue} is itself just a
+     * {@code () -> String} lambda, so this is exactly as expressive (and no
+     * more injectable) than the typed overload.</p>
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().prop("container-type", "inline-size")
+     *        .prop("scroll-snap-type", "x mandatory")
+     *        .prop("-moz-osx-font-smoothing", "grayscale")
+     * </pre>
+     *
+     * @param name the CSS property name (e.g., "display", "margin-top")
      * @param value the CSS value as a string
      * @return this builder for chaining
-     * @deprecated Use type-safe methods or {@link #unsafeProp(String, String)} to make the escape explicit
      */
-    @Deprecated
     public T prop(String name, String value) {
         properties.put(name, value);
         return self();
@@ -2138,18 +3182,14 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     /**
      * Sets any CSS property by name with an unvalidated string value.
-     * Use this when the DSL doesn't provide a type-safe method for a CSS property.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * style().unsafeProp("scroll-snap-type", "x mandatory")
-     * style().unsafeProp("container-type", "inline-size")
-     * </pre>
      *
      * @param name the CSS property name
      * @param value the CSS value as a string
      * @return this builder for chaining
+     * @deprecated Use {@link #prop(String, String)} instead — identical behaviour,
+     *             and "unsafe" was never accurate.
      */
+    @Deprecated
     public T unsafeProp(String name, String value) {
         properties.put(name, value);
         return self();

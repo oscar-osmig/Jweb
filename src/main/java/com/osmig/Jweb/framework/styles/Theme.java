@@ -86,7 +86,13 @@ public class Theme {
 
     /**
      * Creates a preset theme with common defaults.
+     *
+     * @return the preset theme
+     * @deprecated These are embedded Tailwind tokens — a design opinion, not a CSS
+     *             capability. Use {@link #create()} and declare the tokens your
+     *             product actually uses.
      */
+    @Deprecated
     public static Theme preset() {
         return create()
             // Colors - Neutral palette

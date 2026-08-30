@@ -45,7 +45,7 @@ import java.util.List;
 public class Supports {
 
     private final List<String> conditions = new ArrayList<>();
-    private final List<MediaQuery.Rule> rules = new ArrayList<>();
+    private final List<Rule> rules = new ArrayList<>();
     private String currentOperator = null;
 
     protected Supports() {}
@@ -161,16 +161,42 @@ public class Supports {
      * Adds a CSS rule to apply when conditions are met.
      */
     public Supports rule(String selector, jweb.Style<?> style) {
-        rules.add(new MediaQuery.Rule(selector, style));
+        rules.add(Rule.of(selector, style));
         return this;
     }
 
     /**
      * Adds multiple CSS rules.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * supports("display", "grid").rules(
+     *     Rule.of(".grid", style().display("grid"))
+     * )
+     * </pre>
+     *
+     * @param ruleArray the rules to add
+     * @return this builder for chaining
      */
+    public Supports rules(Rule... ruleArray) {
+        for (Rule r : ruleArray) {
+            rules.add(r);
+        }
+        return this;
+    }
+
+    /**
+     * Adds multiple CSS rules.
+     *
+     * @param ruleArray the rules to add
+     * @return this builder for chaining
+     * @deprecated Use {@link #rules(Rule...)} with {@code Rule.of(selector, style)} —
+     *             the one rule shape shared by every at-rule builder.
+     */
+    @Deprecated
     public Supports rules(MediaQuery.Rule... ruleArray) {
         for (MediaQuery.Rule r : ruleArray) {
-            rules.add(r);
+            rules.add(Rule.of(r.selector(), r.style()));
         }
         return this;
     }
@@ -190,7 +216,7 @@ public class Supports {
     public String build() {
         StringBuilder sb = new StringBuilder();
         sb.append("@supports ").append(buildCondition()).append(" {\n");
-        for (MediaQuery.Rule r : rules) {
+        for (Rule r : rules) {
             sb.append("  ").append(r.selector()).append(" { ").append(r.style().build()).append(" }\n");
         }
         sb.append("}");
@@ -206,126 +232,184 @@ public class Supports {
 
     /**
      * Check for display: flex support.
+     *
+     * @deprecated Use {@code supports("display", "flex")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsFlexbox() {
         return supports("display", "flex");
     }
 
     /**
      * Check for display: grid support.
+     *
+     * @deprecated Use {@code supports("display", "grid")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsGrid() {
         return supports("display", "grid");
     }
 
     /**
      * Check for CSS custom properties (variables) support.
+     *
+     * @deprecated Use {@code supports("--test", "value")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsCustomProperties() {
         return supports("--test", "value");
     }
 
     /**
      * Check for backdrop-filter support.
+     *
+     * @deprecated Use {@code supports("backdrop-filter", "blur(1px)")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsBackdropFilter() {
         return supports("backdrop-filter", "blur(1px)");
     }
 
     /**
      * Check for :has() selector support.
+     *
+     * @deprecated Use {@code supportsSelector(":has(*)")}.
      */
+    @Deprecated
     public static Supports supportsHasSelector() {
         return supportsSelector(":has(*)");
     }
 
     /**
      * Check for container queries support.
+     *
+     * @deprecated Use {@code supports("container-type", "inline-size")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsContainerQueries() {
         return supports("container-type", "inline-size");
     }
 
     /**
      * Check for aspect-ratio support.
+     *
+     * @deprecated Use {@code supports("aspect-ratio", "1/1")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsAspectRatio() {
         return supports("aspect-ratio", "1/1");
     }
 
     /**
      * Check for CSS subgrid support.
+     *
+     * @deprecated Use {@code supports("grid-template-columns", "subgrid")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsSubgrid() {
         return supports("grid-template-columns", "subgrid");
     }
 
     /**
      * Check for CSS gap property support (in flexbox).
+     *
+     * @deprecated Use {@code supports("display", "flex").and().property("gap", "1rem")}.
      */
+    @Deprecated
     public static Supports supportsFlexGap() {
         return supports().property("display", "flex").and().property("gap", "1rem");
     }
 
     /**
      * Check for CSS color-mix() function support.
+     *
+     * @deprecated Use {@code supports("color", "color-mix(in srgb, red 50%, blue)")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsColorMix() {
         return supports("color", "color-mix(in srgb, red 50%, blue)");
     }
 
     /**
      * Check for CSS :focus-visible selector support.
+     *
+     * @deprecated Use {@code supportsSelector(":focus-visible")}.
      */
+    @Deprecated
     public static Supports supportsFocusVisible() {
         return supportsSelector(":focus-visible");
     }
 
     /**
      * Check for CSS scroll-snap support.
+     *
+     * @deprecated Use {@code supports("scroll-snap-type", "x mandatory")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsScrollSnap() {
         return supports("scroll-snap-type", "x mandatory");
     }
 
     /**
      * Check for CSS position: sticky support.
+     *
+     * @deprecated Use {@code supports("position", "sticky")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsSticky() {
         return supports("position", "sticky");
     }
 
     /**
      * Check for CSS clamp() function support.
+     *
+     * @deprecated Use {@code supports("font-size", "clamp(1rem, 2vw, 3rem)")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsClamp() {
         return supports("font-size", "clamp(1rem, 2vw, 3rem)");
     }
 
     /**
      * Check for CSS :where() selector support.
+     *
+     * @deprecated Use {@code supportsSelector(":where(*)")}.
      */
+    @Deprecated
     public static Supports supportsWhereSelector() {
         return supportsSelector(":where(*)");
     }
 
     /**
      * Check for CSS :is() selector support.
+     *
+     * @deprecated Use {@code supportsSelector(":is(*)")}.
      */
+    @Deprecated
     public static Supports supportsIsSelector() {
         return supportsSelector(":is(*)");
     }
 
     /**
      * Check for CSS logical properties support.
+     *
+     * @deprecated Use {@code supports("margin-inline-start", "1rem")} — one generic entry point instead of 17 aliases.
      */
+    @Deprecated
     public static Supports supportsLogicalProperties() {
         return supports("margin-inline-start", "1rem");
     }
 
     /**
      * Helper to create a rule using the same pattern as MediaQuery.
+     *
+     * @param selector the CSS selector
+     * @param style the style to apply
+     * @return the rule
+     * @deprecated Use {@link Rule#of(String, jweb.Style)} — one factory for every
+     *             at-rule builder, instead of a per-builder alias.
      */
+    @Deprecated
     public static MediaQuery.Rule makeRule(String selector, jweb.Style<?> style) {
         return new MediaQuery.Rule(selector, style);
     }

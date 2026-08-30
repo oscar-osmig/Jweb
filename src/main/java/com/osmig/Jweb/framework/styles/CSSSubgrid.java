@@ -37,7 +37,11 @@ package com.osmig.Jweb.framework.styles;
  * @see CSS for creating style rules
  * @see CSSGrid for grid template utilities
  *
- * @deprecated Replaced by {@code jweb.css.CSSSubgrid} — shorter import, same API. Existing code keeps working.
+ * @deprecated Use the {@code Style} grid methods with the {@code subgrid} constant
+ *             from {@code CSSGrid}: {@code style().gridTemplateColumns(subgrid)},
+ *             {@code .gridTemplateRows(subgrid)}, {@link jweb.Style#gridColumn},
+ *             {@link jweb.Style#gridRow}. They take typed values instead of
+ *             pre-joined {@code "prop:value"} strings.
  */
 @Deprecated
 public class CSSSubgrid {

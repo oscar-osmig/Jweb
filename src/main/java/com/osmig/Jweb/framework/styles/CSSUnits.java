@@ -252,6 +252,101 @@ public class CSSUnits extends CSSVariables {
         return () -> formatNumber(value) + "vmax";
     }
 
+    // ==================== Absolute (Print) Units ====================
+
+    /**
+     * Creates a points (pt) value — 1pt = 1/72in. Print stylesheets.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * media().print().rule("body", style().fontSize(pt(12)))
+     * </pre>
+     *
+     * @param value the points amount
+     * @return CSSValue representing the pt value
+     */
+    public static CSSValue pt(double value) {
+        return () -> formatNumber(value) + "pt";
+    }
+
+    /**
+     * Creates a centimetres (cm) value.
+     *
+     * @param value the centimetres amount
+     * @return CSSValue representing the cm value
+     */
+    public static CSSValue cm(double value) {
+        return () -> formatNumber(value) + "cm";
+    }
+
+    /**
+     * Creates a millimetres (mm) value.
+     *
+     * @param value the millimetres amount
+     * @return CSSValue representing the mm value
+     */
+    public static CSSValue mm(double value) {
+        return () -> formatNumber(value) + "mm";
+    }
+
+    /**
+     * Creates a quarter-millimetres (Q) value.
+     *
+     * @param value the quarter-millimetres amount
+     * @return CSSValue representing the Q value
+     */
+    public static CSSValue q(double value) {
+        return () -> formatNumber(value) + "Q";
+    }
+
+    /**
+     * Creates an inches value — emits the CSS unit {@code in}, which is a Java
+     * keyword-adjacent name, hence {@code inch(...)}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().width(inch(8.5))  // width: 8.5in;
+     * </pre>
+     *
+     * @param value the inches amount
+     * @return CSSValue representing the in value
+     */
+    public static CSSValue inch(double value) {
+        return () -> formatNumber(value) + "in";
+    }
+
+    // ==================== Resolution Units ====================
+
+    /**
+     * Creates a dots-per-inch (dpi) value for resolution media queries.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * media().minResolution(dpi(192))
+     * </pre>
+     *
+     * @param value the dots per inch
+     * @return CSSValue representing the dpi value
+     */
+    public static CSSValue dpi(double value) {
+        return () -> formatNumber(value) + "dpi";
+    }
+
+    /**
+     * Creates a dots-per-pixel-unit (dppx) value for resolution media queries.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * media().minResolution(dppx(2))  // "retina" and up
+     * </pre>
+     *
+     * @param value the dots per px unit
+     * @return CSSValue representing the dppx value
+     */
+    public static CSSValue dppx(double value) {
+        return () -> formatNumber(value) + "dppx";
+    }
+
     // ==================== Character Units ====================
 
     /**
@@ -287,6 +382,16 @@ public class CSSUnits extends CSSVariables {
      */
     public static CSSValue ms(int value) {
         return () -> value + "ms";
+    }
+
+    /**
+     * Creates a milliseconds (ms) value from a fractional amount.
+     *
+     * @param value the milliseconds amount
+     * @return CSSValue representing the ms value
+     */
+    public static CSSValue ms(double value) {
+        return () -> formatNumber(value) + "ms";
     }
 
     /**
@@ -576,47 +681,8 @@ public class CSSUnits extends CSSVariables {
         return () -> "oklch(" + formatNumber(l) + " " + formatNumber(c) + " " + formatNumber(h) + ")";
     }
 
-    /**
-     * Creates a color-mix() function for mixing two colors.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * style().color(colorMix("srgb", red, blue, 50))  // purple
-     * style().color(colorMix("oklch", hex("#ff0000"), hex("#0000ff"), 30))
-     * </pre>
-     *
-     * @param colorSpace color space (srgb, oklch, oklab, etc.)
-     * @param color1 first color
-     * @param color2 second color
-     * @param percent percentage of first color (0-100)
-     * @return CSSValue representing the mixed color
-     */
-    public static CSSValue colorMix(String colorSpace, jweb.CSSValue color1, jweb.CSSValue color2, int percent) {
-        return () -> "color-mix(in " + colorSpace + ", " + color1.css() + " " + percent + "%, " + color2.css() + ")";
-    }
-
-    /**
-     * Creates a color-mix() with equal mixing.
-     */
-    public static CSSValue colorMix(String colorSpace, jweb.CSSValue color1, jweb.CSSValue color2) {
-        return () -> "color-mix(in " + colorSpace + ", " + color1.css() + ", " + color2.css() + ")";
-    }
-
-    /**
-     * Creates a light-dark() function for automatic theme colors.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * style().color(lightDark(black, white))  // black in light mode, white in dark
-     * </pre>
-     *
-     * @param lightColor color for light mode
-     * @param darkColor color for dark mode
-     * @return CSSValue representing the theme-aware color
-     */
-    public static CSSValue lightDark(jweb.CSSValue lightColor, jweb.CSSValue darkColor) {
-        return () -> "light-dark(" + lightColor.css() + ", " + darkColor.css() + ")";
-    }
+    // colorMix() and lightDark() live in CSSColors (same namespace under the
+    // CSS chain) — they were defined identically in both classes.
 
     /**
      * Creates a color() function for wide-gamut colors.
@@ -903,34 +969,8 @@ public class CSSUnits extends CSSVariables {
         return () -> "exp(" + value.css() + ")";
     }
 
-    // ==================== CSS Environment Variables ====================
-
-    /**
-     * Creates an env() function for environment variables.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * style().paddingTop(env("safe-area-inset-top"))
-     * style().paddingBottom(env("safe-area-inset-bottom", px(20)))
-     * </pre>
-     *
-     * @param name environment variable name
-     * @return CSSValue representing env(name)
-     */
-    public static CSSValue env(String name) {
-        return () -> "env(" + name + ")";
-    }
-
-    /**
-     * Creates an env() function with fallback.
-     *
-     * @param name environment variable name
-     * @param fallback fallback value
-     * @return CSSValue representing env(name, fallback)
-     */
-    public static CSSValue env(String name, jweb.CSSValue fallback) {
-        return () -> "env(" + name + ", " + fallback.css() + ")";
-    }
+    // env() lives in CSSVariables (same namespace under the CSS chain) — it was
+    // defined identically in both classes.
 
     // ==================== CSS Image Functions ====================
 

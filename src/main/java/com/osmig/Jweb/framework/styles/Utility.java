@@ -27,7 +27,17 @@ import java.util.List;
  * String css = Utility.generateCss(theme);
  * </pre>
  *
- * @deprecated Replaced by {@code jweb.css.Utility} — shorter import, same API. Existing code keeps working.
+ * @deprecated A Tailwind clone is a framework opinion, not a CSS capability — use
+ *             {@code style()} / {@code rule()} directly, which give full CSS parity.
+ *
+ *             <p><b>It is also partly inert:</b> the builder's variant methods only
+ *             append class names to the output string, and {@link #generateCss(Theme)}
+ *             emits no matching rules for most of them — every {@code dark:} utility,
+ *             every responsive {@code sm:}/{@code md:}/{@code lg:} utility, the
+ *             {@code text-gray-*} colours, and the parameterised {@code hover:}
+ *             ones ({@code hoverBgColor}, {@code hoverBgGray}, {@code hoverTextColor},
+ *             {@code hoverOpacity}, {@code hoverBgSecondary}) produce class names that
+ *             silently do nothing.</p>
  */
 @Deprecated
 public class Utility {

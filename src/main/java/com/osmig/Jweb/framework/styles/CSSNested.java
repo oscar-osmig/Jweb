@@ -354,7 +354,7 @@ public class CSSNested {
      *     .parent()
      *     .build()
      *
-     * // Creates:
+     * // Creates four flat rules:
      * // .card { padding: 1rem; }
      * // .card__header { font-weight: bold; }
      * // .card__body { padding: 0.5rem; }
@@ -363,17 +363,31 @@ public class CSSNested {
      *
      * @param blockName the BEM block name
      * @return a BEMBlock builder
+     * @deprecated BEM is a naming convention, not a CSS feature. Write the flat
+     *             rules directly — {@code rule(".card")}, {@code rule(".card__header")},
+     *             {@code rule(".card--featured")} — which is exactly what this now emits.
      */
+    @Deprecated
     public static BEMBlock block(String blockName) {
         return new BEMBlock(blockName);
     }
 
     /**
      * BEM (Block Element Modifier) style builder.
+     *
+     * <p>Emits <b>flat</b> rules ({@code .card}, {@code .card__header},
+     * {@code .card--featured}). It used to emit them nested as {@code &__header},
+     * which native CSS nesting does not resolve to {@code .card__header} — that
+     * is a Sass behaviour, and browsers parsed it as a type selector instead.</p>
+     *
+     * @deprecated BEM is a naming convention, not a CSS feature — write the flat
+     *             rules directly with {@code rule(".card__header")}.
      */
+    @Deprecated
     public static class BEMBlock {
         private final String blockName;
         private final NestedRule root;
+        private final List<NestedRule> parts = new ArrayList<>();
         private NestedRule current;
 
         BEMBlock(String blockName) {
@@ -399,18 +413,20 @@ public class CSSNested {
         }
 
         /**
-         * Creates a BEM element (block__element).
+         * Creates a BEM element — a flat {@code .block__element} rule.
          */
         public BEMBlock element(String elementName) {
-            current = root.nest("&__" + elementName);
+            current = new NestedRule("." + blockName + "__" + elementName, null, 0);
+            parts.add(current);
             return this;
         }
 
         /**
-         * Creates a BEM modifier (block--modifier).
+         * Creates a BEM modifier — a flat {@code .block--modifier} rule.
          */
         public BEMBlock modifier(String modifierName) {
-            current = root.nest("&--" + modifierName);
+            current = new NestedRule("." + blockName + "--" + modifierName, null, 0);
+            parts.add(current);
             return this;
         }
 
@@ -423,10 +439,14 @@ public class CSSNested {
         }
 
         /**
-         * Builds the complete CSS.
+         * Builds the complete CSS as flat rules.
          */
         public String build() {
-            return root.build();
+            StringBuilder sb = new StringBuilder(root.build());
+            for (NestedRule part : parts) {
+                sb.append(part.build());
+            }
+            return sb.toString();
         }
 
         @Override
