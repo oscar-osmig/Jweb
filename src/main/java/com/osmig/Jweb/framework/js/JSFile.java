@@ -144,12 +144,28 @@ public class JSFile {
 
     // ==================== Input Helpers ====================
 
-    /** Gets files from file input */
+    /**
+     * Gets files from file input
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
+     */
+    @Deprecated
     public static Val getFiles(String inputId) {
         return new Val("document.getElementById('" + JS.esc(inputId) + "').files");
     }
 
-    /** Gets first file from file input */
+    /**
+     * Gets first file from file input
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
+     */
+    @Deprecated
     public static Val getFile(String inputId) {
         return new Val("document.getElementById('" + JS.esc(inputId) + "').files[0]");
     }

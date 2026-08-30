@@ -31,9 +31,20 @@ public class JSObservers {
         return new Val(varName + ".disconnect()");
     }
 
-    /** Unobserves specific element */
+    /** Unobserves the given element. */
+    public static Val unobserve(String observerVar, Val element) {
+        return new Val(observerVar + ".unobserve(" + element.js() + ")");
+    }
+
+    /**
+     * Unobserves specific element.
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}.
+     */
+    @Deprecated
     public static Val unobserve(String observerVar, String elementId) {
-        return new Val(observerVar + ".unobserve(document.getElementById('" + JS.esc(elementId) + "'))");
+        return unobserve(observerVar, new Val("document.getElementById('" + JS.esc(elementId) + "')"));
     }
 
     // ==================== IntersectionObserver ====================
@@ -95,10 +106,21 @@ public class JSObservers {
             return "function(entries,observer){" + (callbackCode != null ? callbackCode : "") + "}";
         }
 
-        /** Creates observer and observes element, returns as Val */
-        public Val observe(String elementId, String varName) {
+        /** Creates the observer and observes the given element. */
+        public Val observe(Val element, String varName) {
             return new Val("var " + varName + "=new IntersectionObserver(" + buildCallback() + "," + buildOptions() + ");" +
-                varName + ".observe(document.getElementById('" + JS.esc(elementId) + "'))");
+                varName + ".observe(" + element.js() + ")");
+        }
+
+        /**
+         * Creates the observer and observes the element.
+         *
+         * @deprecated Pass an element instead of a bare string:
+         *     {@code byId("x")} or {@code query(".sel")}.
+         */
+        @Deprecated
+        public Val observe(String elementId, String varName) {
+            return observe(new Val("document.getElementById('" + JS.esc(elementId) + "')"), varName);
         }
 
         /** Builds standalone code block */
@@ -158,10 +180,21 @@ public class JSObservers {
             return "function(mutations,observer){" + (callbackCode != null ? callbackCode : "") + "}";
         }
 
-        /** Creates observer and observes element, returns as Val */
-        public Val observe(String elementId, String varName) {
+        /** Creates the observer and observes the given element. */
+        public Val observe(Val element, String varName) {
             return new Val("var " + varName + "=new MutationObserver(" + buildCallback() + ");" +
-                varName + ".observe(document.getElementById('" + JS.esc(elementId) + "')," + buildOptions() + ")");
+                varName + ".observe(" + element.js() + "," + buildOptions() + ")");
+        }
+
+        /**
+         * Creates the observer and observes the element.
+         *
+         * @deprecated Pass an element instead of a bare string:
+         *     {@code byId("x")} or {@code query(".sel")}.
+         */
+        @Deprecated
+        public Val observe(String elementId, String varName) {
+            return observe(new Val("document.getElementById('" + JS.esc(elementId) + "')"), varName);
         }
 
         /** Builds standalone code block */
@@ -193,10 +226,21 @@ public class JSObservers {
             return "function(entries,observer){" + (callbackCode != null ? callbackCode : "") + "}";
         }
 
-        /** Creates observer and observes element, returns as Val */
-        public Val observe(String elementId, String varName) {
+        /** Creates the observer and observes the given element. */
+        public Val observe(Val element, String varName) {
             return new Val("var " + varName + "=new ResizeObserver(" + buildCallback() + ");" +
-                varName + ".observe(document.getElementById('" + JS.esc(elementId) + "'))");
+                varName + ".observe(" + element.js() + ")");
+        }
+
+        /**
+         * Creates the observer and observes the element.
+         *
+         * @deprecated Pass an element instead of a bare string:
+         *     {@code byId("x")} or {@code query(".sel")}.
+         */
+        @Deprecated
+        public Val observe(String elementId, String varName) {
+            return observe(new Val("document.getElementById('" + JS.esc(elementId) + "')"), varName);
         }
 
         /** Builds standalone code block */

@@ -36,7 +36,15 @@ public class JSFullscreen {
         return new Val(element.js() + ".requestFullscreen()");
     }
 
-    /** Requests fullscreen for element by ID */
+    /**
+     * Requests fullscreen for element by ID
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
+     */
+    @Deprecated
     public static Val requestFullscreen(String elementId) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').requestFullscreen()");
     }
@@ -56,7 +64,15 @@ public class JSFullscreen {
         return new Val("(document.fullscreenElement?" + "document.exitFullscreen():" + element.js() + ".requestFullscreen())");
     }
 
-    /** Toggles fullscreen for element by ID */
+    /**
+     * Toggles fullscreen for element by ID
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
+     */
+    @Deprecated
     public static Val toggleFullscreen(String elementId) {
         return new Val("(document.fullscreenElement?document.exitFullscreen():document.getElementById('" + JS.esc(elementId) + "').requestFullscreen())");
     }

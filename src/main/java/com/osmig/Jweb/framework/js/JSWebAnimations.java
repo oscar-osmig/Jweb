@@ -39,7 +39,15 @@ public class JSWebAnimations {
         return new AnimationBuilder(element);
     }
 
-    /** Creates an animation builder for element by ID */
+    /**
+     * Creates an animation builder for element by ID
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
+     */
+    @Deprecated
     public static AnimationBuilder animate(String elementId) {
         return new AnimationBuilder(new Val("document.getElementById('" + JS.esc(elementId) + "')"));
     }

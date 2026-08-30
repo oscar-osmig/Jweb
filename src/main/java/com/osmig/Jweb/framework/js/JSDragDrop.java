@@ -403,7 +403,13 @@ public class JSDragDrop {
      * @param eventType one of: "dragstart", "drag", "dragend", "dragenter", "dragover", "dragleave", "drop"
      * @param handler the event handler
      * @return a Val representing the addEventListener call
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
      */
+    @Deprecated
     public static Val onDragEvent(String elementId, String eventType, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('"
             + JS.esc(eventType) + "'," + handler.toExpr() + ")");

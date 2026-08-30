@@ -46,7 +46,15 @@ public class JSPointer {
 
     // ==================== Event Listeners ====================
 
-    /** Listens for pointerdown events on an element. */
+    /**
+     * Listens for pointerdown events on an element.
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerDown(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointerdown'," + handler.toExpr() + ")");
     }
@@ -56,7 +64,15 @@ public class JSPointer {
         return new Val(element.js() + ".addEventListener('pointerdown'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointermove events on an element. */
+    /**
+     * Listens for pointermove events on an element.
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerMove(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointermove'," + handler.toExpr() + ")");
     }
@@ -66,7 +82,15 @@ public class JSPointer {
         return new Val(element.js() + ".addEventListener('pointermove'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointerup events on an element. */
+    /**
+     * Listens for pointerup events on an element.
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerUp(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointerup'," + handler.toExpr() + ")");
     }
@@ -76,29 +100,94 @@ public class JSPointer {
         return new Val(element.js() + ".addEventListener('pointerup'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointercancel events on an element. */
+    /**
+     * Listens for pointercancel events on an element.
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerCancel(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointercancel'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointerenter events (does not bubble). */
+    /** Listens for pointercancel events on an element expression. */
+    public static Val onPointerCancel(Val element, Func handler) {
+        return new Val(element.js() + ".addEventListener('pointercancel'," + handler.toExpr() + ")");
+    }
+
+    /**
+     * Listens for pointerenter events (does not bubble).
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerEnter(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointerenter'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointerleave events (does not bubble). */
+    /** Listens for pointerenter events on an element expression. */
+    public static Val onPointerEnter(Val element, Func handler) {
+        return new Val(element.js() + ".addEventListener('pointerenter'," + handler.toExpr() + ")");
+    }
+
+    /**
+     * Listens for pointerleave events (does not bubble).
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerLeave(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointerleave'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointerover events (bubbles). */
+    /** Listens for pointerleave events on an element expression. */
+    public static Val onPointerLeave(Val element, Func handler) {
+        return new Val(element.js() + ".addEventListener('pointerleave'," + handler.toExpr() + ")");
+    }
+
+    /**
+     * Listens for pointerover events (bubbles).
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerOver(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointerover'," + handler.toExpr() + ")");
     }
 
-    /** Listens for pointerout events (bubbles). */
+    /** Listens for pointerover events on an element expression. */
+    public static Val onPointerOver(Val element, Func handler) {
+        return new Val(element.js() + ".addEventListener('pointerover'," + handler.toExpr() + ")");
+    }
+
+    /**
+     * Listens for pointerout events (bubbles).
+     *
+     * @deprecated Pass an element instead of guessing at a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. Across the JS modules a
+     *     bare String meant getElementById in some places and querySelector in
+     *     others; taking a Val removes the guess.
+     */
+    @Deprecated
     public static Val onPointerOut(String elementId, Func handler) {
         return new Val("document.getElementById('" + JS.esc(elementId) + "').addEventListener('pointerout'," + handler.toExpr() + ")");
+    }
+
+    /** Listens for pointerout events on an element expression. */
+    public static Val onPointerOut(Val element, Func handler) {
+        return new Val(element.js() + ".addEventListener('pointerout'," + handler.toExpr() + ")");
     }
 
     /** Listens for gotpointercapture events. */

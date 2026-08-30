@@ -36,7 +36,15 @@ public class JSFormData {
         return new Val("new FormData(" + formElement.js() + ")");
     }
 
-    /** Creates FormData from form by ID */
+    /**
+     * Creates FormData from form by ID
+     *
+     * @deprecated Pass an element instead of a bare string:
+     *     {@code byId("x")} or {@code query(".sel")}. A bare String meant
+     *     getElementById in some modules and querySelector in others; taking a
+     *     Val removes the guess.
+     */
+    @Deprecated
     public static Val formData(String formId) {
         return new Val("new FormData(document.getElementById('" + JS.esc(formId) + "'))");
     }
