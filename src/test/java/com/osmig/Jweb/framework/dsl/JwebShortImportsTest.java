@@ -110,6 +110,11 @@ class JwebShortImportsTest {
         jweb.FormValidator validator = jweb.FormValidator.create();
         assertNotNull(validator);
 
+        jweb.Form form = jweb.Form.create();
+        com.osmig.Jweb.framework.forms.Form legacyFormTyped = form;
+        assertTrue(legacyFormTyped.action("/submit").text("name").build()
+            .toHtml().contains("<form"));
+
         jweb.state.State<Integer> count =
             com.osmig.Jweb.framework.state.StateManager.createState(0);
         count.set(41);

@@ -71,10 +71,11 @@ public class Form {
     protected Form() {}
 
     /**
-     * Creates a new Form builder.
+     * Creates a new Form builder. Hands out the {@link jweb.Form} subtype so the
+     * result assigns to either name.
      */
-    public static Form create() {
-        return new Form();
+    public static jweb.Form create() {
+        return new jweb.Form();
     }
 
     // ==================== Form Attributes ====================
