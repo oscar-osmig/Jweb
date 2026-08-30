@@ -36,7 +36,14 @@ package com.osmig.Jweb.framework.styles;
  *
  * @see CSS for creating style rules
  *
- * @deprecated Replaced by {@code jweb.css.CSSMasking} — shorter import, same API. Existing code keeps working.
+ * @deprecated The mask properties are first-class {@code Style} methods that take
+ *             typed values instead of pre-joined {@code "prop:value"} strings:
+ *             {@link jweb.Style#mask}, {@link jweb.Style#maskImage},
+ *             {@link jweb.Style#maskMode}, {@link jweb.Style#maskRepeat},
+ *             {@link jweb.Style#maskPosition}, {@link jweb.Style#maskClip},
+ *             {@link jweb.Style#maskOrigin}, {@link jweb.Style#maskSize},
+ *             {@link jweb.Style#maskComposite}, {@link jweb.Style#maskType}, and
+ *             {@link jweb.Style#clipPath} for the clip-shape helpers.
  */
 @Deprecated
 public class CSSMasking {

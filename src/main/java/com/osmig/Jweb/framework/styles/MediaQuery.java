@@ -304,12 +304,15 @@ public class MediaQuery {
     }
 
     /**
-     * Targets high-DPI (Retina) displays (2x pixel density).
+     * Targets high-DPI ("retina") displays — 2x pixel density and up.
+     *
+     * <p>Emits the standard {@code (min-resolution: 2dppx)}; the old
+     * {@code -webkit-min-device-pixel-ratio} form is no longer needed.</p>
      *
      * @return this builder for chaining
      */
     public MediaQuery retina() {
-        conditions.add("(-webkit-min-device-pixel-ratio: 2)");
+        conditions.add("(min-resolution: 2dppx)");
         return this;
     }
 
@@ -397,15 +400,7 @@ public class MediaQuery {
 
     // ==================== Logical Operators ====================
 
-    /**
-     * Explicit AND operator (usually implicit when chaining).
-     *
-     * @return this builder for chaining
-     */
-    public MediaQuery and() {
-        // 'and' is implicit when chaining conditions
-        return this;
-    }
+    // ('and' is implicit between chained conditions — there is no and() method.)
 
     /**
      * Negates the last condition.
@@ -474,9 +469,34 @@ public class MediaQuery {
     /**
      * Adds multiple CSS rules to this media query.
      *
-     * @param ruleArray array of Rule records
+     * <p>Example:</p>
+     * <pre>
+     * media().minWidth(px(768)).rules(
+     *     Rule.of(".container", style().maxWidth(px(720))),
+     *     Rule.of(".sidebar",   style().display("block"))
+     * )
+     * </pre>
+     *
+     * @param ruleArray the rules to add
      * @return this builder for chaining
      */
+    public MediaQuery rules(com.osmig.Jweb.framework.styles.Rule... ruleArray) {
+        for (com.osmig.Jweb.framework.styles.Rule r : ruleArray) {
+            rules.put(r.selector(), r.style());
+        }
+        return this;
+    }
+
+    /**
+     * Adds multiple CSS rules to this media query.
+     *
+     * @param ruleArray array of Rule records
+     * @return this builder for chaining
+     * @deprecated Use {@link #rules(com.osmig.Jweb.framework.styles.Rule...)} with
+     *             {@code Rule.of(selector, style)} — the one rule shape shared by
+     *             {@code media()}, {@code supports()} and {@code container()}.
+     */
+    @Deprecated
     public MediaQuery rules(Rule... ruleArray) {
         for (Rule r : ruleArray) {
             rules.put(r.selector(), r.style());
@@ -525,7 +545,11 @@ public class MediaQuery {
      *
      * @param selector the CSS selector
      * @param style the Style object with CSS properties
+     * @deprecated Use the top-level {@link com.osmig.Jweb.framework.styles.Rule}
+     *             ({@code Rule.of(selector, style)}) — the same shape, shared by
+     *             every at-rule builder instead of living inside MediaQuery.
      */
+    @Deprecated
     public record Rule(String selector, jweb.Style<?> style) {}
 
     // ==================== Common Breakpoints ====================
@@ -600,7 +624,10 @@ public class MediaQuery {
      * </pre>
      *
      * @return MediaQuery for mobile screens
+     * @deprecated Use {@link #xs()} (or {@code media().maxWidth(px(767))}) — keep one
+     *             breakpoint system; xs–xxl is the canonical one.
      */
+    @Deprecated
     public static MediaQuery mobile() { return media().maxWidth(CSSUnits.px(767)); }
 
     /**
@@ -608,7 +635,10 @@ public class MediaQuery {
      * Use for tablet-specific styles.
      *
      * @return MediaQuery for tablet screens
+     * @deprecated Use {@link #md()} (or {@code media().minWidth(px(768)).maxWidth(px(1023))})
+     *             — keep one breakpoint system; xs–xxl is the canonical one.
      */
+    @Deprecated
     public static MediaQuery tablet() { return media().minWidth(CSSUnits.px(768)).maxWidth(CSSUnits.px(1023)); }
 
     /**
@@ -616,6 +646,9 @@ public class MediaQuery {
      * Use for desktop-specific styles.
      *
      * @return MediaQuery for desktop screens
+     * @deprecated Use {@link #lg()} (or {@code media().minWidth(px(1024))}) — keep one
+     *             breakpoint system; xs–xxl is the canonical one.
      */
+    @Deprecated
     public static MediaQuery desktop() { return media().minWidth(CSSUnits.px(1024)); }
 }

@@ -38,24 +38,18 @@ import static com.osmig.Jweb.framework.styles.CSSUnits.*;
  *     .to(style().opacity(1))
  * </pre>
  *
- * <p><b>Pre-built Animations:</b></p>
+ * <p><b>Pre-built Animations</b> — every one names a {@code @keyframes} block
+ * that {@link Keyframes} can emit, so remember to add the keyframes to your
+ * stylesheet:</p>
  * <pre>
- * // Fade animations
+ * stylesheet().keyframes(Keyframes.fadeIn());
+ *
  * style().animation(fadeIn(s(1)))
  * style().animation(fadeOut(s(0.5)))
- * style().animation(fadeInUp(s(0.8)))
- *
- * // Slide animations
  * style().animation(slideInLeft(s(0.6)))
- * style().animation(slideOutRight(s(0.4)))
- *
- * // Scale/Zoom animations
  * style().animation(zoomIn(s(0.5)))
  * style().animation(pulse(s(1.5)).iterationCount(infinite))
- *
- * // Rotate animations
- * style().animation(rotate360(s(2)).iterationCount(infinite))
- * style().animation(flipX(s(1)))
+ * style().animation(spin(s(2)).iterationCount(infinite))
  * </pre>
  *
  * <p><b>Transition Utilities:</b></p>
@@ -114,7 +108,10 @@ public class CSSAnimations extends CSSGrid {
      *
      * @param name the animation name matching a @keyframes rule
      * @return CSSValue for the animation name
+     *
+     * @deprecated Use {@code CSS.anim(name)} (or {@code raw(name)}) — this is a pure alias for it.
      */
+    @Deprecated
     public static CSSValue animName(String name) {
         return raw(name);
     }
@@ -124,31 +121,46 @@ public class CSSAnimations extends CSSGrid {
     /**
      * Standard ease timing function - slow start, fast middle, slow end (default).
      * Equivalent to cubic-bezier(0.25, 0.1, 0.25, 1).
+     *
+     * @deprecated Use the bare {@code ease} constant.
      */
+    @Deprecated
     public static final CSSValue timingEase = () -> "ease";
 
     /**
      * Linear timing function - constant speed throughout.
      * Equivalent to cubic-bezier(0, 0, 1, 1).
+     *
+     * @deprecated Use the bare {@code linear} constant.
      */
+    @Deprecated
     public static final CSSValue timingLinear = () -> "linear";
 
     /**
      * Ease-in timing function - slow start, then accelerates.
      * Equivalent to cubic-bezier(0.42, 0, 1, 1).
+     *
+     * @deprecated Use the bare {@code easeIn} constant.
      */
+    @Deprecated
     public static final CSSValue timingEaseIn = () -> "ease-in";
 
     /**
      * Ease-out timing function - fast start, then decelerates.
      * Equivalent to cubic-bezier(0, 0, 0.58, 1).
+     *
+     * @deprecated Use the bare {@code easeOut} constant.
      */
+    @Deprecated
     public static final CSSValue timingEaseOut = () -> "ease-out";
 
     /**
      * Ease-in-out timing function - slow start and end.
      * Equivalent to cubic-bezier(0.42, 0, 0.58, 1).
+     *
+     * @deprecated Use the bare {@code easeInOut} constant.
      */
+    @Deprecated
     public static final CSSValue timingEaseInOut = () -> "ease-in-out";
 
     /**
@@ -169,7 +181,10 @@ public class CSSAnimations extends CSSGrid {
      * @param x2 second control point X (0-1)
      * @param y2 second control point Y (can be outside 0-1 for bounce effects)
      * @return CSSValue for cubic-bezier() function
+     *
+     * @deprecated Use {@code cubicBezier(x1, y1, x2, y2)} — byte-identical output.
      */
+    @Deprecated
     public static CSSValue timingCubicBezier(double x1, double y1, double x2, double y2) {
         return () -> "cubic-bezier(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + ")";
     }
@@ -189,7 +204,10 @@ public class CSSAnimations extends CSSGrid {
      * @param count number of steps (intervals)
      * @param position jump position: "start", "end", "jump-start", "jump-end", "jump-none", "jump-both"
      * @return CSSValue for steps() function
+     *
+     * @deprecated Use {@link CSSUnits#steps(int, String)} — byte-identical output.
      */
+    @Deprecated
     public static CSSValue timingSteps(int count, String position) {
         return () -> "steps(" + count + ", " + position + ")";
     }
@@ -199,7 +217,10 @@ public class CSSAnimations extends CSSGrid {
      *
      * @param count number of steps
      * @return CSSValue for steps() function
+     *
+     * @deprecated Use {@link CSSUnits#steps(int)} — byte-identical output.
      */
+    @Deprecated
     public static CSSValue timingSteps(int count) {
         return () -> "steps(" + count + ")";
     }
@@ -207,14 +228,26 @@ public class CSSAnimations extends CSSGrid {
     /**
      * Step-start timing - jumps immediately to the end state.
      * Equivalent to steps(1, start).
+     *
+     * @deprecated Use the bare {@code stepStart} constant.
      */
+    @Deprecated
     public static final CSSValue timingStepStart = () -> "step-start";
 
     /**
      * Step-end timing - holds the start state until the end.
      * Equivalent to steps(1, end).
+     *
+     * @deprecated Use the bare {@code stepEnd} constant.
      */
+    @Deprecated
     public static final CSSValue timingStepEnd = () -> "step-end";
+
+    /** Step-start timing — jumps immediately to the end state. Equivalent to {@code steps(1, start)}. */
+    public static final CSSValue stepStart = () -> "step-start";
+
+    /** Step-end timing — holds the start state until the end. Equivalent to {@code steps(1, end)}. */
+    public static final CSSValue stepEnd = () -> "step-end";
 
     // ==================== Duration & Delay ====================
 
@@ -224,7 +257,10 @@ public class CSSAnimations extends CSSGrid {
      *
      * @param value time value (use s() or ms())
      * @return CSSValue for duration
+     *
+     * @deprecated Identity wrapper — pass the time value straight through, e.g. {@code .animationDuration(s(2))}.
      */
+    @Deprecated
     public static CSSValue duration(jweb.CSSValue value) {
         return value::css;
     }
@@ -235,7 +271,10 @@ public class CSSAnimations extends CSSGrid {
      *
      * @param value time value (use s() or ms())
      * @return CSSValue for delay
+     *
+     * @deprecated Identity wrapper — pass the time value straight through, e.g. {@code .animationDelay(ms(300))}.
      */
+    @Deprecated
     public static CSSValue delay(jweb.CSSValue value) {
         return value::css;
     }
@@ -244,7 +283,10 @@ public class CSSAnimations extends CSSGrid {
 
     /**
      * Animation runs infinitely.
+     *
+     * @deprecated Use the bare {@code infinite} constant.
      */
+    @Deprecated
     public static final CSSValue iterationInfinite = () -> "infinite";
 
     /**
@@ -280,57 +322,93 @@ public class CSSAnimations extends CSSGrid {
 
     /**
      * Animation plays normally (forward) each cycle.
+     *
+     * @deprecated Use the bare {@code normal} constant.
      */
+    @Deprecated
     public static final CSSValue directionNormal = () -> "normal";
 
     /**
      * Animation plays in reverse each cycle.
+     *
+     * @deprecated Use the bare {@code reverse} constant.
      */
+    @Deprecated
     public static final CSSValue directionReverse = () -> "reverse";
 
     /**
      * Animation alternates direction each cycle (forward, then backward).
+     *
+     * @deprecated Use the bare {@code alternate} constant.
      */
+    @Deprecated
     public static final CSSValue directionAlternate = () -> "alternate";
 
     /**
      * Animation alternates direction, starting in reverse.
+     *
+     * @deprecated Use the bare {@code alternateReverse} constant.
      */
+    @Deprecated
     public static final CSSValue directionAlternateReverse = () -> "alternate-reverse";
 
     // ==================== Fill Mode ====================
 
     /**
      * Animation does not apply styles before or after execution.
+     *
+     * @deprecated Use the bare {@code none} constant.
      */
+    @Deprecated
     public static final CSSValue fillModeNone = () -> "none";
 
     /**
      * Animation retains styles from the last keyframe after completion.
+     *
+     * @deprecated Use the bare {@code forwards} constant.
      */
+    @Deprecated
     public static final CSSValue fillModeForwards = () -> "forwards";
 
     /**
      * Animation applies styles from the first keyframe during delay period.
+     *
+     * @deprecated Use the bare {@code backwards} constant.
      */
+    @Deprecated
     public static final CSSValue fillModeBackwards = () -> "backwards";
 
     /**
      * Animation applies both forwards and backwards fill modes.
+     *
+     * @deprecated Use the bare {@code both} constant.
      */
+    @Deprecated
     public static final CSSValue fillModeBoth = () -> "both";
 
     // ==================== Play State ====================
 
     /**
      * Animation is currently running.
+     *
+     * @deprecated Use the bare {@code running} constant.
      */
+    @Deprecated
     public static final CSSValue playStateRunning = () -> "running";
 
     /**
      * Animation is currently paused.
+     *
+     * @deprecated Use the bare {@code paused} constant.
      */
+    @Deprecated
     public static final CSSValue playStatePaused = () -> "paused";
+
+    /** {@code animation-play-state: running} — the animation is playing. */
+    public static final CSSValue running = () -> "running";
+
+    /** {@code animation-play-state: paused} — the animation is frozen. */
+    public static final CSSValue paused = () -> "paused";
 
     // ==================== Timeline (Scroll-Driven Animations) ====================
 
@@ -517,7 +595,6 @@ public class CSSAnimations extends CSSGrid {
         private jweb.CSSValue direction;
         private jweb.CSSValue fillMode;
         private jweb.CSSValue playState;
-        private jweb.CSSValue timeline;
 
         AnimationBuilder(String name, jweb.CSSValue duration) {
             this.name = name;
@@ -590,16 +667,9 @@ public class CSSAnimations extends CSSGrid {
             return this;
         }
 
-        /**
-         * Sets a scroll or view timeline for scroll-driven animations.
-         *
-         * @param timeline timeline value (scrollTimeline(), viewTimeline())
-         * @return this builder for chaining
-         */
-        public AnimationBuilder timeline(jweb.CSSValue timeline) {
-            this.timeline = timeline;
-            return this;
-        }
+        // There is deliberately no timeline() here: animation-timeline is not part
+        // of the `animation` shorthand, so a builder value could never be emitted.
+        // Set it as its own property instead: style().animationTimeline(scrollTimeline()).
 
         @Override
         public String css() {
@@ -643,45 +713,9 @@ public class CSSAnimations extends CSSGrid {
         return new AnimationBuilder("fadeOut", duration);
     }
 
-    /**
-     * Creates a fade-in-up animation (fade in while moving up).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder fadeInUp(jweb.CSSValue duration) {
-        return new AnimationBuilder("fadeInUp", duration);
-    }
 
-    /**
-     * Creates a fade-in-down animation (fade in while moving down).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder fadeInDown(jweb.CSSValue duration) {
-        return new AnimationBuilder("fadeInDown", duration);
-    }
 
-    /**
-     * Creates a fade-in-left animation (fade in while moving from left).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder fadeInLeft(jweb.CSSValue duration) {
-        return new AnimationBuilder("fadeInLeft", duration);
-    }
 
-    /**
-     * Creates a fade-in-right animation (fade in while moving from right).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder fadeInRight(jweb.CSSValue duration) {
-        return new AnimationBuilder("fadeInRight", duration);
-    }
 
     // ==================== Slide Animations ====================
 
@@ -705,65 +739,11 @@ public class CSSAnimations extends CSSGrid {
         return new AnimationBuilder("slideInRight", duration);
     }
 
-    /**
-     * Creates a slide-in animation from top.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder slideInUp(jweb.CSSValue duration) {
-        return new AnimationBuilder("slideInUp", duration);
-    }
 
-    /**
-     * Creates a slide-in animation from bottom.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder slideInDown(jweb.CSSValue duration) {
-        return new AnimationBuilder("slideInDown", duration);
-    }
 
-    /**
-     * Creates a slide-out animation to left.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder slideOutLeft(jweb.CSSValue duration) {
-        return new AnimationBuilder("slideOutLeft", duration);
-    }
 
-    /**
-     * Creates a slide-out animation to right.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder slideOutRight(jweb.CSSValue duration) {
-        return new AnimationBuilder("slideOutRight", duration);
-    }
 
-    /**
-     * Creates a slide-out animation to top.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder slideOutUp(jweb.CSSValue duration) {
-        return new AnimationBuilder("slideOutUp", duration);
-    }
 
-    /**
-     * Creates a slide-out animation to bottom.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder slideOutDown(jweb.CSSValue duration) {
-        return new AnimationBuilder("slideOutDown", duration);
-    }
 
     // ==================== Scale Animations ====================
 
@@ -787,25 +767,7 @@ public class CSSAnimations extends CSSGrid {
         return new AnimationBuilder("zoomOut", duration);
     }
 
-    /**
-     * Creates a scale-in animation (scale 0 to 1, no opacity change).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder scaleIn(jweb.CSSValue duration) {
-        return new AnimationBuilder("scaleIn", duration);
-    }
 
-    /**
-     * Creates a scale-out animation (scale 1 to 0, no opacity change).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder scaleOut(jweb.CSSValue duration) {
-        return new AnimationBuilder("scaleOut", duration);
-    }
 
     /**
      * Creates a pulse animation (subtle scale up and down).
@@ -823,15 +785,6 @@ public class CSSAnimations extends CSSGrid {
         return new AnimationBuilder("pulse", duration);
     }
 
-    /**
-     * Creates a heartbeat animation (double pulse effect).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder heartbeat(jweb.CSSValue duration) {
-        return new AnimationBuilder("heartbeat", duration);
-    }
 
     /**
      * Creates a bounce animation (vertical bouncing).
@@ -843,25 +796,7 @@ public class CSSAnimations extends CSSGrid {
         return new AnimationBuilder("bounce", duration);
     }
 
-    /**
-     * Creates a bounce-in animation (scale in with bounce).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder bounceIn(jweb.CSSValue duration) {
-        return new AnimationBuilder("bounceIn", duration);
-    }
 
-    /**
-     * Creates a bounce-out animation (scale out with bounce).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder bounceOut(jweb.CSSValue duration) {
-        return new AnimationBuilder("bounceOut", duration);
-    }
 
     // ==================== Rotate Animations ====================
 
@@ -876,72 +811,37 @@ public class CSSAnimations extends CSSGrid {
      *
      * @param duration animation duration
      * @return AnimationBuilder for chaining
+     *
+     * @deprecated Use {@link #spin(jweb.CSSValue)} — this builder emits the animation name {@code spin} (the name {@code Keyframes.spin()} defines), not {@code rotate360}.
      */
+    @Deprecated
     public static AnimationBuilder rotate360(jweb.CSSValue duration) {
         return new AnimationBuilder("spin", duration);
     }
 
     /**
-     * Creates a rotate-in animation (rotation with fade in).
+     * A 360° rotation — backed by {@code Keyframes.spin()}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * stylesheet().keyframes(Keyframes.spin());
+     * style().animation(spin(s(2)).iterationCount(infinite).timing(linear))
+     * </pre>
      *
      * @param duration animation duration
      * @return AnimationBuilder for chaining
      */
-    public static AnimationBuilder rotateIn(jweb.CSSValue duration) {
-        return new AnimationBuilder("rotateIn", duration);
+    public static AnimationBuilder spin(jweb.CSSValue duration) {
+        return new AnimationBuilder("spin", duration);
     }
 
-    /**
-     * Creates a rotate-out animation (rotation with fade out).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder rotateOut(jweb.CSSValue duration) {
-        return new AnimationBuilder("rotateOut", duration);
-    }
+
 
     // ==================== Flip Animations ====================
 
-    /**
-     * Creates a horizontal flip animation (rotate around Y-axis).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder flipX(jweb.CSSValue duration) {
-        return new AnimationBuilder("flipX", duration);
-    }
 
-    /**
-     * Creates a vertical flip animation (rotate around X-axis).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder flipY(jweb.CSSValue duration) {
-        return new AnimationBuilder("flipY", duration);
-    }
 
-    /**
-     * Creates a flip-in animation (3D flip with fade in).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder flipIn(jweb.CSSValue duration) {
-        return new AnimationBuilder("flipIn", duration);
-    }
 
-    /**
-     * Creates a flip-out animation (3D flip with fade out).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder flipOut(jweb.CSSValue duration) {
-        return new AnimationBuilder("flipOut", duration);
-    }
 
     // ==================== Shake/Wobble Animations ====================
 
@@ -955,87 +855,15 @@ public class CSSAnimations extends CSSGrid {
         return new AnimationBuilder("shake", duration);
     }
 
-    /**
-     * Creates a vertical shake animation.
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder shakeVertical(jweb.CSSValue duration) {
-        return new AnimationBuilder("shakeVertical", duration);
-    }
 
-    /**
-     * Creates a wobble animation (side-to-side rotation).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder wobble(jweb.CSSValue duration) {
-        return new AnimationBuilder("wobble", duration);
-    }
 
-    /**
-     * Creates a jello animation (elastic wobble effect).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder jello(jweb.CSSValue duration) {
-        return new AnimationBuilder("jello", duration);
-    }
 
-    /**
-     * Creates a swing animation (pendulum swing).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder swing(jweb.CSSValue duration) {
-        return new AnimationBuilder("swing", duration);
-    }
 
-    /**
-     * Creates a rubber band animation (elastic stretch).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder rubberBand(jweb.CSSValue duration) {
-        return new AnimationBuilder("rubberBand", duration);
-    }
 
     // ==================== Attention Seekers ====================
 
-    /**
-     * Creates a flash animation (rapid opacity changes).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder flash(jweb.CSSValue duration) {
-        return new AnimationBuilder("flash", duration);
-    }
 
-    /**
-     * Creates a tada animation (attention-grabbing scale and rotation).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder tada(jweb.CSSValue duration) {
-        return new AnimationBuilder("tada", duration);
-    }
 
-    /**
-     * Creates a head shake animation (horizontal shake with rotation).
-     *
-     * @param duration animation duration
-     * @return AnimationBuilder for chaining
-     */
-    public static AnimationBuilder headShake(jweb.CSSValue duration) {
-        return new AnimationBuilder("headShake", duration);
-    }
 
     // ==================== Utility Animations ====================
 
@@ -1054,7 +882,10 @@ public class CSSAnimations extends CSSGrid {
      * @param index element index in sequence
      * @param delayMs milliseconds between each element
      * @return CSSValue for staggered delay
+     *
+     * @deprecated Use {@code ms(index * delayMs)} — that is all this does.
      */
+    @Deprecated
     public static CSSValue staggerDelay(int index, int delayMs) {
         return ms(index * delayMs);
     }
@@ -1070,7 +901,10 @@ public class CSSAnimations extends CSSGrid {
      *
      * @param names animation names in sequence
      * @return CSSValue for animation sequence
+     *
+     * @deprecated Use {@link #composeAnimations(String...)} — byte-identical output.
      */
+    @Deprecated
     public static CSSValue sequenceAnimations(String... names) {
         return () -> String.join(", ", names);
     }

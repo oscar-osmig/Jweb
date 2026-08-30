@@ -148,6 +148,35 @@ public class ContainerQuery {
         return this;
     }
 
+    /**
+     * Adds multiple CSS rules to this container query.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * container("card").minWidth(px(400)).rules(
+     *     Rule.of(".card-content", style().display("flex"))
+     * )
+     * </pre>
+     *
+     * @param ruleArray the rules to add
+     * @return this builder for chaining
+     */
+    public ContainerQuery rules(Rule... ruleArray) {
+        for (Rule r : ruleArray) {
+            rules.put(r.selector(), r.style());
+        }
+        return this;
+    }
+
+    /**
+     * Adds multiple CSS rules to this container query.
+     *
+     * @param ruleArray the rules to add
+     * @return this builder for chaining
+     * @deprecated Use {@link #rules(Rule...)} with {@code Rule.of(selector, style)} —
+     *             the one rule shape shared by every at-rule builder.
+     */
+    @Deprecated
     public ContainerQuery rules(MediaQuery.Rule... ruleArray) {
         for (MediaQuery.Rule r : ruleArray) {
             rules.put(r.selector(), r.style());

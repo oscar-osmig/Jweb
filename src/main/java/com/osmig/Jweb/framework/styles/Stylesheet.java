@@ -39,7 +39,15 @@ public class Stylesheet {
 
     /**
      * Creates a CSS rule (selector + style).
+     *
+     * @param selector the CSS selector
+     * @param style the style to apply
+     * @return the rule
+     * @deprecated Use {@link com.osmig.Jweb.framework.styles.Rule#of(String, jweb.Style)}
+     *             — one factory for every rule-taking builder, instead of a
+     *             per-builder alias.
      */
+    @Deprecated
     public static Rule cssRule(String selector, jweb.Style<?> style) {
         return new Rule(selector, style);
     }
@@ -62,6 +70,21 @@ public class Stylesheet {
     public Stylesheet rule(Rule rule) {
         rules.add(rule.build());
         return this;
+    }
+
+    /**
+     * Adds a CSS rule built with {@link com.osmig.Jweb.framework.styles.Rule#of}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * stylesheet().rule(Rule.of(".card", style().padding(rem(1))))
+     * </pre>
+     *
+     * @param rule the rule to add
+     * @return this for chaining
+     */
+    public Stylesheet rule(com.osmig.Jweb.framework.styles.Rule rule) {
+        return rule(rule.selector(), rule.style());
     }
 
     /**

@@ -128,6 +128,34 @@ public class CSSScope {
         }
 
         /**
+         * Adds a CSS rule to this scope — the same {@code (selector, style)}
+         * shape every other at-rule builder takes.
+         *
+         * <p>Example:</p>
+         * <pre>
+         * scope(".card").rule("h2", style().fontSize(rem(1.5)))
+         * </pre>
+         *
+         * @param selector the CSS selector
+         * @param style the style to apply
+         * @return this builder
+         */
+        public ScopeBuilder rule(String selector, jweb.Style<?> style) {
+            rules.add(CSS.rule(selector).apply(style));
+            return this;
+        }
+
+        /**
+         * Adds a CSS rule to this scope.
+         *
+         * @param rule the rule
+         * @return this builder
+         */
+        public ScopeBuilder rule(Rule rule) {
+            return rule(rule.selector(), rule.style());
+        }
+
+        /**
          * Adds multiple CSS rules to this scope.
          *
          * @param ruleArray the StyleBuilder rules

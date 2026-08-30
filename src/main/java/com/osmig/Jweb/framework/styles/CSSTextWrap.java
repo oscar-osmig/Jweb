@@ -35,7 +35,14 @@ package com.osmig.Jweb.framework.styles;
  *
  * @see CSS for creating style rules
  *
- * @deprecated Replaced by {@code jweb.css.CSSTextWrap} — shorter import, same API. Existing code keeps working.
+ * @deprecated The properties are first-class {@code Style} methods that take typed
+ *             values instead of pre-joined {@code "prop:value"} strings:
+ *             {@link jweb.Style#textWrap}, {@link jweb.Style#textWrapMode},
+ *             {@link jweb.Style#textWrapStyle}, {@link jweb.Style#whiteSpaceCollapse},
+ *             {@link jweb.Style#wordBreak}, {@link jweb.Style#overflowWrap},
+ *             {@link jweb.Style#hyphens}, {@link jweb.Style#textOverflow} and
+ *             {@link jweb.Style#lineClamp(int)} — note {@code lineClamp} here returns
+ *             five declarations in one string, which {@code prop(String)} cannot parse.
  */
 @Deprecated
 public class CSSTextWrap {

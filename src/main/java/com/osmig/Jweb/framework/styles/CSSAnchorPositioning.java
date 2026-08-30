@@ -34,17 +34,20 @@ package com.osmig.Jweb.framework.styles;
  *
  * <h2>Fallback Positioning</h2>
  * <pre>{@code
- * // Define fallback positions
- * String css = positionFallback("--tooltip-fallback",
- *     tryTactic("flip-block"),
- *     tryTactic("flip-inline"),
- *     tryTactic("flip-block", "flip-inline")
- * );
+ * rule(".tooltip").positionTryFallbacks("flip-block, flip-inline");
  * }</pre>
  *
  * @see CSS for creating style rules
  *
- * @deprecated Replaced by {@code jweb.css.CSSAnchorPositioning} — shorter import, same API. Existing code keeps working.
+ * @deprecated The properties are now first-class {@code Style} methods that take
+ *             typed values instead of pre-joined {@code "prop:value"} strings:
+ *             {@link jweb.Style#anchorName}, {@link jweb.Style#positionAnchor},
+ *             {@link jweb.Style#positionArea}, {@link jweb.Style#positionVisibility},
+ *             {@link jweb.Style#positionTryFallbacks}, and
+ *             {@link jweb.Style#top}/{@link jweb.Style#right}/{@link jweb.Style#bottom}/{@link jweb.Style#left}
+ *             for the inset properties. The {@code anchor()} / {@code anchorSize()}
+ *             value helpers here are still useful — feed their output to those
+ *             methods (or write the string directly).
  */
 @Deprecated
 public class CSSAnchorPositioning {
@@ -202,21 +205,9 @@ public class CSSAnchorPositioning {
 
     // ==================== Position Fallback ====================
 
-    /**
-     * Creates a @position-fallback rule with try tactics.
-     *
-     * @param name the dashed-ident name for the fallback
-     * @param tactics the try tactics
-     * @return the CSS @position-fallback block
-     */
-    public static String positionFallback(String name, String... tactics) {
-        StringBuilder sb = new StringBuilder("@position-fallback ").append(name).append(" {\n");
-        for (String tactic : tactics) {
-            sb.append("  ").append(tactic).append("\n");
-        }
-        sb.append("}");
-        return sb.toString();
-    }
+    // @position-fallback and @try were dropped from the spec before shipping —
+    // positionFallback()/tryTactic() have been removed. Use
+    // Style.positionTryFallbacks(...) plus positionTry(name, style) below.
 
     /**
      * Creates a position-try-fallbacks property value.
@@ -245,13 +236,22 @@ public class CSSAnchorPositioning {
     }
 
     /**
-     * Creates a try-tactic value for position fallbacks.
+     * Creates a {@code @position-try} block from a Style.
      *
-     * @param tactics one or more tactics: "flip-block", "flip-inline", "flip-start"
-     * @return the try-tactic CSS string
+     * <p>Example:</p>
+     * <pre>
+     * positionTry("--flip-up", style().bottom("anchor(top)").top("auto"))
+     * // @position-try --flip-up {
+     * //   bottom: anchor(top); top: auto;
+     * // }
+     * </pre>
+     *
+     * @param name the dashed-ident name (e.g. {@code "--flip-up"})
+     * @param style the position overrides to try
+     * @return the CSS @position-try block
      */
-    public static String tryTactic(String... tactics) {
-        return "@try { " + String.join(" ", tactics) + "; }";
+    public static String positionTry(String name, jweb.Style<?> style) {
+        return "@position-try " + name + " {\n  " + style.build() + "\n}";
     }
 
     // ==================== Position Visibility ====================

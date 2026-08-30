@@ -26,6 +26,15 @@ public class StyledElement implements Element {
 
     private static final AtomicLong ID_COUNTER = new AtomicLong(0);
 
+    /**
+     * The pseudo-ELEMENTS, which take a double colon ({@code ::before}).
+     * Everything else is a pseudo-class and takes a single colon
+     * ({@code :hover}).
+     */
+    private static final java.util.Set<String> PSEUDO_ELEMENTS = java.util.Set.of(
+        "before", "after", "placeholder", "selection",
+        "first-line", "first-letter", "marker", "backdrop");
+
     private final VNode baseElement;
     private final String generatedClass;
     private jweb.Style<?> baseStyle;
@@ -102,18 +111,62 @@ public class StyledElement implements Element {
     }
 
     public StyledElement before(jweb.Style<?> style) {
-        pseudoStyles.put(":before", style);
+        pseudoStyles.put("before", style);
         return this;
     }
 
     public StyledElement after(jweb.Style<?> style) {
-        pseudoStyles.put(":after", style);
+        pseudoStyles.put("after", style);
         return this;
     }
 
     public StyledElement placeholder(jweb.Style<?> style) {
-        pseudoStyles.put(":placeholder", style);
+        pseudoStyles.put("placeholder", style);
         return this;
+    }
+
+    /**
+     * Escape hatch for any pseudo-CLASS not covered by a named method —
+     * emitted with a single colon.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * .pseudo("nth-of-type(2n)", style().background(gray))
+     * .pseudo("has(&gt; img)", style().padding(zero))
+     * </pre>
+     *
+     * @param name the pseudo-class name, with or without a leading colon
+     * @param style the styles to apply
+     * @return this for chaining
+     */
+    public StyledElement pseudo(String name, jweb.Style<?> style) {
+        pseudoStyles.put(":" + stripColons(name), style);
+        return this;
+    }
+
+    /**
+     * Escape hatch for any pseudo-ELEMENT not covered by a named method —
+     * emitted with a double colon.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * .pseudoElement("first-line", style().fontWeight(700))
+     * .pseudoElement("-webkit-scrollbar", style().width(px(8)))
+     * </pre>
+     *
+     * @param name the pseudo-element name, with or without leading colons
+     * @param style the styles to apply
+     * @return this for chaining
+     */
+    public StyledElement pseudoElement(String name, jweb.Style<?> style) {
+        pseudoStyles.put("::" + stripColons(name), style);
+        return this;
+    }
+
+    private static String stripColons(String name) {
+        int i = 0;
+        while (i < name.length() && name.charAt(i) == ':') i++;
+        return name.substring(i);
     }
 
     @Override
@@ -133,22 +186,11 @@ public class StyledElement implements Element {
                .append("}");
         }
 
-        // Pseudo-class rules (minified)
+        // Pseudo rules (minified)
         for (Map.Entry<String, jweb.Style<?>> entry : pseudoStyles.entrySet()) {
-            String pseudo = entry.getKey();
-            jweb.Style<?> style = entry.getValue();
-
-            if (pseudo.startsWith(":")) {
-                // Pseudo-element (::before, ::after, ::placeholder)
-                css.append(".").append(generatedClass).append(pseudo).append("{")
-                   .append(style.build())
-                   .append("}");
-            } else {
-                // Pseudo-class (:hover, :focus, etc.)
-                css.append(".").append(generatedClass).append(":").append(pseudo).append("{")
-                   .append(style.build())
-                   .append("}");
-            }
+            css.append(".").append(generatedClass).append(selectorFor(entry.getKey())).append("{")
+               .append(entry.getValue().build())
+               .append("}");
         }
 
         // Add the generated class to the element
@@ -162,6 +204,19 @@ public class StyledElement implements Element {
         nodes.add(styledElement);
 
         return new VFragment(nodes);
+    }
+
+    /**
+     * Turns a stored pseudo key into its selector suffix. Keys that already
+     * carry their colons (from {@link #pseudo} / {@link #pseudoElement}) are
+     * used as-is; a bare name gets {@code ::} if it names a pseudo-element and
+     * {@code :} otherwise.
+     */
+    private static String selectorFor(String pseudo) {
+        if (pseudo.startsWith(":")) {
+            return pseudo;
+        }
+        return (PSEUDO_ELEMENTS.contains(pseudo) ? "::" : ":") + pseudo;
     }
 
     private VNode applyInlineStyle(VNode node) {

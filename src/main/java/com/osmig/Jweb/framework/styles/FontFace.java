@@ -39,14 +39,37 @@ public class FontFace {
     public static final String svg = "svg";
 
     // Font display constants
+
+    /**
+     * @deprecated Collides under wildcard import with {@code CSSUnits.auto}
+     *             (a {@code CSSValue}, not a {@code String}). Pass the plain
+     *             string {@code "auto"} to {@link #fontDisplay(String)} instead.
+     */
+    @Deprecated
     public static final String auto = "auto";
+
+    /**
+     * @deprecated Collides under wildcard import with {@code CSS.block}
+     *             (a {@code CSSValue}, not a {@code String}). Pass the plain
+     *             string {@code "block"} to {@link #fontDisplay(String)} instead.
+     */
+    @Deprecated
     public static final String block = "block";
+
     public static final String swap = "swap";
     public static final String fallback = "fallback";
     public static final String optional = "optional";
 
     // Font style constants
+
+    /**
+     * @deprecated Collides under wildcard import with {@code CSS.normal}
+     *             (a {@code CSSValue}, not a {@code String}). Pass the plain
+     *             string {@code "normal"} to {@link #fontStyle(String)} instead.
+     */
+    @Deprecated
     public static final String normal = "normal";
+
     public static final String italic = "italic";
     public static final String oblique = "oblique";
 

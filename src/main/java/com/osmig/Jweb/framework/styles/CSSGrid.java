@@ -205,6 +205,17 @@ public class CSSGrid extends CSSColors {
         return () -> "subgrid";
     }
 
+    /**
+     * The {@code subgrid} keyword — a grid item adopts its parent's tracks.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().gridTemplateColumns(subgrid)
+     *        .gridTemplateRows(subgrid)
+     * </pre>
+     */
+    public static final CSSValue subgrid = () -> "subgrid";
+
     // ==================== Masonry (Experimental) ====================
 
     /**

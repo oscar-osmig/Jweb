@@ -42,7 +42,17 @@ package com.osmig.Jweb.framework.styles;
  *
  * @see CSS for creating style rules
  *
- * @deprecated Replaced by {@code jweb.css.CSSLogicalProperties} — shorter import, same API. Existing code keeps working.
+ * @deprecated The logical properties are first-class {@code Style} methods that take
+ *             typed values instead of pre-joined {@code "prop:value"} strings:
+ *             {@link jweb.Style#marginInline}, {@link jweb.Style#marginBlock},
+ *             {@link jweb.Style#paddingInline}, {@link jweb.Style#paddingBlock},
+ *             {@link jweb.Style#insetInline}, {@link jweb.Style#insetBlock},
+ *             {@link jweb.Style#inlineSize}, {@link jweb.Style#blockSize},
+ *             {@link jweb.Style#borderInline}, {@link jweb.Style#borderBlock},
+ *             {@link jweb.Style#textAlign}, {@link jweb.Style#float_},
+ *             {@link jweb.Style#clear} and the {@code *Start}/{@code *End} variants —
+ *             so {@code style().marginInline(rem(1))} type-checks, unlike
+ *             {@code marginInline(rem(1))} here.
  */
 @Deprecated
 public class CSSLogicalProperties {

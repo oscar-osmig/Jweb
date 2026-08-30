@@ -224,7 +224,26 @@ public class CSSColors {
      * @return a CSSValue for the mixed color
      */
     public static CSSValue colorMix(jweb.CSSValue color1, jweb.CSSValue color2, int percent) {
-        return () -> "color-mix(in srgb, " + color1.css() + " " + percent + "%, " + color2.css() + ")";
+        return colorMix("srgb", color1, color2, percent);
+    }
+
+    /**
+     * Mixes two colors in an explicit color space.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().color(colorMix("oklch", red, blue, 30))
+     * // Output: color: color-mix(in oklch, #f00 30%, #00f);
+     * </pre>
+     *
+     * @param colorSpace the interpolation color space (srgb, oklch, oklab, hsl, …)
+     * @param color1 the first color
+     * @param color2 the second color
+     * @param percent the percentage of color1 (0-100)
+     * @return a CSSValue for the mixed color
+     */
+    public static CSSValue colorMix(String colorSpace, jweb.CSSValue color1, jweb.CSSValue color2, int percent) {
+        return () -> "color-mix(in " + colorSpace + ", " + color1.css() + " " + percent + "%, " + color2.css() + ")";
     }
 
     /**
@@ -238,7 +257,11 @@ public class CSSColors {
      * @param color the base color
      * @param percent how much to lighten (0-100)
      * @return a CSSValue for the lightened color
+     * @deprecated SASS-ism with no CSS equivalent. Use
+     *             {@code colorMix(white, color, percent)} (or an explicit color
+     *             space: {@code colorMix("oklch", white, color, percent)}).
      */
+    @Deprecated
     public static CSSValue lighten(jweb.CSSValue color, int percent) {
         return colorMix(white, color, 100 - percent);
     }
@@ -254,7 +277,11 @@ public class CSSColors {
      * @param color the base color
      * @param percent how much to darken (0-100)
      * @return a CSSValue for the darkened color
+     * @deprecated SASS-ism with no CSS equivalent. Use
+     *             {@code colorMix(black, color, percent)} (or an explicit color
+     *             space: {@code colorMix("oklch", black, color, percent)}).
      */
+    @Deprecated
     public static CSSValue darken(jweb.CSSValue color, int percent) {
         return colorMix(black, color, 100 - percent);
     }

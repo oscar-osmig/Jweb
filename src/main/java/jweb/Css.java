@@ -45,11 +45,31 @@ public class Css extends com.osmig.Jweb.framework.styles.CSS {
     public static MediaQuery xl() { return MediaQuery.xl(); }
     /** Min-width 1400px. */
     public static MediaQuery xxl() { return MediaQuery.xxl(); }
-    /** Max-width 767px. */
+    /**
+     * Max-width 767px.
+     *
+     * @return the media query
+     * @deprecated Use {@link #xs()} — keep one breakpoint system; xs–xxl is the canonical one.
+     */
+    @Deprecated
     public static MediaQuery mobile() { return MediaQuery.mobile(); }
-    /** 768–1023px. */
+
+    /**
+     * 768–1023px.
+     *
+     * @return the media query
+     * @deprecated Use {@link #md()} — keep one breakpoint system; xs–xxl is the canonical one.
+     */
+    @Deprecated
     public static MediaQuery tablet() { return MediaQuery.tablet(); }
-    /** Min-width 1024px. */
+
+    /**
+     * Min-width 1024px.
+     *
+     * @return the media query
+     * @deprecated Use {@link #lg()} — keep one breakpoint system; xs–xxl is the canonical one.
+     */
+    @Deprecated
     public static MediaQuery desktop() { return MediaQuery.desktop(); }
 
     // ==================== Keyframes & Stylesheets ====================
