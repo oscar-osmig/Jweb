@@ -40,8 +40,8 @@ public class JSGeolocation {
     }
 
     /** Watches position changes */
-    public static GeolocationBuilder watchPosition() {
-        return new GeolocationBuilder(true);
+    public static WatchBuilder watchPosition() {
+        return new WatchBuilder();
     }
 
     /** Stops watching position */
@@ -129,20 +129,12 @@ public class JSGeolocation {
         public GeolocationBuilder timeout(int ms) { this.timeout = ms; return this; }
         public GeolocationBuilder maximumAge(int ms) { this.maximumAge = ms; return this; }
 
-        /** Builds and optionally assigns watch ID to variable */
-        public Val build(String varName) {
-            if (!watch) throw new IllegalStateException("Use build() for getCurrentPosition");
-            StringBuilder sb = new StringBuilder("var ").append(varName).append("=");
-            sb.append(buildCall());
-            return new Val(sb.toString());
-        }
-
         /** Builds the geolocation call */
         public Val build() {
             return new Val(buildCall());
         }
 
-        private String buildCall() {
+        String buildCall() {
             StringBuilder sb = new StringBuilder("navigator.geolocation.");
             sb.append(watch ? "watchPosition" : "getCurrentPosition").append("(");
 
@@ -171,5 +163,27 @@ public class JSGeolocation {
 
             return sb.append(")").toString();
         }
+    }
+
+    /**
+     * A {@code watchPosition} call. Only a watch produces an id worth keeping,
+     * so {@link #build(String)} lives here rather than on the shared builder —
+     * calling it after {@code getCurrentPosition()} no longer compiles.
+     */
+    public static class WatchBuilder extends GeolocationBuilder {
+        WatchBuilder() { super(true); }
+
+        /** Builds the call and assigns the watch id to {@code varName}. */
+        public Val build(String varName) {
+            return new Val("var " + varName + "=" + buildCall());
+        }
+
+        @Override public WatchBuilder onSuccess(Func callback) { super.onSuccess(callback); return this; }
+        @Override public WatchBuilder onSuccess(String code) { super.onSuccess(code); return this; }
+        @Override public WatchBuilder onError(Func callback) { super.onError(callback); return this; }
+        @Override public WatchBuilder onError(String code) { super.onError(code); return this; }
+        @Override public WatchBuilder highAccuracy(boolean enabled) { super.highAccuracy(enabled); return this; }
+        @Override public WatchBuilder timeout(int ms) { super.timeout(ms); return this; }
+        @Override public WatchBuilder maximumAge(int ms) { super.maximumAge(ms); return this; }
     }
 }
