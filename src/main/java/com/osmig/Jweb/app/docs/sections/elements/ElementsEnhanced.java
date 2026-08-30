@@ -18,8 +18,8 @@ import static jweb.el.PopoverElements.*;
 import static jweb.El.*;
 
 // Auto popover (dismisses on click outside or Escape)
-popoverToggleButton("my-popup", "Toggle Menu"),
-autoPopover("my-popup",
+button(popovertarget("my-popup"), "Toggle Menu"),
+div(popover(), id("my-popup"),
     ul(
         li("Option 1"),
         li("Option 2"),
@@ -28,9 +28,9 @@ autoPopover("my-popup",
 )
 
 // Manual popover (only dismisses programmatically)
-popoverShowButton("info-pop", "Show Info"),
+button(popovertarget("info-pop"), popovertargetaction("show"), "Show Info"),
 popoverHideButton("info-pop", "Close"),
-manualPopover("info-pop",
+div(popover("manual"), id("info-pop"),
     p("This stays open until explicitly closed.")
 )
 
@@ -38,7 +38,7 @@ manualPopover("info-pop",
 div(popover(), id("custom-pop"),
     p("Custom popover content")
 )
-button(popoverTarget("custom-pop"),
+button(popovertarget("custom-pop"),
     "Toggle Custom"
 )
 
@@ -68,17 +68,17 @@ picture(
 )
 
 // Responsive with density descriptors
-responsiveImg("photo.jpg", "Photo", "photo-2x.jpg")
+img(src("photo.jpg"), alt("Photo"), srcset("photo-2x.jpg 2x"))
 // Renders: <img src="photo.jpg" srcset="photo.jpg 1x,photo-2x.jpg 2x">
 
 // Lazy-loaded image with CLS prevention
-lazyImg("hero.jpg", "Hero", 800, 600)
+img(src("hero.jpg"), alt("Hero"), width(800), height(600), loading("lazy"))
 // Renders: <img src="hero.jpg" loading="lazy" width="800" height="600">
 
 // Loading attributes
-lazyLoad()       // loading="lazy"
+loading("lazy") // loading="lazy"
 eagerLoad()      // loading="eager"
-fetchPriority("high")
+fetchpriority("high")
 decoding("async")"""),
 
             h3Title("Figure and Caption"),
@@ -214,7 +214,7 @@ rangeInput("volume", 0, 100, 50)          // Slider
 rangeInput("opacity", 0, 100, 50, 5)     // Slider with step"""),
 
             docTip("Core elements (figure, dl, blockquote, fieldset, etc.) are available via El.* static import. " +
-                   "Specialized helpers (popoverToggleButton, responsiveImg, colorInput, rangeInput, etc.) " +
+                   "Typed input helpers (colorInput, rangeInput, etc.) " +
                    "require importing from their specific module: PopoverElements, PictureElements, or FormEnhancements.")
         );
     }

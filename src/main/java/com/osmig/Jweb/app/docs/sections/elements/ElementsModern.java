@@ -93,7 +93,7 @@ progress(attrs().value(70).set("max", "100"))
 progress(70, 100)  // 70% complete
 
 // Indeterminate (unknown completion)
-progressIndeterminate()  // Animated, no value
+progress()               // Animated, no value (indeterminate)
 
 // Styled with label
 div(class_("progress-container"),
@@ -167,17 +167,17 @@ form(attrs().set("oninput", "result.value = a.valueAsNumber + b.valueAsNumber"),
             para("Semantic elements for machine-readable dates and values."),
             codeBlock("""
 // Time with machine-readable datetime
-timeWithDatetime("2026-01-21", "January 21, 2026")
+time(datetime("2026-01-21"), "January 21, 2026")
 // Renders: <time datetime="2026-01-21">January 21, 2026</time>
 
 // Event time
 p("The concert starts at ",
-    timeWithDatetime("20:00", "8 PM"),
+    time(datetime("20:00"), "8 PM"),
     ".")
 
 // Duration
 p("Flight duration: ",
-    timeWithDatetime("PT2H30M", "2 hours 30 minutes")
+    time(datetime("PT2H30M"), "2 hours 30 minutes")
 )
 
 // Data (machine-readable value)
