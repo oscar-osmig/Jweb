@@ -45,6 +45,18 @@ its own import but lives at `jweb.js.*` with the same class name — e.g.
 wildcard-importing both can still be ambiguous for those. Convention: import `Actions.*` in
 page code and qualify `Js.` when you need the low-level layer.
 
+## Handlers take a `Func`
+
+Every `onXxx(...)` in the browser-API modules takes a `Func`. Some also accept a raw
+JavaScript `String`, but that form hides which parameter name the generated function
+uses, so prefer the explicit escape hatch when you need raw JS:
+
+```java
+callback("e").unsafeRaw("console.log(e.detail)")   // function(e){console.log(e.detail)}
+```
+
+That way the parameter name is written where the code that uses it is written.
+
 ## The standard form-submission pattern
 
 (The sample ContactPage now uses the zero-JS `swapForm(...)` fragment pattern instead — see
