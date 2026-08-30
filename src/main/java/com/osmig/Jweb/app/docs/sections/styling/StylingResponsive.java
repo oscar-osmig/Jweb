@@ -28,10 +28,13 @@ lg()        // min-width: 992px
 xl()        // min-width: 1200px
 xxl()       // min-width: 1400px
 
-// Device presets
-mobile()    // max-width: 767px
-tablet()    // 768px - 1023px
-desktop()   // min-width: 1024px"""),
+// One breakpoint set only. The mobile()/tablet()/desktop() presets are
+// deprecated: they overlapped xs()-xxl() with different pixel values, so
+// which set a page used changed where it broke.
+
+// Anything else: state the query
+media().maxWidth(px(900))
+media().minWidth(px(600)).maxWidth(px(1200))"""),
 
             h3Title("Responsive Example"),
             codeBlock("""

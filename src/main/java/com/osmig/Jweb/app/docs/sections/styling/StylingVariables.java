@@ -83,6 +83,8 @@ rule(".card")
     .border(px(1), solid, var("border-color"))"""),
 
             h3Title("Design System Builder"),
+            para("designSystem() is deprecated — Theme.create() is the one token builder. "
+                 + "The shape below still applies."),
             codeBlock("""
 // Generate design tokens
 String tokens = designSystem()

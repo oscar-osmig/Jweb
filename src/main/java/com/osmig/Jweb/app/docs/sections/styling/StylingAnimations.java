@@ -30,15 +30,15 @@ String bounceKeyframes = keyframes("bounce")
             h3Title("Using Animations"),
             codeBlock("""
 // Apply animation to element
-.animation(animName("fadeIn"), s(1), ease)
+.animation(anim("fadeIn"), s(1), ease)
 //          name, duration, timing
 
 // With all options
-.animationName(animName("bounce"))
+.animationName(anim("bounce"))
 .animationDuration(s(2))
 .animationTimingFunction(easeInOut)
 .animationDelay(ms(500))
-.animationIterationCount(iterationInfinite)
+.animationIterationCount(infinite)
 .animationDirection(directionAlternate)
 .animationFillMode(fillModeForwards)
 
@@ -46,50 +46,36 @@ String bounceKeyframes = keyframes("bounce")
 .prop("animation", "fadeIn 0.5s ease-out forwards")"""),
 
             h3Title("Pre-built Animations"),
-            para("40+ ready-to-use animations."),
+            para("Eleven ready-to-use animations. Each one has matching @keyframes in "
+                 + "Keyframes, so it animates as soon as you add that stylesheet."),
             codeBlock("""
-// Fade animations
+// Fade
 fadeIn(s(0.5))
 fadeOut(s(0.3))
-fadeInUp(s(0.6))
-fadeInDown(s(0.6))
-fadeInLeft(s(0.6))
-fadeInRight(s(0.6))
 
-// Slide animations
+// Slide
 slideInLeft(s(0.5))
 slideInRight(s(0.5))
-slideInUp(s(0.5))
-slideInDown(s(0.5))
-slideOutLeft(s(0.3))
-slideOutRight(s(0.3))
 
-// Scale animations
+// Scale
 zoomIn(s(0.5))
 zoomOut(s(0.5))
-scaleIn(s(0.5))
 pulse(s(1.5))
-heartbeat(s(1))
 
-// Bounce animations
+// Bounce / rotate
 bounce(s(1))
-bounceIn(s(0.8))
-bounceOut(s(0.8))
+spin(s(2))
 
-// Rotate animations
-rotate360(s(2))
-rotateIn(s(1))
-flipX(s(1))
-flipY(s(1))
-
-// Attention seekers
+// Attention
 shake(s(0.5))
-wobble(s(1))
-jello(s(1))
-swing(s(1))
-rubberBand(s(1))
-flash(s(0.5))
-tada(s(1))"""),
+
+// Add the matching keyframes to your stylesheet:
+stylesheet().add(Keyframes.fadeIn()).add(Keyframes.spin())
+
+// For anything else, write the keyframes and name them:
+keyframes("wobble")
+    .from(style().transform("rotate(-3deg)"))
+    .to(style().transform("rotate(3deg)"))"""),
 
             h3Title("Animation Usage"),
             codeBlock("""
@@ -100,45 +86,45 @@ style()
 // With modifiers
 style()
     .prop("animation",
-        slideInUp(s(0.6))
+        slideInLeft(s(0.6))
             .delay(ms(200))
-            .timing(timingEaseOut)
+            .timing(easeOut)
     )
 
 // Infinite animation
 style()
     .prop("animation",
         pulse(s(1.5))
-            .iterationCount(iterationInfinite)
+            .iterationCount(infinite)
     )
 
 // Multiple animations at once
 style()
-    .animationName(composeAnimations("fadeInUp", "bounce"))
+    .animationName(composeAnimations("fadeIn", "bounce"))
     .animationDuration(s(0.5))"""),
 
             h3Title("Timing Functions"),
             codeBlock("""
-// Standard easing
-timingEase           // Default easing
-timingLinear         // Constant speed
-timingEaseIn         // Slow start
-timingEaseOut        // Slow end
-timingEaseInOut      // Slow start and end
+// Standard easing — the CSS keyword names
+ease                 // Default easing
+linear               // Constant speed
+easeIn               // Slow start
+easeOut              // Slow end
+easeInOut            // Slow start and end
 
 // Custom bezier curve
-timingCubicBezier(0.4, 0, 0.2, 1)
+cubicBezier(0.4, 0, 0.2, 1)
 
 // Steps (frame-by-frame)
-timingSteps(5, "end")
-timingStepStart
-timingStepEnd"""),
+steps(5, "end")
+stepStart
+stepEnd"""),
 
             h3Title("Animation State"),
             codeBlock("""
 // Pause/play
-.animationPlayState(playStatePaused)
-.animationPlayState(playStateRunning)
+.animationPlayState(paused)
+.animationPlayState(running)
 
 // Fill mode (final state)
 .animationFillMode(fillModeForwards)  // Keep end state
