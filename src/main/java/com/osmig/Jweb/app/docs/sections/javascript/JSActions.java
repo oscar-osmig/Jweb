@@ -171,7 +171,7 @@ String targetUrl = whenVar("status")
     .equals("approved").thenUrl("/success")
     .elseUrl("/pending");
 
-assignVar("nextUrl", targetUrl)""")
+assign("nextUrl", targetUrl)""")
         );
     }
 }

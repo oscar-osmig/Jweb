@@ -21,12 +21,12 @@ fetch("/api/items/").appendVar("itemId")
 
 // URL from expression
 fetch("").urlFromVar("apiEndpoint + '/search?q=' + query")
-    .ok(assignVar("results", "_data"))
+    .ok(assign("results", "_data"))
 // Generates: fetch(apiEndpoint + '/search?q=' + query)
 
 // Multiple parameters
 fetch("").urlFromVar("'/api/users/' + userId + '/posts'")
-    .ok(assignVar("posts", "_data"))
+    .ok(assign("posts", "_data"))
 // Generates: fetch('/api/users/' + userId + '/posts')"""),
 
             h3Title("Dynamic Headers"),

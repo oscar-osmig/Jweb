@@ -14,7 +14,7 @@ public final class JSCore {
             h3Title("DOM Access"),
             codeBlock("""
 // Get element by ID
-getElem("myId")           // document.getElementById('myId')
+byId("myId")           // document.getElementById('myId')
 $("myId")                 // Shorthand
 
 // Query selectors
@@ -22,45 +22,45 @@ query(".my-class")        // document.querySelector('.my-class')
 queryAll(".items")        // document.querySelectorAll('.items')
 
 // Element manipulation
-getElem("btn")
+byId("btn")
     .addClass("active")
     .removeClass("disabled")
     .setAttribute("data-id", "123")
     .setStyle("color", "red")
 
 // Content
-getElem("output").setText(variable("result"))
-getElem("container").setHtml(variable("template"))
+byId("output").setText(v("result"))
+byId("container").setHtml(v("template"))
 
 // Visibility
-getElem("modal").show()
-getElem("tooltip").hide()"""),
+byId("modal").show()
+byId("tooltip").hide()"""),
 
             h3Title("Control Flow"),
             codeBlock("""
 // If/else
 func("checkAge", "age")
-    .if_(variable("age").gte(18))
-        .then_(ret(str("adult")))
-    .else_(ret(str("minor")))
+    .if_(v("age").gte(18))
+        .then_(return_(str("adult")))
+    .else_(return_(str("minor")))
 
 // For loop
 func("sum", "items")
     .let_("total", 0)
-    .forOf("item", variable("items"))
-        .body(variable("total").addAssign(variable("item")))
+    .forOf("item", v("items"))
+        .body(v("total").addAssign(v("item")))
     .endFor()
-    .ret(variable("total"))
+    .return_(v("total"))
 
 // While loop
 func("countdown", "n")
-    .while_(variable("n").gt(0))
-        .body("n--", call("console.log", variable("n")))
+    .while_(v("n").gt(0))
+        .body("n--", call("console.log", v("n")))
     .endWhile()
 
 // Switch
 func("handleAction", "action")
-    .switch_(variable("action"))
+    .switch_(v("action"))
         .case_("add").then_(call("add"), "break")
         .case_("remove").then_(call("remove"), "break")
         .default_().then_(call("noop"))
@@ -70,18 +70,18 @@ func("handleAction", "action")
             para("30+ fluent array operations."),
             codeBlock("""
 // Filter and map
-variable("items")
-    .filter(callback("x").ret(variable("x").gt(5)))
-    .map(callback("x").ret(variable("x").times(2)))
+v("items")
+    .filter(callback("x").return_(v("x").gt(5)))
+    .map(callback("x").return_(v("x").times(2)))
     .join(", ")
 
 // Find
-variable("users")
-    .find(callback("u").ret(variable("u").dot("id").eq(userId)))
+v("users")
+    .find(callback("u").return_(v("u").dot("id").eq(userId)))
 
 // Reduce
-variable("numbers").reduce(
-    callback("acc", "n").ret(variable("acc").plus(variable("n"))),
+v("numbers").reduce(
+    callback("acc", "n").return_(v("acc").plus(v("n"))),
     0
 )
 
@@ -102,7 +102,7 @@ variable("numbers").reduce(
             h3Title("String Methods"),
             para("20+ string operations."),
             codeBlock("""
-variable("text")
+v("text")
     .substring(0, 10)
     .toLowerCase()
     .trim()
@@ -124,45 +124,45 @@ variable("text")
             h3Title("Object Methods"),
             codeBlock("""
 // Get properties
-variable("obj").keys()      // Object.keys(obj)
-variable("obj").values()    // Object.values(obj)
-variable("obj").entries()   // Object.entries(obj)
+v("obj").keys()      // Object.keys(obj)
+v("obj").values()    // Object.values(obj)
+v("obj").entries()   // Object.entries(obj)
 
 // Check property
-variable("obj").hasOwnProperty("key")
+v("obj").hasOwnProperty("key")
 
 // Static methods
-objectAssign(variable("target"), variable("source"))
-objectFreeze(variable("config"))
-objectFromEntries(variable("entries"))"""),
+objectAssign(v("target"), v("source"))
+objectFreeze(v("config"))
+objectFromEntries(v("entries"))"""),
 
             h3Title("Operators"),
             codeBlock("""
 // Comparison
-variable("a").eq(variable("b"))    // a === b
-variable("a").neq(variable("b"))   // a !== b
-variable("a").gt(5)                // a > 5
-variable("a").gte(5)               // a >= 5
-variable("a").lt(10)               // a < 10
-variable("a").lte(10)              // a <= 10
+v("a").eq(v("b"))    // a === b
+v("a").neq(v("b"))   // a !== b
+v("a").gt(5)                // a > 5
+v("a").gte(5)               // a >= 5
+v("a").lt(10)               // a < 10
+v("a").lte(10)              // a <= 10
 
 // Logical
-variable("a").and(variable("b"))   // a && b
-variable("a").or(variable("b"))    // a || b
-variable("flag").not()             // !flag
+v("a").and(v("b"))   // a && b
+v("a").or(v("b"))    // a || b
+v("flag").not()             // !flag
 
 // Arithmetic
-variable("a").plus(variable("b"))  // a + b
-variable("a").minus(5)             // a - 5
-variable("a").times(2)             // a * 2
-variable("a").div(10)              // a / 10
-variable("a").mod(2)               // a % 2
+v("a").plus(v("b"))  // a + b
+v("a").minus(5)             // a - 5
+v("a").times(2)             // a * 2
+v("a").div(10)              // a / 10
+v("a").mod(2)               // a % 2
 
 // Optional chaining
-optionalChain(variable("user"), "address", "city")  // user?.address?.city
+optionalChain(v("user"), "address", "city")  // user?.address?.city
 
 // Nullish coalescing
-nullishCoalesce(variable("name"), str("Anonymous"))  // name ?? 'Anonymous'""")
+nullishCoalesce(v("name"), str("Anonymous"))  // name ?? 'Anonymous'""")
         );
     }
 }

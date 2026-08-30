@@ -19,7 +19,7 @@ import static jweb.js.JSIndexedDB.*;
 // Open a database (creates if not exists)
 openDB("myApp", 1)
     .onUpgrade(callback("db").raw(
-        createStore(variable("db"), "users")
+        createStore(v("db"), "users")
             .keyPath("id").autoIncrement()
             .index("email", "email")
             .uniqueIndex("username", "username")
@@ -29,18 +29,18 @@ openDB("myApp", 1)
     .build()
 
 // Transaction: add and read data
-transaction(variable("db"), "users", "readwrite")
+transaction(v("db"), "users", "readwrite")
     .put(obj("id", 1, "name", str("John")))
     .getAll()
-    .onComplete(callback("results").log(variable("results")))
+    .onComplete(callback("results").log(v("results")))
     .build()
 
 // Cursor iteration with key range
-cursorQuery(variable("db"), "users")
+cursorQuery(v("db"), "users")
     .index("email")
     .bound("a", "m")
     .onEach(callback("cursor")
-        .log(variable("cursor").dot("value")))
+        .log(v("cursor").dot("value")))
     .build()
 
 // Delete a database
@@ -66,7 +66,7 @@ go(-2)  // Go back 2 steps
 
 // Listen for back/forward navigation
 onPopState(callback("e")
-    .log(variable("e").dot("state")))
+    .log(v("e").dot("state")))
 
 // Navigation guard (prompt before leaving)
 navigationGuard("You have unsaved changes. Leave?")
@@ -83,7 +83,7 @@ queryParamsObject()             // All params as object"""),
 import static jweb.js.JSDragDrop.*;
 
 // Make an element draggable
-draggable("card-1")
+draggable(byId("card-1"))
     .data("text/plain", "Card 1 data")
     .effectAllowed("move")
     .onDragStart(callback("e").log(str("dragging")))
@@ -91,18 +91,18 @@ draggable("card-1")
     .build()
 
 // Create a drop zone
-dropZone("drop-area")
+dropZone(byId("drop-area"))
     .dropEffect("move")
     .onDrop(callback("e")
-        .log(getData(variable("e"), "text/plain")))
+        .log(getData(v("e"), "text/plain")))
     .onDragEnter(callback("e")
         .log(str("entered drop zone")))
     .build()
 
 // DataTransfer helpers
-getData(variable("e"), "text/plain")
-getFiles(variable("e"))
-getTypes(variable("e"))"""),
+getData(v("e"), "text/plain")
+getFiles(v("e"))
+getTypes(v("e"))"""),
 
             h3Title("Pointer Events"),
             para("Unified mouse, touch, and pen input handling."),
@@ -110,28 +110,28 @@ getTypes(variable("e"))"""),
 import static jweb.js.JSPointer.*;
 
 // Listen for pointer events
-onPointerDown("canvas", callback("e")
-    .log(pointerId(variable("e"))))
-onPointerMove("canvas", callback("e")
-    .log(pressure(variable("e"))))
-onPointerUp("canvas", callback("e")
+onPointerDown(byId("canvas"), callback("e")
+    .log(pointerId(v("e"))))
+onPointerMove(byId("canvas"), callback("e")
+    .log(pressure(v("e"))))
+onPointerUp(byId("canvas"), callback("e")
     .log(str("released")))
 
 // Capture pointer (receive events outside element)
-setPointerCapture("slider", variable("e").dot("pointerId"))
-releasePointerCapture("slider", variable("e").dot("pointerId"))
+setPointerCapture(byId("slider"), v("e").dot("pointerId"))
+releasePointerCapture(byId("slider"), v("e").dot("pointerId"))
 
 // Access pointer properties
-pointerId(variable("e"))      // Unique pointer ID
-pointerType(variable("e"))    // "mouse", "touch", "pen"
-pressure(variable("e"))       // 0.0 to 1.0
-tiltX(variable("e"))          // Pen tilt angle
-isPrimary(variable("e"))      // Is primary pointer?
+pointerId(v("e"))      // Unique pointer ID
+pointerType(v("e"))    // "mouse", "touch", "pen"
+pressure(v("e"))       // 0.0 to 1.0
+tiltX(v("e"))          // Pen tilt angle
+isPrimary(v("e"))      // Is primary pointer?
 
 // Multi-pointer tracking (pinch, multi-touch)
-multiPointerTracker("canvas")
+multiPointerTracker(byId("canvas"))
     .onMove(callback("pointers")
-        .log(variable("pointers").dot("size")))
+        .log(v("pointers").dot("size")))
     .build()"""),
 
             h3Title("Web Speech"),
@@ -160,19 +160,19 @@ recognizer()
     .continuous(true)
     .interimResults(true)
     .onResult(callback("e")
-        .log(transcript(variable("e"))))
+        .log(transcript(v("e"))))
     .onError(callback("e")
-        .log(variable("e").dot("error")))
+        .log(v("e").dot("error")))
     .build("recognizer")
 
 // Control recognition
-startRecognition(variable("recognizer"))
-stopRecognition(variable("recognizer"))
+startRecognition(v("recognizer"))
+stopRecognition(v("recognizer"))
 
 // Result helpers
-transcript(variable("e"))     // Get text result
-confidence(variable("e"))     // Confidence score
-isFinal(variable("e"))        // Is result final?"""),
+transcript(v("e"))     // Get text result
+confidence(v("e"))     // Confidence score
+isFinal(v("e"))        // Is result final?"""),
 
             docTip("IndexedDB and Speech APIs require user permission or HTTPS. " +
                    "Always check for browser support with feature detection before using these APIs.")

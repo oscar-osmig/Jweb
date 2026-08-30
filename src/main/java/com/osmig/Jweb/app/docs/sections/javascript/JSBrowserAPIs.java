@@ -32,8 +32,8 @@ session().get("temp")
 
 // Cross-tab communication
 onStorageChange(callback("e")
-    .if_(variable("e").dot("key").eq("theme"),
-        call("updateTheme", variable("e").dot("newValue")))
+    .if_(v("e").dot("key").eq("theme"),
+        call("updateTheme", v("e").dot("newValue")))
 )"""),
 
             h3Title("WebSocket"),
@@ -44,19 +44,19 @@ import static jweb.js.JSWebSocket.*;
 webSocket("/ws/chat")
     .onOpen(callback().log("Connected"))
     .onMessage(callback("e")
-        .call("handleMessage", variable("e").dot("data"))
+        .call("handleMessage", v("e").dot("data"))
     )
     .onClose(callback().log("Disconnected"))
-    .onError(callback("e").log(variable("e")))
+    .onError(callback("e").log(v("e")))
     .autoReconnect(3000)  // Auto-reconnect every 3s
     .build("ws")
 
 // Send messages
-send(variable("ws"), variable("message"))
-sendJson(variable("ws"), obj("type", "chat", "text", variable("msg")))
+send(v("ws"), v("message"))
+sendJson(v("ws"), obj("type", "chat", "text", v("msg")))
 
 // Close
-close(variable("ws"))"""),
+close(v("ws"))"""),
 
             h3Title("Clipboard"),
             codeBlock("""
@@ -70,7 +70,7 @@ copyElementText("code-snippet")
 copyElementValue("share-url")
 
 // Read (returns promise)
-readText().then(callback("text").log(variable("text")))"""),
+readText().then(callback("text").log(v("text")))"""),
 
             h3Title("Notifications"),
             codeBlock("""
@@ -96,17 +96,17 @@ import static jweb.js.JSGeolocation.*;
 // Get current position
 getCurrentPosition()
     .onSuccess(callback("pos")
-        .let_("lat", variable("pos").dot("coords").dot("latitude"))
-        .let_("lng", variable("pos").dot("coords").dot("longitude"))
-        .call("showOnMap", variable("lat"), variable("lng"))
+        .let_("lat", v("pos").dot("coords").dot("latitude"))
+        .let_("lng", v("pos").dot("coords").dot("longitude"))
+        .call("showOnMap", v("lat"), v("lng"))
     )
-    .onError(callback("err").log(variable("err")))
+    .onError(callback("err").log(v("err")))
     .build()
 
 // Watch position (continuous updates)
 watchPosition()
     .onSuccess(callback("pos")
-        .call("updatePosition", variable("pos").dot("coords"))
+        .call("updatePosition", v("pos").dot("coords"))
     )
     .build("watchId")"""),
 
@@ -132,7 +132,7 @@ canShare()   // boolean Val for use in conditions"""),
 import static jweb.js.JSFullscreen.*;
 
 // Enter fullscreen
-requestFullscreen(variable("videoElem"))
+requestFullscreen(v("videoElem"))
 
 // Exit fullscreen
 exitFullscreen()
@@ -166,7 +166,7 @@ import static jweb.js.JSObservers.*;
 // IntersectionObserver (lazy loading, infinite scroll)
 intersection()
     .onIntersect(callback("entries")
-        .call("lazyLoadVisible", variable("entries"))
+        .call("lazyLoadVisible", v("entries"))
     )
     .threshold(0.5)
     .observe("hero-img", "heroObserver")
@@ -174,14 +174,14 @@ intersection()
 // ResizeObserver
 resize()
     .onResize(callback("entries")
-        .call("handleResize", variable("entries"))
+        .call("handleResize", v("entries"))
     )
     .observe("container", "containerObserver")
 
 // MutationObserver
 mutation()
     .onMutate(callback("mutations")
-        .call("handleDOMChanges", variable("mutations"))
+        .call("handleDOMChanges", v("mutations"))
     )
     .childList()
     .subtree()

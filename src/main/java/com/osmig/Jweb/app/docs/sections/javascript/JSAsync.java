@@ -19,10 +19,10 @@ await_(fetch("/api/data").ok(processData()))
 // Async function
 asyncFunc("loadDashboard")
     .does(
-        assignVar("isLoading", "true"),
-        await_(fetch("/api/user").ok(assignVar("user", "_data"))),
-        await_(fetch("/api/stats").ok(assignVar("stats", "_data"))),
-        assignVar("isLoading", "false"),
+        assign("isLoading", "true"),
+        await_(fetch("/api/user").ok(assign("user", "_data"))),
+        await_(fetch("/api/stats").ok(assign("stats", "_data"))),
+        assign("isLoading", "false"),
         call("renderDashboard")
     )"""),
 
@@ -38,7 +38,7 @@ asyncTry(
 ))
 .finally_(all(
     hide("loading"),
-    assignVar("isLoading", "false")
+    assign("isLoading", "false")
 ))"""),
 
             h3Title("Promise.all"),
@@ -46,9 +46,9 @@ asyncTry(
             codeBlock("""
 // Parallel requests
 promiseAll(
-    fetch("/api/users").ok(assignVar("users", "_data")),
-    fetch("/api/posts").ok(assignVar("posts", "_data")),
-    fetch("/api/comments").ok(assignVar("comments", "_data"))
+    fetch("/api/users").ok(assign("users", "_data")),
+    fetch("/api/posts").ok(assign("posts", "_data")),
+    fetch("/api/comments").ok(assign("comments", "_data"))
 )
 
 // With error handling
@@ -57,8 +57,8 @@ asyncFunc("loadAll")
         show("loading"),
         asyncTry(
             promiseAll(
-                fetch("/api/a").ok(assignVar("a", "_data")),
-                fetch("/api/b").ok(assignVar("b", "_data"))
+                fetch("/api/a").ok(assign("a", "_data")),
+                fetch("/api/b").ok(assign("b", "_data"))
             ),
             call("renderAll")
         )
@@ -84,7 +84,7 @@ asyncFunc("showWithDelay")
 asyncFunc("search")
     .params("query")
     .does(
-        assignVar("searchQuery", "query"),
+        assign("searchQuery", "query"),
         sleep(300)
     )
     .raw("if(searchQuery !== query) return;")

@@ -19,18 +19,18 @@ import static jweb.js.JSPromise.*;
 promiseAll(
     fetch("/api/users").get().toVal(),
     fetch("/api/posts").get().toVal()
-).then(callback("results").call("renderAll", variable("results")))
+).then(callback("results").call("renderAll", v("results")))
 
 promiseRace(promise1, promise2)  // First to finish
 promiseAny(promise1, promise2)   // First successful
 promiseAllSettled(promises)      // All, regardless of success
 
 // Retry with exponential backoff
-retry(variable("apiCall"), 3)    // Max 3 attempts
+retry(v("apiCall"), 3)    // Max 3 attempts
     .delay(1000)                 // 1s initial delay
     .exponentialBackoff()        // Double delay each retry
-    .onRetry(callback("attempt").log("Retry:", variable("attempt")))
-    .shouldRetry(callback("err").ret(variable("err").dot("status").eq(503)))
+    .onRetry(callback("attempt").log("Retry:", v("attempt")))
+    .shouldRetry(callback("err").return_(v("err").dot("status").eq(503)))
     .build()
 
 // Timeout
@@ -50,15 +50,15 @@ import static jweb.js.JSWorker.*;
 
 // Create dedicated worker
 worker("/worker.js")
-    .onMessage(callback("e").call("handleResult", variable("e").dot("data")))
-    .onError(callback("err").log(variable("err")))
+    .onMessage(callback("e").call("handleResult", v("e").dot("data")))
+    .onError(callback("err").log(v("err")))
     .build("worker")
 
 // Send data to worker
-postMessage(variable("worker"), obj("task", "compute", "data", bigData))
+postMessage(v("worker"), obj("task", "compute", "data", bigData))
 
 // Terminate worker
-terminate(variable("worker"))
+terminate(v("worker"))
 
 // SharedWorker (multiple tabs)
 sharedWorker("/shared-worker.js").build("sw")"""),
@@ -70,14 +70,14 @@ import static jweb.js.JSServiceWorker.*;
 // Register service worker
 register("/sw.js")
     .onSuccess(callback("reg").log("SW registered"))
-    .onError(callback("err").log(variable("err")))
+    .onError(callback("err").log(v("err")))
     .build()
 
 // Check for updates
-update(variable("registration"))
+update(v("registration"))
 
 // Unregister
-unregister(variable("registration"))"""),
+unregister(v("registration"))"""),
 
             h3Title("Web Crypto"),
             codeBlock("""
@@ -88,16 +88,16 @@ randomUUID()     // UUID v4
 randomBytes(16)  // Random bytes
 
 // Hashing
-sha256(variable("data"))  // Returns promise
-digest().sha512().data(variable("data")).build()
+sha256(v("data"))  // Returns promise
+digest().sha512().data(v("data")).build()
 
 // Encryption (AES-GCM)
-encrypt().aesGcm(variable("key"), variable("iv"))
-    .data(variable("data"))
+encrypt().aesGcm(v("key"), v("iv"))
+    .data(v("data"))
     .build()
 
-decrypt().aesGcm(variable("key"), variable("iv"))
-    .data(variable("encrypted"))
+decrypt().aesGcm(v("key"), v("iv"))
+    .data(v("encrypted"))
     .build()
 
 // Generate key
@@ -108,27 +108,27 @@ generateKey().aesGcm(256).build()"""),
 import static jweb.js.JSCanvas.*;
 
 // Get context
-getContext2D(variable("canvas"))
+getContext2D(v("canvas"))
 
 // Drawing
-fillRect(variable("ctx"), 0, 0, 100, 100)
-strokeRect(variable("ctx"), 10, 10, 80, 80)
-clearRect(variable("ctx"), 0, 0, width, height)
+fillRect(v("ctx"), 0, 0, 100, 100)
+strokeRect(v("ctx"), 10, 10, 80, 80)
+clearRect(v("ctx"), 0, 0, width, height)
 
 // Text
-fillText(variable("ctx"), str("Hello"), 50, 50)
-strokeText(variable("ctx"), str("World"), 50, 80)
+fillText(v("ctx"), str("Hello"), 50, 50)
+strokeText(v("ctx"), str("World"), 50, 80)
 
 // Path
-beginPath(variable("ctx"))
-moveTo(variable("ctx"), 0, 0)
-lineTo(variable("ctx"), 100, 100)
-arc(variable("ctx"), 50, 50, 30, 0, Math.PI * 2)
-stroke(variable("ctx"))
-fill(variable("ctx"))
+beginPath(v("ctx"))
+moveTo(v("ctx"), 0, 0)
+lineTo(v("ctx"), 100, 100)
+arc(v("ctx"), 50, 50, 30, 0, Math.PI * 2)
+stroke(v("ctx"))
+fill(v("ctx"))
 
 // Image
-drawImage(variable("ctx"), variable("img"), 0, 0)"""),
+drawImage(v("ctx"), v("img"), 0, 0)"""),
 
             h3Title("Performance API"),
             codeBlock("""
@@ -153,17 +153,17 @@ clearMeasures()"""),
 import static jweb.js.JSJson.*;
 
 // Parse/stringify
-parse(variable("jsonString"))
-stringify(variable("obj"))
-stringify(variable("obj"), 2)  // pretty-printed
-safeParse(variable("jsonString"), obj())  // with fallback
+parse(v("jsonString"))
+stringify(v("obj"))
+stringify(v("obj"), 2)  // pretty-printed
+safeParse(v("jsonString"), obj())  // with fallback
 
 // FormData
 import static jweb.js.JSFormData.*;
 
 formData("checkout-form")   // from a form element
 formData()                  // empty FormData
-append(variable("fd"), "key", str("value"))
+append(v("fd"), "key", str("value"))
 
 // URL
 import static jweb.js.JSUrl.*;
@@ -177,15 +177,15 @@ pathname(url("/path?q=search"))"""),
 import static jweb.js.JSIntl.*;
 
 // Number formatting
-formatCurrency(variable("amount"), "USD", "en-US")
+formatCurrency(v("amount"), "USD", "en-US")
 // Output: $1,234.56
 
-formatNumber(variable("num"), "en-US")
-formatPercent(variable("ratio"), "en-US")
-formatCompact(variable("big"), "en-US")   // 1.2M
+formatNumber(v("num"), "en-US")
+formatPercent(v("ratio"), "en-US")
+formatCompact(v("big"), "en-US")   // 1.2M
 
 // Date formatting
-formatDateTime(variable("date"), "en-US", "long", "short")
+formatDateTime(v("date"), "en-US", "long", "short")
 // Output: January 21, 2026 at 3:30 PM
 
 // Relative time

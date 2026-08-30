@@ -17,7 +17,7 @@ public final class JSEvents {
 // Delegate clicks within a container
 delegate("todo-list", "click", "li")
     .handler(callback("e", "target")
-        .call("toggleTodo", variable("target").dot("dataset").dot("id"))
+        .call("toggleTodo", v("target").dot("dataset").dot("id"))
     )
 
 // Works for dynamically added items
@@ -32,7 +32,7 @@ Val debounced = debounce("searchTimer", 300).wrap(
 );
 
 // Attach it inside an input listener
-getElem("search-input").addEventListener("input",
+byId("search-input").addEventListener("input",
     callback("e").raw(debounced.js())
 )"""),
 
@@ -44,7 +44,7 @@ Val throttled = throttle("scrollLast", 100).wrap(
     callback().call("updateScrollPosition")
 );
 
-getElem("feed").addEventListener("scroll",
+byId("feed").addEventListener("scroll",
     callback("e").raw(throttled.js())
 )"""),
 
@@ -72,7 +72,7 @@ onKey("ArrowRight", callback().call("nextItem"))"""),
             h3Title("Touch & Swipe"),
             codeBlock("""
 // Swipe gestures
-swipe(variable("carousel"))
+swipe(v("carousel"))
     .threshold(100)  // Minimum distance in pixels
     .onLeft(callback().call("nextSlide"))
     .onRight(callback().call("prevSlide"))
@@ -81,9 +81,9 @@ swipe(variable("carousel"))
     .build()
 
 // Touch events
-onTouchStart(getElem("canvas"), callback("e")
-    .let_("touch", firstTouch(variable("e")))
-    .call("startDrag", variable("touch"))
+onTouchStart(byId("canvas"), callback("e")
+    .let_("touch", firstTouch(v("e")))
+    .call("startDrag", v("touch"))
 )"""),
 
             h3Title("Server-Sent Events (SSE)"),
@@ -92,8 +92,8 @@ onTouchStart(getElem("canvas"), callback("e")
 // Connect to SSE endpoint
 sse("/api/notifications")
     .onMessage(callback("e")
-        .let_("data", JSJson.parse(variable("e").dot("data")))
-        .call("showNotification", variable("data"))
+        .let_("data", JSJson.parse(v("e").dot("data")))
+        .call("showNotification", v("data"))
     )
     .onError(callback()
         .log("SSE connection error")
@@ -110,31 +110,31 @@ sse("/api/events")
             codeBlock("""
 // Create and dispatch custom event (target element first)
 dispatchCustomEvent(
-    getElem("item-list"),
+    byId("item-list"),
     "item-selected",
     obj("id", itemId, "name", itemName)
 )
 
 // Listen for custom event
-onCustomEvent(getElem("item-list"), "item-selected", callback("e")
-    .call("handleSelection", eventDetail(variable("e")))
+onCustomEvent(byId("item-list"), "item-selected", callback("e")
+    .call("handleSelection", eventDetail(v("e")))
 )"""),
 
             h3Title("Event Utilities"),
             codeBlock("""
 // Prevent default behavior
-preventDefault(variable("event"))
+preventDefault(v("event"))
 
 // Stop propagation
-stopPropagation(variable("event"))
+stopPropagation(v("event"))
 
 // Once - remove after first call
-once(getElem("button"), "click", callback()
+once(byId("button"), "click", callback()
     .call("initializeOnce")
 )
 
 // Remove listener
-getElem("button").removeEventListener("click", variable("handler"))""")
+byId("button").removeEventListener("click", v("handler"))""")
         );
     }
 }

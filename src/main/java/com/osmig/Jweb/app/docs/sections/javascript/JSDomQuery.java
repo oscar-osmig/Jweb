@@ -14,32 +14,32 @@ public final class JSDomQuery {
 import static jweb.Actions.*;
 
 // Query single element
-query("#status")
+dom("#status")
     .setText("Updated!")
     .addClass("success")
 
 // Query with attribute selector
-query("[data-active='true']")
+dom("[data-active='true']")
     .removeClass("hidden")
     .addClass("visible")"""),
 
             h3Title("Chained Operations"),
             para("Chain multiple operations on selected elements."),
             codeBlock("""
-query("#user-panel")
+dom("#user-panel")
     .removeClass("loading")
     .addClass("loaded")
     .attr("data-ready", "true")
     .show()
 
 // Style manipulation
-query(".card")
+dom(".card")
     .style("background", "#f0f0f0")
     .style("border-radius", "8px")
     .addClass("elevated")
 
 // Content manipulation
-query("#message")
+dom("#message")
     .setText("Hello, World!")
     .removeClass("error")
     .addClass("success")"""),
@@ -48,34 +48,34 @@ query("#message")
             para("Select and manipulate multiple elements."),
             codeBlock("""
 // Query all matching elements
-queryAll(".notification").addClass("fade-out")
+domAll(".notification").addClass("fade-out")
 
 // Hide all items
-queryAll(".list-item").hide()
+domAll(".list-item").hide()
 
 // Toggle class on all
-queryAll(".tab").removeClass("active")
+domAll(".tab").removeClass("active")
 
 // Then activate one
-query("#tab-1")
+dom("#tab-1")
     .addClass("active")"""),
 
             h3Title("Element State"),
             para("Check and modify element state."),
             codeBlock("""
 // Visibility
-query("#modal").show()
-query("#modal").hide()
+dom("#modal").show()
+dom("#modal").hide()
 toggle("panel")  // toggle by element id
 
 // Classes
-query("#btn")
+dom("#btn")
     .addClass("loading")
     .removeClass("enabled")
     .toggleClass("expanded")
 
 // Attributes
-query("#input")
+dom("#input")
     .attr("disabled", "true")
     .attr("placeholder", "Enter value...")
     .removeAttr("readonly")"""),
@@ -86,19 +86,19 @@ query("#input")
 windowFunc("togglePanel")
     .does(
         toggle("panel"),
-        query("#toggle-btn").toggleClass("active")
+        dom("#toggle-btn").toggleClass("active")
     )
 
 onClick("search-btn").then(all(
-    query("#search-input").addClass("loading"),
+    dom("#search-input").addClass("loading"),
     fetch("/api/search?q=").appendVar("searchQuery")
         .ok(all(
-            query("#results").setHtmlExpr("_data.html"),
-            query("#search-input").removeClass("loading")
+            dom("#results").setHtml(response("html")),
+            dom("#search-input").removeClass("loading")
         ))
 ))"""),
 
-            docTip("Use query() for single elements, queryAll() when you need to operate on multiple.")
+            docTip("Use dom() for a single element, domAll() to operate on many.")
         );
     }
 }
