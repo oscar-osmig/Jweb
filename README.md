@@ -153,7 +153,7 @@ app.post("/contact/submit", ctx -> {
 });
 ```
 
-For richer client behavior the JS DSL is still there (`script().add(onSubmit(...)...)`) —
+For richer client behavior the JS DSL is still there (`actions().add(onSubmit(...)...)`) —
 see [JavaScript DSL](./readme/javascript-dsl.md).
 
 ---
