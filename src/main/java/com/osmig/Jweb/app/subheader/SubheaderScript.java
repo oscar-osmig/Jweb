@@ -50,7 +50,10 @@ public final class SubheaderScript {
                         const padding = isH3 ? '0.5rem 0.75rem 0.5rem 1.5rem' : '0.5rem 0.75rem';
                         const fontSize = isH3 ? '0.8rem' : '0.875rem';
 
-                        link.style.cssText = 'display: block; padding: ' + padding + '; border-radius: 6px; font-size: ' + fontSize + '; color: #64748b; text-decoration: none; transition: all 0.15s ease;';
+                        // overflow-wrap keeps a heading whose single longest token
+                        // is wider than the rail (a path, a URL) from pushing that
+                        // token to its own line and stranding the number above it.
+                        link.style.cssText = 'display: block; overflow-wrap: break-word; padding: ' + padding + '; border-radius: 6px; font-size: ' + fontSize + '; color: #64748b; text-decoration: none; transition: all 0.15s ease;';
 
                         link.addEventListener('click', function(e) {
                             e.preventDefault();

@@ -16,7 +16,13 @@ public class SubheaderSidebar implements Template {
     @Override
     public Element render() {
         return aside(attrs().id("subheader-sidebar").class_("subheader-sidebar").style()
-                .width(px(220))
+                // 260, not 220: at 220 a link had 139px of text width, so the
+                // longest heading ("5. pages/HomePage.java", 159px) could not fit
+                // its filename token on the first line and the list number was
+                // left stranded alone above it. 260 also clears the widest token
+                // in the whole doc set — "when().then().otherwise()" at 153px,
+                // which is an h3 and so indented 12px further than an h2.
+                .width(px(260))
                 .padding(SP_6)
                 .borderLeft(px(1), solid, BORDER)
                 .backgroundColor(hex("#fafafa"))
