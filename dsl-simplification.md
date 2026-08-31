@@ -116,6 +116,30 @@ Widget-level builders in `Actions` are deprecated as outside HTML/JS parity: `al
 
 ---
 
+## Builder style
+
+The DSL supports two styles and both reach the whole surface. Function style puts
+attributes and children in one call; builder style chains from an empty element:
+
+```java
+div(class_("card"), id("main"), p(text("Body")))     // function style
+div().class_("card").id("main").child(p().text("Body"))   // builder style
+```
+
+Builder style used to dead-end — `Tag` had 53 fluent methods against `Attributes`' 197, so
+`rel`, `tabindex`, `colspan`, `accept`, `targetBlank` and ~40 event handlers forced you back
+into varargs. Both classes now implement `HtmlAttributes<SELF>`, one interface whose default
+methods are built on a single `set(name, value)`. One definition, and a chain keeps its
+concrete type without casts.
+
+The same contract holds elsewhere and is pinned by tests: CSS chains keep their
+`StyleBuilder` type through typed *and* String values, every CSS builder ends in `build()`,
+and a whole JS script — `const`, `function`, `let`, `if`, `for-of`, `return` — is one
+unbroken chain. Three builders that could be chained but not finished from outside their
+package (`Async.AsyncFunc`, `JSWebAnimations.KeyframeBuilder`, and earlier `JS.Func`) are
+now public, and `JSPerformance`'s off-convention `buildCode`/`create` terminals point at
+`build()` and `buildWithoutObserving()`.
+
 ## Breaking
 
 Three changes are not compile errors, so they are worth checking for by hand:
@@ -129,6 +153,10 @@ Three changes are not compile errors, so they are worth checking for by hand:
    visible behaviour is unchanged.
 
 Everything else either still compiles with a deprecation warning, or fails loudly.
+
+The release as a whole is **source-compatible but not binary-compatible** — 139 element
+overloads were deleted and the attribute surface moved to an interface, so downstream code
+must be recompiled against the new jar rather than dropped in beside the old one.
 
 ## Deliberately not done
 

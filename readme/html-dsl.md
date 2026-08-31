@@ -62,6 +62,35 @@ import static jweb.el.DetailsHelper.*;       // details action helpers
 > The legacy imports (`com.osmig.Jweb.framework.elements.El` / `.Elements`) still
 > compile — they are `@Deprecated` aliases of the same methods.
 
+## Two styles, one surface
+
+The same element can be written either way, and both reach every attribute:
+
+```java
+// Function style — attributes and children in one call
+div(class_("card"), id("main"),
+    h1(text("Title")),
+    p(text("Body")))
+
+// Builder style — chain from an empty element
+div().class_("card").id("main")
+     .child(h1().text("Title"))
+     .child(p().text("Body"))
+```
+
+They produce identical HTML. Function style reads better when the structure is the point;
+builder style when the configuration is.
+
+`Tag` and `Attributes` share one definition of the attribute surface — the
+`HtmlAttributes` interface, whose defaults are all built on a single `set(name, value)` —
+so anything you can set on one you can set on the other, including every event handler.
+A chain also keeps its exact type, with no casts:
+
+```java
+Tag row = td().colspan(2).class_("num").text("42");
+Attributes a = attrs().rel("noopener").tabindex(1).targetBlank();
+```
+
 ## What `jweb.El` exports
 
 `El` is a pure static facade — each method is a one-line delegate to a category module (the
