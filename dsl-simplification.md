@@ -7,7 +7,7 @@ platform already taught you, and removing the places where the DSL guessed at yo
 Nothing was deleted without either a replacement or a compile error pointing at one. Old
 names still work unless listed under **Breaking** below.
 
-**191 tests pass** (107 before this pass; 84 added).
+**216 tests pass** (107 before this pass; 109 added).
 
 ---
 
