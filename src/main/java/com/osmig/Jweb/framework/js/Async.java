@@ -40,9 +40,9 @@ import static com.osmig.Jweb.framework.js.JS.*;
  *     fetch("/api/users").get().toVal(),
  *     fetch("/api/posts").get().toVal()
  * ).then(callback("results")
- *     .let_("users", variable("results").at(0))
- *     .let_("posts", variable("results").at(1))
- *     .call("render", variable("users"), variable("posts"))
+ *     .let_("users", v("results").at(0))
+ *     .let_("posts", v("results").at(1))
+ *     .call("render", v("users"), v("posts"))
  * ).build();
  * </pre>
  *
@@ -68,7 +68,7 @@ public class Async {
     /**
      * Creates a fetch request builder with a dynamic URL.
      *
-     * @param urlExpr the URL expression (e.g., variable("apiUrl"))
+     * @param urlExpr the URL expression (e.g., v("apiUrl"))
      * @return a FetchBuilder for configuring the request
      */
     public static FetchBuilder fetch(Val urlExpr) {
@@ -500,7 +500,8 @@ public class Async {
             return this;
         }
 
-        String toExpr() {
+        /** Renders this async function as an expression: {@code async function(a){...}} */
+    public String toExpr() {
             StringBuilder sb = new StringBuilder("async function(");
             sb.append(String.join(",", params)).append("){");
             for (String s : body) {
@@ -510,7 +511,8 @@ public class Async {
             return sb.append("}").toString();
         }
 
-        String toDecl() {
+        /** Renders this async function as a declaration: {@code async function name(a){...}} */
+    public String toDecl() {
             StringBuilder sb = new StringBuilder("async function ");
             if (name != null) sb.append(name);
             sb.append("(").append(String.join(",", params)).append("){");

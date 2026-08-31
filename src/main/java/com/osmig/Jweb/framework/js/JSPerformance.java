@@ -569,18 +569,23 @@ public class JSPerformance {
         }
 
         /**
-         * Builds the observer code as a string.
+         * Builds the observer but does not start observing — call
+         * {@code observer.observe(...)} yourself later.
          */
+        public Val buildWithoutObserving(String varName) {
+            return new Val("var " + varName + "=new PerformanceObserver(" + buildCallback() + ")");
+        }
+
+        /** @deprecated Use {@code build(varName).js()} — every builder terminates with build(). */
+        @Deprecated
         public String buildCode(String varName) {
             return build(varName).js();
         }
 
-        /**
-         * Creates observer without starting observation.
-         * Use this if you want to manually call observe() later.
-         */
+        /** @deprecated Renamed to {@link #buildWithoutObserving(String)}, which says what it does. */
+        @Deprecated
         public Val create(String varName) {
-            return new Val("var " + varName + "=new PerformanceObserver(" + buildCallback() + ")");
+            return buildWithoutObserving(varName);
         }
     }
 

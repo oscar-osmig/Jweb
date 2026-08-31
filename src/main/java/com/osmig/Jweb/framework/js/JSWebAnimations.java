@@ -178,7 +178,8 @@ public class JSWebAnimations {
             return this;
         }
 
-        String build() { return props.append("}").toString(); }
+        /** The keyframe object literal. */
+        public String build() { return props.append("}").toString(); }
     }
 
     // ==================== Animation Builder ====================
