@@ -328,21 +328,23 @@ keyframes("pulse").at(0, style().opacity(1)).at(50, style().opacity(0.5)).at(100
 
 ## Selectors
 
-Two APIs — the fluent `CSS.Selector` builder and static `Selectors` strings:
+Three ways in, in the order you should reach for them:
 
 ```java
-// Fluent (CSS facade): select()/tag()/cls()/id() starters, ~100 chainable methods
+// 1. A plain string, when you already know the selector — full CSS parity
+rule(".card:hover")
+rule("li:nth-child(2n+1)")
+
+// 2. The Selector builder, when you are composing one — chainable, keeps its type
 rule(cls("card").hover())                    // .card:hover
 rule(cls("input").focusVisible())
 rule(tag("li").nthChild("2n+1"))
 rule(cls("form").has("input:invalid"))       // :has()
+// starters: select() tag() cls() id() all(); then pseudo-classes, pseudo-elements,
+// attribute matches, and the combinators child()/descendant()/adjacent()/sibling()
 
-// Static strings (Selectors)
-import static jweb.css.Selectors.*;
-has(".open"), is(".a", ".b"), where(...), not(...)
-attrEquals("type", "text"), attrStartsWith("href", "https")
-viewTransitionOld("hero"), viewTransitionNew("hero")     // view-transition pseudo-elements
-// webkit scrollbar selectors, combinators: descendant/child/adjacent/sibling
+// 3. The static Selectors helpers (deprecated) returned raw strings that you
+//    concatenated with `+`. The builder above covers the same ground and composes.
 ```
 
 ## CSS Variables & Design Tokens (`CSSVariables`)
