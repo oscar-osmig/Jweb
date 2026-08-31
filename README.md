@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 1.2.1** | **Last Updated: 2026-08-29**
+**Version 2.0.0** | **Last Updated: 2026-08-30**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v1.2.1</version>
+    <version>v2.0.0</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.2.1' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v2.0.0' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -86,6 +86,24 @@ public class App {
 ```
 
 Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest commit.
+
+### Upgrading from 1.x
+
+2.0.0 is **source-compatible but not binary-compatible**. 139 element overloads were removed
+and the attribute surface moved to an interface, so recompile against the new jar rather than
+dropping it in beside the old one.
+
+Two call sites still compile but now mean something different — worth checking by hand:
+
+- `textarea("hello")` renders the text `hello`; it used to set `name="hello"`. Use
+  `textarea(name("bio"))`.
+- `JSHistory.pushState(state, url)` takes its arguments in platform order. The
+  `(String url, Val state)` and 3-argument forms are deleted, so those calls fail to compile
+  rather than changing meaning.
+
+A third change — 29 deleted CSS animation presets — is invisible, because none of them
+animated anything. Everything else either still compiles with a deprecation warning or fails
+loudly. Full details: **[dsl-simplification.md](dsl-simplification.md)**.
 
 ---
 
@@ -219,6 +237,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
+| [Migrating to 2.0](./dsl-simplification.md) | What changed in the DSL pass, the six rules it follows now, and the breaking changes to check by hand |
 | [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |
 
 Additional internal reference docs ship with the framework source at
@@ -247,10 +266,10 @@ under `framework-src/`.
 
 # Runnable showcase build (includes the sample app, produces an exec jar)
 ./mvnw clean package -Pdemo
-java -jar target/Jweb-1.2.1-exec.jar
+java -jar target/Jweb-2.0.0-exec.jar
 
 # With specific profile
-java -jar target/Jweb-1.2.1-exec.jar --spring.profiles.active=prod
+java -jar target/Jweb-2.0.0-exec.jar --spring.profiles.active=prod
 ```
 
 Then open `http://localhost:8085` in your browser (port is `${PORT:8085}` in `application.yaml`;

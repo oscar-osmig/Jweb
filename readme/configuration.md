@@ -238,7 +238,7 @@ app/
 
 ## Dependencies (from `pom.xml`)
 
-**Coordinates:** `com.osmig:Jweb:1.2.1` · **Parent:** `spring-boot-starter-parent:4.0.8` ·
+**Coordinates:** `com.osmig:Jweb:2.0.0` · **Parent:** `spring-boot-starter-parent:4.0.8` ·
 **Java:** 21
 
 | Dependency | Version | Purpose |

@@ -26,14 +26,20 @@ public final class SetupSection {
                     <dependency>
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
-                        <version>v1.2.1</version>
+                        <version>v2.0.0</version>
                     </dependency>"""),
             para("Gradle:"),
             codeBlock("""
                     repositories { maven { url 'https://jitpack.io' } }
-                    dependencies { implementation 'com.github.oscar-osmig:Jweb:v1.2.1' }"""),
+                    dependencies { implementation 'com.github.oscar-osmig:Jweb:v2.0.0' }"""),
             docTip("Requires Java 21+. Spring Boot's web starter arrives transitively — "
                    + "you don't add it yourself."),
+            warn("Upgrading from 1.x: 2.0.0 is source-compatible but NOT binary-compatible, "
+                 + "so recompile against the new jar instead of dropping it in beside the old "
+                 + "one. Two call sites still compile but changed meaning: textarea(\"hello\") "
+                 + "now renders that text instead of setting name=\"hello\" (use "
+                 + "textarea(name(\"bio\"))), and JSHistory.pushState now reads (state, url) in "
+                 + "platform order. See dsl-simplification.md for the full migration guide."),
 
             docSubtitle("2. Project Structure"),
             para("Three files. Java allows one public class per file, so each of these is "

@@ -5,7 +5,7 @@ What you want is to publish it to a **Maven repository** — then anyone can pul
 JitPack builds directly from your GitHub repo. No accounts, no signing, no publishing config.
 
 1. Push your framework to a public GitHub repo (it needs a working `pom.xml` or `build.gradle`)
-2. Create a release/tag, e.g. `v1.2.1` (the current JWeb release)
+2. Create a release/tag, e.g. `v2.0.0` (the current JWeb release)
 3. That's it. Users add:
 
 ```xml
@@ -19,7 +19,7 @@ JitPack builds directly from your GitHub repo. No accounts, no signing, no publi
 <dependency>
     <groupId>com.github.YourUsername</groupId>
     <artifactId>your-repo-name</artifactId>
-    <version>v1.2.1</version>
+    <version>v2.0.0</version>
 </dependency>
 ```
 

@@ -68,7 +68,7 @@ public final class SandboxFiles {
                 <dependency>
                     <groupId>com.github.oscar-osmig</groupId>
                     <artifactId>Jweb</artifactId>
-                    <version>v1.2.1</version>
+                    <version>v2.0.0</version>
                 </dependency>
             </dependencies>
         </project>""";
@@ -226,7 +226,7 @@ public final class SandboxFiles {
                 .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
                 .fontSize(TEXT_SM).lineHeight(1.9),
             div(style().color(TEXT_LIGHT), text("$ ./mvnw dependency:resolve")),
-            div(text("[INFO] com.github.oscar-osmig:Jweb:v1.2.1 ✓")),
+            div(text("[INFO] com.github.oscar-osmig:Jweb:v2.0.0 ✓")),
             div(text("[INFO] ...and 0 frontend build tools 🎉")),
             div(style().color(hex("#6ee7b7")), text("[INFO] BUILD SUCCESS"))
         );
