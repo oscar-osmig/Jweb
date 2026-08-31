@@ -46,9 +46,45 @@ public class DocSidebar implements Template {
                     link("data", "Database"),
                     link("devtools", "DevTools")),
                 navSection("More",
-                    link("examples", "Examples"))
+                    link("examples", "Examples")),
+                aiDocsLink()
             )
         );
+    }
+
+    /**
+     * Link to the plain-text documentation dump that AI assistants ground on.
+     *
+     * <p>It deliberately does NOT carry {@code .docs-nav-link}: DocsNavScript
+     * delegates clicks on that class to
+     * {@code e.preventDefault(); loadSection(t.dataset.section)}, which would
+     * swallow the navigation and call {@code loadSection(undefined)}. This is a
+     * real link off the docs page, not a section swap, so it opens in a new tab
+     * and keeps the docs page where the reader left it.
+     */
+    private Element aiDocsLink() {
+        return div(class_("docs-nav-section"),
+            h2(class_("docs-nav-title"), style()
+                .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
+                .marginBottom(SP_2).textTransform(uppercase)
+                .letterSpacing(em(0.05)), text("For AI")),
+            a(attrs().href("/docs/tell").targetBlank()
+                .class_("docs-tell-link")
+                .title("Every guide and reference topic as one plain-text markdown "
+                       + "document, for an AI assistant to use as a source")
+                .style()
+                    .display(block)
+                    .padding(SP_2, SP_3).borderRadius(ROUNDED)
+                    .border(px(1), dashed, BORDER)
+                    .fontSize(TEXT_SM).color(TEXT_LIGHT)
+                    .textDecoration(none).transition(all, s(0.15), ease)
+                .done(),
+                span(style().display(block), text("All docs as one file")),
+                span(style()
+                        .display(block).marginTop(px(2))
+                        .fontFamily("ui-monospace, SFMono-Regular, monospace")
+                        .fontSize(px(11)).opacity(0.75),
+                    text("/docs/tell"))));
     }
 
     private Element navSection(String title, Element... links) {

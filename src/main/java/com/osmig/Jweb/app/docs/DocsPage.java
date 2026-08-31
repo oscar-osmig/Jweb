@@ -122,6 +122,13 @@ public class DocsPage implements Template {
                 .borderMask()
                 .zIndex(-1)
                 .pointerEvents(none))
+            // The /docs/tell link is outside the section nav, so DocsNavScript's
+            // delegated mouseover styling never reaches it — it needs a real
+            // :hover rule, which an inline style cannot express.
+            .rule(".docs-tell-link:hover", style()
+                .color(PRIMARY)
+                .borderColor(PRIMARY)
+                .backgroundColor(hex("#eef2ff")))
             .build();
     }
 }
