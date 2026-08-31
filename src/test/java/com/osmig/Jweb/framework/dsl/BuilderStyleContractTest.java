@@ -43,4 +43,14 @@ class BuilderStyleContractTest {
         assertNotNull(keyframes("fade").from(style().opacity(0)).to(style().opacity(1)).build());
         assertNotNull(stylesheet().rule(".a", style().color(red)).build());
     }
+
+    @Test
+    void aPlainJwebStyleArgumentIsTreatedAsAStyleNotAChild() {
+        // jweb.Style is the canonical class; framework.styles.Style is a deprecated
+        // shell over it. The element argument check used to name only the shell, so a
+        // plain jweb.Style fell through to the child path.
+        jweb.Style<?> plain = new jweb.Style<>().color("red");
+        assertEquals("<div style=\"color: red;\"></div>",
+            jweb.El.div(plain).toVNode().toHtml());
+    }
 }

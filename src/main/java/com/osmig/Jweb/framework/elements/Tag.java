@@ -2,12 +2,12 @@ package com.osmig.Jweb.framework.elements;
 
 import com.osmig.Jweb.framework.attributes.Attr;
 import com.osmig.Jweb.framework.attributes.Attributes;
+import com.osmig.Jweb.framework.attributes.HtmlAttributes;
 import com.osmig.Jweb.framework.attributes.Attributes.InlineStyle;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.events.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
-import com.osmig.Jweb.framework.styles.Style;
 import com.osmig.Jweb.framework.styles.StyledElement;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VNode;
@@ -38,7 +38,7 @@ import java.util.function.Function;
  *           p().text("Content")
  *       )
  */
-public class Tag implements Element {
+public class Tag implements Element, HtmlAttributes<Tag> {
 
     private final String tagName;
     private final Map<String, String> attributes;
@@ -78,171 +78,84 @@ public class Tag implements Element {
         return this;
     }
 
-    public Tag id(String id) { return attr("id", id); }
-    public Tag class_(String className) { return attr("class", className); }
-    public Tag addClass(String className) {
-        String existing = attributes.getOrDefault("class", "");
-        return attr("class", existing.isEmpty() ? className : existing + " " + className);
+    /**
+     * The write primitive behind every inherited attribute method — same as
+     * {@link #attr(String, String)}, named for {@link HtmlAttributes}.
+     */
+    @Override
+    public Tag set(String name, String value) {
+        return attr(name, value);
     }
 
-    // Inline style
-    public Tag style(String style) { return attr("style", style); }
-    public Tag style(Style style) { return attr("style", style.build()); }
+    /** The read primitive {@link HtmlAttributes} needs for class helpers. */
+    @Override
+    public String get(String name) {
+        return attributes.get(name);
+    }
 
-    // Common attributes
-    public Tag href(String value) { return attr("href", value); }
-    public Tag src(String value) { return attr("src", value); }
-    public Tag alt(String value) { return attr("alt", value); }
-    public Tag type(String value) { return attr("type", value); }
-    public Tag name(String value) { return attr("name", value); }
-    public Tag value(String value) { return attr("value", value); }
-    public Tag placeholder(String value) { return attr("placeholder", value); }
-    public Tag action(String value) { return attr("action", value); }
-    public Tag method(String value) { return attr("method", value); }
-    public Tag target(String value) { return attr("target", value); }
-    public Tag title(String value) { return attr("title", value); }
-    public Tag for_(String value) { return attr("for", value); }
-    public Tag role(String value) { return attr("role", value); }
+    
+    
+    
 
-    // Boolean attributes.
-    // A boolean attribute is stored with a null value so it renders bare
-    // ({@code <input required>}) — the same convention Attr and Attributes use.
-    public Tag disabled() { return attr("disabled", null); }
-    public Tag disabled(boolean value) { return value ? disabled() : this; }
-    public Tag checked() { return attr("checked", null); }
-    public Tag checked(boolean value) { return value ? checked() : this; }
-    public Tag required() { return attr("required", null); }
-    public Tag required(boolean value) { return value ? required() : this; }
-    public Tag readonly() { return attr("readonly", null); }
-    public Tag readonly(boolean value) { return value ? readonly() : this; }
-    public Tag hidden() { return attr("hidden", null); }
-    public Tag hidden(boolean value) { return value ? hidden() : this; }
-    public Tag autofocus() { return attr("autofocus", null); }
-    public Tag autofocus(boolean value) { return value ? autofocus() : this; }
 
-    // Data and ARIA
-    public Tag data(String name, String value) { return attr("data-" + name, value); }
-    public Tag aria(String name, String value) { return attr("aria-" + name, value); }
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+
+    
 
     // ==================== Event Handlers (Type-Safe) ====================
 
-    /**
-     * Registers a click event handler.
-     * @param handler the handler to execute on click
-     */
-    public Tag onClick(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("click", handler);
-        return attr("onclick", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a change event handler (for inputs, selects, textareas).
-     * @param handler the handler to execute on change
-     */
-    public Tag onChange(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("change", handler);
-        return attr("onchange", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers an input event handler (fires on every keystroke).
-     * @param handler the handler to execute on input
-     */
-    public Tag onInput(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("input", handler);
-        return attr("oninput", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a submit event handler for forms.
-     * @param handler the handler to execute on submit
-     */
-    public Tag onSubmit(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("submit", handler);
-        return attr("onsubmit", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a keydown event handler.
-     * @param handler the handler to execute on keydown
-     */
-    public Tag onKeyDown(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("keydown", handler);
-        return attr("onkeydown", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a keyup event handler.
-     * @param handler the handler to execute on keyup
-     */
-    public Tag onKeyUp(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("keyup", handler);
-        return attr("onkeyup", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a focus event handler.
-     * @param handler the handler to execute on focus
-     */
-    public Tag onFocus(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("focus", handler);
-        return attr("onfocus", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a blur event handler (when element loses focus).
-     * @param handler the handler to execute on blur
-     */
-    public Tag onBlur(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("blur", handler);
-        return attr("onblur", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a mouseenter event handler.
-     * @param handler the handler to execute on mouseenter
-     */
-    public Tag onMouseEnter(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("mouseenter", handler);
-        return attr("onmouseenter", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a mouseleave event handler.
-     * @param handler the handler to execute on mouseleave
-     */
-    public Tag onMouseLeave(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("mouseleave", handler);
-        return attr("onmouseleave", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a load event handler.
-     * @param handler the handler to execute on load
-     */
-    public Tag onLoad(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("load", handler);
-        return attr("onload", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a double-click event handler.
-     * @param handler the handler to execute on double-click
-     */
-    public Tag onDoubleClick(Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register("dblclick", handler);
-        return attr("ondblclick", eh.toJsAttribute());
-    }
 
-    /**
-     * Registers a generic event handler for any DOM event type.
-     * @param eventType the DOM event type (click, change, scroll, etc.)
-     * @param handler the handler to execute
-     */
-    public Tag on(String eventType, Consumer<Event> handler) {
-        EventHandler eh = EventRegistry.register(eventType, handler);
-        return attr("on" + eventType, eh.toJsAttribute());
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ==================== Content Methods (Fluent) ====================
 
@@ -367,19 +280,19 @@ public class Tag implements Element {
         return new StyledElement(this.toVNode());
     }
 
-    public StyledElement styled(Style baseStyle) {
+    public StyledElement styled(jweb.Style<?> baseStyle) {
         return new StyledElement(this.toVNode()).style(baseStyle);
     }
 
-    public StyledElement hover(Style hoverStyle) {
+    public StyledElement hover(jweb.Style<?> hoverStyle) {
         return new StyledElement(this.toVNode()).hover(hoverStyle);
     }
 
-    public StyledElement focus(Style focusStyle) {
+    public StyledElement focus(jweb.Style<?> focusStyle) {
         return new StyledElement(this.toVNode()).focus(focusStyle);
     }
 
-    public StyledElement active(Style activeStyle) {
+    public StyledElement active(jweb.Style<?> activeStyle) {
         return new StyledElement(this.toVNode()).active(activeStyle);
     }
 
@@ -421,7 +334,7 @@ public class Tag implements Element {
         return item instanceof Attr
             || item instanceof Attributes
             || item instanceof InlineStyle
-            || item instanceof com.osmig.Jweb.framework.styles.Style;
+            || item instanceof jweb.Style;
     }
 
     /** An Iterable or Object[] argument is a group of items, not one child. */
@@ -460,7 +373,7 @@ public class Tag implements Element {
                 attrs.putAll(attributes.toMap());
             } else if (item instanceof InlineStyle inlineStyle) {
                 attrs.putAll(inlineStyle.toMap());
-            } else if (item instanceof com.osmig.Jweb.framework.styles.Style<?> style) {
+            } else if (item instanceof jweb.Style<?> style) {
                 // A bare style() builder as an argument becomes the style
                 // attribute: div(style().padding(px(4)), text("hi"))
                 attrs.put("style", style.build());
@@ -476,7 +389,7 @@ public class Tag implements Element {
                         attrs.putAll(inlineStyle.toMap());
                     } else if (subItem instanceof Attributes attributes) {
                         attrs.putAll(attributes.toMap());
-                    } else if (subItem instanceof com.osmig.Jweb.framework.styles.Style<?> style) {
+                    } else if (subItem instanceof jweb.Style<?> style) {
                         attrs.put("style", style.build());
                     }
                 }
