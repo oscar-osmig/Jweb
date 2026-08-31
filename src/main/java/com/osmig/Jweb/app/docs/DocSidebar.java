@@ -58,9 +58,11 @@ public class DocSidebar implements Template {
      * <p>It deliberately does NOT carry {@code .docs-nav-link}: DocsNavScript
      * delegates clicks on that class to
      * {@code e.preventDefault(); loadSection(t.dataset.section)}, which would
-     * swallow the navigation and call {@code loadSection(undefined)}. This is a
-     * real link off the docs page, not a section swap, so it opens in a new tab
-     * and keeps the docs page where the reader left it.
+     * swallow the navigation and call {@code loadSection(undefined)}.
+     *
+     * <p>No {@code target="_blank"}: the endpoint replies with
+     * Content-Disposition attachment, so the click starts a download without
+     * navigating. Opening a tab as well would just leave an empty one behind.
      */
     private Element aiDocsLink() {
         return div(class_("docs-nav-section"),
@@ -68,10 +70,10 @@ public class DocSidebar implements Template {
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), text("For AI")),
-            a(attrs().href("/docs/tell").targetBlank()
+            a(attrs().href("/docs/tell")
                 .class_("docs-tell-link")
-                .title("Every guide and reference topic as one plain-text markdown "
-                       + "document, for an AI assistant to use as a source")
+                .title("Downloads every guide and reference topic as one markdown "
+                       + "file, for an AI assistant to use as a source")
                 .style()
                     .display(block)
                     .padding(SP_2, SP_3).borderRadius(ROUNDED)
@@ -79,7 +81,7 @@ public class DocSidebar implements Template {
                     .fontSize(TEXT_SM).color(TEXT_LIGHT)
                     .textDecoration(none).transition(all, s(0.15), ease)
                 .done(),
-                span(style().display(block), text("All docs as one file")),
+                span(style().display(block), text("Download all docs (.md)")),
                 span(style()
                         .display(block).marginTop(px(2))
                         .fontFamily("ui-monospace, SFMono-Regular, monospace")

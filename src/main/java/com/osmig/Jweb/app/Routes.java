@@ -35,12 +35,18 @@ import java.nio.charset.StandardCharsets;
 public class Routes implements JWebRoutes {
 
     /**
-     * text/plain, not text/markdown: browsers download the latter instead of
-     * showing it, and the point of /docs/tell is that anyone — human or agent —
-     * can just open the URL. The charset is explicit because the docs contain
-     * em dashes and arrows.
+     * The documentation download. Charset is explicit because the docs contain
+     * em dashes and arrows; paired with Content-Disposition so opening
+     * /docs/tell in a browser saves a .md file.
      */
-    private static final MediaType MARKDOWN_TEXT =
+    private static final MediaType MARKDOWN =
+        new MediaType("text", "markdown", StandardCharsets.UTF_8);
+
+    /**
+     * The unknown-topic reply. Stays text/plain and inline — an error listing
+     * the valid ids is meant to be read in the tab, not downloaded.
+     */
+    private static final MediaType PLAIN_TEXT =
         new MediaType("text", "plain", StandardCharsets.UTF_8);
 
     private final AdminApi adminApi;
@@ -103,11 +109,11 @@ public class Routes implements JWebRoutes {
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
 
-        // The whole documentation set as one plain-text markdown document, for an
-        // AI assistant to pull in as grounding before writing JWeb code. Served as
-        // text/plain so it renders in a browser and needs no parsing; ?topic=<id>
-        // returns a single document (still with the header) for clients that do
-        // not want the full ~290KB.
+        // The whole documentation set as one markdown document, for an AI
+        // assistant to pull in as grounding before writing JWeb code. Opening the
+        // URL in a browser downloads it as a .md file; ?topic=<id> narrows it to
+        // one document (still with the header) for clients that do not want the
+        // full ~300KB.
         app.get("/docs/tell", ctx -> {
             String topic = ctx.query("topic");
             boolean whole = topic == null || topic.isBlank();
@@ -121,12 +127,17 @@ public class Routes implements JWebRoutes {
                 }
                 known.append("\nOmit ?topic= for the whole documentation set.\n");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .contentType(MARKDOWN_TEXT)
+                    .contentType(PLAIN_TEXT)
                     .body(known.toString());
             }
 
             return Response.ok()
-                .contentType(MARKDOWN_TEXT)
+                .contentType(MARKDOWN)
+                // Opening the URL in a browser saves a .md file rather than
+                // rendering a wall of text. Only browsers honour this — curl and
+                // anything fetching over HTTP still just get the body.
+                .header("Content-Disposition",
+                        "attachment; filename=\"" + DocsTell.filename(topic) + "\"")
                 .header("X-JWeb-Version", DocsTell.version())
                 // Regenerated only on deploy, and the body is large — let clients
                 // and any proxy in front of us hold it for an hour.

@@ -124,6 +124,32 @@ class DocsTellTest {
         }
     }
 
+    // ==================== download filename ====================
+
+    @Test
+    void fullSetDownloadsUnderAVersionStampedName() {
+        assertEquals("jweb-" + DocsTell.version() + "-docs.md", DocsTell.filename(null));
+        assertEquals("jweb-" + DocsTell.version() + "-docs.md", DocsTell.filename(""));
+        assertEquals("jweb-" + DocsTell.version() + "-docs.md", DocsTell.filename("  "));
+    }
+
+    @Test
+    void aTopicDownloadsUnderItsOwnName() {
+        assertEquals("jweb-" + DocsTell.version() + "-css-dsl.md", DocsTell.filename("css-dsl"));
+    }
+
+    @Test
+    void everyTopicProducesAUsableFilename() {
+        for (Topic t : DocsTell.topics()) {
+            String name = DocsTell.filename(t.id());
+            assertTrue(name.endsWith(".md"), () -> "not a markdown name: " + name);
+            // Anything outside this set would need quoting or escaping in the
+            // Content-Disposition header.
+            assertTrue(name.matches("[A-Za-z0-9._-]+"),
+                () -> "filename needs escaping in a header: " + name);
+        }
+    }
+
     // ==================== lookup ====================
 
     @Test

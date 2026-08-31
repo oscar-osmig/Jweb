@@ -79,6 +79,18 @@ public final class DocsTell {
         return TOPICS;
     }
 
+    /**
+     * Download filename for a response, e.g. {@code jweb-2.0.0-docs.md} or
+     * {@code jweb-2.0.0-css-dsl.md}. Version-stamped so a folder of these stays
+     * sortable and it is obvious which release a saved copy describes.
+     *
+     * @param topicId null or blank for the whole set
+     */
+    public static String filename(String topicId) {
+        String suffix = (topicId == null || topicId.isBlank()) ? "docs" : topicId;
+        return "jweb-" + version() + "-" + suffix + ".md";
+    }
+
     /** The current framework version, e.g. {@code 2.0.0}, or {@code unknown}. */
     public static String version() {
         String v = readProperty("META-INF/build-info.properties", "build.version");

@@ -247,13 +247,17 @@ under `framework-src/`.
 ### For AI assistants: `/docs/tell`
 
 `GET /docs/tell` returns this entire documentation set — the guides above plus all 15
-reference topics — as one plain-text markdown document, version-stamped and ordered so the
-DSL rules and the 2.x breaking changes come first. Point an assistant at it before asking it
-to write JWeb code:
+reference topics — as one markdown document, version-stamped and ordered so the DSL rules
+and the 2.x breaking changes come first. Point an assistant at it before asking it to write
+JWeb code.
+
+Open it in a browser and it downloads as `jweb-<version>-docs.md`. Over HTTP you just get
+the body:
 
 ```
-curl https://jweb.build/docs/tell            # everything, ~300KB
-curl https://jweb.build/docs/tell?topic=css-dsl   # one topic, with the header
+curl https://jweb.build/docs/tell                  # everything, ~300KB
+curl https://jweb.build/docs/tell?topic=css-dsl    # one topic, with the header
+curl -OJ https://jweb.build/docs/tell              # save with the server's filename
 ```
 
 An unknown `topic` returns 404 listing the valid ids. Each document is fenced by
