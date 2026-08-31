@@ -19,7 +19,13 @@ import com.osmig.Jweb.app.pages.admin.AdminLoginPage;
 import com.osmig.Jweb.app.pages.admin.AdminMessagesPage;
 import com.osmig.Jweb.app.docs.DocsPage;
 import com.osmig.Jweb.app.docs.DocContent;
+import com.osmig.Jweb.app.docs.DocsTell;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * Application routes - page routing and structure only.
@@ -27,6 +33,15 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Routes implements JWebRoutes {
+
+    /**
+     * text/plain, not text/markdown: browsers download the latter instead of
+     * showing it, and the point of /docs/tell is that anyone — human or agent —
+     * can just open the URL. The charset is explicit because the docs contain
+     * em dashes and arrows.
+     */
+    private static final MediaType MARKDOWN_TEXT =
+        new MediaType("text", "plain", StandardCharsets.UTF_8);
 
     private final AdminApi adminApi;
     private final com.osmig.Jweb.app.api.MessageStore messageStore;
@@ -87,6 +102,37 @@ public class Routes implements JWebRoutes {
 
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
+
+        // The whole documentation set as one plain-text markdown document, for an
+        // AI assistant to pull in as grounding before writing JWeb code. Served as
+        // text/plain so it renders in a browser and needs no parsing; ?topic=<id>
+        // returns a single document (still with the header) for clients that do
+        // not want the full ~290KB.
+        app.get("/docs/tell", ctx -> {
+            String topic = ctx.query("topic");
+            boolean whole = topic == null || topic.isBlank();
+            String body = whole ? DocsTell.full() : DocsTell.topic(topic);
+
+            if (body == null) {
+                StringBuilder known = new StringBuilder(
+                    "Unknown topic: " + topic + "\n\nValid topic ids:\n");
+                for (DocsTell.Topic t : DocsTell.topics()) {
+                    known.append("  ").append(t.id()).append(" — ").append(t.title()).append('\n');
+                }
+                known.append("\nOmit ?topic= for the whole documentation set.\n");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .contentType(MARKDOWN_TEXT)
+                    .body(known.toString());
+            }
+
+            return Response.ok()
+                .contentType(MARKDOWN_TEXT)
+                .header("X-JWeb-Version", DocsTell.version())
+                // Regenerated only on deploy, and the body is large — let clients
+                // and any proxy in front of us hold it for an hour.
+                .header("Cache-Control", "public, max-age=3600")
+                .body(body);
+        });
 
         // Playground: user code runs through SandboxDsl's whitelist interpreter
         // only — nothing is compiled or reflected, and output uses the normal

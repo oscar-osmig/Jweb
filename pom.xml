@@ -215,6 +215,20 @@
 									<directory>${project.basedir}</directory>
 									<includes>
 										<include>README.md</include>
+										<!-- The 2.x migration guide: /docs/tell serves it so an
+										     assistant does not emit 1.x syntax. -->
+										<include>dsl-simplification.md</include>
+									</includes>
+								</resource>
+								<!-- The long-form guides. Needed on the classpath because
+								     /docs/tell assembles them at runtime; without this they
+								     exist only in the source tree and the endpoint would
+								     silently serve a partial document from the jar. -->
+								<resource>
+									<directory>${project.basedir}/readme</directory>
+									<targetPath>guides</targetPath>
+									<includes>
+										<include>*.md</include>
 									</includes>
 								</resource>
 							</resources>
@@ -239,6 +253,17 @@
 					</jvmArguments>
 				</configuration>
 				<executions>
+					<!-- Writes META-INF/build-info.properties into target/classes, so the
+					     running version is readable from the classpath in a dev run AND
+					     from the jar. /docs/tell stamps it on the document it serves;
+					     META-INF/maven/.../pom.properties only exists in the packaged
+					     jar, so it would report "unknown" under spring-boot:run. -->
+					<execution>
+						<id>build-info</id>
+						<goals>
+							<goal>build-info</goal>
+						</goals>
+					</execution>
 					<!-- Skip ONLY repackage in the library build. A plugin-level <skip>
 					     would also disable spring-boot:run. -->
 					<execution>
