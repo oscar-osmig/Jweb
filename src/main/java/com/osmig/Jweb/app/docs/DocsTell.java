@@ -4,10 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Backs {@code GET /docs/tell} — the whole JWeb documentation set as one
@@ -74,9 +77,45 @@ public final class DocsTell {
 
     private static volatile String cachedFull;
     private static volatile Map<String, String> cachedTopics;
+    /** Keyed by topic id, with "" for the whole set. */
+    private static final Map<String, String> ETAGS = new ConcurrentHashMap<>();
 
     public static List<Topic> topics() {
         return TOPICS;
+    }
+
+    /**
+     * Strong validator for a response, e.g. {@code "3f8a1c02d4e5b6a7"}.
+     *
+     * <p>Derived from the bytes actually served rather than from the version, so
+     * editing a guide without cutting a release still invalidates it. Paired with
+     * {@code Cache-Control: no-cache} this gives an immediate switch on deploy —
+     * the client must revalidate every time — while a 304 keeps an unchanged
+     * fetch from re-sending ~300KB.
+     *
+     * @param topicId null or blank for the whole set
+     * @return null when no topic has that id
+     */
+    public static String etag(String topicId) {
+        String key = (topicId == null || topicId.isBlank()) ? "" : topicId;
+        String body = key.isEmpty() ? full() : topic(key);
+        if (body == null) return null;
+        return ETAGS.computeIfAbsent(key, k -> '"' + sha256Prefix(body) + '"');
+    }
+
+    private static String sha256Prefix(String s) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256")
+                .digest(s.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(16);
+            for (int i = 0; i < 8; i++) {
+                hex.append(String.format("%02x", digest[i]));
+            }
+            return hex.toString();
+        } catch (NoSuchAlgorithmException e) {
+            // SHA-256 is mandated by the platform; unreachable in practice.
+            throw new IllegalStateException("SHA-256 unavailable", e);
+        }
     }
 
     /**

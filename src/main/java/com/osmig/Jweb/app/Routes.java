@@ -131,6 +131,19 @@ public class Routes implements JWebRoutes {
                     .body(known.toString());
             }
 
+            // no-cache, not max-age: a client may keep a copy but must revalidate
+            // before using it, so a deploy takes effect on the next request
+            // instead of up to an hour later. The ETag is what keeps that cheap —
+            // an unchanged document answers 304 rather than re-sending ~300KB.
+            String etag = DocsTell.etag(topic);
+            String ifNoneMatch = ctx.header("If-None-Match");
+            if (etag != null && ifNoneMatch != null && ifNoneMatch.contains(etag)) {
+                return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
+                    .eTag(etag)
+                    .header("Cache-Control", "no-cache")
+                    .build();
+            }
+
             return Response.ok()
                 .contentType(MARKDOWN)
                 // Opening the URL in a browser saves a .md file rather than
@@ -139,9 +152,8 @@ public class Routes implements JWebRoutes {
                 .header("Content-Disposition",
                         "attachment; filename=\"" + DocsTell.filename(topic) + "\"")
                 .header("X-JWeb-Version", DocsTell.version())
-                // Regenerated only on deploy, and the body is large — let clients
-                // and any proxy in front of us hold it for an hour.
-                .header("Cache-Control", "public, max-age=3600")
+                .header("ETag", etag)
+                .header("Cache-Control", "no-cache")
                 .body(body);
         });
 

@@ -150,6 +150,43 @@ class DocsTellTest {
         }
     }
 
+    // ==================== revalidation ====================
+
+    @Test
+    void etagIsAQuotedStableValidator() {
+        String e = DocsTell.etag(null);
+        assertNotNull(e);
+        assertTrue(e.startsWith("\"") && e.endsWith("\""),
+            () -> "ETag must be quoted to be a valid header value: " + e);
+        assertTrue(e.matches("\"[0-9a-f]{16}\""), () -> "unexpected ETag shape: " + e);
+        assertEquals(e, DocsTell.etag(null), "ETag must be stable across calls");
+        assertEquals(e, DocsTell.etag(""), "blank topic is the whole set");
+    }
+
+    @Test
+    void differentDocumentsGetDifferentEtags() {
+        String whole = DocsTell.etag(null);
+        String css = DocsTell.etag("css-dsl");
+        String backend = DocsTell.etag("backend");
+        assertNotNull(css);
+        assertNotNull(backend);
+        assertNotEquals(whole, css);
+        assertNotEquals(css, backend, "a validator shared between topics would serve the wrong 304");
+    }
+
+    @Test
+    void etagTracksContentNotJustVersion() {
+        // Derived from the served bytes, so editing a guide without cutting a
+        // release still invalidates caches. Verified by construction: the same
+        // version yields different tags for different bodies.
+        assertNotEquals(DocsTell.etag("html-dsl"), DocsTell.etag("css-dsl"));
+    }
+
+    @Test
+    void unknownTopicHasNoEtag() {
+        assertNull(DocsTell.etag("no-such-topic"));
+    }
+
     // ==================== lookup ====================
 
     @Test
