@@ -91,6 +91,55 @@ class DocVersionsTest {
         assertTrue(latest.contains("href=\"/docs?section=elements\""), "latest links canonical");
     }
 
+    // ==================== Prose branching inside shared sections ====================
+
+    @Test
+    void atLeastComparesAgainstTheRegistryOrder() {
+        assertTrue(DocVersions.atLeast("v2.1.0", "v2.1.0"));
+        assertTrue(DocVersions.atLeast("v2.1.0", "v2.0.0"));
+        assertFalse(DocVersions.atLeast("v2.0.0", "v2.1.0"));
+        // an unreleased floor is newer than everything — content stays hidden
+        assertFalse(DocVersions.atLeast("v2.1.0", "v9.9.9"));
+    }
+
+    @Test
+    void sharedSectionProseBranchesByVersion() {
+        String latest = DocContent.get("intro", "v2.1.0").toHtml();
+        assertTrue(latest.contains("Three DSL - declarative 3D scenes"),
+            "latest intro advertises the feature");
+        assertTrue(latest.contains("New in v2.1.0"), "since() block renders on latest");
+
+        String old = DocContent.get("intro", "v2.0.0").toHtml();
+        assertFalse(old.contains("Three DSL"), "v2.0.0 intro must not mention it");
+        assertFalse(old.contains("New in v2.1.0"), "since() block hidden on old docs");
+        assertTrue(old.contains("HTML DSL"), "shared prose still renders");
+    }
+
+    @Test
+    void renderContextDefaultsToLatestAndNeverLeaks() {
+        assertEquals(DocVersions.latest(), DocVersions.current(),
+            "outside a render, current() is latest — so since() content shows everywhere else");
+        DocContent.get("intro", "v2.0.0");
+        assertEquals(DocVersions.latest(), DocVersions.current(),
+            "the render context must be cleared even after old-version renders");
+    }
+
+    @Test
+    void combinatorsFollowTheRenderContext() {
+        DocVersions.beginRender("v2.0.0");
+        try {
+            assertNotNull(DocComponents.before("v2.1.0", DocComponents.para("old way")));
+            assertNull(DocComponents.since("v2.1.0", DocComponents.para("new way")));
+            assertNull(DocComponents.sinceText("v2.1.0", "new item"));
+        } finally {
+            DocVersions.endRender();
+        }
+        assertNull(DocComponents.before("v2.1.0", DocComponents.para("old way")),
+            "on latest, before() content is gone");
+        assertNotNull(DocComponents.since("v2.1.0", DocComponents.para("new way")),
+            "on latest, since() content shows");
+    }
+
     @Test
     void docsPageShowsABannerOnlyForOldVersions() {
         String old = new DocsPage("setup", "v2.0.0").render().toHtml();

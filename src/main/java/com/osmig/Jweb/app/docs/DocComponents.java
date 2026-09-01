@@ -47,7 +47,10 @@ public final class DocComponents {
     public static Element inlineCode(String c) { return span(attrs().style(DocStyles.inlineCode()), text(c)); }
 
     public static Element docList(String... items) {
-        return ul(attrs().style(list()), each(List.of(items), i -> li(attrs().style(listItem()), text(i))));
+        // Nulls are skipped so sinceText(...) items can drop out per version
+        List<String> present = java.util.Arrays.stream(items)
+            .filter(java.util.Objects::nonNull).toList();
+        return ul(attrs().style(list()), each(present, i -> li(attrs().style(listItem()), text(i))));
     }
 
     public static Element docTip(String t) { return div(attrs().style(tip()), text(t)); }
@@ -55,4 +58,25 @@ public final class DocComponents {
     public static Element warn(String t) { return div(attrs().style(warning()), text(t)); }
 
     public static Element spacer() { return div(style().height(rem(2))); }
+
+    // ==================== Version-dependent content ====================
+    // For prose that differs between releases inside a shared section. The
+    // version in view comes from the render context DocContent sets
+    // (DocVersions.current()); on the latest docs everything since() shows
+    // and everything before() is gone.
+
+    /** Content that exists from {@code floor} on — hidden when older docs render. */
+    public static Element since(String floor, Element... content) {
+        return DocVersions.atLeast(DocVersions.current(), floor) ? fragment(content) : null;
+    }
+
+    /** Content that was only true before {@code floor} — the old way of things. */
+    public static Element before(String floor, Element... content) {
+        return DocVersions.atLeast(DocVersions.current(), floor) ? null : fragment(content);
+    }
+
+    /** A text item that exists from {@code floor} on; docList skips the null. */
+    public static String sinceText(String floor, String text) {
+        return DocVersions.atLeast(DocVersions.current(), floor) ? text : null;
+    }
 }

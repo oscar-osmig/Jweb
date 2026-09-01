@@ -21,6 +21,18 @@ public class DocContent {
      */
     public static Element get(String section, String version) {
         String v = DocVersions.normalize(version);
+        // The render context lets shared sections branch prose with
+        // DocComponents.since()/before() without threading the version
+        // through every render() signature
+        DocVersions.beginRender(v);
+        try {
+            return render(section, v);
+        } finally {
+            DocVersions.endRender();
+        }
+    }
+
+    private static Element render(String section, String v) {
         if (section != null && !DocVersions.sectionAvailable(section, v)) {
             return notInVersion(section, v);
         }

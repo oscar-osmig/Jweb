@@ -53,6 +53,42 @@ public final class DocVersions {
         return INTRODUCED.get(section);
     }
 
+    // ==================== The render context ====================
+    // Two tools cover version-dependent docs: whole sections that exist only
+    // from some release take the version as a render(...) parameter (see
+    // SetupSection), while prose that merely differs INSIDE a shared section
+    // branches with DocComponents.since()/before()/sinceText(), which read
+    // the version of the render in flight from here. DocContent sets it
+    // around every section render; outside one, current() is simply latest.
+
+    private static final ThreadLocal<String> RENDERING = new ThreadLocal<>();
+
+    /** The version the docs render in flight is for; latest outside a render. */
+    public static String current() {
+        String v = RENDERING.get();
+        return v != null ? v : latest();
+    }
+
+    /** Marks the version for one render; always pair with {@link #endRender}. */
+    static void beginRender(String version) {
+        RENDERING.set(normalize(version));
+    }
+
+    static void endRender() {
+        RENDERING.remove();
+    }
+
+    /**
+     * Whether {@code version} is {@code floor} or newer. A floor that is not
+     * a released version yet is newer than everything — content behind it
+     * stays hidden until the release lands in {@link #ALL}.
+     */
+    public static boolean atLeast(String version, String floor) {
+        int f = ALL.indexOf(floor);
+        if (f < 0) return false;
+        return ALL.indexOf(normalize(version)) <= f;
+    }
+
     /** The docs URL for a section under a version (latest stays canonical, no param). */
     public static String href(String section, String version) {
         String base = "/docs?section=" + section;
