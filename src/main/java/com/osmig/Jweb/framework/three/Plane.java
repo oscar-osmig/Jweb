@@ -10,10 +10,23 @@ import java.util.Map;
 public class Plane extends MeshNode<Plane> {
 
     private double[] size;
+    private boolean mirror;
 
     /** Width (x) and height (y) in scene units. Default 1×1. */
     public Plane size(double width, double height) {
         this.size = new double[]{width, height};
+        return this;
+    }
+
+    /**
+     * Turns the plane into a real-time mirror (three.js {@code Reflector}) —
+     * a polished floor is {@code plane(20, 20).rotation(-90, 0, 0).mirror()}.
+     * {@code .color(...)} tints the reflection (darker = dimmer polish);
+     * other material properties don't apply to a mirror. For a satin finish,
+     * lay a translucent plane just above it.
+     */
+    public Plane mirror() {
+        this.mirror = true;
         return this;
     }
 
@@ -25,6 +38,7 @@ public class Plane extends MeshNode<Plane> {
     @Override
     protected void fill(Map<String, Object> map) {
         if (size != null) map.put("size", vec(size));
+        if (mirror) map.put("mirror", true);
         super.fill(map);
     }
 }

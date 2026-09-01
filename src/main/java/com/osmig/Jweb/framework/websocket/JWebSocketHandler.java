@@ -124,12 +124,16 @@ public class JWebSocketHandler extends TextWebSocketHandler {
                 .dataset(msg.getDataset())
                 .build();
 
-        // Execute the handler (context-scoped first, then global fallback)
+        // Execute the handler (context-scoped first, then global fallback).
+        // Three.patch(...) calls made inside it collect on this thread and
+        // ride back on this session.
+        com.osmig.Jweb.framework.three.ThreePatchQueue.open();
         boolean executed = contextId != null
                 ? EventRegistry.execute(contextId, handlerId, event)
                 : EventRegistry.execute(handlerId, event);
 
         if (executed) {
+            sendThreePatches(session);
             // Check for state changes
             if (context == null) {
                 context = StateManager.getContext();
@@ -160,6 +164,18 @@ public class JWebSocketHandler extends TextWebSocketHandler {
 
         // Clear thread-local context
         StateManager.clearContext();
+        com.osmig.Jweb.framework.three.ThreePatchQueue.close();
+    }
+
+    /**
+     * Delivers scene patches queued by {@code Three.patch(...)} during the
+     * handler that just ran — one message per patch, before the handled ack.
+     */
+    private void sendThreePatches(WebSocketSession session) throws IOException {
+        for (var patch : com.osmig.Jweb.framework.three.ThreePatchQueue.drain()) {
+            sendMessage(session, new ThreePatchResponse(
+                    patch.sceneId(), patch.nodeMaps(), patch.cameraMap()));
+        }
     }
 
     /**
@@ -225,8 +241,10 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         }
 
         StateManager.setContext(context);
+        com.osmig.Jweb.framework.three.ThreePatchQueue.open();
         try {
             state.set(msg.getValue());
+            sendThreePatches(session);
             var changedStates = context.getChangedStates();
             if (!changedStates.isEmpty()) {
                 List<StateData> stateDataList = new ArrayList<>();
@@ -239,6 +257,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             }
         } finally {
             StateManager.clearContext();
+            com.osmig.Jweb.framework.three.ThreePatchQueue.close();
         }
     }
 

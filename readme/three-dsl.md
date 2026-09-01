@@ -78,6 +78,35 @@ sphere(0.5)
 **Angles are degrees end-to-end** (matching the CSS DSL); the runtime converts
 to radians. A ground plane is `plane(30, 30).rotation(-90, 0, 0)`.
 
+## Curves
+
+Three factories cover the shapes you'd otherwise fake with chains of
+rotated boxes and cylinders:
+
+```java
+// a round tube swept along a smooth curve through x,y,z points —
+// vines, pipes, cables, ribs, railings. The curve passes through
+// every point; .closed() joins it into a loop.
+tube(0.05,
+    -2, 0, 0,
+     0, 1.4, 0,
+     2, 0, 0)
+
+// a partial ring — an archway is half a torus. Sweep is degrees,
+// counter-clockwise from the ring's +x; rotate the node to hang it.
+arc(1.6, 0.09, 180).position(0, 2.1, -4.5)
+
+// a surface of revolution from radius,height pairs, bottom-up —
+// pots, vases, columns, domes, bells. Start or end at radius 0 to
+// close that end. Double-sided, so open vessels read from inside.
+lathe(0, 0,   0.5, 0,   0.35, 0.8,   0.55, 1.1,   0.3, 1.3)
+    .segments(48)   // radial resolution (default 32)
+```
+
+An elliptical vault is an `arc` squashed with `.scale(1, 0.7, 1)`. One
+`tube` through five points replaces a dozen hand-angled segments — and
+reads like what it is.
+
 ## Materials
 
 Shapes use three.js's physically-based `MeshStandardMaterial`, with the
@@ -151,6 +180,48 @@ camera()
 without a camera gets one at `(0, 0, 5)` looking at the origin. One camera
 per scene; the first wins.
 
+Orbit takes limits, so a product viewer can't be zoomed through or flipped
+under the floor:
+
+```java
+camera().orbit()
+    .noZoom()            // the scroll wheel stays with the page
+    .noPan()             // the subject stays centered
+    .distance(2, 12)     // zoom clamps, camera-to-target
+    .polar(20, 90)       // vertical swing, degrees from straight overhead
+                         // (90 = never below the horizon)
+```
+
+### Walk mode
+
+`walk(eyeHeight)` turns the scene into a place. The scene starts framed
+exactly as declared; walking is toggled by any element carrying
+`data-three-walk="<scene id>"` — a plain button, no script:
+
+```java
+scene(style().height(px(460)),
+    camera().position(0, 2, 7).lookAt(0, 2, 0)
+        .walk(1.7)                  // eye height; or walk(eye, speed, run)
+        .bounds(-8, -8, 8, 8)       // fenced floor: minX, minZ, maxX, maxZ
+        .sway(),                    // gentle idle drift while framed
+    ...
+).id("hall")
+
+button(attrs().data("three-walk", "hall"), text("Walk here"))
+```
+
+While walking: **W A S D** (and ↑↓) move, **← →** turn, dragging looks
+around, **Shift** runs, **Esc** steps back out to the framed view. The
+scene element, the toggle and `<body>` carry a `three-walking` class, and
+the scene dispatches a bubbling `jweb:three-walk` event with
+`detail.walking` — style the chip's label swap in CSS, or listen if you
+must script. Head-bob and `sway()` are skipped for visitors who prefer
+reduced motion. Programmatic control: `JWebThree.setWalk(id, on)` /
+`JWebThree.walking(id)`.
+
+`bounds(...)` is the honest collision model for a walled room: a rectangle
+the feet can't leave. (Per-object collision is not a thing the DSL does.)
+
 ## Scene atmosphere
 
 Scenes are **transparent over the page** by default — a scene in a hero
@@ -179,6 +250,38 @@ sky("/assets/dusk.jpg")             // the panorama as visible sky AND light
 `sky(...)` plus `sphere().metalness(1).roughness(0.05)` is a mirror ball in
 two lines.
 
+### Glow and tone
+
+```java
+scene(bloom(),                       // bright emissives actually glow
+    sphere().emissive("#5FA98A"),    // now a lantern, not a flat bright ball
+    ...)
+```
+
+`bloom()` is an HDR pass composited before tone mapping (which it implies —
+the ACES filmic curve). Dials: `bloom(strength)` or
+`bloom(strength, radius, threshold)` — only pixels brighter than the
+threshold bloom, so raising it keeps the glow on the truly luminous.
+Defaults (0.7, 0.35, 0.85) are calibrated for tasteful lantern-light, not
+music-video. The scene must still read with bloom off: bloom is the halo,
+not the lamp. Bloom composites over an opaque backdrop — declare a
+`background(...)`.
+
+`toneMapped()` alone applies the same cinematic curve with no glow —
+highlights roll off instead of clipping. `toneMapped(exposure)` dials
+brightness around it.
+
+### Mirrors
+
+```java
+plane(20, 20).rotation(-90, 0, 0).mirror().color("#4a443e")
+```
+
+A real-time planar reflection (three.js `Reflector`). `.color(...)` tints
+it — darker is dimmer. A mirror is glass-sharp; for a satin polished floor,
+lay a translucent dark plane a hair above it and the reflection blurs into
+suggestion. Other material properties don't apply to a mirror.
+
 ## Animation presets
 
 ```java
@@ -190,10 +293,34 @@ sphere().float_(0.5, 1)                      // amplitude, cycles per second
 ```
 
 Presets are why the render loop exists at all: a scene with no `spin`,
-`float_`, `autoRotate` or `.animate()`d model renders once and sleeps —
-and an animated scene's loop pauses whenever it scrolls offscreen
-(IntersectionObserver), so a 3D hero costs nothing once the reader is past
-it.
+`float_`, `autoRotate`, `.animate()`d model, drifting `particles` or
+`sway()` renders once and sleeps — and an animated scene's loop pauses
+whenever it scrolls offscreen (IntersectionObserver), so a 3D hero costs
+nothing once the reader is past it.
+
+## Particles
+
+A whole cloud of points as one node and one draw call — dust, spores,
+rain, snow, embers — instead of a hundred tiny meshes:
+
+```java
+particles(140)                  // dust holding the light
+    .color("#E7D6B1").size(0.02)
+    .spread(6, 3.4, 10)         // the box they fill, centered on position
+    .position(0, 1.9, 0)
+    .drift()                    // slow in-place wander; drift(speed) scales it
+    .opacity(0.75)
+
+particles(400)                  // rain
+    .color("#7FA8C0").size(0.02)
+    .spread(12, 8, 12)
+    .fall(3)                    // units/sec, wrapping back to the top
+```
+
+Positions are seeded deterministically — a re-render doesn't reshuffle the
+sky; `.seed(n)` picks a different arrangement. `drift`/`fall` animate the
+cloud (and keep the loop alive); a static cloud is free after its first
+frame.
 
 ## Groups
 
@@ -209,6 +336,22 @@ group(
 
 Groups nest. Transforms, presets and click handlers on a group apply to the
 whole subtree.
+
+Three composition helpers keep scene-building declarative when the scene
+depends on state:
+
+```java
+group(myListOfNodes)                  // any Iterable — no toArray ceremony
+
+when(doorOpen, doorway())             // the node, or nothing; null vanishes
+when(aligned, () -> whale())          // Supplier: only built if needed
+
+repeat(10, i -> cylinder(0.08, 1.5)   // a colonnade in one line
+    .position(-2.7 + i * 0.6, 0.75, 0))
+```
+
+`scene(...)`, `group(...)` and `repeat(...)` all skip nulls, so a
+conditional branch never needs an empty-group placeholder.
 
 ## Models
 
@@ -276,6 +419,48 @@ torusKnot()
     .onClick(jweb.Actions.show("hint"))
 ```
 
+## Live patches
+
+The problem with state-driven scenes used to be that changing state meant
+re-rendering the page — and the visitor's camera, walk position and every
+animation phase reset with it. `Three.patch` updates the **live** scene
+instead, from inside a server event handler, riding the WebSocket answer
+that's already in flight:
+
+```java
+sphere().name("lantern").onClick(e ->
+    Three.patch("hall")
+         .node("lantern").emissive("#22d3ee").color("#a5f3fc").tween(500)
+         .node("key-light").intensity(1.6).tween(500))
+```
+
+No reload, no scene rebuild — the lantern re-lights in place, mid-walk.
+Targets are nodes carrying `.name(...)`. Per node:
+`position / rotation / scale` (degrees, like everywhere),
+`color / emissive / opacity` (meshes), `color / intensity` (lights),
+`visible(boolean)`. `tween(ms)` eases the current target's changes;
+without it they apply instantly.
+
+`.camera()` glides the framing — `position`, `lookAt`, `tween`:
+
+```java
+button(attrs().onClick(e ->
+    Three.patch("hall").camera()
+         .position(0, 2.2, -0.6).lookAt(0, 2.1, -4.5).tween(1200)),
+    text("Approach the arch"))
+```
+
+Camera patches respect whoever owns the camera: under OrbitControls they
+reposition through the controls (instantly, so the two don't fight), and
+while the visitor is walking they only update the framed view that Esc
+returns to.
+
+Patches work from any server event handler — a scene click, a button's
+`onClick(Consumer)`, a form submit. They ride the event's own socket
+answer, so outside a handler there's no page in flight and the patch is
+dropped with a warning. Position patches on a `float_()`ing node move its
+hover base along x/z and re-center the bob at the new height.
+
 ## Escape hatch: the raw three.js API
 
 The DSL covers scenes, not shaders. When you need the full API, give the
@@ -297,6 +482,21 @@ script().unsafeRaw("""
 the entire three.js API is yours; the runtime still owns sizing, the loop
 and disposal.
 
+Two interop courtesies, so page scripts never poll and never resort to
+prototype tricks:
+
+```js
+// runs when the scene exists — immediately if it already does
+JWebThree.ready('hero', h => {
+    const v = new JWebThree.THREE.Vector3(0, 1, 0);   // the real module
+    h.objects.moon.position.add(v);
+});
+```
+
+`JWebThree.THREE` is the bundled three.js itself (`Vector3`, `Color`,
+materials, everything). `setWalk(id, on)` and `walking(id)` control walk
+mode from scripts when a `data-three-walk` element isn't enough.
+
 ## Sizing
 
 Give a scene a height (style, class — anything CSS). The canvas fills its
@@ -305,22 +505,33 @@ minimum and a console hint rather than an invisible scene.
 
 ## Performance notes
 
-- The bundle is ~733KB raw / ~170KB gzipped, cached immutably per version —
+- The bundle is ~798KB raw / ~205KB gzipped, cached immutably per version —
   one fetch per browser per upgrade, and only on pages that use scenes.
 - Still scenes render on demand: zero CPU, zero battery until interaction.
+  Live patches without a tween apply and render exactly one frame; tweens
+  run the loop only until they finish.
 - Animated scenes pause offscreen — the loop stops while the element is
   scrolled out of view and resumes when it returns.
+- `bloom()` renders the scene through an HDR composer — roughly the cost of
+  a second render at bloom resolution. One bloomed hero is fine; five
+  bloomed scenes on one page is a choice.
+- A `mirror()` re-renders the scene from the reflected view — same
+  order-of-magnitude note as bloom.
+- `particles(n)` is one draw call regardless of `n`; thousands are cheap.
 - Pixel ratio is capped at 2 to keep retina laptops cool.
-- Disposal is automatic and complete — geometries, materials, textures and
-  the GL context are released when the element leaves the DOM, including
-  through fragment swaps.
+- Disposal is automatic and complete — geometries, materials, textures,
+  composer targets and the GL context are released when the element leaves
+  the DOM, including through fragment swaps.
 
 ## Limitations
 
 - WebGL is required (universally available; scenes fail with a console error,
   never a crash).
-- One camera per scene; no post-processing or custom shaders through the
-  DSL — use the escape hatch.
+- One camera per scene. Post-processing through the DSL is exactly
+  `bloom()`/`toneMapped()` — arbitrary pass chains and custom shaders are
+  escape-hatch territory.
+- Walk mode's collision model is `bounds(...)` — a fenced rectangle, not
+  per-object collision.
 - Draco/KTX2-compressed assets are not supported (no decoder shipped).
-- `onClick` server handlers need the JWeb runtime's WebSocket (on by
-  default); `clickSwap` needs only fetch.
+- `onClick` server handlers and `Three.patch` need the JWeb runtime's
+  WebSocket (on by default); `clickSwap` needs only fetch.

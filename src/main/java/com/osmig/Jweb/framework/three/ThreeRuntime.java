@@ -8,13 +8,23 @@ package com.osmig.Jweb.framework.three;
  * scenes render on demand), shadow-map configuration, async model/texture
  * loading and glTF animation mixing, raycast click/hover dispatch into the
  * JWeb event pipeline (server handlers, Actions-DSL handlers, swaps),
- * re-init when a swap or morph changes the scene, and full disposal when
- * the element leaves the DOM.
+ * first-person walk mode (toggled by {@code data-three-walk} elements),
+ * live {@code Three.patch} application with tweening, the bloom/tone-mapped
+ * post pipeline, re-init when a swap or morph changes the scene, and full
+ * disposal when the element leaves the DOM.
  *
  * <p>Loaded lazily by the JWeb runtime, after the vendored bundle, only on
- * pages that contain a scene. Exposes {@code JWebThree.get(id)} →
- * {@code {scene, camera, renderer, controls, objects}} for scripts that need
- * the raw three.js API.</p>
+ * pages that contain a scene. Exposes {@code JWebThree}:</p>
+ * <ul>
+ *   <li>{@code get(id)} → {@code {scene, camera, renderer, controls,
+ *       objects}} — the live escape hatch into the full three.js API;</li>
+ *   <li>{@code ready(id, cb)} — runs {@code cb(handle)} once the scene is
+ *       initialized (immediately if it already is), no polling;</li>
+ *   <li>{@code THREE} — the bundled three.js module itself, so page scripts
+ *       can construct vectors, materials and helpers;</li>
+ *   <li>{@code setWalk(id, on)} / {@code walking(id)} — programmatic walk
+ *       control alongside the {@code data-three-walk} toggle protocol.</li>
+ * </ul>
  */
 public final class ThreeRuntime {
 
@@ -35,12 +45,20 @@ public final class ThreeRuntime {
             if(window.JWebThree)return;
             if(!window.THREE){console.error('[JWeb] three-runtime loaded without THREE');return;}
             var RAD=Math.PI/180;
+            var REDUCED=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
             var instances=new Map();
+            var readyQ=[];
 
             function vec(target,v){if(v)target.set(v[0],v[1],v[2]);}
             function rad(target,v){if(v)target.set(v[0]*RAD,v[1]*RAD,v[2]*RAD);}
             function color(c,fallback){return new THREE.Color(c||fallback);}
-            function render(inst){inst.renderer.render(inst.scene,inst.camera);}
+            function render(inst){
+                if(inst.composer)inst.composer.render();
+                else inst.renderer.render(inst.scene,inst.camera);
+            }
+            function ease(k){return k*k*(3-2*k);}
+            // deterministic PRNG so a re-render doesn't reshuffle particles
+            function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 
             function wantsShadows(nodes){
                 for(var i=0;i<nodes.length;i++){
@@ -69,6 +87,18 @@ public final class ThreeRuntime {
                 if(n.t==='octa')return new THREE.OctahedronGeometry(n.radius!=null?n.radius:1);
                 if(n.t==='dodeca')return new THREE.DodecahedronGeometry(n.radius!=null?n.radius:1);
                 if(n.t==='icosa')return new THREE.IcosahedronGeometry(n.radius!=null?n.radius:1);
+                if(n.t==='tube'){
+                    var tp=[];
+                    for(var i=0;i+2<n.pts.length;i+=3)tp.push(new THREE.Vector3(n.pts[i],n.pts[i+1],n.pts[i+2]));
+                    var curve=new THREE.CatmullRomCurve3(tp,!!n.closed);
+                    return new THREE.TubeGeometry(curve,Math.max(24,tp.length*8),n.radius!=null?n.radius:0.1,12,!!n.closed);
+                }
+                if(n.t==='arc')return new THREE.TorusGeometry(n.radius!=null?n.radius:1,n.tube!=null?n.tube:0.1,16,64,(n.sweep!=null?n.sweep:360)*RAD);
+                if(n.t==='lathe'){
+                    var lp=[];
+                    for(var j=0;j+1<n.profile.length;j+=2)lp.push(new THREE.Vector2(n.profile[j],n.profile[j+1]));
+                    return new THREE.LatheGeometry(lp,n.seg||32);
+                }
                 return null;
             }
 
@@ -79,13 +109,13 @@ public final class ThreeRuntime {
                 if(n.rough!=null)m.roughness=n.rough;
                 if(n.opacity!=null){m.transparent=true;m.opacity=n.opacity;}
                 if(n.wire)m.wireframe=true;
-                if(n.t==='plane'||n.t==='disc'||n.t==='ring')m.side=THREE.DoubleSide;
+                if(n.t==='plane'||n.t==='disc'||n.t==='ring'||n.t==='lathe')m.side=THREE.DoubleSide;
                 if(n.map){
                     new THREE.TextureLoader().load(n.map,function(tex){
                         if(inst.disposed)return;
                         tex.colorSpace=THREE.SRGBColorSpace;
                         m.map=tex;m.needsUpdate=true;
-                        if(!inst.animated)render(inst);
+                        if(!inst.raf)render(inst);
                     },undefined,function(){console.error('[JWeb] texture failed:',n.map);});
                 }
                 return m;
@@ -107,6 +137,18 @@ public final class ThreeRuntime {
             }
 
             function buildNode(n,inst,parent){
+                if(n.t==='plane'&&n.mirror){
+                    if(!THREE.Reflector){console.warn('[JWeb] .mirror() needs the Reflector addon — rebuild the three bundle');}
+                    else{
+                        var ms=n.size||[1,1];
+                        var refl=new THREE.Reflector(new THREE.PlaneGeometry(ms[0],ms[1]),{
+                            color:n.color||'#889199',
+                            textureWidth:1024,textureHeight:1024,clipBias:0.003});
+                        applyCommon(refl,n,inst);
+                        parent.add(refl);
+                        return;
+                    }
+                }
                 var geo=geometry(n);
                 if(geo){
                     var mesh=new THREE.Mesh(geo,material(n,inst));
@@ -118,6 +160,29 @@ public final class ThreeRuntime {
                     applyCommon(g,n,inst);
                     (n.children||[]).forEach(function(c){buildNode(c,inst,g);});
                     parent.add(g);
+                }else if(n.t==='particles'){
+                    var cnt=n.count||100,spread=n.spread||[10,10,10];
+                    var rand=mulberry(n.seed!=null?n.seed:1);
+                    var pos=new Float32Array(cnt*3),orig=new Float32Array(cnt*3),phase=new Float32Array(cnt);
+                    for(var pi=0;pi<cnt;pi++){
+                        orig[pi*3]=pos[pi*3]=(rand()-0.5)*spread[0];
+                        orig[pi*3+1]=pos[pi*3+1]=(rand()-0.5)*spread[1];
+                        orig[pi*3+2]=pos[pi*3+2]=(rand()-0.5)*spread[2];
+                        phase[pi]=rand()*Math.PI*2;
+                    }
+                    var pg=new THREE.BufferGeometry();
+                    pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
+                    var pm=new THREE.PointsMaterial({color:color(n.color,'#ffffff'),
+                        size:n.size!=null?n.size:0.05,sizeAttenuation:true,
+                        transparent:true,opacity:n.opacity!=null?n.opacity:1,depthWrite:false});
+                    var pts=new THREE.Points(pg,pm);
+                    applyCommon(pts,n,inst);
+                    parent.add(pts);
+                    if(n.drift||n.fall){
+                        inst.pclouds.push({geo:pg,orig:orig,phase:phase,count:cnt,
+                            drift:n.drift||0,fall:n.fall||0,spread:spread,fallOff:0});
+                        inst.needsLoop=true;
+                    }
                 }else if(n.t==='model'){
                     var wrap=new THREE.Group();
                     applyCommon(wrap,n,inst);
@@ -141,7 +206,7 @@ public final class ThreeRuntime {
                         }else if(n.anim){
                             console.warn('[JWeb] .animate() set but model ships no animations:',n.url);
                         }
-                        if(!inst.animated)render(inst);
+                        if(!inst.raf)render(inst);
                     },undefined,function(err){console.error('[JWeb] model failed:',n.url,err);});
                 }else if(n.t==='label'){
                     // Canvas-rendered text on a Sprite: crisp, always camera-
@@ -188,7 +253,7 @@ public final class ThreeRuntime {
                         var sa=(tex.image&&tex.image.width)?tex.image.height/tex.image.width:1;
                         spr.scale.set(sw,sw*sa,1);
                         spr.visible=true;
-                        if(!inst.animated)render(inst);
+                        if(!inst.raf)render(inst);
                     },undefined,function(){console.error('[JWeb] sprite failed:',n.url);});
                 }else if(n.t==='env'){
                     // Equirect panorama -> PBR light environment (and the
@@ -199,7 +264,7 @@ public final class ThreeRuntime {
                         tex.colorSpace=THREE.SRGBColorSpace;
                         inst.scene.environment=tex;
                         if(n.bg)inst.scene.background=tex;
-                        if(!inst.animated)render(inst);
+                        if(!inst.raf)render(inst);
                     },undefined,function(){console.error('[JWeb] environment failed:',n.url);});
                 }else if(n.t==='dirLight'){
                     var dir=new THREE.DirectionalLight(color(n.color,'#ffffff'),n.intensity!=null?n.intensity:1);
@@ -240,6 +305,10 @@ public final class ThreeRuntime {
                     var grid=new THREE.GridHelper(n.size!=null?n.size:10,n.divisions!=null?n.divisions:10);
                     applyCommon(grid,n,inst);
                     parent.add(grid);
+                }else if(n.t==='tone'){
+                    inst.toneCfg=n;
+                }else if(n.t==='bloom'){
+                    inst.bloomCfg=n;
                 }else if(n.t!=='camera'){
                     console.warn('[JWeb] unknown scene node type:',n.t);
                 }
@@ -283,7 +352,7 @@ public final class ThreeRuntime {
                 if(inst.hovered)unhover(inst.hovered);
                 inst.hovered=target;
                 if(target)hover(target);
-                if(!inst.animated)render(inst);
+                if(!inst.raf)render(inst);
             }
 
             function wireInteraction(inst){
@@ -291,6 +360,8 @@ public final class ThreeRuntime {
                 inst.pointer=new THREE.Vector2();
                 inst.ray=new THREE.Raycaster();
                 canvas.addEventListener('click',function(ev){
+                    // a walk-mode look-drag ends in a click; don't treat it as one
+                    if(inst.suppressClick){inst.suppressClick=false;return;}
                     var h=hit(inst,ev);
                     if(!h||!window.JWeb)return;
                     var d=h.d;
@@ -327,6 +398,221 @@ public final class ThreeRuntime {
                 });
             }
 
+            // ==================== Walk mode ====================
+
+            function setWalk(inst,on){
+                var w=inst.walk;
+                if(!w||w.active===on||inst.disposed)return;
+                w.active=on;
+                var cam=inst.camera,el=inst.el;
+                if(on){
+                    // one walker at a time — stepping into this scene steps
+                    // out of any other
+                    instances.forEach(function(other){
+                        if(other!==inst&&other.walk&&other.walk.active)setWalk(other,false);
+                    });
+                    var dir=cam.getWorldDirection(new THREE.Vector3());
+                    w.yaw=Math.atan2(-dir.x,-dir.z);
+                    w.pitch=Math.asin(Math.max(-1,Math.min(1,dir.y)))*0.35;
+                    w.px=cam.position.x;w.pz=cam.position.z;
+                    w.keys={};w.bob=0;
+                    cam.rotation.order='YXZ';
+                    cam.rotation.set(w.pitch,w.yaw,0);
+                    cam.position.y=w.eye;
+                    if(inst.controls)inst.controls.enabled=false;
+                    w.keydown=function(e){
+                        if(e.key==='Escape'){setWalk(inst,false);return;}
+                        var k=e.key.toLowerCase();
+                        w.keys[k]=true;
+                        if(k.indexOf('arrow')===0||k===' ')e.preventDefault();
+                    };
+                    w.keyup=function(e){w.keys[e.key.toLowerCase()]=false;};
+                    document.addEventListener('keydown',w.keydown);
+                    document.addEventListener('keyup',w.keyup);
+                }else{
+                    document.removeEventListener('keydown',w.keydown);
+                    document.removeEventListener('keyup',w.keyup);
+                    // back to the framed view
+                    var b=inst.camBase;
+                    cam.position.set(b.pos[0],b.pos[1],b.pos[2]);
+                    cam.lookAt(b.look[0],b.look[1],b.look[2]);
+                    if(inst.controls){inst.controls.enabled=true;inst.controls.update();}
+                }
+                el.classList.toggle('three-walking',on);
+                document.body.classList.toggle('three-walking',on);
+                document.querySelectorAll('[data-three-walk]').forEach(function(btn){
+                    if(resolveWalkTarget(btn)===el)btn.classList.toggle('three-walking',on);
+                });
+                el.dispatchEvent(new CustomEvent('jweb:three-walk',
+                    {bubbles:true,detail:{id:el.id||'',walking:on}}));
+                if(on)kick(inst);else if(!inst.raf)render(inst);
+            }
+
+            function stepWalk(inst,dt){
+                var w=inst.walk,cam=inst.camera;
+                var turn=(w.keys['arrowleft']?1:0)-(w.keys['arrowright']?1:0);
+                w.yaw+=turn*1.9*dt;
+                var f=((w.keys['w']||w.keys['arrowup'])?1:0)-((w.keys['s']||w.keys['arrowdown'])?1:0);
+                var s=(w.keys['d']?1:0)-(w.keys['a']?1:0);
+                var sp=w.keys['shift']?w.run:w.speed;
+                if(f||s){
+                    w.bob+=dt*7;
+                    w.px+=(-Math.sin(w.yaw)*f+Math.cos(w.yaw)*s)*sp*dt;
+                    w.pz+=(-Math.cos(w.yaw)*f-Math.sin(w.yaw)*s)*sp*dt;
+                    if(w.bounds){
+                        w.px=Math.max(w.bounds[0],Math.min(w.bounds[2],w.px));
+                        w.pz=Math.max(w.bounds[1],Math.min(w.bounds[3],w.pz));
+                    }
+                }
+                var bobY=(!REDUCED&&(f||s))?Math.sin(w.bob)*0.035:0;
+                cam.position.set(w.px,w.eye+bobY,w.pz);
+                cam.rotation.set(w.pitch,w.yaw,0);
+            }
+
+            function wireWalkLook(inst){
+                var canvas=inst.renderer.domElement,w=inst.walk;
+                var dragging=false,lx=0,ly=0,moved=0;
+                canvas.addEventListener('pointerdown',function(e){
+                    if(w.active){dragging=true;moved=0;lx=e.clientX;ly=e.clientY;}
+                });
+                w.pm=function(e){
+                    if(!dragging||!w.active)return;
+                    var dx=e.clientX-lx,dy=e.clientY-ly;
+                    moved+=Math.abs(dx)+Math.abs(dy);
+                    w.yaw-=dx*0.003;
+                    w.pitch=Math.max(-1.2,Math.min(1.2,w.pitch-dy*0.003));
+                    lx=e.clientX;ly=e.clientY;
+                };
+                w.pu=function(){
+                    if(dragging&&moved>6)inst.suppressClick=true;
+                    dragging=false;
+                };
+                window.addEventListener('pointermove',w.pm);
+                window.addEventListener('pointerup',w.pu);
+            }
+
+            function resolveWalkTarget(btn){
+                var v=btn.getAttribute('data-three-walk');
+                if(v){var el=document.getElementById(v);return (el&&instances.has(el))?el:null;}
+                var first=null;
+                instances.forEach(function(inst,el){if(!first)first=el;});
+                return first;
+            }
+
+            // the toggle protocol: any [data-three-walk] element switches the
+            // named scene's walk mode — delegated once, survives swaps
+            document.addEventListener('click',function(e){
+                if(!e.target||!e.target.closest)return;
+                var btn=e.target.closest('[data-three-walk]');
+                if(!btn)return;
+                var el=resolveWalkTarget(btn);
+                var inst=el&&instances.get(el);
+                if(!inst)return;
+                if(!inst.walk){console.warn('[JWeb] data-three-walk: scene has no camera().walk(...)');return;}
+                setWalk(inst,!inst.walk.active);
+            },true);
+
+            // ==================== Live patches ====================
+
+            function startTween(inst,dur,step){
+                if(dur>0){
+                    inst.tweens.push({t0:inst.time,dur:dur/1000,step:step});
+                    kick(inst);
+                }else{
+                    step(1);
+                    if(!inst.raf)render(inst);
+                }
+            }
+
+            function patchColor(inst,mat,key,value,dur){
+                if(!mat||!mat[key])return;
+                var from=mat[key].clone(),to=new THREE.Color(value);
+                startTween(inst,dur,function(k){mat[key].copy(from).lerp(to,k);});
+            }
+
+            function applyNodePatch(inst,obj,p){
+                var dur=p.tween||0;
+                if(p.visible!=null){obj.visible=p.visible;if(!inst.raf)render(inst);}
+                if(p.pos){
+                    var pf=obj.position.clone(),pt=new THREE.Vector3(p.pos[0],p.pos[1],p.pos[2]);
+                    inst.floats.forEach(function(fl){if(fl.obj===obj)fl.base=p.pos[1];});
+                    startTween(inst,dur,function(k){obj.position.lerpVectors(pf,pt,k);});
+                }
+                if(p.rot){
+                    var rf=[obj.rotation.x,obj.rotation.y,obj.rotation.z];
+                    var rt=[p.rot[0]*RAD,p.rot[1]*RAD,p.rot[2]*RAD];
+                    startTween(inst,dur,function(k){
+                        obj.rotation.set(rf[0]+(rt[0]-rf[0])*k,rf[1]+(rt[1]-rf[1])*k,rf[2]+(rt[2]-rf[2])*k);
+                    });
+                }
+                if(p.scl){
+                    var sf=obj.scale.clone(),st=new THREE.Vector3(p.scl[0],p.scl[1],p.scl[2]);
+                    startTween(inst,dur,function(k){obj.scale.lerpVectors(sf,st,k);});
+                }
+                var mat=obj.material&&!Array.isArray(obj.material)?obj.material:null;
+                if(p.color){
+                    if(obj.isLight)patchColor(inst,obj,'color',p.color,dur);
+                    else patchColor(inst,mat,'color',p.color,dur);
+                }
+                if(p.emissive)patchColor(inst,mat,'emissive',p.emissive,dur);
+                if(p.opacity!=null&&mat){
+                    mat.transparent=true;
+                    var of=mat.opacity,ot=p.opacity;
+                    startTween(inst,dur,function(k){mat.opacity=of+(ot-of)*k;});
+                }
+                if(p.intensity!=null&&obj.isLight){
+                    var lf=obj.intensity,lt=p.intensity;
+                    startTween(inst,dur,function(k){obj.intensity=lf+(lt-lf)*k;});
+                }
+            }
+
+            function applyCameraPatch(inst,p){
+                var dur=p.tween||0,b=inst.camBase;
+                if(p.pos)b.pos=[p.pos[0],p.pos[1],p.pos[2]];
+                if(p.look)b.look=[p.look[0],p.look[1],p.look[2]];
+                if(inst.walk&&inst.walk.active)return;   // walking owns the camera; the
+                                                         // new framing applies on exit
+                var cam=inst.camera;
+                if(inst.controls){
+                    // OrbitControls owns the camera each frame — reposition
+                    // through it instead of tweening against it
+                    cam.position.set(b.pos[0],b.pos[1],b.pos[2]);
+                    inst.controls.target.set(b.look[0],b.look[1],b.look[2]);
+                    inst.controls.update();
+                    if(!inst.raf)render(inst);
+                    return;
+                }
+                var pf=cam.position.clone(),pt=new THREE.Vector3(b.pos[0],b.pos[1],b.pos[2]);
+                var lf=inst.camLook.clone(),lt=new THREE.Vector3(b.look[0],b.look[1],b.look[2]);
+                startTween(inst,dur,function(k){
+                    cam.position.lerpVectors(pf,pt,k);
+                    inst.camLook.lerpVectors(lf,lt,k);
+                    cam.lookAt(inst.camLook);
+                });
+            }
+
+            function applyPatch(msg){
+                var el=msg.scene?document.getElementById(msg.scene):null;
+                var inst=el&&instances.get(el);
+                if(!inst){console.warn('[JWeb] threePatch for unknown scene:',msg.scene);return;}
+                (msg.nodes||[]).forEach(function(p){
+                    var obj=inst.objects[p.name];
+                    if(!obj){console.warn('[JWeb] threePatch: no node named',p.name,'in scene',msg.scene);return;}
+                    applyNodePatch(inst,obj,p);
+                });
+                if(msg.camera)applyCameraPatch(inst,msg.camera);
+            }
+
+            // ==================== Init ====================
+
+            function wantsLoop(inst){
+                return inst.animated||inst.tweens.length>0||(inst.walk&&inst.walk.active);
+            }
+
+            function kick(inst){
+                if(!inst.raf&&inst.visible&&wantsLoop(inst))inst.startLoop();
+            }
+
             function init(el){
                 if(instances.has(el))return;
                 var raw=el.getAttribute('data-three');
@@ -352,10 +638,12 @@ public final class ThreeRuntime {
                 el.appendChild(canvas);
 
                 var inst={el:el,renderer:renderer,scene:new THREE.Scene(),camera:null,controls:null,
-                          objects:{},spins:[],floats:[],mixers:[],hasLight:false,
-                          clickable:false,interactive:false,hovered:null,needsLoop:false,
+                          objects:{},spins:[],floats:[],mixers:[],pclouds:[],tweens:[],
+                          hasLight:false,clickable:false,interactive:false,hovered:null,
+                          needsLoop:false,walk:null,swayAmt:0,camBase:null,camLook:null,
+                          composer:null,toneCfg:null,bloomCfg:null,suppressClick:false,
                           shadows:wantsShadows(graph.nodes),animated:false,disposed:false,
-                          raf:0,ro:null,io:null,last:0,time:0};
+                          visible:true,raf:0,ro:null,io:null,last:0,time:0};
                 if(inst.shadows)renderer.shadowMap.enabled=true;
 
                 var camNode=null;
@@ -373,17 +661,57 @@ public final class ThreeRuntime {
                 var look=(camNode&&camNode.look)||[0,0,0];
                 cam.lookAt(look[0],look[1],look[2]);
                 inst.camera=cam;
+                inst.camBase={pos:[cam.position.x,cam.position.y,cam.position.z],
+                              look:[look[0],look[1],look[2]]};
+                inst.camLook=new THREE.Vector3(look[0],look[1],look[2]);
+
+                if(camNode&&camNode.walk){
+                    var wk=camNode.walk;
+                    inst.walk={eye:wk[0]!=null?wk[0]:1.7,speed:wk[1]||3,run:wk[2]||5.5,
+                               bounds:camNode.bounds||null,active:false,
+                               yaw:0,pitch:0,px:0,pz:0,bob:0,keys:{}};
+                    wireWalkLook(inst);
+                }
+                if(camNode&&camNode.sway&&!camNode.orbit&&!REDUCED)inst.swayAmt=camNode.sway;
+
+                // tone mapping + bloom: ACES on the renderer; with bloom, the
+                // scene renders HDR through the composer and OutputPass does
+                // the one tone-map + sRGB conversion at the end of the chain
+                if(inst.toneCfg||inst.bloomCfg){
+                    renderer.toneMapping=THREE.ACESFilmicToneMapping;
+                    renderer.toneMappingExposure=(inst.toneCfg&&inst.toneCfg.exposure!=null)?inst.toneCfg.exposure:1;
+                }
+                if(inst.bloomCfg){
+                    if(!THREE.EffectComposer||!THREE.UnrealBloomPass||!THREE.OutputPass){
+                        console.warn('[JWeb] bloom() needs the postprocessing addons — rebuild the three bundle');
+                    }else{
+                        var bc=inst.bloomCfg;
+                        var composer=new THREE.EffectComposer(renderer);
+                        composer.addPass(new THREE.RenderPass(inst.scene,cam));
+                        composer.addPass(new THREE.UnrealBloomPass(
+                            new THREE.Vector2(el.clientWidth||1,el.clientHeight||1),
+                            bc.strength!=null?bc.strength:0.7,
+                            bc.radius!=null?bc.radius:0.35,
+                            bc.threshold!=null?bc.threshold:0.85));
+                        composer.addPass(new THREE.OutputPass());
+                        inst.composer=composer;
+                    }
+                }
 
                 var autoRotate=camNode&&camNode.auto;
-                var animated=inst.spins.length>0||inst.floats.length>0||!!autoRotate||inst.needsLoop;
-                inst.animated=animated;
+                inst.animated=inst.spins.length>0||inst.floats.length>0||!!autoRotate
+                               ||inst.needsLoop||inst.swayAmt>0;
                 if(camNode&&camNode.orbit&&THREE.OrbitControls){
                     var controls=new THREE.OrbitControls(cam,canvas);
                     controls.target.set(look[0],look[1],look[2]);
-                    controls.enableDamping=animated;
+                    controls.enableDamping=inst.animated;
                     if(autoRotate){controls.autoRotate=true;controls.autoRotateSpeed=autoRotate;}
+                    if(camNode.noZoom)controls.enableZoom=false;
+                    if(camNode.noPan)controls.enablePan=false;
+                    if(camNode.dist){controls.minDistance=camNode.dist[0];controls.maxDistance=camNode.dist[1];}
+                    if(camNode.polar){controls.minPolarAngle=camNode.polar[0]*RAD;controls.maxPolarAngle=camNode.polar[1]*RAD;}
                     controls.update();
-                    if(!animated)controls.addEventListener('change',function(){render(inst);});
+                    if(!inst.animated)controls.addEventListener('change',function(){render(inst);});
                     inst.controls=controls;
                 }
                 if(inst.interactive)wireInteraction(inst);
@@ -392,60 +720,110 @@ public final class ThreeRuntime {
                     var w=el.clientWidth,h=el.clientHeight;
                     if(!w||!h)return;
                     renderer.setSize(w,h,false);
+                    if(inst.composer)inst.composer.setSize(w,h);
                     cam.aspect=w/h;
                     cam.updateProjectionMatrix();
-                    if(!animated)render(inst);
+                    if(!inst.raf)render(inst);
                 }
                 inst.ro=new ResizeObserver(resize);
                 inst.ro.observe(el);
                 resize();
 
-                if(animated){
-                    var loop=function(now){
-                        inst.raf=requestAnimationFrame(loop);
-                        var dt=Math.min((now-inst.last)/1000,0.1);
-                        inst.last=now;
-                        inst.time+=dt;
-                        inst.spins.forEach(function(s){
-                            s.obj.rotation.x+=s.rate[0]*dt;
-                            s.obj.rotation.y+=s.rate[1]*dt;
-                            s.obj.rotation.z+=s.rate[2]*dt;
-                        });
-                        inst.floats.forEach(function(f){
-                            f.obj.position.y=f.base+Math.sin(inst.time*f.speed*Math.PI*2)*f.amp;
-                        });
-                        inst.mixers.forEach(function(m){m.update(dt);});
-                        if(inst.controls)inst.controls.update();
-                        render(inst);
-                    };
-                    inst.startLoop=function(){
-                        if(inst.raf||inst.disposed)return;
-                        inst.last=performance.now();
-                        inst.raf=requestAnimationFrame(loop);
-                    };
-                    inst.stopLoop=function(){
-                        if(inst.raf){cancelAnimationFrame(inst.raf);inst.raf=0;}
-                    };
-                    // The loop only runs while the scene is actually on
-                    // screen — scrolled-away scenes cost nothing
-                    inst.io=new IntersectionObserver(function(entries){
-                        if(entries[0].isIntersecting)inst.startLoop();
-                        else inst.stopLoop();
+                var loop=function(now){
+                    inst.raf=requestAnimationFrame(loop);
+                    var dt=Math.min((now-inst.last)/1000,0.1);
+                    inst.last=now;
+                    inst.time+=dt;
+                    inst.spins.forEach(function(s){
+                        s.obj.rotation.x+=s.rate[0]*dt;
+                        s.obj.rotation.y+=s.rate[1]*dt;
+                        s.obj.rotation.z+=s.rate[2]*dt;
                     });
-                    inst.io.observe(el);
-                    inst.startLoop();
-                }else{
+                    inst.floats.forEach(function(f){
+                        f.obj.position.y=f.base+Math.sin(inst.time*f.speed*Math.PI*2)*f.amp;
+                    });
+                    inst.mixers.forEach(function(m){m.update(dt);});
+                    inst.pclouds.forEach(function(pc){
+                        var a=pc.geo.attributes.position.array;
+                        if(pc.fall)pc.fallOff+=pc.fall*dt;
+                        for(var i=0;i<pc.count;i++){
+                            var ph=pc.phase[i];
+                            if(pc.drift){
+                                var da=0.02*pc.drift;
+                                a[i*3]=pc.orig[i*3]+Math.sin(inst.time*0.5*pc.drift+ph)*pc.spread[0]*da;
+                                a[i*3+2]=pc.orig[i*3+2]+Math.cos(inst.time*0.4*pc.drift+ph*1.7)*pc.spread[2]*da;
+                                if(!pc.fall)a[i*3+1]=pc.orig[i*3+1]+Math.sin(inst.time*0.3*pc.drift+ph*2.3)*pc.spread[1]*da;
+                            }
+                            if(pc.fall){
+                                var y=pc.orig[i*3+1]-pc.fallOff;
+                                var h=pc.spread[1];
+                                y=y-Math.floor((y+h/2)/h)*h;   // wrap into [-h/2, h/2)
+                                a[i*3+1]=y;
+                            }
+                        }
+                        pc.geo.attributes.position.needsUpdate=true;
+                    });
+                    if(inst.walk&&inst.walk.active){
+                        stepWalk(inst,dt);
+                    }else if(inst.swayAmt){
+                        cam.position.x=inst.camBase.pos[0]+Math.sin(inst.time*0.16)*0.14*inst.swayAmt;
+                        cam.position.y=inst.camBase.pos[1]+Math.sin(inst.time*0.38)*0.05*inst.swayAmt;
+                    }
+                    if(inst.tweens.length){
+                        inst.tweens=inst.tweens.filter(function(tw){
+                            var k=Math.min(1,(inst.time-tw.t0)/tw.dur);
+                            tw.step(ease(k));
+                            return k<1;
+                        });
+                    }
+                    if(inst.controls&&inst.controls.enabled)inst.controls.update();
                     render(inst);
-                }
+                    if(!wantsLoop(inst))inst.stopLoop();
+                };
+                inst.startLoop=function(){
+                    if(inst.raf||inst.disposed||!wantsLoop(inst))return;
+                    inst.last=performance.now();
+                    inst.raf=requestAnimationFrame(loop);
+                };
+                inst.stopLoop=function(){
+                    if(inst.raf){cancelAnimationFrame(inst.raf);inst.raf=0;}
+                };
+                // The loop only runs while the scene is actually on
+                // screen — scrolled-away scenes cost nothing
+                inst.io=new IntersectionObserver(function(entries){
+                    inst.visible=entries[0].isIntersecting;
+                    if(inst.visible)inst.startLoop();
+                    else inst.stopLoop();
+                });
+                inst.io.observe(el);
+                if(inst.animated)inst.startLoop();
+                else render(inst);
                 instances.set(el,inst);
+                flushReady(el,inst);
+            }
+
+            function flushReady(el,inst){
+                readyQ=readyQ.filter(function(r){
+                    if(r.el===el||(r.id&&r.id===el.id)){
+                        try{r.cb(inst);}catch(e){console.error('[JWeb] ready callback failed:',e);}
+                        return false;
+                    }
+                    return true;
+                });
             }
 
             function dispose(inst){
+                if(inst.walk&&inst.walk.active)setWalk(inst,false);
+                if(inst.walk){
+                    if(inst.walk.pm)window.removeEventListener('pointermove',inst.walk.pm);
+                    if(inst.walk.pu)window.removeEventListener('pointerup',inst.walk.pu);
+                }
                 inst.disposed=true;
                 if(inst.raf)cancelAnimationFrame(inst.raf);
                 if(inst.ro)inst.ro.disconnect();
                 if(inst.io)inst.io.disconnect();
                 if(inst.controls)inst.controls.dispose();
+                if(inst.composer&&inst.composer.dispose)inst.composer.dispose();
                 // env/sky textures hang off the scene, not its children
                 if(inst.scene.environment&&inst.scene.environment.isTexture)inst.scene.environment.dispose();
                 if(inst.scene.background&&inst.scene.background.isTexture)inst.scene.background.dispose();
@@ -487,7 +865,7 @@ public final class ThreeRuntime {
                     // data-three — re-adopt the live canvas instead of re-initing
                     if(document.contains(el)&&inst.renderer.domElement.parentNode!==el){
                         el.appendChild(inst.renderer.domElement);
-                        if(!inst.animated)render(inst);
+                        if(!inst.raf)render(inst);
                     }
                 });
                 if(added)scan();
@@ -495,9 +873,25 @@ public final class ThreeRuntime {
             mo.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['data-three']});
 
             window.JWebThree={
+                THREE:THREE,
                 get:function(id){
                     var el=document.getElementById(id);
                     return (el&&instances.get(el))||null;
+                },
+                ready:function(id,cb){
+                    var el=typeof id==='string'?document.getElementById(id):id;
+                    var inst=el&&instances.get(el);
+                    if(inst){cb(inst);return;}
+                    readyQ.push({id:typeof id==='string'?id:'',el:el||null,cb:cb});
+                },
+                applyPatch:applyPatch,
+                setWalk:function(id,on){
+                    var inst=this.get(id);
+                    if(inst&&inst.walk)setWalk(inst,!!on);
+                },
+                walking:function(id){
+                    var inst=this.get(id);
+                    return !!(inst&&inst.walk&&inst.walk.active);
                 },
                 scan:scan
             };

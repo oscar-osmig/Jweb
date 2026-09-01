@@ -394,6 +394,12 @@ public final class JWebRuntime {
                     case 'initState':
                         this.handleStateUpdate(msg.states);
                         break;
+                    case 'threePatch':
+                        // Live scene mutation from Three.patch(...) — the
+                        // three runtime owns application (loaded lazily, but
+                        // always before a scene that could be patched exists)
+                        if(window.JWebThree&&JWebThree.applyPatch)JWebThree.applyPatch(msg);
+                        break;
                     case 'eventHandled':
                         document.dispatchEvent(new CustomEvent('jweb:eventHandled',{detail:{handler:msg.handler}}));
                         break;

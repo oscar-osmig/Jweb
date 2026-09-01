@@ -223,6 +223,53 @@ public class Three {
         return new Polyhedron("icosa").radius(radius);
     }
 
+    // ==================== Curves ====================
+
+    /**
+     * A round tube swept along a smooth curve through x,y,z points —
+     * pipes, vines, cables, ribs and rails without segmenting the curve
+     * by hand:
+     *
+     * <pre>{@code
+     * tube(0.05, -2, 0, 0,  0, 1.4, 0,  2, 0, 0)   // one smooth rib
+     * }</pre>
+     */
+    public static Tube tube(double radius, double... points) {
+        return new Tube(radius, points);
+    }
+
+    /**
+     * A partial ring — an arch that stops where you say. Sweep is in
+     * degrees, counter-clockwise from the ring's +x; rotate the node to
+     * hang it. {@code arc(1.5, 0.08, 180)} is a doorway arch.
+     */
+    public static Arc arc(double radius, double tube, double sweepDeg) {
+        return new Arc(radius, tube, sweepDeg);
+    }
+
+    /**
+     * A surface of revolution from radius,height pairs, bottom-up — pots,
+     * columns, domes and bells from their silhouette:
+     *
+     * <pre>{@code
+     * lathe(0, 0,  0.5, 0,  0.35, 0.8,  0.55, 1.1,  0.3, 1.3)
+     * }</pre>
+     */
+    public static Lathe lathe(double... radiusHeightPairs) {
+        return new Lathe(radiusHeightPairs);
+    }
+
+    // ==================== Particles ====================
+
+    /**
+     * A cloud of point particles — one node, one draw call. Dust is
+     * {@code particles(120).size(0.03).spread(8, 5, 20).drift()}; rain is
+     * {@code particles(400).size(0.02).spread(12, 8, 12).fall(3)}.
+     */
+    public static Particles particles(int count) {
+        return new Particles(count);
+    }
+
     // ==================== Billboards ====================
 
     /**
@@ -243,6 +290,45 @@ public class Three {
     /** Nodes sharing one transform — move, rotate, scale or animate them together. */
     public static Group group(ThreeNode<?>... children) {
         return new Group(children);
+    }
+
+    /** A group built from any collection — no {@code toArray} ceremony. */
+    public static Group group(Iterable<? extends ThreeNode<?>> children) {
+        Group g = new Group();
+        for (ThreeNode<?> child : children) g.add(child);
+        return g;
+    }
+
+    /**
+     * The node, or nothing: {@code when(aligned, whale())} adds the whale
+     * only when the condition holds. Null nodes vanish from {@code scene},
+     * {@code group} and {@code repeat} alike, so branches never need a
+     * placeholder.
+     */
+    public static ThreeNode<?> when(boolean condition, ThreeNode<?> node) {
+        return condition ? node : null;
+    }
+
+    /** Like {@link #when(boolean, ThreeNode)}, but only builds the node if needed. */
+    public static ThreeNode<?> when(boolean condition,
+                                    java.util.function.Supplier<? extends ThreeNode<?>> node) {
+        return condition ? node.get() : null;
+    }
+
+    /**
+     * A group of {@code count} nodes built by index — colonnades, coffers,
+     * chains, stakes:
+     *
+     * <pre>{@code
+     * repeat(10, i -> cylinder(0.08, 1.5).position(-2.7 + i * 0.6, 0.75, 0))
+     * }</pre>
+     *
+     * <p>Return {@code null} from the builder to skip an index.</p>
+     */
+    public static Group repeat(int count, java.util.function.IntFunction<? extends ThreeNode<?>> node) {
+        Group g = new Group();
+        for (int i = 0; i < count; i++) g.add(node.apply(i));
+        return g;
     }
 
     /** A glTF model loaded from a URL — plain {@code .glb}/{@code .gltf}. */
@@ -358,5 +444,76 @@ public class Three {
      */
     public static SceneSetting sky(String panoramaUrl) {
         return new SceneSetting("env").put("url", panoramaUrl).put("bg", true);
+    }
+
+    /**
+     * Cinematic tone mapping (ACES filmic): highlights roll off instead of
+     * clipping, and lit materials gain depth. One line, whole-scene:
+     *
+     * <pre>{@code
+     * scene(toneMapped(), ...)
+     * }</pre>
+     */
+    public static SceneSetting toneMapped() {
+        return new SceneSetting("tone");
+    }
+
+    /** Tone mapping with an exposure dial — above 1 brightens, below darkens. */
+    public static SceneSetting toneMapped(double exposure) {
+        return new SceneSetting("tone").put("exposure", ThreeNode.num(exposure));
+    }
+
+    /**
+     * Makes bright emissive surfaces actually glow — an HDR bloom pass over
+     * the whole scene, composited before tone mapping (which it implies).
+     * The scene must still read without it; bloom is the halo, not the lamp.
+     *
+     * <pre>{@code
+     * scene(bloom(),
+     *     sphere().color("#8FD5B5").emissive("#5FA98A"), ...)
+     * }</pre>
+     */
+    public static SceneSetting bloom() {
+        return bloom(0.7);
+    }
+
+    /** Bloom with the given strength (0.7 default; beyond ~1.5 the halo takes over). */
+    public static SceneSetting bloom(double strength) {
+        return new SceneSetting("bloom").put("strength", ThreeNode.num(strength));
+    }
+
+    /**
+     * Fully dialed bloom: {@code radius} spreads the halo (0–1), and only
+     * pixels brighter than {@code threshold} (0–1) bloom at all — raise it
+     * and the glow stays on the truly luminous.
+     */
+    public static SceneSetting bloom(double strength, double radius, double threshold) {
+        return new SceneSetting("bloom").put("strength", ThreeNode.num(strength))
+            .put("radius", ThreeNode.num(radius)).put("threshold", ThreeNode.num(threshold));
+    }
+
+    // ==================== Live updates ====================
+
+    /**
+     * Updates named nodes in a <em>live</em> scene from a server event
+     * handler — no page reload, no scene rebuild, the visitor doesn't move:
+     *
+     * <pre>{@code
+     * box().name("vane").onClick(e ->
+     *     Three.patch("world")
+     *          .node("vane").rotation(0, 24, 0).tween(600)
+     *          .node("veil").emissive("#1E5D50"))
+     * }</pre>
+     *
+     * <p>The patch rides the WebSocket answer to the event that's already in
+     * flight, so it works from {@code onClick(Consumer)} handlers (and any
+     * other server-side event handler). Outside one there is no live page to
+     * deliver to — the patch is dropped with a warning. Targets are nodes
+     * carrying {@code .name(...)}; {@code .camera()} moves the camera.</p>
+     *
+     * @param sceneId the scene element's {@code id}
+     */
+    public static ThreePatch patch(String sceneId) {
+        return new ThreePatch(sceneId);
     }
 }

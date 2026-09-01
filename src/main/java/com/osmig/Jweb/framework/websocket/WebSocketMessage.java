@@ -406,6 +406,54 @@ public final class WebSocketMessage {
     }
 
     /**
+     * Live three.js scene update: named-node and camera mutations built by
+     * {@code Three.patch(...)} during a server event handler, applied by the
+     * three runtime without touching the DOM.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ThreePatchResponse extends Base {
+        private String scene;
+        private List<Map<String, Object>> nodes;
+        private Map<String, Object> camera;
+
+        public ThreePatchResponse() {
+            setType("threePatch");
+        }
+
+        public ThreePatchResponse(String scene, List<Map<String, Object>> nodes,
+                                  Map<String, Object> camera) {
+            this();
+            this.scene = scene;
+            this.nodes = (nodes == null || nodes.isEmpty()) ? null : nodes;
+            this.camera = camera;
+        }
+
+        public String getScene() {
+            return scene;
+        }
+
+        public void setScene(String scene) {
+            this.scene = scene;
+        }
+
+        public List<Map<String, Object>> getNodes() {
+            return nodes;
+        }
+
+        public void setNodes(List<Map<String, Object>> nodes) {
+            this.nodes = nodes;
+        }
+
+        public Map<String, Object> getCamera() {
+            return camera;
+        }
+
+        public void setCamera(Map<String, Object> camera) {
+            this.camera = camera;
+        }
+    }
+
+    /**
      * Event handled response from server.
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)

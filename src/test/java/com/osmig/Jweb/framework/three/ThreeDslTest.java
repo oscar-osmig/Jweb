@@ -440,4 +440,204 @@ class ThreeDslTest {
         assertTrue(js.contains("n.t==='plane'||n.t==='disc'||n.t==='ring'"),
             "disc/ring must be double-sided");
     }
+
+    // ==================== 2.2.3: walk mode & orbit limits ====================
+
+    @Test
+    void walkCameraSerializes() {
+        Map<String, Object> m = camera().position(0, 2, 6).walk(1.7).bounds(-8, -8, 8, 8).toMap();
+        assertEquals(List.of(1.7), m.get("walk"));
+        assertEquals(List.of(-8L, -8L, 8L, 8L), m.get("bounds"));
+
+        Map<String, Object> speeds = camera().walk(1.6, 2.5, 6).toMap();
+        assertEquals(List.of(1.6, 2.5, 6L), speeds.get("walk"));
+
+        assertEquals(1L, camera().sway().toMap().get("sway"));
+        assertEquals(1.5, camera().sway(1.5).toMap().get("sway"));
+    }
+
+    @Test
+    void orbitLimitsSerializeAndImplyOrbit() {
+        Map<String, Object> m = camera().noZoom().noPan().distance(2, 12).polar(20, 90).toMap();
+        assertEquals(true, m.get("orbit"), "limits imply orbit — they configure it");
+        assertEquals(true, m.get("noZoom"));
+        assertEquals(true, m.get("noPan"));
+        assertEquals(List.of(2L, 12L), m.get("dist"));
+        assertEquals(List.of(20L, 90L), m.get("polar"));
+    }
+
+    // ==================== 2.2.3: curves ====================
+
+    @Test
+    void curvedShapesSerialize() {
+        Map<String, Object> t = tube(0.05, -2, 0, 0, 0, 1.4, 0, 2, 0, 0).closed().toMap();
+        assertEquals("tube", t.get("t"));
+        assertEquals(0.05, t.get("radius"));
+        assertEquals(List.of(-2L, 0L, 0L, 0L, 1.4, 0L, 2L, 0L, 0L), t.get("pts"));
+        assertEquals(true, t.get("closed"));
+
+        Map<String, Object> a = arc(1.5, 0.08, 180).toMap();
+        assertEquals("arc", a.get("t"));
+        assertEquals(1.5, a.get("radius"));
+        assertEquals(0.08, a.get("tube"));
+        assertEquals(180L, a.get("sweep"));
+
+        Map<String, Object> l = lathe(0, 0, 0.5, 0, 0.3, 1.2).segments(48).toMap();
+        assertEquals("lathe", l.get("t"));
+        assertEquals(List.of(0L, 0L, 0.5, 0L, 0.3, 1.2), l.get("profile"));
+        assertEquals(48, l.get("seg"));
+    }
+
+    @Test
+    void curvedShapesRejectMalformedGeometry() {
+        assertThrows(IllegalArgumentException.class, () -> tube(0.1, 1, 2, 3));
+        assertThrows(IllegalArgumentException.class, () -> tube(0.1, 1, 2, 3, 4));
+        assertThrows(IllegalArgumentException.class, () -> lathe(0.5, 0));
+        assertThrows(IllegalArgumentException.class, () -> lathe(0, 0, 1, 2, 3));
+    }
+
+    // ==================== 2.2.3: particles ====================
+
+    @Test
+    void particlesSerialize() {
+        Map<String, Object> m = particles(120).color("#E7D6B1").size(0.03)
+            .spread(8, 5, 20).drift().opacity(0.8).seed(7).toMap();
+        assertEquals("particles", m.get("t"));
+        assertEquals(120, m.get("count"));
+        assertEquals("#E7D6B1", m.get("color"));
+        assertEquals(0.03, m.get("size"));
+        assertEquals(List.of(8L, 5L, 20L), m.get("spread"));
+        assertEquals(1L, m.get("drift"));
+        assertEquals(0.8, m.get("opacity"));
+        assertEquals(7, m.get("seed"));
+
+        assertEquals(3L, particles(400).fall(3).toMap().get("fall"));
+        assertThrows(IllegalArgumentException.class, () -> particles(0));
+    }
+
+    // ==================== 2.2.3: composition ergonomics ====================
+
+    @Test
+    void whenAndRepeatAndListGroupsCompose() {
+        assertNull(when(false, box()), "false must yield nothing, not a placeholder");
+        assertNotNull(when(true, box()));
+        assertNull(when(false, () -> { throw new AssertionError("must not build"); }));
+
+        Map<String, Object> g = group(List.of(box(), sphere())).toMap();
+        assertEquals(2, ((List<?>) g.get("children")).size());
+
+        Map<String, Object> r = repeat(4, i -> i == 2 ? null : box().position(i, 0, 0)).toMap();
+        assertEquals(3, ((List<?>) r.get("children")).size(), "null indices are skipped");
+
+        // a null branch vanishes from the scene graph entirely
+        String html = scene(when(false, box()), sphere()).toHtml();
+        assertTrue(html.contains("&quot;t&quot;:&quot;sphere&quot;"), html);
+        assertFalse(html.contains("&quot;t&quot;:&quot;box&quot;"), html);
+    }
+
+    // ==================== 2.2.3: tone, bloom, mirror ====================
+
+    @Test
+    void toneBloomAndMirrorSerialize() {
+        assertEquals("tone", toneMapped().toMap().get("t"));
+        assertEquals(1.2, toneMapped(1.2).toMap().get("exposure"));
+
+        Map<String, Object> b = bloom().toMap();
+        assertEquals("bloom", b.get("t"));
+        assertEquals(0.7, b.get("strength"));
+
+        Map<String, Object> full = bloom(1.1, 0.5, 0.9).toMap();
+        assertEquals(1.1, full.get("strength"));
+        assertEquals(0.5, full.get("radius"));
+        assertEquals(0.9, full.get("threshold"));
+
+        Map<String, Object> m = plane(20, 20).mirror().color("#889199").toMap();
+        assertEquals(true, m.get("mirror"));
+        assertEquals("#889199", m.get("color"));
+    }
+
+    // ==================== 2.2.3: live patches ====================
+
+    @Test
+    void patchBuildsDegreesAndNarrowedNumbers() {
+        ThreePatchQueue.open();
+        try {
+            Three.patch("world")
+                 .node("vane").rotation(0, 24, 0).tween(600)
+                 .node("veil").emissive("#1E5D50").opacity(0.5)
+                 .camera().position(0, 2, 6).lookAt(0, 3, -6);
+            var queued = ThreePatchQueue.drain();
+            assertEquals(1, queued.size());
+            ThreePatch p = queued.get(0);
+            assertEquals("world", p.sceneId());
+            assertEquals(2, p.nodeMaps().size());
+
+            Map<String, Object> vane = p.nodeMaps().get(0);
+            assertEquals("vane", vane.get("name"));
+            assertEquals(List.of(0L, 24L, 0L), vane.get("rot"));
+            assertEquals(600, vane.get("tween"));
+
+            Map<String, Object> veil = p.nodeMaps().get(1);
+            assertEquals("#1E5D50", veil.get("emissive"));
+            assertEquals(0.5, veil.get("opacity"));
+
+            assertEquals(List.of(0L, 2L, 6L), p.cameraMap().get("pos"));
+            assertEquals(List.of(0L, 3L, -6L), p.cameraMap().get("look"));
+        } finally {
+            ThreePatchQueue.close();
+        }
+    }
+
+    @Test
+    void patchOutsideAHandlerIsDroppedNotThrown() {
+        ThreePatchQueue.close();   // make sure no window is open
+        Three.patch("world").node("vane").rotation(0, 10, 0);   // warns, doesn't throw
+        ThreePatchQueue.open();
+        assertTrue(ThreePatchQueue.drain().isEmpty(),
+            "a patch born outside the window must not leak into the next one");
+    }
+
+    @Test
+    void patchPropertiesNeedATargetFirst() {
+        ThreePatchQueue.open();
+        try {
+            assertThrows(IllegalStateException.class,
+                () -> Three.patch("world").rotation(0, 10, 0));
+        } finally {
+            ThreePatchQueue.close();
+        }
+    }
+
+    // ==================== 2.2.3: interpreter & bundle contract ====================
+
+    @Test
+    void interpreterHandlesTheWalkAndPatchContract() {
+        String js = ThreeRuntime.getScript();
+        for (String needle : new String[]{"TubeGeometry", "CatmullRomCurve3", "LatheGeometry",
+                "PointsMaterial", "BufferAttribute", "Reflector", "EffectComposer",
+                "UnrealBloomPass", "OutputPass", "ACESFilmicToneMapping",
+                "data-three-walk", "three-walking", "jweb:three-walk",
+                "prefers-reduced-motion", "applyPatch", "ready:", "THREE:THREE",
+                "setWalk", "minPolarAngle", "minDistance", "enableZoom", "enablePan"}) {
+            assertTrue(js.contains(needle), "interpreter lost handling for: " + needle);
+        }
+    }
+
+    @Test
+    void runtimeDispatchesLivePatches() {
+        String runtime = JWebRuntime.getScript();
+        assertTrue(runtime.contains("threePatch"), "runtime must route threePatch messages");
+        assertTrue(runtime.contains("JWebThree.applyPatch"),
+            "threePatch must hand off to the three runtime");
+    }
+
+    @Test
+    void bundleShipsThePostProcessingAddons() {
+        String all = new String(ThreeAssets.bundleBytes());
+        for (String needle : new String[]{"EffectComposer", "UnrealBloomPass", "OutputPass",
+                "Reflector"}) {
+            assertTrue(all.contains(needle), needle + " missing from bundle — re-run "
+                + "tools/three-bundle/build.sh");
+        }
+    }
 }
