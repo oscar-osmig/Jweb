@@ -63,6 +63,21 @@ public final class DocVersions {
 
     private static final ThreadLocal<String> RENDERING = new ThreadLocal<>();
 
+    static {
+        // Streamed/Suspense blocks render on other threads — carry the docs
+        // version with them so since()/before() branch correctly there too.
+        // Registration is sound lazily: any thread with a version context has
+        // loaded this class, so the propagator exists before it could matter.
+        com.osmig.Jweb.framework.async.RenderContexts.register(
+            new com.osmig.Jweb.framework.async.RenderContexts.Propagator() {
+                @Override public Object capture() { return RENDERING.get(); }
+                @Override public void restore(Object snapshot) {
+                    if (snapshot != null) RENDERING.set((String) snapshot);
+                }
+                @Override public void clear() { RENDERING.remove(); }
+            });
+    }
+
     /** The version the docs render in flight is for; latest outside a render. */
     public static String current() {
         String v = RENDERING.get();

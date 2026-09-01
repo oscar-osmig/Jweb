@@ -125,6 +125,32 @@ class DocVersionsTest {
     }
 
     @Test
+    void versionContextSurvivesStreamedSuspenseBlocks() {
+        // The caveat this pins down: streamed Suspense blocks render on other
+        // threads — the docs version must travel with them or since()/before()
+        // silently fall back to latest inside the block.
+        var streaming = com.osmig.Jweb.framework.async.StreamingContext.open();
+        DocVersions.beginRender("v2.0.0");
+        try {
+            com.osmig.Jweb.framework.async.Suspense.of((java.util.concurrent.Callable<String>) () -> "data")
+                .loading(() -> jweb.El.span(jweb.El.text("...")))
+                .render(data -> DocComponents.section(
+                    DocComponents.para("v=" + DocVersions.current()),
+                    DocComponents.since("v2.1.0", DocComponents.para("ONLY-ON-LATEST"))))
+                .toHtml();
+
+            String resolved = streaming.pendings().get(0).html().join();
+            assertTrue(resolved.contains("v=v2.0.0"),
+                "the async block must render under the selected version: " + resolved);
+            assertFalse(resolved.contains("ONLY-ON-LATEST"),
+                "since() must stay hidden for old docs inside async blocks: " + resolved);
+        } finally {
+            DocVersions.endRender();
+            com.osmig.Jweb.framework.async.StreamingContext.close();
+        }
+    }
+
+    @Test
     void combinatorsFollowTheRenderContext() {
         DocVersions.beginRender("v2.0.0");
         try {

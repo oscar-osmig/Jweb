@@ -233,23 +233,20 @@ public class Suspense<T> implements Element {
     @Override
     public VNode toVNode() {
         // Streaming render: emit an instantly-flushed placeholder and defer
-        // the real content — it streams in when the data resolves.
+        // the real content — it streams in when the data resolves. The block
+        // renders on another thread, so every render-scoped ThreadLocal (CSP
+        // nonce, docs version, anything registered) travels with it.
         StreamingContext streaming = StreamingContext.active();
         if (streaming != null) {
-            // Carry the request's CSP nonce onto the render thread so inline
-            // scripts inside the streamed block get stamped too
-            String cspNonce = com.osmig.Jweb.framework.security.CspNonce.current();
-            CompletableFuture<String> htmlFuture = CompletableFuture.supplyAsync(() -> {
-                com.osmig.Jweb.framework.security.CspNonce.set(cspNonce);
-                try {
-                    T data = dataLoader.call();
-                    return contentRenderer != null ? contentRenderer.apply(data).toHtml() : "";
-                } catch (Throwable t) {
-                    return errorElement.apply(t).toHtml();
-                } finally {
-                    com.osmig.Jweb.framework.security.CspNonce.clear();
-                }
-            }, EXECUTOR);
+            CompletableFuture<String> htmlFuture = CompletableFuture.supplyAsync(
+                RenderContexts.carry(() -> {
+                    try {
+                        T data = dataLoader.call();
+                        return contentRenderer != null ? contentRenderer.apply(data).toHtml() : "";
+                    } catch (Throwable t) {
+                        return errorElement.apply(t).toHtml();
+                    }
+                }), EXECUTOR);
             String id = streaming.register(htmlFuture);
             return VElement.of("div",
                 java.util.Map.of("id", id),
@@ -261,7 +258,7 @@ public class Suspense<T> implements Element {
 
             if (nonBlockingTimeoutMs > 0) {
                 // Non-blocking mode: try to get data within timeout, show loading if not ready
-                Future<T> future = EXECUTOR.submit(dataLoader);
+                Future<T> future = EXECUTOR.submit(RenderContexts.carryCallable(dataLoader));
                 try {
                     data = future.get(nonBlockingTimeoutMs, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {
@@ -272,7 +269,7 @@ public class Suspense<T> implements Element {
                 }
             } else {
                 // Blocking mode (default): wait for data, bounded by timeout(...)
-                Future<T> future = EXECUTOR.submit(dataLoader);
+                Future<T> future = EXECUTOR.submit(RenderContexts.carryCallable(dataLoader));
                 try {
                     data = future.get(timeoutMs, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException e) {
