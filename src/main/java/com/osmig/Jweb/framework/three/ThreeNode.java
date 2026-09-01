@@ -28,7 +28,9 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
     private double[] scale;
     private double[] spin;
     private double[] floating;
+    private Double hoverScale;
     private String clickHandlerId;
+    private String clickActionId;
     private String[] clickSwap;
 
     /** The node's type tag in the serialized scene graph (e.g. {@code "box"}). */
@@ -105,6 +107,21 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
         return self();
     }
 
+    /**
+     * Grows the object while the pointer is over it (raycast, entirely
+     * client-side) — instant affordance for interactive scenes.
+     *
+     * <pre>{@code
+     * box().hoverScale(1.15).onClick(e -> ...)
+     * }</pre>
+     *
+     * @param factor the scale multiplier while hovered (e.g. 1.15)
+     */
+    public SELF hoverScale(double factor) {
+        this.hoverScale = factor;
+        return self();
+    }
+
     // ==================== Events ====================
 
     /**
@@ -118,6 +135,24 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
      */
     public SELF onClick(Consumer<Event> handler) {
         this.clickHandlerId = EventRegistry.register("click", handler).getId();
+        return self();
+    }
+
+    /**
+     * Runs a client-side Actions-DSL handler when the object is clicked —
+     * no server round-trip, and CSP-safe like {@code attrs().onClick(Action)}:
+     * the JS ships in the page's nonce-stamped definitions script and the
+     * interpreter dispatches it by id after the raycast.
+     *
+     * <pre>{@code
+     * sphere().onClick(jweb.Actions.toggle("info-panel"))
+     * }</pre>
+     *
+     * <p>Requires a page render (a scene has no inline fallback to offer);
+     * outside one the handler is dropped with nothing to deliver it.</p>
+     */
+    public SELF onClick(com.osmig.Jweb.framework.js.Actions.Action action) {
+        this.clickActionId = com.osmig.Jweb.framework.js.ClientActions.register(action.inline());
         return self();
     }
 
@@ -146,7 +181,9 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
         if (scale != null) map.put("scl", vec(scale));
         if (spin != null) map.put("spin", vec(spin));
         if (floating != null) map.put("float", vec(floating));
+        if (hoverScale != null) map.put("hovScale", num(hoverScale));
         if (clickHandlerId != null) map.put("click", clickHandlerId);
+        if (clickActionId != null) map.put("clickAct", clickActionId);
         if (clickSwap != null) map.put("swap", Map.of("url", clickSwap[0], "target", clickSwap[1]));
         fill(map);
         return map;

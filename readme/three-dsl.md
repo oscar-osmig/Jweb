@@ -56,6 +56,14 @@ Because `scene(...)` is a `Tag`, every HTML attribute chains on it:
 | `cylinder()` / `cylinder(r, h)` / `.radii(top, bottom)` | CylinderGeometry | radius 1, height 1 |
 | `cone()` / `cone(r, h)` | ConeGeometry | radius 1, height 1 |
 | `torus()` / `torus(r, tube)` | TorusGeometry | radius 1, tube 0.4 |
+| `torusKnot()` / `torusKnot(r, tube)` | TorusKnotGeometry | radius 1, tube 0.4 |
+| `capsule()` / `capsule(r, length)` | CapsuleGeometry | radius 1, middle 1 |
+| `disc()` / `disc(r)` | CircleGeometry | radius 1, double-sided |
+| `ring()` / `ring(inner, outer)` | RingGeometry | 0.5 → 1, double-sided |
+| `tetrahedron(r)` `octahedron(r)` `dodecahedron(r)` `icosahedron(r)` | the platonic solids | radius 1 |
+
+(`disc`, not `circle` — the SVG element owns that name under dual wildcard
+imports. Same reason the text billboard below isn't called `label`.)
 
 Every node shares the transform surface — chains never dead-end:
 
@@ -85,6 +93,25 @@ sphere()
     .wireframe()                // edges only
     .texture("/assets/crate.png")  // image as the material map
 ```
+
+## Billboards
+
+Two nodes always face the camera — for annotating scenes:
+
+```java
+billboard("Sun")                             // canvas-rendered text, no font file
+    .color("#fde68a")                        // text color (default white)
+    .background("rgba(15,23,42,0.85)")       // rounded pill behind it (default none)
+    .size(0.5)                               // height in scene units
+    .position(0, 1.8, 0)
+
+sprite("/assets/pin.png").size(0.6)          // an image; width in scene units,
+    .position(2, 1, 0)                       // height keeps the image aspect
+```
+
+Both take the full transform/animation/click surface (`float_()` on a
+billboard reads nicely). Size them with `.size(...)` — `.scale(...)` doesn't
+apply to billboards.
 
 ## Lights and shadows
 
@@ -141,6 +168,17 @@ scene(style().height(px(420)),
 Fog plus a matching background is the classic infinite-depth look. `grid()`
 is a placement aid while composing — delete it when done.
 
+An equirectangular panorama (a plain wide jpg/png) can light the scene —
+metallic and glossy materials pick up its reflections:
+
+```java
+environment("/assets/studio.jpg")   // reflections only, backdrop unchanged
+sky("/assets/dusk.jpg")             // the panorama as visible sky AND light
+```
+
+`sky(...)` plus `sphere().metalness(1).roughness(0.05)` is a mirror ball in
+two lines.
+
 ## Animation presets
 
 ```java
@@ -152,7 +190,10 @@ sphere().float_(0.5, 1)                      // amplitude, cycles per second
 ```
 
 Presets are why the render loop exists at all: a scene with no `spin`,
-`float_` or `autoRotate` renders once and sleeps.
+`float_`, `autoRotate` or `.animate()`d model renders once and sleeps —
+and an animated scene's loop pauses whenever it scrolls offscreen
+(IntersectionObserver), so a 3D hero costs nothing once the reader is past
+it.
 
 ## Groups
 
@@ -183,6 +224,16 @@ arrives; still scenes re-render when it lands.
 Plain `.glb`/`.gltf` only: Draco-compressed geometry needs a decoder JWeb
 does not ship. Export uncompressed (in Blender: leave "Compression" off).
 
+Models that ship animation clips play them with one call:
+
+```java
+model("/assets/robot.glb").animate()          // every clip the file carries
+model("/assets/robot.glb").animate("Walk")    // just the named clip
+```
+
+An animated model keeps the render loop alive like `spin()` does; a missing
+clip name logs the clips the file actually has.
+
 ## Interactivity
 
 Clicking a shape raycasts into the scene and dispatches through the same
@@ -202,9 +253,28 @@ sphere().name("product")
 box().name("die").onClick(e -> rolls.set(rolls.get() + 1))
 ```
 
+**Run a client-side Action** — the Actions DSL, dispatched in the browser
+with no server round-trip (and CSP-safe, like every Action handler):
+
+```java
+sphere().onClick(jweb.Actions.toggle("info-panel"))
+```
+
 The handler's `event.value()` (and `dataset.mesh`) carry the node's `name`.
-If both are set on one node, `onClick` wins. The cursor becomes a pointer
-over clickable objects. Clicks on groups and models hit their whole subtree.
+If several are set on one node: server `onClick` wins, then the Action, then
+`clickSwap`. The cursor becomes a pointer over clickable objects. Clicks on
+groups and models hit their whole subtree.
+
+**Hover effects** are declared on the shape and run entirely client-side —
+raycast on pointer move, applied on enter, restored on leave:
+
+```java
+torusKnot()
+    .hoverScale(1.1)             // grows while hovered (any node type)
+    .hoverEmissive("#4c1d95")    // glow highlight (meshes)
+    .hoverColor("#f43f5e")       // or a straight color swap (meshes)
+    .onClick(jweb.Actions.show("hint"))
+```
 
 ## Escape hatch: the raw three.js API
 
@@ -238,6 +308,8 @@ minimum and a console hint rather than an invisible scene.
 - The bundle is ~733KB raw / ~170KB gzipped, cached immutably per version —
   one fetch per browser per upgrade, and only on pages that use scenes.
 - Still scenes render on demand: zero CPU, zero battery until interaction.
+- Animated scenes pause offscreen — the loop stops while the element is
+  scrolled out of view and resumes when it returns.
 - Pixel ratio is capped at 2 to keep retina laptops cool.
 - Disposal is automatic and complete — geometries, materials, textures and
   the GL context are released when the element leaves the DOM, including

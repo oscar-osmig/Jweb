@@ -317,4 +317,127 @@ class ThreeDslTest {
         assertTrue(runtime.contains("/jweb/three-runtime.js?v=" + ThreeRuntime.version()));
         assertTrue(runtime.contains("data-three"), "lazy-load stub missing");
     }
+
+    // ==================== Expansion: shapes ====================
+
+    @Test
+    void expansionShapesSerializeTheirDimensions() {
+        Map<String, Object> cap = capsule(0.4, 1.5).toMap();
+        assertEquals("capsule", cap.get("t"));
+        assertEquals(0.4, cap.get("radius"));
+        assertEquals(1.5, cap.get("length"));
+
+        assertEquals("disc", disc().toMap().get("t"));
+        assertEquals(3L, disc(3).toMap().get("radius"));
+
+        Map<String, Object> rn = ring(0.8, 1).toMap();
+        assertEquals("ring", rn.get("t"));
+        assertEquals(List.of(0.8, 1L), rn.get("radii"));
+
+        Map<String, Object> knot = torusKnot(1.2, 0.3).toMap();
+        assertEquals("knot", knot.get("t"));
+        assertEquals(1.2, knot.get("radius"));
+        assertEquals(0.3, knot.get("tube"));
+
+        assertEquals("tetra", tetrahedron().toMap().get("t"));
+        assertEquals("octa", octahedron(2).toMap().get("t"));
+        assertEquals(2L, octahedron(2).toMap().get("radius"));
+        assertEquals("dodeca", dodecahedron().toMap().get("t"));
+        assertEquals("icosa", icosahedron(1.5).toMap().get("t"));
+        // polyhedra carry the full mesh surface
+        assertEquals(true, icosahedron().wireframe().toMap().get("wire"));
+    }
+
+    // ==================== Expansion: billboards ====================
+
+    @Test
+    void billboardSerializesTextStyling() {
+        Map<String, Object> m = billboard("Sun")
+            .color("#fde68a").background("rgba(15,23,42,0.85)").size(0.8)
+            .position(0, 1.6, 0).toMap();
+        assertEquals("label", m.get("t"));
+        assertEquals("Sun", m.get("text"));
+        assertEquals("#fde68a", m.get("color"));
+        assertEquals("rgba(15,23,42,0.85)", m.get("bg"));
+        assertEquals(0.8, m.get("size"));
+        assertEquals(List.of(0L, 1.6, 0L), m.get("pos"));
+    }
+
+    @Test
+    void spriteSerializesUrlAndSize() {
+        Map<String, Object> m = sprite("/assets/pin.png").size(0.6).toMap();
+        assertEquals("sprite", m.get("t"));
+        assertEquals("/assets/pin.png", m.get("url"));
+        assertEquals(0.6, m.get("size"));
+    }
+
+    // ==================== Expansion: hover, actions, animation ====================
+
+    @Test
+    void hoverEffectsSerialize() {
+        assertEquals(1.15, box().hoverScale(1.15).toMap().get("hovScale"));
+        // hoverScale lives on ThreeNode — groups and models get it too
+        assertEquals(1.2, group(box()).hoverScale(1.2).toMap().get("hovScale"));
+        Map<String, Object> m = sphere()
+            .hoverColor("#f472b6").hoverEmissive(hex("#331122")).toMap();
+        assertEquals("#f472b6", m.get("hovColor"));
+        assertEquals("#331122", m.get("hovEmissive"));
+    }
+
+    @Test
+    void actionsClickRegistersThroughTheRenderContext() {
+        var context = com.osmig.Jweb.framework.state.StateManager.createContext();
+        try {
+            Map<String, Object> m = sphere()
+                .onClick(com.osmig.Jweb.framework.js.Actions.show("info-panel")).toMap();
+            String id = (String) m.get("clickAct");
+            assertNotNull(id, "action id expected in the graph");
+            assertTrue(id.matches("a[0-9a-f]{10}"), id);
+            String defs = com.osmig.Jweb.framework.js.ClientActions.drainJs(context);
+            assertNotNull(defs);
+            assertTrue(defs.contains("info-panel"), defs);
+        } finally {
+            com.osmig.Jweb.framework.state.StateManager.clearContext();
+        }
+        // outside a render context there is nothing to deliver — no id
+        assertNull(sphere()
+            .onClick(com.osmig.Jweb.framework.js.Actions.show("x")).toMap().get("clickAct"));
+    }
+
+    @Test
+    void modelAnimationSerializes() {
+        assertEquals(true, model("/a.glb").animate().toMap().get("anim"));
+        assertEquals("Walk", model("/a.glb").animate("Walk").toMap().get("anim"));
+        assertNull(model("/a.glb").toMap().get("anim"));
+    }
+
+    // ==================== Expansion: environment ====================
+
+    @Test
+    void environmentAndSkySerialize() {
+        Map<String, Object> env = environment("/assets/studio.jpg").toMap();
+        assertEquals("env", env.get("t"));
+        assertEquals("/assets/studio.jpg", env.get("url"));
+        assertNull(env.get("bg"), "environment() must not set the background");
+
+        Map<String, Object> sk = sky("/assets/dusk.jpg").toMap();
+        assertEquals("env", sk.get("t"));
+        assertEquals(true, sk.get("bg"));
+    }
+
+    @Test
+    void interpreterHandlesTheExpansionContract() {
+        String js = ThreeRuntime.getScript();
+        for (String needle : new String[]{"CapsuleGeometry", "CircleGeometry", "RingGeometry",
+                "TorusKnotGeometry", "TetrahedronGeometry", "OctahedronGeometry",
+                "DodecahedronGeometry", "IcosahedronGeometry", "CanvasTexture",
+                "SpriteMaterial", "EquirectangularReflectionMapping", "AnimationMixer",
+                "IntersectionObserver", "JWeb.runAction", "hovScale", "hovColor",
+                "hovEmissive", "pointerleave", "clips"}) {
+            assertTrue(js.contains(needle), "interpreter lost handling for: " + needle);
+        }
+        // flat shapes render both faces, like plane always has
+        assertTrue(js.contains("n.t==='plane'||n.t==='disc'||n.t==='ring'"),
+            "disc/ring must be double-sided");
+    }
 }

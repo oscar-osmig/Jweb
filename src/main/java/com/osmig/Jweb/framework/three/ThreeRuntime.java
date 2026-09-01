@@ -4,10 +4,12 @@ package com.osmig.Jweb.framework.three;
  * The client-side interpreter for {@code data-three} scene graphs, served at
  * {@code /jweb/three-runtime.js}. It owns everything three.js normally makes
  * callers hand-write: renderer setup, container sizing, the render loop
- * (only when something animates — still scenes render on demand), shadow-map
- * configuration, async model/texture loading, raycast click dispatch into the
- * JWeb event pipeline, re-init when a swap or morph changes the scene, and
- * full disposal when the element leaves the DOM.
+ * (only when something animates, paused while scrolled offscreen — still
+ * scenes render on demand), shadow-map configuration, async model/texture
+ * loading and glTF animation mixing, raycast click/hover dispatch into the
+ * JWeb event pipeline (server handlers, Actions-DSL handlers, swaps),
+ * re-init when a swap or morph changes the scene, and full disposal when
+ * the element leaves the DOM.
  *
  * <p>Loaded lazily by the JWeb runtime, after the vendored bundle, only on
  * pages that contain a scene. Exposes {@code JWebThree.get(id)} →
@@ -59,6 +61,14 @@ public final class ThreeRuntime {
                 }
                 if(n.t==='cone')return new THREE.ConeGeometry(n.radius!=null?n.radius:1,n.height!=null?n.height:1,32);
                 if(n.t==='torus')return new THREE.TorusGeometry(n.radius!=null?n.radius:1,n.tube!=null?n.tube:0.4,20,80);
+                if(n.t==='capsule')return new THREE.CapsuleGeometry(n.radius!=null?n.radius:1,n.length!=null?n.length:1,8,24);
+                if(n.t==='disc')return new THREE.CircleGeometry(n.radius!=null?n.radius:1,48);
+                if(n.t==='ring'){var rr=n.radii||[0.5,1];return new THREE.RingGeometry(rr[0],rr[1],48);}
+                if(n.t==='knot')return new THREE.TorusKnotGeometry(n.radius!=null?n.radius:1,n.tube!=null?n.tube:0.4,128,16);
+                if(n.t==='tetra')return new THREE.TetrahedronGeometry(n.radius!=null?n.radius:1);
+                if(n.t==='octa')return new THREE.OctahedronGeometry(n.radius!=null?n.radius:1);
+                if(n.t==='dodeca')return new THREE.DodecahedronGeometry(n.radius!=null?n.radius:1);
+                if(n.t==='icosa')return new THREE.IcosahedronGeometry(n.radius!=null?n.radius:1);
                 return null;
             }
 
@@ -69,7 +79,7 @@ public final class ThreeRuntime {
                 if(n.rough!=null)m.roughness=n.rough;
                 if(n.opacity!=null){m.transparent=true;m.opacity=n.opacity;}
                 if(n.wire)m.wireframe=true;
-                if(n.t==='plane')m.side=THREE.DoubleSide;
+                if(n.t==='plane'||n.t==='disc'||n.t==='ring')m.side=THREE.DoubleSide;
                 if(n.map){
                     new THREE.TextureLoader().load(n.map,function(tex){
                         if(inst.disposed)return;
@@ -88,9 +98,11 @@ public final class ThreeRuntime {
                 if(n.spin)inst.spins.push({obj:obj,rate:[n.spin[0]*RAD,n.spin[1]*RAD,n.spin[2]*RAD]});
                 if(n['float'])inst.floats.push({obj:obj,amp:n['float'][0],speed:n['float'][1],base:obj.position.y});
                 if(n.name)inst.objects[n.name]=obj;
-                if(n.click||n.swap){
-                    obj.userData.jweb={click:n.click,swap:n.swap,name:n.name||''};
-                    inst.clickable=true;
+                if(n.click||n.swap||n.clickAct||n.hovScale||n.hovColor||n.hovEmissive){
+                    obj.userData.jweb={click:n.click,swap:n.swap,act:n.clickAct,name:n.name||'',
+                        hovScale:n.hovScale,hovColor:n.hovColor,hovEmissive:n.hovEmissive};
+                    inst.interactive=true;
+                    if(n.click||n.swap||n.clickAct)inst.clickable=true;
                 }
             }
 
@@ -110,14 +122,85 @@ public final class ThreeRuntime {
                     var wrap=new THREE.Group();
                     applyCommon(wrap,n,inst);
                     parent.add(wrap);
+                    if(n.anim)inst.needsLoop=true;
                     new THREE.GLTFLoader().load(n.url,function(gltf){
                         if(inst.disposed)return;
                         if(inst.shadows)gltf.scene.traverse(function(o){
                             if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}
                         });
                         wrap.add(gltf.scene);
+                        if(n.anim&&gltf.animations&&gltf.animations.length){
+                            var mixer=new THREE.AnimationMixer(gltf.scene);
+                            var played=0;
+                            gltf.animations.forEach(function(clip){
+                                if(n.anim===true||clip.name===n.anim){mixer.clipAction(clip).play();played++;}
+                            });
+                            if(!played)console.warn('[JWeb] model has no animation clip named',n.anim,
+                                '- clips:',gltf.animations.map(function(c){return c.name;}));
+                            inst.mixers.push(mixer);
+                        }else if(n.anim){
+                            console.warn('[JWeb] .animate() set but model ships no animations:',n.url);
+                        }
                         if(!inst.animated)render(inst);
                     },undefined,function(err){console.error('[JWeb] model failed:',n.url,err);});
+                }else if(n.t==='label'){
+                    // Canvas-rendered text on a Sprite: crisp, always camera-
+                    // facing, no font file. Height = n.size scene units.
+                    var cv=document.createElement('canvas');
+                    var fs=64,pad=n.bg?28:6,ctx=cv.getContext('2d');
+                    ctx.font='600 '+fs+'px system-ui,-apple-system,sans-serif';
+                    cv.width=Math.max(2,Math.ceil(ctx.measureText(n.text||'').width)+pad*2);
+                    cv.height=fs+pad*2;
+                    ctx=cv.getContext('2d');   // resizing reset the context
+                    if(n.bg){
+                        ctx.fillStyle=n.bg;
+                        if(ctx.roundRect){
+                            ctx.beginPath();
+                            ctx.roundRect(0,0,cv.width,cv.height,cv.height/2);
+                            ctx.fill();
+                        }else{ctx.fillRect(0,0,cv.width,cv.height);}
+                    }
+                    ctx.font='600 '+fs+'px system-ui,-apple-system,sans-serif';
+                    ctx.fillStyle=n.color||'#ffffff';
+                    ctx.textAlign='center';
+                    ctx.textBaseline='middle';
+                    ctx.fillText(n.text||'',cv.width/2,cv.height/2);
+                    var ltex=new THREE.CanvasTexture(cv);
+                    ltex.colorSpace=THREE.SRGBColorSpace;
+                    var lsp=new THREE.Sprite(new THREE.SpriteMaterial({map:ltex,transparent:true}));
+                    applyCommon(lsp,n,inst);
+                    // sized via n.size (world height), not .scale — aspect
+                    // comes from the measured text
+                    var lh=n.size!=null?n.size:0.5;
+                    lsp.scale.set(lh*cv.width/cv.height,lh,1);
+                    parent.add(lsp);
+                }else if(n.t==='sprite'){
+                    var smat=new THREE.SpriteMaterial({transparent:true});
+                    var spr=new THREE.Sprite(smat);
+                    spr.visible=false;   // nothing to show until the image lands
+                    applyCommon(spr,n,inst);
+                    parent.add(spr);
+                    new THREE.TextureLoader().load(n.url,function(tex){
+                        if(inst.disposed)return;
+                        tex.colorSpace=THREE.SRGBColorSpace;
+                        smat.map=tex;smat.needsUpdate=true;
+                        var sw=n.size!=null?n.size:1;
+                        var sa=(tex.image&&tex.image.width)?tex.image.height/tex.image.width:1;
+                        spr.scale.set(sw,sw*sa,1);
+                        spr.visible=true;
+                        if(!inst.animated)render(inst);
+                    },undefined,function(){console.error('[JWeb] sprite failed:',n.url);});
+                }else if(n.t==='env'){
+                    // Equirect panorama -> PBR light environment (and the
+                    // visible sky when bg is set)
+                    new THREE.TextureLoader().load(n.url,function(tex){
+                        if(inst.disposed)return;
+                        tex.mapping=THREE.EquirectangularReflectionMapping;
+                        tex.colorSpace=THREE.SRGBColorSpace;
+                        inst.scene.environment=tex;
+                        if(n.bg)inst.scene.background=tex;
+                        if(!inst.animated)render(inst);
+                    },undefined,function(){console.error('[JWeb] environment failed:',n.url);});
                 }else if(n.t==='dirLight'){
                     var dir=new THREE.DirectionalLight(color(n.color,'#ffffff'),n.intensity!=null?n.intensity:1);
                     if(n.pos)vec(dir.position,n.pos);else dir.position.set(3,5,2);
@@ -170,36 +253,77 @@ public final class ThreeRuntime {
                 for(var i=0;i<hits.length;i++){
                     var o=hits[i].object;
                     while(o){
-                        if(o.userData&&o.userData.jweb)return o.userData.jweb;
+                        if(o.userData&&o.userData.jweb)return {o:o,d:o.userData.jweb};
                         o=o.parent;
                     }
                 }
                 return null;
             }
 
-            function wireClicks(inst){
+            // Declarative hover effects: apply on raycast enter, restore the
+            // captured originals on leave — scale on any node, color/emissive
+            // on single-material meshes
+            function hover(o){
+                var d=o.userData.jweb;
+                if(d.hovScale){o.userData.jwebScl=o.scale.clone();o.scale.multiplyScalar(d.hovScale);}
+                if(o.material&&!Array.isArray(o.material)){
+                    if(d.hovColor&&o.material.color){o.userData.jwebCol=o.material.color.clone();o.material.color.set(d.hovColor);}
+                    if(d.hovEmissive&&o.material.emissive){o.userData.jwebEmi=o.material.emissive.clone();o.material.emissive.set(d.hovEmissive);}
+                }
+            }
+
+            function unhover(o){
+                if(o.userData.jwebScl){o.scale.copy(o.userData.jwebScl);delete o.userData.jwebScl;}
+                if(o.userData.jwebCol){o.material.color.copy(o.userData.jwebCol);delete o.userData.jwebCol;}
+                if(o.userData.jwebEmi){o.material.emissive.copy(o.userData.jwebEmi);delete o.userData.jwebEmi;}
+            }
+
+            function setHovered(inst,target){
+                if(target===inst.hovered)return;
+                if(inst.hovered)unhover(inst.hovered);
+                inst.hovered=target;
+                if(target)hover(target);
+                if(!inst.animated)render(inst);
+            }
+
+            function wireInteraction(inst){
                 var canvas=inst.renderer.domElement;
                 inst.pointer=new THREE.Vector2();
                 inst.ray=new THREE.Raycaster();
                 canvas.addEventListener('click',function(ev){
-                    var d=hit(inst,ev);
-                    if(!d||!window.JWeb)return;
+                    var h=hit(inst,ev);
+                    if(!h||!window.JWeb)return;
+                    var d=h.d;
                     if(d.click){
                         JWeb.call(d.click,{type:'click',clientX:ev.clientX,clientY:ev.clientY,
                             target:{id:inst.el.id||'',value:d.name,dataset:{mesh:d.name,scene:inst.el.id||''}}});
+                    }else if(d.act&&JWeb.runAction){
+                        // Actions-DSL handler: defined in __JWEB_ACTIONS__ by
+                        // the page's nonce'd definitions script; this = canvas,
+                        // event = the real click event
+                        JWeb.runAction(d.act,ev,canvas);
                     }else if(d.swap){
                         JWeb.swap(d.swap.url,null,{target:d.swap.target});
                     }
                 });
-                var pending=false;
+                // rAF-throttled: at most one raycast per frame, always for
+                // the LATEST pointer position (not the first move that
+                // scheduled the frame)
+                var pending=false,lastMove=null;
                 canvas.addEventListener('pointermove',function(ev){
+                    lastMove=ev;
                     if(pending)return;
                     pending=true;
                     requestAnimationFrame(function(){
                         pending=false;
                         if(inst.disposed)return;
-                        canvas.style.cursor=hit(inst,ev)?'pointer':'';
+                        var h=hit(inst,lastMove);
+                        canvas.style.cursor=(h&&(h.d.click||h.d.act||h.d.swap))?'pointer':'';
+                        setHovered(inst,h?h.o:null);
                     });
+                });
+                canvas.addEventListener('pointerleave',function(){
+                    if(!inst.disposed)setHovered(inst,null);
                 });
             }
 
@@ -228,9 +352,10 @@ public final class ThreeRuntime {
                 el.appendChild(canvas);
 
                 var inst={el:el,renderer:renderer,scene:new THREE.Scene(),camera:null,controls:null,
-                          objects:{},spins:[],floats:[],hasLight:false,clickable:false,
+                          objects:{},spins:[],floats:[],mixers:[],hasLight:false,
+                          clickable:false,interactive:false,hovered:null,needsLoop:false,
                           shadows:wantsShadows(graph.nodes),animated:false,disposed:false,
-                          raf:0,ro:null,last:0,time:0};
+                          raf:0,ro:null,io:null,last:0,time:0};
                 if(inst.shadows)renderer.shadowMap.enabled=true;
 
                 var camNode=null;
@@ -250,7 +375,7 @@ public final class ThreeRuntime {
                 inst.camera=cam;
 
                 var autoRotate=camNode&&camNode.auto;
-                var animated=inst.spins.length>0||inst.floats.length>0||!!autoRotate;
+                var animated=inst.spins.length>0||inst.floats.length>0||!!autoRotate||inst.needsLoop;
                 inst.animated=animated;
                 if(camNode&&camNode.orbit&&THREE.OrbitControls){
                     var controls=new THREE.OrbitControls(cam,canvas);
@@ -261,7 +386,7 @@ public final class ThreeRuntime {
                     if(!animated)controls.addEventListener('change',function(){render(inst);});
                     inst.controls=controls;
                 }
-                if(inst.clickable)wireClicks(inst);
+                if(inst.interactive)wireInteraction(inst);
 
                 function resize(){
                     var w=el.clientWidth,h=el.clientHeight;
@@ -276,7 +401,6 @@ public final class ThreeRuntime {
                 resize();
 
                 if(animated){
-                    inst.last=performance.now();
                     var loop=function(now){
                         inst.raf=requestAnimationFrame(loop);
                         var dt=Math.min((now-inst.last)/1000,0.1);
@@ -290,10 +414,26 @@ public final class ThreeRuntime {
                         inst.floats.forEach(function(f){
                             f.obj.position.y=f.base+Math.sin(inst.time*f.speed*Math.PI*2)*f.amp;
                         });
+                        inst.mixers.forEach(function(m){m.update(dt);});
                         if(inst.controls)inst.controls.update();
                         render(inst);
                     };
-                    inst.raf=requestAnimationFrame(loop);
+                    inst.startLoop=function(){
+                        if(inst.raf||inst.disposed)return;
+                        inst.last=performance.now();
+                        inst.raf=requestAnimationFrame(loop);
+                    };
+                    inst.stopLoop=function(){
+                        if(inst.raf){cancelAnimationFrame(inst.raf);inst.raf=0;}
+                    };
+                    // The loop only runs while the scene is actually on
+                    // screen — scrolled-away scenes cost nothing
+                    inst.io=new IntersectionObserver(function(entries){
+                        if(entries[0].isIntersecting)inst.startLoop();
+                        else inst.stopLoop();
+                    });
+                    inst.io.observe(el);
+                    inst.startLoop();
                 }else{
                     render(inst);
                 }
@@ -304,7 +444,11 @@ public final class ThreeRuntime {
                 inst.disposed=true;
                 if(inst.raf)cancelAnimationFrame(inst.raf);
                 if(inst.ro)inst.ro.disconnect();
+                if(inst.io)inst.io.disconnect();
                 if(inst.controls)inst.controls.dispose();
+                // env/sky textures hang off the scene, not its children
+                if(inst.scene.environment&&inst.scene.environment.isTexture)inst.scene.environment.dispose();
+                if(inst.scene.background&&inst.scene.background.isTexture)inst.scene.background.dispose();
                 inst.scene.traverse(function(o){
                     if(o.geometry)o.geometry.dispose();
                     if(o.material){

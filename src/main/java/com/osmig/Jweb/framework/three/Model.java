@@ -18,9 +18,29 @@ import java.util.Map;
 public class Model extends ThreeNode<Model> {
 
     private final String url;
+    private Object animation;
 
     Model(String url) {
         this.url = url;
+    }
+
+    /**
+     * Plays every animation clip the file ships — the usual case for models
+     * exported with a single baked animation.
+     *
+     * <pre>{@code
+     * model("/assets/robot.glb").animate()
+     * }</pre>
+     */
+    public Model animate() {
+        this.animation = Boolean.TRUE;
+        return this;
+    }
+
+    /** Plays only the named clip (as exported — check the file's clip names). */
+    public Model animate(String clipName) {
+        this.animation = clipName;
+        return this;
     }
 
     @Override
@@ -31,5 +51,6 @@ public class Model extends ThreeNode<Model> {
     @Override
     protected void fill(Map<String, Object> map) {
         map.put("url", url);
+        if (animation != null) map.put("anim", animation);
     }
 }

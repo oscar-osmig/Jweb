@@ -60,7 +60,42 @@ public final class ThreeDemoPage {
 
             p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
                 text("The classic: box().color(\"#10b981\").spin() over a grid() — "
-                    + "the render loop only runs because something animates."))
+                    + "the render loop only runs because something animates.")),
+
+            h2(style().marginTop(SP_6).fontSize(TEXT_LG).fontWeight(600).color(TEXT),
+                text("Hover, billboards and client-side clicks")),
+            scene(style().marginTop(SP_2).height(px(380)).borderRadius(ROUNDED),
+                background("#0b1120"),
+                camera().position(0, 2.2, 7).lookAt(0, 1, 0).orbit(),
+                directionalLight(1.1).position(4, 6, 3),
+                ambientLight(0.35),
+                disc(6).rotation(-90, 0, 0).color("#111c33").roughness(0.95),
+                torusKnot(1, 0.28).color("#a855f7").metalness(0.6).roughness(0.2)
+                    .position(0, 1.4, 0).spin(0, 25, 0).name("knot")
+                    .hoverScale(1.1).hoverEmissive("#4c1d95")
+                    .onClick(jweb.Actions.toggle("knot-caption")),
+                billboard("torusKnot() — click it").size(0.45).position(0, 3.2, 0)
+                    .background("rgba(15,23,42,0.85)").color("#e2e8f0"),
+                icosahedron(0.7).wireframe().color("#22d3ee")
+                    .position(-2.6, 1, 0).spin(0, 40, 0).hoverScale(1.2),
+                capsule(0.4, 0.8).color("#fb7185").position(2.6, 1.1, 0)
+                    .float_(0.2, 0.5).hoverColor("#f43f5e"),
+                ring(0.75, 0.95).color("#38bdf8").position(-2.6, 1, 0).spin(0, 0, 40)
+            ).id("playground"),
+
+            p(attrs().id("knot-caption")
+                    .style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
+                        .backgroundColor(hex("#f5f3ff")).color(hex("#5b21b6")).done(),
+                text("Clicked! That ran an Actions-DSL handler — toggle(\"knot-caption\") — "
+                    + "raycast in the scene, dispatched client-side, no server involved. "
+                    + "The grow-on-hover is hoverScale(1.1), the glow hoverEmissive(...).")),
+
+            p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
+                text("New surface: torusKnot(), icosahedron().wireframe(), capsule(), "
+                    + "ring(), a disc() floor and a billboard(\"...\") label that always "
+                    + "faces the camera. Hover effects and the click are declared on the "
+                    + "shapes — and the render loop pauses whenever the scene scrolls "
+                    + "offscreen."))
         );
     }
 

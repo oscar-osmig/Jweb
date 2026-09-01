@@ -20,6 +20,8 @@ public abstract class MeshNode<SELF extends MeshNode<SELF>> extends ThreeNode<SE
     private Double opacity;
     private boolean wireframe;
     private String texture;
+    private String hoverColor;
+    private String hoverEmissive;
 
     /** Material color — any CSS color string ({@code "#10b981"}, {@code "coral"}). */
     public SELF color(String color) {
@@ -73,6 +75,28 @@ public abstract class MeshNode<SELF extends MeshNode<SELF>> extends ThreeNode<SE
         return self();
     }
 
+    /** Material color while the pointer is over the shape (raycast, client-side). */
+    public SELF hoverColor(String color) {
+        this.hoverColor = color;
+        return self();
+    }
+
+    /** Hover color from a typed CSS value. */
+    public SELF hoverColor(CSSValue color) {
+        return hoverColor(color.css());
+    }
+
+    /** Emissive glow while the pointer is over the shape — reads as a highlight. */
+    public SELF hoverEmissive(String color) {
+        this.hoverEmissive = color;
+        return self();
+    }
+
+    /** Hover glow from a typed CSS value. */
+    public SELF hoverEmissive(CSSValue color) {
+        return hoverEmissive(color.css());
+    }
+
     @Override
     protected void fill(Map<String, Object> map) {
         if (color != null) map.put("color", color);
@@ -82,5 +106,7 @@ public abstract class MeshNode<SELF extends MeshNode<SELF>> extends ThreeNode<SE
         if (opacity != null) map.put("opacity", num(opacity));
         if (wireframe) map.put("wire", true);
         if (texture != null) map.put("map", texture);
+        if (hoverColor != null) map.put("hovColor", hoverColor);
+        if (hoverEmissive != null) map.put("hovEmissive", hoverEmissive);
     }
 }

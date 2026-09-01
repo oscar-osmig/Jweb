@@ -81,6 +81,41 @@ public final class ThreeSection {
                     box().name("die")
                         .onClick(e -> rolls.set(rolls.get() + 1))"""),
 
+            since("2.2.0",
+                docSubtitle("More Shapes & Billboards"),
+                para("torusKnot(), capsule(), disc(), ring() and the four platonic " +
+                     "solids join the geometry set. Two nodes always face the camera: " +
+                     "billboard(text) renders crisp text with no font file, sprite(url) " +
+                     "shows an image."),
+                codeBlock("""
+                        torusKnot(1, 0.28).metalness(0.6).spin(),
+                        icosahedron(0.7).wireframe().color("#22d3ee"),
+                        billboard("Sun").background("rgba(15,23,42,0.85)")
+                            .size(0.5).position(0, 1.8, 0),
+                        sprite("/assets/pin.png").size(0.6)"""),
+
+                docSubtitle("Hover & Client-Side Clicks"),
+                para("Hover effects are declared on the shape and run entirely in the " +
+                     "browser — applied on raycast enter, restored on leave. onClick " +
+                     "also takes an Actions-DSL handler: dispatched client-side, " +
+                     "CSP-safe, no server round-trip."),
+                codeBlock("""
+                        torusKnot()
+                            .hoverScale(1.1)              // grows while hovered
+                            .hoverEmissive("#4c1d95")     // glow highlight
+                            .onClick(Actions.toggle("info-panel"))"""),
+
+                docSubtitle("Environment & Model Animation"),
+                para("An equirectangular panorama lights the scene — sky(url) also " +
+                     "shows it as the backdrop. Models that ship animation clips play " +
+                     "them with .animate(); animated scenes pause their render loop " +
+                     "whenever they scroll offscreen."),
+                codeBlock("""
+                        sky("/assets/dusk.jpg"),
+                        sphere().metalness(1).roughness(0.05),   // mirrors the sky
+                        model("/assets/robot.glb").animate("Walk")""")
+            ),
+
             docSubtitle("Escape Hatch"),
             para("The DSL covers scenes, not shaders. Give a scene an id and the live " +
                  "three.js objects are exposed to scripts:"),

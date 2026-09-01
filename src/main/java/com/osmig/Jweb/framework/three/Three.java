@@ -143,6 +143,101 @@ public class Three {
         return new Torus().radius(radius).tube(tube);
     }
 
+    /** A capsule — a cylinder with rounded caps. Radius 1, middle length 1. */
+    public static Capsule capsule() {
+        return new Capsule();
+    }
+
+    /** A capsule with the given radius and middle length. */
+    public static Capsule capsule(double radius, double length) {
+        return new Capsule().radius(radius).length(length);
+    }
+
+    /** A filled flat disc, double-sided. ({@code disc}, because SVG owns {@code circle}.) */
+    public static Disc disc() {
+        return new Disc();
+    }
+
+    /** A flat disc with the given radius. */
+    public static Disc disc(double radius) {
+        return new Disc().radius(radius);
+    }
+
+    /** A flat annulus, double-sided. Inner radius 0.5, outer radius 1. */
+    public static Ring ring() {
+        return new Ring();
+    }
+
+    /** A flat annulus with the given inner and outer radius. */
+    public static Ring ring(double inner, double outer) {
+        return new Ring().radii(inner, outer);
+    }
+
+    /** A torus knot — the classic 3D showpiece. Radius 1, tube 0.4. */
+    public static TorusKnot torusKnot() {
+        return new TorusKnot();
+    }
+
+    /** A torus knot with the given overall radius and tube thickness. */
+    public static TorusKnot torusKnot(double radius, double tube) {
+        return new TorusKnot().radius(radius).tube(tube);
+    }
+
+    /** A tetrahedron (4 faces), radius 1. */
+    public static Polyhedron tetrahedron() {
+        return new Polyhedron("tetra");
+    }
+
+    /** A tetrahedron with the given radius. */
+    public static Polyhedron tetrahedron(double radius) {
+        return new Polyhedron("tetra").radius(radius);
+    }
+
+    /** An octahedron (8 faces), radius 1. */
+    public static Polyhedron octahedron() {
+        return new Polyhedron("octa");
+    }
+
+    /** An octahedron with the given radius. */
+    public static Polyhedron octahedron(double radius) {
+        return new Polyhedron("octa").radius(radius);
+    }
+
+    /** A dodecahedron (12 faces), radius 1. */
+    public static Polyhedron dodecahedron() {
+        return new Polyhedron("dodeca");
+    }
+
+    /** A dodecahedron with the given radius. */
+    public static Polyhedron dodecahedron(double radius) {
+        return new Polyhedron("dodeca").radius(radius);
+    }
+
+    /** An icosahedron (20 faces), radius 1. */
+    public static Polyhedron icosahedron() {
+        return new Polyhedron("icosa");
+    }
+
+    /** An icosahedron with the given radius. */
+    public static Polyhedron icosahedron(double radius) {
+        return new Polyhedron("icosa").radius(radius);
+    }
+
+    // ==================== Billboards ====================
+
+    /**
+     * A text label that always faces the camera — canvas-rendered, no font
+     * file. ({@code billboard}, because HTML owns {@code label}.)
+     */
+    public static Billboard billboard(String text) {
+        return new Billboard(text);
+    }
+
+    /** An image that always faces the camera — icons, markers, particles. */
+    public static Sprite sprite(String imageUrl) {
+        return new Sprite(imageUrl);
+    }
+
     // ==================== Composition ====================
 
     /** Nodes sharing one transform — move, rotate, scale or animate them together. */
@@ -240,5 +335,28 @@ public class Three {
     public static SceneSetting grid(double size, int divisions) {
         return new SceneSetting("grid")
             .put("size", ThreeNode.num(size)).put("divisions", divisions);
+    }
+
+    /**
+     * An equirectangular panorama (a plain wide jpg/png) as the scene's
+     * light environment — metallic and glossy materials pick up its
+     * reflections. The image is not shown; pair with {@code background(...)}
+     * or use {@link #sky(String)} to also see it.
+     */
+    public static SceneSetting environment(String panoramaUrl) {
+        return new SceneSetting("env").put("url", panoramaUrl);
+    }
+
+    /**
+     * An equirectangular panorama as the visible sky <em>and</em> the light
+     * environment — the one-liner backdrop.
+     *
+     * <pre>{@code
+     * scene(sky("/assets/dusk.jpg"),
+     *     sphere().metalness(1).roughness(0.05))     // mirrors the sky
+     * }</pre>
+     */
+    public static SceneSetting sky(String panoramaUrl) {
+        return new SceneSetting("env").put("url", panoramaUrl).put("bg", true);
     }
 }
