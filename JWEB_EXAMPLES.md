@@ -1020,6 +1020,51 @@ public class AdvancedPage implements Template {
 
 ---
 
+## Level 21: 3D Scenes (Three DSL)
+
+Declarative three.js scenes — declare the graph like HTML; the runtime owns
+the renderer, sizing, render loop, shadows and disposal. three.js loads
+lazily, only on pages that contain a scene.
+
+```java
+import static jweb.El.*;
+import static jweb.Css.*;
+import static jweb.Three.*;
+
+div(class_("showcase"),
+    scene(style().height(px(420)).borderRadius(px(12)),
+        background("#0f172a"),
+        fog("#0f172a", 10, 30),
+        camera().position(6, 4, 8).lookAt(0, 0.8, 0).autoRotate(),
+        directionalLight(1.2).position(5, 8, 4).shadows(),   // one-call shadows
+        ambientLight(0.35),
+        plane(30, 30).rotation(-90, 0, 0).color("#1e293b"),  // ground
+        group(
+            torus(1, 0.35).color("#8b5cf6").position(-2.4, 1.2, 0)
+                .rotation(90, 0, 0).spin(0, 0, 25),
+            sphere(0.9).color("#f59e0b").metalness(0.7).roughness(0.25)
+                .position(0, 0.9, 0).name("orb")
+                .clickSwap("/api/orb-details", "#panel"),    // click -> fragment swap
+            cone(0.8, 1.6).color("#10b981").position(2.4, 0.8, 0)
+                .float_()                                    // gentle hover
+        )
+    ).id("showcase"),
+    div(attrs().style(s -> s.marginTop(rem(1))), text("Click a shape")).id("panel")
+)
+```
+
+Server-side click handlers use the same event pipeline as any element:
+
+```java
+box().name("die").onClick(e -> rolls.set(rolls.get() + 1))
+```
+
+And `scene(...).id("hero")` exposes the raw three.js objects to scripts via
+`JWebThree.get('hero')` — the escape hatch when the DSL runs out. Full guide:
+[readme/three-dsl.md](./readme/three-dsl.md).
+
+---
+
 ## Summary Table
 
 | Level | Features |
@@ -1044,3 +1089,4 @@ public class AdvancedPage implements Template {
 | 18 | Async/Await & Fetch Builder |
 | 19 | DOM Query Builder (`query()`, `queryAll()`) |
 | 20 | Template Lifecycle Hooks |
+| 21 | 3D scenes (`scene()`, shapes, lights, `shadows()`, `clickSwap`, `JWebThree`) |

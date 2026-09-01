@@ -234,6 +234,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [CSS DSL](./readme/css-dsl.md) | Inline styles, rules, units, colors, animations, at-rules, themes, utilities |
 | [JavaScript DSL](./readme/javascript-dsl.md) | Actions, form handlers, fetch, events, and the full 43-module browser API surface |
 | [State & Realtime](./readme/state-and-realtime.md) | Reactive state, events, hydration, WebSocket, SSE, transitions, portals, async rendering |
+| [Three DSL](./readme/three-dsl.md) | Declarative 3D scenes — shapes, lights, one-call shadows, glTF models, clickable objects |
 | [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |

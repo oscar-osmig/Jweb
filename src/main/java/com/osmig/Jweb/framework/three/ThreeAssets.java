@@ -14,14 +14,29 @@ import java.io.InputStream;
  */
 public final class ThreeAssets {
 
-    /** The pinned three.js version inside the bundle; busts the bundle's cache when bumped. */
+    /** The pinned three.js version inside the bundle; checked against the bundle's banner. */
     public static final String THREE_VERSION = "0.185.1";
 
     private static final String BUNDLE_RESOURCE = "/jweb/three-bundle.min.js";
 
     private static volatile byte[] bundle;
+    private static volatile String version;
 
     private ThreeAssets() {}
+
+    /**
+     * The bundle's cache-busting {@code ?v=} value: the three.js version plus
+     * a content hash, so a rebuilt bundle (new addon, patched build) busts
+     * immutable caches even when the three.js version itself is unchanged.
+     */
+    public static String bundleVersion() {
+        String v = version;
+        if (v == null) {
+            v = THREE_VERSION + "-" + Integer.toHexString(java.util.Arrays.hashCode(bundleBytes()));
+            version = v;
+        }
+        return v;
+    }
 
     /** The bundle's bytes, loaded from the classpath once and cached. */
     public static byte[] bundleBytes() {

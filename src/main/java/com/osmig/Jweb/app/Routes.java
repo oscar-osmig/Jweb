@@ -182,6 +182,10 @@ public class Routes implements JWebRoutes {
         app.get("/demo/three", ctx -> new Layout("3D Scenes - JWeb",
             ThreeDemoPage.content()).render());
 
+        // Fragment target for the demo's clickable shapes (clickSwap)
+        app.get("/demo/three/pick", ctx ->
+            ThreeDemoPage.pickFragment(ctx.query("shape")));
+
         // Admin login page
         app.get("/only-admin/log/in", ctx -> {
             if (adminApi.isAuthenticated(ctx)) {

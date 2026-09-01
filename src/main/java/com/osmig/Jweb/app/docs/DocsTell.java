@@ -55,6 +55,7 @@ public final class DocsTell {
         new Topic("css-dsl", "CSS DSL: inline styles, rules, units, colors, at-rules, themes", "readme/guides/css-dsl.md"),
         new Topic("javascript-dsl", "JavaScript DSL: actions, handlers, fetch, events, browser APIs", "readme/guides/javascript-dsl.md"),
         new Topic("state-and-realtime", "State, hydration, WebSocket, SSE, transitions, async rendering", "readme/guides/state-and-realtime.md"),
+        new Topic("three-dsl", "Three DSL: declarative 3D scenes — shapes, lights, shadows, models, click events", "readme/guides/three-dsl.md"),
         new Topic("backend", "Backend: REST, OpenAPI, MongoDB, security, validation, uploads, jobs", "readme/guides/backend.md"),
         new Topic("configuration", "Configuration, environment, dev tools, CLI, project structure", "readme/guides/configuration.md"),
         new Topic("known-issues", "Known issues and sharp edges — the API pitfalls", "readme/guides/known-issues.md"),

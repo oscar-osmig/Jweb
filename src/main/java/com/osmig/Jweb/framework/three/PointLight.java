@@ -5,30 +5,29 @@ import jweb.CSSValue;
 import java.util.Map;
 
 /**
- * Sun-like light shining from its position toward the origin (three.js
- * {@code DirectionalLight}). Positioned at {@code (3, 5, 2)} unless placed —
- * an angled key light that gives shapes visible depth.
+ * A bulb-like light radiating in every direction from its position (three.js
+ * {@code PointLight}). Positioned at {@code (2, 3, 2)} unless placed.
  */
-public class DirectionalLight extends ThreeNode<DirectionalLight> {
+public class PointLight extends ThreeNode<PointLight> {
 
     private Double intensity;
     private String color;
     private boolean shadows;
 
     /** Light strength. three.js default: 1. */
-    public DirectionalLight intensity(double intensity) {
+    public PointLight intensity(double intensity) {
         this.intensity = intensity;
         return this;
     }
 
     /** Light color — any CSS color string. Default: white. */
-    public DirectionalLight color(String color) {
+    public PointLight color(String color) {
         this.color = color;
         return this;
     }
 
     /** Light color from a typed CSS value. */
-    public DirectionalLight color(CSSValue color) {
+    public PointLight color(CSSValue color) {
         return color(color.css());
     }
 
@@ -37,14 +36,14 @@ public class DirectionalLight extends ThreeNode<DirectionalLight> {
      * the renderer's shadow map, this light's shadow camera, and casting/
      * receiving on every mesh in the scene.
      */
-    public DirectionalLight shadows() {
+    public PointLight shadows() {
         this.shadows = true;
         return this;
     }
 
     @Override
     protected String type() {
-        return "dirLight";
+        return "pointLight";
     }
 
     @Override

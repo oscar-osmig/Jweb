@@ -24,6 +24,11 @@ public class AmbientLight extends ThreeNode<AmbientLight> {
         return this;
     }
 
+    /** Light color from a typed CSS value. */
+    public AmbientLight color(jweb.CSSValue color) {
+        return color(color.css());
+    }
+
     @Override
     protected String type() {
         return "ambLight";

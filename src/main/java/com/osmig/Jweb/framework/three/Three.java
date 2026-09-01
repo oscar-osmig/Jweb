@@ -76,6 +76,8 @@ public class Three {
         }
     }
 
+    // ==================== Shapes ====================
+
     /** A unit cube. Size it with {@code box(2)} / {@code box(4, 0.2, 4)} or {@code .size(...)}. */
     public static Box box() {
         return new Box();
@@ -91,10 +93,76 @@ public class Three {
         return new Box().size(width, height, depth);
     }
 
+    /** A unit sphere. */
+    public static Sphere sphere() {
+        return new Sphere();
+    }
+
+    /** A sphere with the given radius. */
+    public static Sphere sphere(double radius) {
+        return new Sphere().radius(radius);
+    }
+
+    /** A 1×1 flat rectangle, double-sided. Rotate -90° on x for a ground plane. */
+    public static Plane plane() {
+        return new Plane();
+    }
+
+    /** A flat rectangle with the given width and height, double-sided. */
+    public static Plane plane(double width, double height) {
+        return new Plane().size(width, height);
+    }
+
+    /** A cylinder with radius 1 and height 1. */
+    public static Cylinder cylinder() {
+        return new Cylinder();
+    }
+
+    /** A cylinder with the given radius and height. */
+    public static Cylinder cylinder(double radius, double height) {
+        return new Cylinder().radius(radius).height(height);
+    }
+
+    /** A cone with base radius 1 and height 1. */
+    public static Cone cone() {
+        return new Cone();
+    }
+
+    /** A cone with the given base radius and height. */
+    public static Cone cone(double radius, double height) {
+        return new Cone().radius(radius).height(height);
+    }
+
+    /** A ring with radius 1 and tube thickness 0.4. */
+    public static Torus torus() {
+        return new Torus();
+    }
+
+    /** A ring with the given radius and tube thickness. */
+    public static Torus torus(double radius, double tube) {
+        return new Torus().radius(radius).tube(tube);
+    }
+
+    // ==================== Composition ====================
+
+    /** Nodes sharing one transform — move, rotate, scale or animate them together. */
+    public static Group group(ThreeNode<?>... children) {
+        return new Group(children);
+    }
+
+    /** A glTF model loaded from a URL — plain {@code .glb}/{@code .gltf}. */
+    public static Model model(String url) {
+        return new Model(url);
+    }
+
+    // ==================== Camera ====================
+
     /** The scene's camera. Without one: positioned at (0, 0, 5), looking at the origin. */
     public static Camera camera() {
         return new Camera();
     }
+
+    // ==================== Lights ====================
 
     /** Sun-like light shining from its position toward the origin. */
     public static DirectionalLight directionalLight() {
@@ -114,5 +182,63 @@ public class Three {
     /** Even, directionless illumination with the given strength. */
     public static AmbientLight ambientLight(double intensity) {
         return new AmbientLight().intensity(intensity);
+    }
+
+    /** A bulb-like light radiating from its position in every direction. */
+    public static PointLight pointLight() {
+        return new PointLight();
+    }
+
+    /** A bulb-like light with the given strength. */
+    public static PointLight pointLight(double intensity) {
+        return new PointLight().intensity(intensity);
+    }
+
+    /** Soft sky-and-ground illumination — the pleasant no-setup light. */
+    public static HemisphereLight hemisphereLight() {
+        return new HemisphereLight();
+    }
+
+    /** Soft illumination with the given sky and ground colors. */
+    public static HemisphereLight hemisphereLight(String sky, String ground) {
+        return new HemisphereLight().sky(sky).ground(ground);
+    }
+
+    // ==================== Scene settings ====================
+
+    /** A solid background color (scenes are transparent over the page by default). */
+    public static SceneSetting background(String color) {
+        return new SceneSetting("bg").put("color", color);
+    }
+
+    /** A solid background color from a typed CSS value. */
+    public static SceneSetting background(jweb.CSSValue color) {
+        return background(color.css());
+    }
+
+    /**
+     * Distance fog: objects fade to the color between the near and far
+     * distances. Pair it with a matching {@code background(...)} for the
+     * classic infinite-depth look.
+     */
+    public static SceneSetting fog(String color, double near, double far) {
+        return new SceneSetting("fog").put("color", color)
+            .put("near", ThreeNode.num(near)).put("far", ThreeNode.num(far));
+    }
+
+    /** Distance fog from a typed CSS value. */
+    public static SceneSetting fog(jweb.CSSValue color, double near, double far) {
+        return fog(color.css(), near, far);
+    }
+
+    /** A 10×10 reference grid on the ground plane — handy while placing objects. */
+    public static SceneSetting grid() {
+        return new SceneSetting("grid");
+    }
+
+    /** A reference grid of the given size and number of divisions. */
+    public static SceneSetting grid(double size, int divisions) {
+        return new SceneSetting("grid")
+            .put("size", ThreeNode.num(size)).put("divisions", divisions);
     }
 }

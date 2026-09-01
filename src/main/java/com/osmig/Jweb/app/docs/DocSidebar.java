@@ -40,6 +40,7 @@ public class DocSidebar implements Template {
                 navSection("Advanced",
                     link("api", "REST API"),
                     link("ai", "AI"),
+                    link("three", "3D Scenes"),
                     link("performance", "Performance & SEO"),
                     link("security", "Security"),
                     link("ui", "UI Components"),
