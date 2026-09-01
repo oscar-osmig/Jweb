@@ -81,7 +81,7 @@ public final class ThreeSection {
                     box().name("die")
                         .onClick(e -> rolls.set(rolls.get() + 1))"""),
 
-            since("2.2.0",
+            since("v2.2.0",
                 docSubtitle("More Shapes & Billboards"),
                 para("torusKnot(), capsule(), disc(), ring() and the four platonic " +
                      "solids join the geometry set. Two nodes always face the camera: " +
