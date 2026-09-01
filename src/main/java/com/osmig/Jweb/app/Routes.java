@@ -15,6 +15,7 @@ import com.osmig.Jweb.app.pages.HomePage;
 import com.osmig.Jweb.app.pages.AboutPage;
 import com.osmig.Jweb.app.pages.ContactPage;
 import com.osmig.Jweb.app.pages.DemoStreamingPage;
+import com.osmig.Jweb.app.pages.ThreeDemoPage;
 import com.osmig.Jweb.app.pages.admin.AdminLoginPage;
 import com.osmig.Jweb.app.pages.admin.AdminMessagesPage;
 import com.osmig.Jweb.app.docs.DocsPage;
@@ -176,6 +177,10 @@ public class Routes implements JWebRoutes {
         // stream in as their (deliberately slow) data resolves
         app.get("/demo/streaming", ctx -> com.osmig.Jweb.framework.async.Streamed.of(
             () -> new Layout("Streaming Demo", DemoStreamingPage.content()).render()));
+
+        // Three DSL demo: declarative 3D scenes, zero handwritten JavaScript
+        app.get("/demo/three", ctx -> new Layout("3D Scenes - JWeb",
+            ThreeDemoPage.content()).render());
 
         // Admin login page
         app.get("/only-admin/log/in", ctx -> {

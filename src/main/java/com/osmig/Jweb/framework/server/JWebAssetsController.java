@@ -44,6 +44,23 @@ public class JWebAssetsController {
         return js(Prefetch.clientScript());
     }
 
+    /** The vendored three.js bundle; the runtime requests it with {@code ?v=<three version>}. */
+    @GetMapping("/jweb/three-bundle.js")
+    @ResponseBody
+    public ResponseEntity<byte[]> threeBundle() {
+        return ResponseEntity.ok()
+                .cacheControl(IMMUTABLE)
+                .contentType(MediaType.parseMediaType("application/javascript;charset=UTF-8"))
+                .body(com.osmig.Jweb.framework.three.ThreeAssets.bundleBytes());
+    }
+
+    /** The scene-graph interpreter; requested with {@code ?v=<content hash>}. */
+    @GetMapping("/jweb/three-runtime.js")
+    @ResponseBody
+    public ResponseEntity<String> threeRuntime() {
+        return js(com.osmig.Jweb.framework.three.ThreeRuntime.getScript());
+    }
+
     private ResponseEntity<String> js(String script) {
         return ResponseEntity.ok()
                 .cacheControl(IMMUTABLE)

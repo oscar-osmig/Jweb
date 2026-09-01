@@ -35,8 +35,19 @@ public final class JWebRuntime {
      * Returns the JWeb client runtime JavaScript code.
      */
     public static String getScript() {
-        return RUNTIME_SCRIPT;
+        String script = resolvedScript;
+        if (script == null) {
+            script = RUNTIME_SCRIPT
+                .replace("__THREE_BUNDLE_V__", com.osmig.Jweb.framework.three.ThreeAssets.THREE_VERSION)
+                .replace("__THREE_RUNTIME_V__", com.osmig.Jweb.framework.three.ThreeRuntime.version());
+            resolvedScript = script;
+        }
+        return script;
     }
+
+    // The runtime embeds the three.js asset versions (for cache-busting ?v=
+    // params), resolved once — its own content hash then covers them too.
+    private static volatile String resolvedScript;
 
     /**
      * Returns a script tag containing the JWeb runtime,
@@ -44,7 +55,7 @@ public final class JWebRuntime {
      */
     public static String getScriptTag() {
         if (!enabled) return "";
-        return "<script>\n" + RUNTIME_SCRIPT + "\n</script>";
+        return "<script>\n" + getScript() + "\n</script>";
     }
 
     private static final String RUNTIME_SCRIPT = """
@@ -77,6 +88,26 @@ public final class JWebRuntime {
                 this.initTransitions();
                 this.initBindings();
                 this.initSwaps();
+                this.initThree();
+            },
+
+            initThree:function(){
+                if(window.JWebThree||window.__jwebThreeLoading)return;
+                var load=function(){
+                    if(window.__jwebThreeLoading)return;
+                    window.__jwebThreeLoading=true;
+                    ['/jweb/three-bundle.js?v=__THREE_BUNDLE_V__','/jweb/three-runtime.js?v=__THREE_RUNTIME_V__'].forEach(function(src){
+                        var s=document.createElement('script');
+                        s.src=src;
+                        s.async=false;
+                        document.head.appendChild(s);
+                    });
+                };
+                if(document.querySelector('[data-three]')){load();return;}
+                var mo=new MutationObserver(function(){
+                    if(document.querySelector('[data-three]')){mo.disconnect();load();}
+                });
+                mo.observe(document.body,{childList:true,subtree:true});
             },
 
             initSwaps:function(){

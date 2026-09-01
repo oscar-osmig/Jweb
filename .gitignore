@@ -50,3 +50,4 @@ CLAUDE.md
 
 # Local tool venvs (markitdown, etc.)
 .tools/
+node_modules

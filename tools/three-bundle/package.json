@@ -1,0 +1,8 @@
+{
+  "name": "jweb-three-bundle",
+  "private": true,
+  "description": "Builds the vendored three.js bundle served at /jweb/three-bundle.js. Run build.sh; commit the output.",
+  "dependencies": {
+    "three": "0.185.1"
+  }
+}
