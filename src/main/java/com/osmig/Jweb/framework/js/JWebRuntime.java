@@ -271,12 +271,22 @@ public final class JWebRuntime {
                             else{targetEl.innerHTML=html;}
                             document.dispatchEvent(new CustomEvent('jweb:swap',{detail:{url:url,target:target}}));
                         };
-                        if(document.startViewTransition){
-                            // An aborted transition (hidden tab, concurrent
-                            // transition) must not surface as an unhandled
-                            // rejection — the DOM update itself still ran
+                        if(document.startViewTransition&&document.visibilityState==='visible'){
+                            // A skipped transition (hidden tab, debugger
+                            // capture, concurrent transition) rejects
+                            // ready/finished — swallow those so nothing
+                            // surfaces as unhandled; the DOM update (apply)
+                            // runs either way. The visibility gate avoids
+                            // the guaranteed-skip case up front. Note:
+                            // browsers may still self-report an abnormal
+                            // abort to the console per spec — cosmetic,
+                            // the swap itself always completes.
                             var vt=document.startViewTransition(apply);
-                            if(vt&&vt.finished)vt.finished.catch(function(){});
+                            if(vt){
+                                if(vt.ready)vt.ready.catch(function(){});
+                                if(vt.finished)vt.finished.catch(function(){});
+                                if(vt.updateCallbackDone)vt.updateCallbackDone.catch(function(){});
+                            }
                         }
                         else{apply();}
                         if(push){history.pushState({jwebSwap:{url:url,target:target}},'',push);}

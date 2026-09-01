@@ -480,8 +480,9 @@ There is no bundler and no automatic script injection for DSL output. Three mech
 2. **Event attributes** — `attrs().onClick(action)`. Inside a page render this emits a
    `data-jweb-act<type>` attribute and ships the JS in a nonce-stamped definitions
    script the runtime delegates to (inline `on<type>=` can never run under the
-   recommended nonce CSP); outside one it falls back to writing `action.inline()`
-   into `onclick` etc.
+   recommended nonce CSP); the serializer applies the same rewrite to raw
+   `set("on<type>", js)` strings at render time. Outside a page render both fall
+   back to classic inline attributes (`attrs().inlineHandlers()` forces that).
 3. **Auto-injected framework scripts** — the controller injects three scripts before
    `</body>`: the `Prefetch` script (external, cached `/jweb/prefetch.js`), the
    `__JWEB_DATA__` hydration JSON (inline, per request), and the reactive-state client

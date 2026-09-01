@@ -112,6 +112,85 @@ class ClientActionsTest {
     }
 
     @Test
+    void rawOnAttributesRewriteAtRenderTime() {
+        // Built OUTSIDE any context (a cached element, a Ref helper, a
+        // hand-written set()) — the attribute is stored as genuine inline JS
+        var el = jweb.El.button(jweb.El.attrs().set("onclick", "console.log('hi')"),
+            jweb.El.text("Log"));
+
+        // Rendered INSIDE a page render, the serializer rewrites it: the JS
+        // registers for this page's definitions and delegation takes over
+        var context = StateManager.createContext();
+        String html = el.toHtml();
+        assertTrue(html.contains("data-jweb-actclick=\"a"), html);
+        assertFalse(html.contains("onclick="), html);
+        String defs = ClientActions.drainJs(context);
+        assertNotNull(defs);
+        assertTrue(defs.contains("console.log('hi')"), defs);
+        StateManager.clearContext();
+
+        // The same element rendered outside a render context stays inline
+        String bare = el.toHtml();
+        assertTrue(bare.contains("onclick=\"console.log"), bare);
+    }
+
+    @Test
+    void rawOnAttributeNamesAreCaseInsensitive() {
+        StateManager.createContext();
+        // HTML parses attribute names case-insensitively: onClick IS onclick
+        String html = jweb.El.div(jweb.El.attrs().set("onClick", "x()")).toHtml();
+        assertTrue(html.contains("data-jweb-actclick=\"a"), html);
+    }
+
+    @Test
+    void nonDelegatedOnAttributesStayInline() {
+        StateManager.createContext();
+        // SMIL animation events aren't in the runtime's listener set —
+        // rewriting would kill a handler that at least works without CSP
+        String smil = jweb.El.div(jweb.El.attrs().set("onbegin", "x()")).toHtml();
+        assertTrue(smil.contains("onbegin=\"x()\""), smil);
+        // ...and names that merely start with "on" are not handlers at all
+        String once = jweb.El.div(jweb.El.attrs().set("once", "true")).toHtml();
+        assertTrue(once.contains("once=\"true\""), once);
+    }
+
+    @Test
+    void inlineHandlersOptsOutOfTheRewrite() {
+        StateManager.createContext();
+        String html = jweb.El.button(
+            jweb.El.attrs().inlineHandlers().set("onclick", "location.reload()"),
+            jweb.El.text("Retry")).toHtml();
+        assertTrue(html.contains("onclick=\"location.reload()\""), html);
+        assertTrue(html.contains("data-jweb-inline"), html);
+        assertFalse(html.contains("data-jweb-actclick"), html);
+    }
+
+    @Test
+    void errorPagesCarryNoJsHandlersAtAll() {
+        // Error responses ship without the runtime, so no handler could
+        // delegate — retry is a plain empty-href anchor (resolves to the
+        // current URL), which works under any CSP and with JS disabled.
+        // Must hold even when an exception leaves a render context active.
+        StateManager.createContext();
+        String html = com.osmig.Jweb.framework.server.ErrorPage
+            .render(500, "Server Error", new RuntimeException("boom")).toHtml();
+        assertFalse(html.contains("onclick="), "no inline handlers on error pages");
+        assertFalse(html.contains("data-jweb-act"), "error pages must not delegate");
+        assertTrue(html.contains("href=\"\""), "retry anchor expected: "
+            + html.substring(Math.max(0, html.indexOf("error-actions") - 40),
+                Math.min(html.length(), html.indexOf("error-actions") + 300)));
+    }
+
+    @Test
+    void delegatedEventListMatchesTheRuntimeScript() {
+        String runtime = JWebRuntime.getScript();
+        for (String type : ClientActions.delegatedEvents()) {
+            assertTrue(runtime.contains("'" + type + "'") || runtime.contains("act" + type),
+                "runtime does not delegate '" + type + "' — list and script drifted");
+        }
+    }
+
+    @Test
     void scriptTagIsNonceStampedAndMarkedForSwapExecution() {
         var context = StateManager.createContext();
         ClientActions.register("a()");

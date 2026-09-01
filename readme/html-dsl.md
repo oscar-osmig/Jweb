@@ -234,19 +234,21 @@ button(attrs().onClick(toggle("panel")), "Toggle")
 // DialogHelper/DetailsHelper return Actions too — attach the same way:
 button(attrs().onClick(DialogHelper.showModal("confirm-dialog")), "Open")
 
-// For genuinely raw JS strings, use set() — but note this renders a real
-// inline attribute, which a nonce CSP (Middlewares.recommended) blocks:
+// For genuinely raw JS strings, use set():
 button(attrs().set("onclick", "console.log('hi')"), "Log")
 ```
 
-Both typed forms are CSP-safe. Inside a page render neither writes an inline
+Every form is CSP-safe. Inside a page render no handler writes an inline
 `on<type>=` attribute (a nonce CSP can never allow those): server handlers
 render `data-jweb-on<type>`, Actions render `data-jweb-act<type>`, and the
-runtime delegates events to them. An Action's JS travels in a nonce-stamped
-definitions script — with the page, with its streamed chunk, or inside a
-swapped fragment (the runtime executes it on swap). Outside a render context
-(bare `toHtml()`, static export) Actions fall back to the classic inline
-attribute, which works wherever no CSP is enforced.
+serializer rewrites even raw `set("on<type>", js)` strings to the same
+delegation at render time — the runtime dispatches events to all of them.
+Handler JS travels in a nonce-stamped definitions script — with the page,
+with its streamed chunk, or inside a swapped fragment (the runtime executes
+it on swap). Outside a render context (bare `toHtml()`, static export)
+everything falls back to classic inline attributes, which work wherever no
+CSP is enforced; `attrs().inlineHandlers()` forces that per element for
+content that ships without the runtime (error pages do this).
 
 Available on `Attributes` for both forms: `onClick`, `onChange`, `onInput`, `onSubmit`,
 `onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`, mouse/drag/touch/scroll/animation events, and the

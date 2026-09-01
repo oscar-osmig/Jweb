@@ -67,9 +67,34 @@ public final class VElement implements VNode {
         StringBuilder html = new StringBuilder();
         html.append("<").append(tag);
 
+        // Raw on<type>="js" attributes (set("onclick", ...), Ref helpers,
+        // cached elements built outside a request) can never run under the
+        // nonce CSP, so — like the nonce stamping below — the serializer
+        // rewrites them per render: the JS registers with the page's
+        // definitions (ClientActions) and a data-jweb-act<type> attribute
+        // the runtime delegates to is written instead. Skipped when the
+        // element opts out via data-jweb-inline (error pages), when the
+        // runtime doesn't delegate the type, or when there is no render
+        // context to deliver definitions through.
+        boolean keepInline = attributes.containsKey("data-jweb-inline");
+
         for (Map.Entry<String, String> attr : attributes.entrySet()) {
             String name = attr.getKey();
             String value = attr.getValue();
+
+            if (!keepInline && value != null && name.length() > 2
+                    && (name.charAt(0) == 'o' || name.charAt(0) == 'O')
+                    && (name.charAt(1) == 'n' || name.charAt(1) == 'N')) {
+                // HTML attribute names are case-insensitive: onClick == onclick
+                String type = name.substring(2).toLowerCase(Locale.ROOT);
+                if (com.osmig.Jweb.framework.js.ClientActions.isDelegatedEvent(type)) {
+                    String id = com.osmig.Jweb.framework.js.ClientActions.register(value);
+                    if (id != null) {
+                        name = "data-jweb-act" + type;
+                        value = id;
+                    }
+                }
+            }
 
             if (value == null) {
                 html.append(" ").append(name);

@@ -38,6 +38,34 @@ public final class ClientActions {
     private ClientActions() {}
 
     /**
+     * The event types the client runtime delegates — the capture-listener
+     * array in {@code JWebRuntime.RUNTIME_SCRIPT} plus the two emulated
+     * non-propagating types. The serializer only rewrites a raw
+     * {@code on<type>=} attribute when the type is in this set: rewriting an
+     * event nobody listens for would kill a handler that at least worked on
+     * CSP-less pages. Kept in lockstep with the runtime by a drift test.
+     */
+    private static final java.util.Set<String> DELEGATED_EVENTS = java.util.Set.of(
+        "click", "dblclick", "change", "input", "submit", "focus", "blur",
+        "keydown", "keyup", "keypress", "mousedown", "mouseup", "mousemove",
+        "mouseover", "mouseout", "contextmenu", "wheel", "drag", "dragstart",
+        "dragend", "dragenter", "dragleave", "dragover", "drop", "touchstart",
+        "touchmove", "touchend", "touchcancel", "scroll", "toggle", "cancel",
+        "close", "animationstart", "animationend", "animationiteration",
+        "transitionend", "load", "error", "copy", "cut", "paste",
+        "mouseenter", "mouseleave");
+
+    /** Whether the client runtime's delegation covers this event type. */
+    public static boolean isDelegatedEvent(String type) {
+        return DELEGATED_EVENTS.contains(type);
+    }
+
+    /** For the drift test: every entry must appear in the runtime script. */
+    static java.util.Set<String> delegatedEvents() {
+        return DELEGATED_EVENTS;
+    }
+
+    /**
      * Registers an action's JS in the current render context.
      *
      * @param js the JavaScript source ({@code Action.inline()})

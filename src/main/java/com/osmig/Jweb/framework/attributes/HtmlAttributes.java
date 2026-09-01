@@ -1094,6 +1094,17 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
         return set("data-jweb-act" + eventType, id);
     }
 
+    /**
+     * Opts this element's raw {@code on<type>=} attributes out of the
+     * CSP-safe rewrite the serializer applies inside page renders, keeping
+     * them as genuine inline attributes. For content that ships without the
+     * client runtime — error pages, static export — where delegation could
+     * never fire; the handlers then only run where no nonce CSP is enforced.
+     *
+     * @return this for chaining
+     */
+    default SELF inlineHandlers() { return set("data-jweb-inline", null); }
+
     // ==================== Refs ====================
 
     /**

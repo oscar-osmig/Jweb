@@ -66,14 +66,13 @@ public final class ErrorPage {
                         summary(attrs().class_("error-summary"), text("Stack Trace")),
                         pre(attrs().class_("error-stack"), code(stackTrace))
                     ),
-                    // Actions. Deliberately an inline attribute, not
-                    // .onClick(Action): error responses ship without the
-                    // client runtime and without the queued CSP header, so
-                    // inline is the only handler that runs here.
+                    // Actions. No JS at all: error responses ship without
+                    // the client runtime, so a handler could never delegate
+                    // — an empty href resolves to the current URL, which IS
+                    // a retry, and it works under any CSP.
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
-                        button(attrs().class_("error-btn error-btn-secondary")
-                            .set("onclick", com.osmig.Jweb.framework.js.Actions.reload().inline()), text("Retry"))
+                        a(attrs().href("").class_("error-btn error-btn-secondary"), text("Retry"))
                     )
                 )
             )
@@ -99,9 +98,8 @@ public final class ErrorPage {
                     ),
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
-                        button(attrs().class_("error-btn error-btn-secondary")
-                            // Inline on purpose — see renderDebug
-                            .set("onclick", com.osmig.Jweb.framework.js.Actions.reload().inline()), text("Retry"))
+                        // JS-free retry — see renderDebug
+                        a(attrs().href("").class_("error-btn error-btn-secondary"), text("Retry"))
                     )
                 )
             )

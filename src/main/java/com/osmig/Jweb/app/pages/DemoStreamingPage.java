@@ -47,7 +47,16 @@ public final class DemoStreamingPage {
             div(attrs().id("actions-panel")
                     .style().marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
                         .backgroundColor(hex("#fefce8")).color(hex("#854d0e")).done(),
-                text("Toggled entirely in the browser — under the page's nonce CSP."))
+                text("Toggled entirely in the browser — under the page's nonce CSP.")),
+            // Raw set("onclick", js): the serializer rewrites even this
+            // hand-written form to delegation at render time
+            button(attrs().id("raw-inline")
+                    .set("onclick", "document.getElementById('raw-note').textContent="
+                        + "'The raw handler ran — rewritten to delegation at render time.'")
+                    .style().marginTop(SP_2).marginLeft(SP_2).padding(SP_1, SP_3)
+                        .borderRadius(ROUNDED).cursor(pointer).done(),
+                text("Raw set(\"onclick\") handler")),
+            p(attrs().id("raw-note"), text("Not clicked yet."))
         );
     }
 

@@ -466,6 +466,13 @@ public class JWebController {
     }
 
     private ResponseEntity<String> handleError(Exception e) {
+        // The error page renders outside the request's render context on
+        // purpose: error responses ship without the runtime and without the
+        // queued CSP header, so the serializer's CSP rewrite of raw on*
+        // attributes must not fire (it would register definitions nothing
+        // ever delivers). The request's finally clears again — harmless.
+        StateManager.clearContext();
+
         // Bad typed-route parameters are client errors, not server errors
         if (e instanceof com.osmig.Jweb.framework.routing.TypedRoute.RouteParamException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

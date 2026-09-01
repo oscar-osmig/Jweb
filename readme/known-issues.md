@@ -35,13 +35,16 @@ By design (know them, don't "fix" them):
   can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
-- **Raw `set("onclick", js)` is the one handler form a nonce CSP still blocks.** Both typed
-  handler forms are CSP-safe (fixed 2026-08-31, see below): server handlers delegate via
-  `data-jweb-on<type>`, Actions via `data-jweb-act<type>` + a nonce-stamped definitions
-  script. Only a hand-written `set("on<type>", "...")` renders a genuine inline attribute —
-  reach for an Action or a script block instead on CSP'd pages. Two deliberate corners keep
-  inline fallback: error pages (no runtime, no CSP header on error responses) and renders
-  outside any request context (static export, bare `toHtml()`).
+- **Inline handler corners that stay inline on purpose.** Every handler form is CSP-safe
+  inside a page render (fixed 2026-08-31, see below) — including raw
+  `set("on<type>", js)`, which the serializer rewrites to delegation at render time. What
+  deliberately keeps classic inline attributes: renders outside any request context
+  (static export, bare `toHtml()`), elements opting out via `attrs().inlineHandlers()`
+  (for content that ships without the runtime), and `on<type>` types the runtime doesn't
+  delegate (SMIL `onbegin`/`onend`/`onrepeat` — rewriting those would kill handlers that
+  at least work on CSP-less pages). Error pages carry no JS handlers at all — retry is an
+  empty-href anchor, and `handleError` detaches the render context so custom error content
+  never registers definitions nothing delivers.
 - The Spring AI starters in pom.xml are commented out **by design** — AI integration ships
   built-in (`framework/ai`: `AI.ask/chat/agent`, zero extra dependencies, any
   OpenAI-compatible endpoint). Don't uncomment them unless you actually want the Spring AI
@@ -102,6 +105,11 @@ Fixed 2026-08-31 — Actions-DSL event handlers are CSP-safe:
   scripts close over the `$_`/`esc`/`fmtDate` helpers when referenced — inline attributes
   previously threw `ReferenceError: $_ is not defined` unless a page script had defined
   them globally (they were IIFE-scoped, so effectively never).
+- ✅ Raw `set("on<type>", "js")` strings (and `Ref` helper snippets, and elements built
+  outside a request then rendered inside one) get the same treatment: the HTML serializer —
+  the same layer that stamps CSP nonces on `<script>` tags — rewrites delegatable
+  `on<type>=` attributes to `data-jweb-act<type>` + a registered definition at render time.
+  Per-element opt-out: `attrs().inlineHandlers()`.
 
 Fixed in the 2026-08-09 follow-up pass:
 
