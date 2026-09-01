@@ -9,9 +9,15 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 
 public class DocSidebar implements Template {
     private final String active;
+    private final String version;
 
     public DocSidebar(String active) {
+        this(active, DocVersions.latest());
+    }
+
+    public DocSidebar(String active, String version) {
         this.active = active;
+        this.version = DocVersions.normalize(version);
     }
 
     @Override
@@ -100,8 +106,10 @@ public class DocSidebar implements Template {
     }
 
     private Element link(String id, String label) {
+        // Sections that don't exist in the viewed version stay out of the nav
+        if (!DocVersions.sectionAvailable(id, version)) return null;
         boolean isActive = id.equals(active);
-        return a(attrs().href("/docs?section=" + id)
+        return a(attrs().href(DocVersions.href(id, version))
             .data("section", id)
             .class_(isActive ? "docs-nav-link active" : "docs-nav-link")
             .style()

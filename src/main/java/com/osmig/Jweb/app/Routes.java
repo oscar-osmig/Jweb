@@ -102,13 +102,15 @@ public class Routes implements JWebRoutes {
             return ContactStatus.success("Message sent — we'll get back to you soon!");
         });
 
-        // Docs page needs request access for query params
+        // Docs page needs request access for query params; ?v= selects the
+        // docs version (defaults to latest)
         app.get("/docs", ctx -> new Layout("Documentation - JWeb",
-            new DocsPage(ctx.query("section")).render()
+            new DocsPage(ctx.query("section"), ctx.query("v")).render()
         ).render());
 
         // Docs content endpoint for client-side navigation (returns only content)
-        app.get("/docs/content", ctx -> DocContent.get(ctx.query("section")));
+        app.get("/docs/content", ctx ->
+            DocContent.get(ctx.query("section"), ctx.query("v")));
 
         // The whole documentation set as one markdown document, for an AI
         // assistant to pull in as grounding before writing JWeb code. Opening the

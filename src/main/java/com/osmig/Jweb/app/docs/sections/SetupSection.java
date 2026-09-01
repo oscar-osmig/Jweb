@@ -1,12 +1,21 @@
 package com.osmig.Jweb.app.docs.sections;
 
 import jweb.Element;
+import com.osmig.Jweb.app.docs.DocStyles;
+import com.osmig.Jweb.app.docs.DocVersions;
+
+import static jweb.El.*;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
 public final class SetupSection {
     private SetupSection() {}
 
     public static Element render() {
+        return render(DocVersions.latest());
+    }
+
+    public static Element render(String version) {
+        String v = DocVersions.normalize(version);
         return section(
             docTitle("Getting Started"),
             para("A complete Hello World in three files. JWeb is a Spring Boot library — "
@@ -15,23 +24,11 @@ public final class SetupSection {
 
             docSubtitle("1. Add the Dependency"),
             para("Maven — the JitPack repository plus the dependency:"),
-            codeBlock("""
-                    <repositories>
-                        <repository>
-                            <id>jitpack.io</id>
-                            <url>https://jitpack.io</url>
-                        </repository>
-                    </repositories>
-
-                    <dependency>
-                        <groupId>com.github.oscar-osmig</groupId>
-                        <artifactId>Jweb</artifactId>
-                        <version>v2.0.0</version>
-                    </dependency>"""),
+            dependencyBlock(v),
             para("Gradle:"),
             codeBlock("""
                     repositories { maven { url 'https://jitpack.io' } }
-                    dependencies { implementation 'com.github.oscar-osmig:Jweb:v2.0.0' }"""),
+                    dependencies { implementation 'com.github.oscar-osmig:Jweb:%s' }""".formatted(v)),
             docTip("Requires Java 21+. Spring Boot's web starter arrives transitively — "
                    + "you don't add it yourself."),
             warn("Upgrading from 1.x: 2.0.0 is source-compatible but NOT binary-compatible, "
@@ -175,5 +172,43 @@ public final class SetupSection {
             docTip("Next: Elements for the HTML DSL, Styling for CSS, Fragments for "
                    + "server-driven UI without writing JavaScript.")
         );
+    }
+
+    /**
+     * The Maven snippet with a version chip next to the copy button. The chip
+     * shows the version the docs are rendered for and opens a dropdown of all
+     * versions; choosing one navigates with {@code ?v=}, which re-renders the
+     * whole docs site — snippet, sidebar and content — for that version.
+     */
+    private static Element dependencyBlock(String version) {
+        return div(attrs().class_("doc-code").style(s -> s.position("relative")),
+            pre(attrs().style(DocStyles.codeBlock()), code(text("""
+                    <repositories>
+                        <repository>
+                            <id>jitpack.io</id>
+                            <url>https://jitpack.io</url>
+                        </repository>
+                    </repositories>
+
+                    <dependency>
+                        <groupId>com.github.oscar-osmig</groupId>
+                        <artifactId>Jweb</artifactId>
+                        <version>%s</version>
+                    </dependency>""".formatted(version)))),
+            versionPicker(version),
+            button(attrs().class_("code-copy-btn").type("button")
+                .aria("label", "Copy code to clipboard"), text("Copy")));
+    }
+
+    /** Pure HTML dropdown (details/summary) — no script, styled in DocsPage. */
+    private static Element versionPicker(String version) {
+        return details(attrs().class_("ver-picker"),
+            summary(attrs().aria("label", "Change documentation version"),
+                text(version + " ▾")),
+            div(attrs().class_("ver-picker-menu"),
+                each(DocVersions.all(), v ->
+                    a(attrs().href(DocVersions.href("setup", v))
+                        .class_(v.equals(version) ? "ver-picker-item current" : "ver-picker-item"),
+                        text(DocVersions.isLatest(v) ? v + " (latest)" : v)))));
     }
 }

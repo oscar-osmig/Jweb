@@ -16,9 +16,15 @@ import com.osmig.Jweb.app.subheader.SubheaderScript;
  */
 public class DocsPage implements Template {
     private final String section;
+    private final String version;
 
     public DocsPage(String section) {
+        this(section, null);
+    }
+
+    public DocsPage(String section, String version) {
         this.section = section != null ? section : "intro";
+        this.version = DocVersions.normalize(version);
     }
 
     @Override
@@ -28,17 +34,34 @@ public class DocsPage implements Template {
         // always win over @media rules.
         return div(class_("docs-layout"),
             style(docsStyles()),
-            new DocSidebar(section).render(),
+            new DocSidebar(section, version).render(),
             div(class_("docs-content"), style()
                     .flex(1).minWidth(zero).minHeight(num(0))
                     .padding(SP_8, clamp(SP_4, vw(5), SP_12))
                     .overflowY(auto),
-                DocContent.get(section)),
+                versionBanner(),
+                DocContent.get(section, version)),
             new SubheaderSidebar().render(),
             inlineScript(DocsNavScript.build()),
             inlineScript(SubheaderScript.build()),
             inlineScript(CodeCopyScript.build())
         );
+    }
+
+    /** A slim reminder while reading docs for anything but the latest release. */
+    private Element versionBanner() {
+        if (DocVersions.isLatest(version)) return null;
+        return div(style()
+                .display(flex).alignItems(center).gap(SP_2)
+                .padding(SP_2, SP_3).marginBottom(SP_6)
+                .borderRadius(ROUNDED)
+                .backgroundColor(hex("#fffbeb"))
+                .border(px(1), solid, hex("#fde68a"))
+                .fontSize(TEXT_SM).color(hex("#92400e")),
+            span(text("Viewing documentation for " + version + ".")),
+            a(attrs().href("/docs?section=" + section)
+                .style().color(hex("#92400e")).fontWeight(600).done(),
+                text("Switch to " + DocVersions.latest() + " (latest)")));
     }
 
     private String docsStyles() {
@@ -109,6 +132,40 @@ public class DocsPage implements Template {
             // Touch screens have no hover — keep the button always visible.
             .mediaQuery(media().noHover(),
                 new Rule(".code-copy-btn", style().opacity(1)))
+            // Version chip on the dependency block: a details/summary dropdown
+            // styled like the copy button, sitting just left of it. Always
+            // visible — it carries information (the version), not just an action.
+            .rule(".ver-picker", style()
+                .position(absolute).top(SP_2).right(rem(4.4)).margin(zero))
+            .rule(".ver-picker summary", style()
+                .padding(px(4), px(10))
+                .fontSize(rem(0.75)).lineHeight(1.4)
+                .color(hex("#cbd5e1"))
+                .backgroundColor(rgba(255, 255, 255, 0.08))
+                .border(px(1), solid, rgba(255, 255, 255, 0.15))
+                .borderRadius(px(6))
+                .cursor(pointer)
+                .prop("list-style", "none"))
+            .rule(".ver-picker summary::-webkit-details-marker", style().display(none))
+            .rule(".ver-picker summary:hover", style()
+                .backgroundColor(rgba(255, 255, 255, 0.18)).color(hex("#f1f5f9")))
+            .rule(".ver-picker[open] summary", style().color(hex("#f1f5f9")))
+            .rule(".ver-picker-menu", style()
+                .position(absolute).right(zero).marginTop(px(6))
+                .minWidth(px(150))
+                .backgroundColor(hex("#1e293b"))
+                .border(px(1), solid, rgba(255, 255, 255, 0.15))
+                .borderRadius(px(8)).padding(px(4))
+                .boxShadow("0 8px 24px rgba(0,0,0,0.35)")
+                .zIndex(20))
+            .rule(".ver-picker-item", style()
+                .display(block).padding(px(6), px(10)).borderRadius(px(6))
+                .fontSize(rem(0.75)).color(hex("#cbd5e1"))
+                .textDecoration(none))
+            .rule(".ver-picker-item:hover", style()
+                .backgroundColor(rgba(255, 255, 255, 0.1)).color(hex("#f1f5f9")))
+            .rule(".ver-picker-item.current", style()
+                .color(hex("#6ee7b7")).fontWeight(600))
             .rule(".docs-nav-link.active, .subheader-link.active", style()
                 .position(relative)
                 .overflow(visible)

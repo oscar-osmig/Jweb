@@ -17,36 +17,43 @@ final class DocsNavScript {
             .unsafeRaw(guard("__docsNavInit")
                 .unsafeRaw(globalCache("__docsCache").js())
                 .unsafeRaw("var contentCache=window.__docsCache;var contentPending={};var TTL=" + TTL)
+                // The docs version in view; threads through fetches, cache
+                // keys and history so client-side nav stays on the version
+                .unsafeRaw("var DOCS_V=new URLSearchParams(location.search).get('v')||''")
+                .unsafeRaw("function withV(u){return DOCS_V?u+'&v='+DOCS_V:u}")
                 .unsafeRaw(prefetchFunc())
                 .unsafeRaw(loadSectionFunc())
                 .unsafeRaw(updateActiveLinkFunc())
                 .unsafeRaw(hoverPrefetch())
                 .unsafeRaw(clickHandler())
                 .unsafeRaw(onPopState("__docsPopstate").handler(
-                    "var s=new URLSearchParams(location.search).get('section')||'intro';loadSection(s)").js())
+                    "var q=new URLSearchParams(location.search);DOCS_V=q.get('v')||'';" +
+                    "loadSection(q.get('section')||'intro')").js())
                 .build())
             .build();
     }
 
     private static String prefetchFunc() {
         return "function prefetchContent(section){" +
-            "var url='/docs/content?section='+section;" +
-            "if(" + CACHE.isValid("section").js() + ")return;" +
-            "if(contentPending[section])return;contentPending[section]=true;" +
+            "var k=withV(section);" +
+            "var url=withV('/docs/content?section='+section);" +
+            "if(" + CACHE.isValid("k").js() + ")return;" +
+            "if(contentPending[k])return;contentPending[k]=true;" +
             "fetch(url,{credentials:'same-origin'}).then(function(r){return r.text()})" +
-            ".then(function(html){" + CACHE.set("section", "html").js() + ";delete contentPending[section]})" +
-            ".catch(function(){delete contentPending[section]})}";
+            ".then(function(html){" + CACHE.set("k", "html").js() + ";delete contentPending[k]})" +
+            ".catch(function(){delete contentPending[k]})}";
     }
 
     private static String loadSectionFunc() {
         return "function loadSection(section){" +
-            "if(" + CACHE.isValid("section").js() + "){" +
-            setInnerHTML(".docs-content", CACHE.getData("section")).js() + ";" +
-            "updateActiveLink(section);" + pushStateExpr(expr("'/docs?section='+section")).js() + ";return}" +
-            "fetch('/docs/content?section='+section,{credentials:'same-origin'})" +
-            ".then(function(r){return r.text()}).then(function(html){" + CACHE.set("section", "html").js() + ";" +
+            "var k=withV(section);" +
+            "if(" + CACHE.isValid("k").js() + "){" +
+            setInnerHTML(".docs-content", CACHE.getData("k")).js() + ";" +
+            "updateActiveLink(section);" + pushStateExpr(expr("withV('/docs?section='+section)")).js() + ";return}" +
+            "fetch(withV('/docs/content?section='+section),{credentials:'same-origin'})" +
+            ".then(function(r){return r.text()}).then(function(html){" + CACHE.set("k", "html").js() + ";" +
             setInnerHTML(".docs-content", expr("html")).js() + ";updateActiveLink(section);" +
-            pushStateExpr(expr("'/docs?section='+section")).js() + "})}";
+            pushStateExpr(expr("withV('/docs?section='+section)")).js() + "})}";
     }
 
     private static String updateActiveLinkFunc() {
