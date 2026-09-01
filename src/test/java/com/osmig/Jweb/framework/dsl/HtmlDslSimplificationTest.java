@@ -242,7 +242,8 @@ class HtmlDslSimplificationTest {
     @Test
     void buttonBuilderHasOnClickAndEscapeHatches() {
         String handler = Button.of("Save").onClick(e -> { }).toHtml();
-        assertTrue(handler.contains("onclick="), handler);
+        assertTrue(handler.contains("data-jweb-onclick=\"h_"),
+            "server handlers delegate via data attribute (nonce CSPs block inline handlers): " + handler);
 
         String action = Button.of("Retry")
             .onClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();

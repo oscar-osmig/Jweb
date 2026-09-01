@@ -35,6 +35,13 @@ By design (know them, don't "fix" them):
   can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
+- **Actions-DSL event attributes are inline JS and a nonce CSP blocks them.** Server-side
+  handlers (`attrs().onClick(e -> ...)`) render as `data-jweb-on<type>` attributes the
+  runtime delegates to, so they work under `Middlewares.recommended()`'s CSP. The Actions
+  string form (`attrs().onClick(show("panel"))`, `Button.onClick(Actions.reload())`) still
+  renders an inline `onclick=` attribute, which that CSP refuses — on CSP'd pages use a
+  server handler, a `swap*` attribute, or `script().withHelpers()` blocks (nonce-stamped)
+  instead.
 - The Spring AI starters in pom.xml are commented out **by design** — AI integration ships
   built-in (`framework/ai`: `AI.ask/chat/agent`, zero extra dependencies, any
   OpenAI-compatible endpoint). Don't uncomment them unless you actually want the Spring AI

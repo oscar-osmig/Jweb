@@ -247,9 +247,16 @@ public class JWebController {
     }
 
     private String buildHydrationScript(StateManager.StateContext context) {
+        return buildHydrationScript(context,
+            new java.util.ArrayList<>(context.getStates().values()));
+    }
+
+    /** Hydration from an explicit snapshot, so streaming can track what it sent. */
+    private String buildHydrationScript(StateManager.StateContext context,
+                                        java.util.List<com.osmig.Jweb.framework.state.State<?>> states) {
         HydrationData data = HydrationData.builder()
             .contextId(context.getSessionId())
-            .states(new java.util.ArrayList<>(context.getStates().values()))
+            .states(states)
             .build();
         return data.toScriptTag();
     }
@@ -343,9 +350,18 @@ public class JWebController {
         } finally {
             com.osmig.Jweb.framework.async.StreamingContext.close();
         }
+        // One snapshot feeds both the shell's hydration data and the sent-set,
+        // so a state that raced into hydration is never re-sent and one that
+        // missed it always rides a later chunk.
+        java.util.List<com.osmig.Jweb.framework.state.State<?>> shellStates =
+            context != null
+                ? new java.util.ArrayList<>(context.getStates().values())
+                : java.util.List.of();
         if (context != null) {
-            html = injectHydrationData(html, buildHydrationScript(context));
+            html = injectHydrationData(html, buildHydrationScript(context, shellStates));
         }
+        var sentStateIds = new java.util.HashSet<String>();
+        shellStates.forEach(s -> sentStateIds.add(s.getId()));
 
         // Split so late chunks land inside <body>
         int bodyEnd = html.lastIndexOf(BODY_END);
@@ -368,7 +384,8 @@ public class JWebController {
             while (it.hasNext()) {
                 var pending = it.next();
                 if (pending.html().isDone()) {
-                    out.write(streamChunk(pending.placeholderId(), pending.html().join()));
+                    out.write(streamChunk(pending.placeholderId(), pending.html().join(),
+                        lateStatesJson(context, sentStateIds)));
                     it.remove();
                 }
             }
@@ -379,13 +396,42 @@ public class JWebController {
         out.flush();
     }
 
+    /**
+     * States registered since the shell's hydration data flushed (useState
+     * inside streamed blocks), as a JSON array for {@code JWeb.lateStates};
+     * null when there is nothing new. Marks what it returns as sent.
+     */
+    public static String lateStatesJson(StateManager.StateContext context, java.util.Set<String> sentStateIds) {
+        if (context == null) return null;
+        StringBuilder json = null;
+        for (com.osmig.Jweb.framework.state.State<?> state : context.getStates().values()) {
+            if (!sentStateIds.add(state.getId())) continue;
+            json = json == null ? new StringBuilder("[") : json.append(",");
+            json.append(state.toJson());
+        }
+        return json == null ? null : json.append("]").toString();
+    }
+
     /** A streamed block: hidden template + script that swaps the placeholder. */
     public static String streamChunk(String placeholderId, String contentHtml) {
+        return streamChunk(placeholderId, contentHtml, null);
+    }
+
+    /**
+     * A streamed block, optionally carrying the states its render created —
+     * hydration data for content that didn't exist when the shell flushed.
+     */
+    public static String streamChunk(String placeholderId, String contentHtml, String lateStatesJson) {
         String templateId = placeholderId + "-c";
+        // Same escape as HydrationData.toScriptTag: '<' only occurs inside
+        // JSON strings, so "</script>" in a state value can't break out
+        String late = lateStatesJson == null ? "" :
+            ";if(window.JWeb&&JWeb.lateStates)JWeb.lateStates(" + lateStatesJson.replace("<", "\\u003C") + ")";
         return "<template id=\"" + templateId + "\">" + contentHtml + "</template>"
             + "<script" + com.osmig.Jweb.framework.security.CspNonce.attr() + ">(function(){var p=document.getElementById('" + placeholderId + "'),"
             + "t=document.getElementById('" + templateId + "');"
-            + "if(p&&t){p.replaceWith(t.content.cloneNode(true));t.remove();}})()</script>";
+            + "if(p&&t){p.replaceWith(t.content.cloneNode(true));t.remove();}})()"
+            + late + "</script>";
     }
 
     private ResponseEntity<String> handleNotFound(String path) {

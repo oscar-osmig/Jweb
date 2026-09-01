@@ -62,6 +62,8 @@ public final class JWebRuntime {
         var JWeb={
             ws:null,
             state:{},
+            lateQueue:[],
+            ready:false,
             data:null,
             connected:false,
             reconnectAttempts:0,
@@ -84,11 +86,57 @@ public final class JWebRuntime {
                         console.error('[JWeb] Failed to parse hydration data:',e);
                     }
                 }
+                var self=this;
+                this.lateQueue.forEach(function(s){self.state[s.id]=s.value;});
+                this.lateQueue=[];
+                this.ready=true;
                 this.connect();
                 this.initTransitions();
                 this.initBindings();
                 this.initSwaps();
+                this.initServerEvents();
                 this.initThree();
+            },
+
+            initServerEvents:function(){
+                var self=this;
+                // Server event handlers render as data-jweb-on<type> attributes
+                // (inline on<type>= handlers can never run under a nonce CSP).
+                // Capture-phase document listeners delegate every type — capture
+                // reaches the target even for non-bubbling events (focus, blur,
+                // load, error, scroll) — and delegation survives swaps, morphs
+                // and streamed chunks for free.
+                ['click','dblclick','change','input','submit','focus','blur',
+                 'keydown','keyup','keypress','mousedown','mouseup','mousemove',
+                 'mouseover','mouseout','contextmenu','wheel','drag','dragstart',
+                 'dragend','dragenter','dragleave','dragover','drop','touchstart',
+                 'touchmove','touchend','touchcancel','scroll','toggle','cancel',
+                 'close','animationstart','animationend','animationiteration',
+                 'transitionend','load','error','copy','cut','paste'
+                ].forEach(function(type){
+                    document.addEventListener(type,function(e){
+                        var t=e.target;
+                        if(!t||!t.closest)return;
+                        var el=t.closest('[data-jweb-on'+type+']');
+                        if(el)self.call(el.getAttribute('data-jweb-on'+type),e);
+                    },true);
+                });
+                // mouseenter/mouseleave don't propagate at all — emulate them
+                // from mouseover/mouseout with a relatedTarget boundary check
+                document.addEventListener('mouseover',function(e){
+                    var t=e.target;
+                    if(!t||!t.closest)return;
+                    var el=t.closest('[data-jweb-onmouseenter]');
+                    if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))
+                        self.call(el.getAttribute('data-jweb-onmouseenter'),e);
+                },true);
+                document.addEventListener('mouseout',function(e){
+                    var t=e.target;
+                    if(!t||!t.closest)return;
+                    var el=t.closest('[data-jweb-onmouseleave]');
+                    if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))
+                        self.call(el.getAttribute('data-jweb-onmouseleave'),e);
+                },true);
             },
 
             initThree:function(){
@@ -108,6 +156,16 @@ public final class JWebRuntime {
                     if(document.querySelector('[data-three]')){mo.disconnect();load();}
                 });
                 mo.observe(document.body,{childList:true,subtree:true});
+            },
+
+            lateStates:function(states){
+                // States born inside streamed blocks arrive with their chunk,
+                // after the shell's hydration data flushed. Before init they
+                // stage (init merges them with __JWEB_DATA__); after init they
+                // apply like any server state update.
+                if(!states)return;
+                if(this.ready){this.handleStateUpdate(states);}
+                else{this.lateQueue=this.lateQueue.concat(states);}
             },
 
             initSwaps:function(){

@@ -53,8 +53,9 @@ class BuilderStyleTest {
     void builderStyleReachesExtraEventHandlers() {
         String html = El.div().onScroll(e -> { }).onDragStart(e -> { }).toHtml();
 
-        assertTrue(html.contains("onscroll=\"JWeb.call("), html);
-        assertTrue(html.contains("ondragstart=\"JWeb.call("), html);
+        // CSP-safe delegation attributes, not inline on<type>= handlers
+        assertTrue(html.contains("data-jweb-onscroll=\"h_"), html);
+        assertTrue(html.contains("data-jweb-ondragstart=\"h_"), html);
     }
 
     @Test

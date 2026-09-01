@@ -221,7 +221,7 @@ public class Button implements Element {
      */
     public Button onClick(Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register("click", handler);
-        return attr("onclick", eh.toJsAttribute());
+        return attr("data-jweb-onclick", eh.getId());
     }
 
     /**
@@ -244,7 +244,7 @@ public class Button implements Element {
      */
     public Button on(String eventType, Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register(eventType, handler);
-        return attr("on" + eventType, eh.toJsAttribute());
+        return attr("data-jweb-on" + eventType, eh.getId());
     }
 
     /**

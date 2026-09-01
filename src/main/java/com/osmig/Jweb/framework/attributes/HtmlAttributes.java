@@ -1009,7 +1009,10 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
      */
     default SELF on(String eventType, Consumer<Event> handler) {
         EventHandler eh = EventRegistry.register(eventType, handler);
-        return set("on" + eventType, eh.toJsAttribute());
+        // A data attribute the runtime delegates to, not an inline on<type>=
+        // attribute: nonce-based CSPs (Middlewares.recommended) can never
+        // allow handler attributes, and delegation survives swaps and morphs.
+        return set("data-jweb-on" + eventType, eh.getId());
     }
 
     // ==================== JavaScript Action Event Handlers ====================
