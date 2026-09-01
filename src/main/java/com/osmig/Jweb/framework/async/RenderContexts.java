@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.async;
 
 import com.osmig.Jweb.framework.security.CspNonce;
+import com.osmig.Jweb.framework.state.StateManager;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -45,6 +46,18 @@ public final class RenderContexts {
                 if (snapshot != null) CspNonce.set((String) snapshot);
             }
             @Override public void clear() { CspNonce.clear(); }
+        });
+        // The page's state context: event handlers registered inside an async
+        // block must be scoped to the page's context (and evicted with it),
+        // not parked in the global registry. Restoring a captured context on
+        // another thread is the WebSocket handler's own established pattern,
+        // and the context object outlives the request thread's clearContext().
+        register(new Propagator() {
+            @Override public Object capture() { return StateManager.getContext(); }
+            @Override public void restore(Object snapshot) {
+                if (snapshot != null) StateManager.setContext((StateManager.StateContext) snapshot);
+            }
+            @Override public void clear() { StateManager.clearContext(); }
         });
     }
 

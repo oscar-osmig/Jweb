@@ -67,6 +67,39 @@ class RenderContextsTest {
     }
 
     @Test
+    void handlersRegisteredInStreamedBlocksAreContextScoped() {
+        // attrs().onClick(...) delegates to EventRegistry.register — inside a
+        // streamed block that used to land in the global registry because the
+        // state context didn't survive the thread hop. Now it must be scoped
+        // to the page's context, exactly as on the request thread.
+        var context = com.osmig.Jweb.framework.state.StateManager.createContext();
+        StreamingContext ctx = StreamingContext.open();
+        AtomicReference<String> handlerId = new AtomicReference<>();
+        try {
+            Suspense.of((java.util.concurrent.Callable<String>) () -> "data")
+                .loading(() -> span(text("...")))
+                .render(data -> {
+                    var handler = com.osmig.Jweb.framework.events.EventRegistry
+                        .register("click", e -> {});
+                    handlerId.set(handler.getId());
+                    return p(text("ok"));
+                })
+                .toHtml();
+            ctx.pendings().get(0).html().join();
+
+            String id = handlerId.get();
+            assertNotNull(id, "block must have registered its handler");
+            assertNull(com.osmig.Jweb.framework.events.EventRegistry.get(id),
+                "handler must NOT fall back to the global registry");
+            assertNotNull(com.osmig.Jweb.framework.events.EventRegistry
+                    .get(context.getSessionId(), id),
+                "handler must be scoped to the page's context");
+        } finally {
+            com.osmig.Jweb.framework.state.StateManager.clearContext();
+        }
+    }
+
+    @Test
     void loaderRunsUnderCarriedContextsInBlockingMode() {
         CspNonce.set("nonce-blocking");
         String html = Suspense.of((java.util.concurrent.Callable<String>) () -> "seen=" + CspNonce.current())
