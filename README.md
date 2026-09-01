@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 2.2.0** | **Last Updated: 2026-08-31**
+**Version 2.2.3** | **Last Updated: 2026-09-01**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v2.2.0</version>
+    <version>v2.2.3</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v2.2.0' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v2.2.3' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
