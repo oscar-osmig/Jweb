@@ -35,13 +35,13 @@ By design (know them, don't "fix" them):
   can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
-- **Actions-DSL event attributes are inline JS and a nonce CSP blocks them.** Server-side
-  handlers (`attrs().onClick(e -> ...)`) render as `data-jweb-on<type>` attributes the
-  runtime delegates to, so they work under `Middlewares.recommended()`'s CSP. The Actions
-  string form (`attrs().onClick(show("panel"))`, `Button.onClick(Actions.reload())`) still
-  renders an inline `onclick=` attribute, which that CSP refuses — on CSP'd pages use a
-  server handler, a `swap*` attribute, or `script().withHelpers()` blocks (nonce-stamped)
-  instead.
+- **Raw `set("onclick", js)` is the one handler form a nonce CSP still blocks.** Both typed
+  handler forms are CSP-safe (fixed 2026-08-31, see below): server handlers delegate via
+  `data-jweb-on<type>`, Actions via `data-jweb-act<type>` + a nonce-stamped definitions
+  script. Only a hand-written `set("on<type>", "...")` renders a genuine inline attribute —
+  reach for an Action or a script block instead on CSP'd pages. Two deliberate corners keep
+  inline fallback: error pages (no runtime, no CSP header on error responses) and renders
+  outside any request context (static export, bare `toHtml()`).
 - The Spring AI starters in pom.xml are commented out **by design** — AI integration ships
   built-in (`framework/ai`: `AI.ask/chat/agent`, zero extra dependencies, any
   OpenAI-compatible endpoint). Don't uncomment them unless you actually want the Spring AI
@@ -85,6 +85,23 @@ The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2h
   `Doc`-as-declared-type, `RouteHandler`, `Middleware` — types you receive or
   implement where a rename would break override/lambda matching. Handlers infer
   `req` without any import; use `var` for the rest.
+
+Fixed 2026-08-31 — Actions-DSL event handlers are CSP-safe:
+
+- ✅ `attrs().onClick(show("panel"))`, `Button.onClick(Actions.reload())` and every other
+  `Action`-typed handler now render a `data-jweb-act<type>` attribute inside a page render
+  (never an inline `on<type>=`, which the `Middlewares.recommended()` nonce CSP always
+  refused — silently, since attribute blocking logs nothing). The JS registers in the render
+  context (`ClientActions`, content-hash ids, deduped) and reaches the browser as a
+  nonce-stamped definitions script: with the page for shell renders, inside the chunk's
+  script for handlers born in streamed Suspense blocks, appended to the fragment for
+  `swap()` targets (the runtime executes the marked tag on swap — `innerHTML` never runs
+  scripts), and on the `domUpdate` WebSocket message for component re-renders. The runtime
+  delegates via the same capture-phase listeners as server events, binds `this` to the
+  element, passes the event as both `event` and `e`, and honors `return false`. Definition
+  scripts close over the `$_`/`esc`/`fmtDate` helpers when referenced — inline attributes
+  previously threw `ReferenceError: $_ is not defined` unless a page script had defined
+  them globally (they were IIFE-scoped, so effectively never).
 
 Fixed in the 2026-08-09 follow-up pass:
 

@@ -1,6 +1,8 @@
 package com.osmig.Jweb.framework.state;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -235,6 +237,12 @@ public final class StateManager {
         private final Map<String, State<?>> states = new ConcurrentHashMap<>();
         private final Set<State<?>> changedStates = ConcurrentHashMap.newKeySet();
         private final Map<String, RenderableComponent> components = new ConcurrentHashMap<>();
+        // Client-side Actions-DSL handlers (content-hash id -> JS source),
+        // insertion-ordered so definitions emit deterministically. Guarded by
+        // its own monitor: streamed-block renders register concurrently while
+        // the request thread drains for the shell or a chunk.
+        private final Map<String, String> clientActions = new LinkedHashMap<>();
+        private final Set<String> sentClientActions = new HashSet<>();
         private final String sessionId;
         private final long createdAt;
         private volatile long lastAccessedAt;
@@ -293,6 +301,32 @@ public final class StateManager {
          */
         public RenderableComponent getComponent(String componentId) {
             return components.get(componentId);
+        }
+
+        /**
+         * Records a client-side Actions-DSL handler under its id. Ids are
+         * content hashes, so re-registering an id always carries identical JS.
+         */
+        public void registerClientAction(String id, String js) {
+            synchronized (clientActions) {
+                clientActions.putIfAbsent(id, js);
+            }
+        }
+
+        /**
+         * The client actions not yet delivered to the browser, in
+         * registration order — and marks them delivered. Each render path
+         * (page shell, fragment, streamed chunk, WebSocket DOM update) calls
+         * this at its emission point, so every action ships exactly once.
+         */
+        public Map<String, String> drainUnsentClientActions() {
+            synchronized (clientActions) {
+                Map<String, String> unsent = new LinkedHashMap<>();
+                clientActions.forEach((id, js) -> {
+                    if (sentClientActions.add(id)) unsent.put(id, js);
+                });
+                return unsent;
+            }
         }
 
         /**
@@ -369,6 +403,10 @@ public final class StateManager {
             states.clear();
             changedStates.clear();
             components.clear();
+            synchronized (clientActions) {
+                clientActions.clear();
+                sentClientActions.clear();
+            }
 
             // Remove from registry and drop this context's event handlers
             contextRegistry.remove(sessionId);

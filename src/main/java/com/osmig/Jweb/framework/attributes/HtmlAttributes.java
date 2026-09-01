@@ -1035,37 +1035,37 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
      * @param action the JavaScript action to execute on click
      * @return this for chaining
      */
-    default SELF onClick(Action action) { return set("onclick", action.inline()); }
+    default SELF onClick(Action action) { return on("click", action); }
 
     /** Sets a change handler using a JavaScript Action. @param action the action to execute on change @return this for chaining */
-    default SELF onChange(Action action) { return set("onchange", action.inline()); }
+    default SELF onChange(Action action) { return on("change", action); }
 
     /** Sets an input handler using a JavaScript Action. @param action the action to execute on input @return this for chaining */
-    default SELF onInput(Action action) { return set("oninput", action.inline()); }
+    default SELF onInput(Action action) { return on("input", action); }
 
     /** Sets a submit handler using a JavaScript Action. @param action the action to execute on submit @return this for chaining */
-    default SELF onSubmit(Action action) { return set("onsubmit", action.inline()); }
+    default SELF onSubmit(Action action) { return on("submit", action); }
 
     /** Sets a focus handler using a JavaScript Action. @param action the action to execute on focus @return this for chaining */
-    default SELF onFocus(Action action) { return set("onfocus", action.inline()); }
+    default SELF onFocus(Action action) { return on("focus", action); }
 
     /** Sets a blur handler using a JavaScript Action. @param action the action to execute on blur @return this for chaining */
-    default SELF onBlur(Action action) { return set("onblur", action.inline()); }
+    default SELF onBlur(Action action) { return on("blur", action); }
 
     /** Sets a keydown handler using a JavaScript Action. @param action the action to execute on keydown @return this for chaining */
-    default SELF onKeyDown(Action action) { return set("onkeydown", action.inline()); }
+    default SELF onKeyDown(Action action) { return on("keydown", action); }
 
     /** Sets a keyup handler using a JavaScript Action. @param action the action to execute on keyup @return this for chaining */
-    default SELF onKeyUp(Action action) { return set("onkeyup", action.inline()); }
+    default SELF onKeyUp(Action action) { return on("keyup", action); }
 
     /** Sets a mouseenter handler using a JavaScript Action. @param action the action to execute on mouseenter @return this for chaining */
-    default SELF onMouseEnter(Action action) { return set("onmouseenter", action.inline()); }
+    default SELF onMouseEnter(Action action) { return on("mouseenter", action); }
 
     /** Sets a mouseleave handler using a JavaScript Action. @param action the action to execute on mouseleave @return this for chaining */
-    default SELF onMouseLeave(Action action) { return set("onmouseleave", action.inline()); }
+    default SELF onMouseLeave(Action action) { return on("mouseleave", action); }
 
     /** Sets a double-click handler using a JavaScript Action. @param action the action to execute on dblclick @return this for chaining */
-    default SELF onDoubleClick(Action action) { return set("ondblclick", action.inline()); }
+    default SELF onDoubleClick(Action action) { return on("dblclick", action); }
 
     /**
      * Sets any event handler using a JavaScript Action.
@@ -1075,12 +1075,23 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
      * attrs().on("scroll", throttledScrollHandler)
      * </pre>
      *
+     * <p>Inside a page render this stores the JS in the render context and
+     * emits a {@code data-jweb-act<type>} attribute the runtime delegates to
+     * — inline {@code on<type>=} attributes can never run under the nonce
+     * CSP from {@code Middlewares.recommended()}, and the definitions travel
+     * to the browser in a nonce-stamped script instead. Outside a render
+     * context (or with the runtime disabled) it falls back to the classic
+     * inline attribute.</p>
+     *
      * @param eventType the DOM event type
      * @param action the JavaScript action to execute
      * @return this for chaining
      */
     default SELF on(String eventType, Action action) {
-        return set("on" + eventType, action.inline());
+        String js = action.inline();
+        String id = com.osmig.Jweb.framework.js.ClientActions.register(js);
+        if (id == null) return set("on" + eventType, js);
+        return set("data-jweb-act" + eventType, id);
     }
 
     // ==================== Refs ====================

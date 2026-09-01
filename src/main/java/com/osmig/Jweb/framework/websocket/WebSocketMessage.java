@@ -337,6 +337,10 @@ public final class WebSocketMessage {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class DomUpdateResponse extends Base {
         private List<DomPatch> updates;
+        // Actions-DSL definitions the patched HTML references but the page
+        // hasn't seen yet; the runtime executes this via a nonce-stamped
+        // script element before applying the patches
+        private String actionsJs;
 
         public DomUpdateResponse() {
             setType("domUpdate");
@@ -347,12 +351,25 @@ public final class WebSocketMessage {
             this.updates = updates;
         }
 
+        public DomUpdateResponse(List<DomPatch> updates, String actionsJs) {
+            this(updates);
+            this.actionsJs = actionsJs;
+        }
+
         public List<DomPatch> getUpdates() {
             return updates;
         }
 
         public void setUpdates(List<DomPatch> updates) {
             this.updates = updates;
+        }
+
+        public String getActionsJs() {
+            return actionsJs;
+        }
+
+        public void setActionsJs(String actionsJs) {
+            this.actionsJs = actionsJs;
         }
     }
 

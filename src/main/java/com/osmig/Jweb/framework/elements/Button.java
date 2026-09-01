@@ -226,13 +226,14 @@ public class Button implements Element {
 
     /**
      * Sets a click handler from the JavaScript Actions DSL — the same contract
-     * as {@code attrs().onClick(Action)}.
+     * as {@code attrs().onClick(Action)}: a CSP-safe {@code data-jweb-act}
+     * attribute inside a page render, the classic inline attribute outside one.
      *
      * @param action the action to execute on click
      * @return this for chaining
      */
     public Button onClick(Action action) {
-        return attr("onclick", action.inline());
+        return on("click", action);
     }
 
     /**
@@ -248,14 +249,20 @@ public class Button implements Element {
     }
 
     /**
-     * Sets a handler for any DOM event type from the Actions DSL.
+     * Sets a handler for any DOM event type from the Actions DSL. Registers
+     * the JS in the render context and emits a CSP-safe
+     * {@code data-jweb-act<type>} attribute; outside a render context it
+     * falls back to the inline attribute.
      *
      * @param eventType the DOM event type
      * @param action the action to execute
      * @return this for chaining
      */
     public Button on(String eventType, Action action) {
-        return attr("on" + eventType, action.inline());
+        String js = action.inline();
+        String id = com.osmig.Jweb.framework.js.ClientActions.register(js);
+        if (id == null) return attr("on" + eventType, js);
+        return attr("data-jweb-act" + eventType, id);
     }
 
     // ==================== Escape Hatches ====================

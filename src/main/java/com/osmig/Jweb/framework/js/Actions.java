@@ -3520,7 +3520,9 @@ public class Actions {
     // ==================== Script Builder ====================
 
     public static class ScriptBuilder {
-        private static final String HELPERS =
+        // Package-visible: ClientActions closes the same helpers over
+        // attribute-action definitions
+        static final String HELPERS =
             "const $_=id=>document.getElementById(id);" +
             "function esc(t){const d=document.createElement('div');d.textContent=t||'';return d.innerHTML};" +
             "function fmtDate(ts){return ts?new Date(ts).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}";

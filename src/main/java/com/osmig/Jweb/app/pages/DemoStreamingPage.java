@@ -22,9 +22,66 @@ public final class DemoStreamingPage {
             p(style().marginTop(SP_2).color(TEXT_LIGHT),
                 text("This shell arrived instantly. The blocks below streamed in "
                     + "when their data was ready — no JavaScript written.")),
+            actionsBlock(),
             block("Fast query (400ms)", 400),
             block("Slow query (1200ms)", 1200),
-            statefulBlock()
+            statefulBlock(),
+            fragmentBlock()
+        );
+    }
+
+    /**
+     * Actions-DSL handler in the shell: no server round-trip, and no inline
+     * onclick= — the JS registers with the render, ships in the page's
+     * nonce-stamped definitions script, and the runtime delegates the click.
+     */
+    private static Element actionsBlock() {
+        return div(style().marginTop(SP_6),
+            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
+                text("Client-only action (Actions DSL, CSP-safe)")),
+            button(attrs().id("toggle-details")
+                    .onClick(jweb.Actions.toggle("actions-panel"))
+                    .style().marginTop(SP_2).padding(SP_1, SP_3)
+                        .borderRadius(ROUNDED).cursor(pointer).done(),
+                text("Toggle details")),
+            div(attrs().id("actions-panel")
+                    .style().marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
+                        .backgroundColor(hex("#fefce8")).color(hex("#854d0e")).done(),
+                text("Toggled entirely in the browser — under the page's nonce CSP."))
+        );
+    }
+
+    /**
+     * A swapped-in fragment whose button is itself an Actions-DSL handler:
+     * the fragment rides its definitions script along, and the runtime
+     * executes it on swap (innerHTML never runs scripts by itself).
+     */
+    private static Element fragmentBlock() {
+        return div(style().marginTop(SP_6),
+            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
+                text("Fragment swap carrying its own action")),
+            button(attrs().id("load-fragment")
+                    .swap("/demo/streaming/fragment", "#frag-slot")
+                    .style().marginTop(SP_2).padding(SP_1, SP_3)
+                        .borderRadius(ROUNDED).cursor(pointer).done(),
+                text("Load fragment")),
+            div(attrs().id("frag-slot").style().marginTop(SP_2).done())
+        );
+    }
+
+    /** The fragment served at /demo/streaming/fragment. */
+    public static Element fragment() {
+        return div(
+            style().padding(SP_3).borderRadius(ROUNDED)
+                   .backgroundColor(hex("#fdf2f8")).color(hex("#9d174d")),
+            p(text("This fragment was fetched and swapped in.")),
+            button(attrs().id("frag-action")
+                    .onClick(jweb.Actions.hide("frag-note"))
+                    .style().marginTop(SP_2).padding(SP_1, SP_3)
+                        .borderRadius(ROUNDED).cursor(pointer).done(),
+                text("Hide the note")),
+            p(attrs().id("frag-note"), text("Its button works because the "
+                + "definitions script rode along and ran on swap."))
         );
     }
 
@@ -54,7 +111,16 @@ public final class DemoStreamingPage {
                     button(attrs().onClick(e -> clicks.set(clicks.get() + 1))
                             .style().marginTop(SP_2).padding(SP_1, SP_3)
                                 .borderRadius(ROUNDED).cursor(pointer).done(),
-                        text("Click me"))
+                        text("Click me")),
+                    // Actions-DSL handler born on the block's render thread:
+                    // its definition rides the chunk's script, late
+                    button(attrs().id("late-action")
+                            .onClick(jweb.Actions.toggle("late-note"))
+                            .style().marginTop(SP_2).marginLeft(SP_2).padding(SP_1, SP_3)
+                                .borderRadius(ROUNDED).cursor(pointer).done(),
+                        text("Toggle note (client-only)")),
+                    p(attrs().id("late-note"),
+                        text("A streamed-in Actions-DSL handler toggled this."))
                 );
             })
         );

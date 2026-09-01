@@ -180,6 +180,10 @@ public class Routes implements JWebRoutes {
         app.get("/demo/streaming", ctx -> com.osmig.Jweb.framework.async.Streamed.of(
             () -> new Layout("Streaming Demo", DemoStreamingPage.content()).render()));
 
+        // Fragment for the demo's swap block — carries its own Actions-DSL
+        // handler, whose definitions script executes on swap
+        app.get("/demo/streaming/fragment", ctx -> DemoStreamingPage.fragment());
+
         // Three DSL demo: declarative 3D scenes, zero handwritten JavaScript
         app.get("/demo/three", ctx -> new Layout("3D Scenes - JWeb",
             ThreeDemoPage.content()).render());

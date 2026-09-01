@@ -66,11 +66,14 @@ public final class ErrorPage {
                         summary(attrs().class_("error-summary"), text("Stack Trace")),
                         pre(attrs().class_("error-stack"), code(stackTrace))
                     ),
-                    // Actions
+                    // Actions. Deliberately an inline attribute, not
+                    // .onClick(Action): error responses ship without the
+                    // client runtime and without the queued CSP header, so
+                    // inline is the only handler that runs here.
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
                         button(attrs().class_("error-btn error-btn-secondary")
-                            .onClick(com.osmig.Jweb.framework.js.Actions.reload()), text("Retry"))
+                            .set("onclick", com.osmig.Jweb.framework.js.Actions.reload().inline()), text("Retry"))
                     )
                 )
             )
@@ -97,7 +100,8 @@ public final class ErrorPage {
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
                         button(attrs().class_("error-btn error-btn-secondary")
-                            .onClick(com.osmig.Jweb.framework.js.Actions.reload()), text("Retry"))
+                            // Inline on purpose — see renderDebug
+                            .set("onclick", com.osmig.Jweb.framework.js.Actions.reload().inline()), text("Retry"))
                     )
                 )
             )

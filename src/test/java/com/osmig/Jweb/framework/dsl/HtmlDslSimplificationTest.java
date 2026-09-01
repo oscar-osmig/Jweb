@@ -247,8 +247,20 @@ class HtmlDslSimplificationTest {
 
         String action = Button.of("Retry")
             .onClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();
-        assertTrue(action.contains("onclick="), action);
+        assertTrue(action.contains("onclick="), "inline fallback outside a render context: " + action);
         assertTrue(action.contains("reload"), action);
+
+        // Inside a render context the Actions form delegates like the server
+        // form does — inline on*= attributes can't run under a nonce CSP
+        var context = com.osmig.Jweb.framework.state.StateManager.createContext();
+        try {
+            String cspSafe = Button.of("Retry")
+                .onClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();
+            assertTrue(cspSafe.contains("data-jweb-actclick=\"a"), cspSafe);
+            assertFalse(cspSafe.contains("onclick="), cspSafe);
+        } finally {
+            com.osmig.Jweb.framework.state.StateManager.clearContext();
+        }
 
         String extras = Button.of("More")
             .attr("popovertarget", "menu").data("role", "menu").aria("expanded", "false").toHtml();

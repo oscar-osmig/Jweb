@@ -100,7 +100,8 @@ public final class JWebRuntime {
 
             initServerEvents:function(){
                 var self=this;
-                // Server event handlers render as data-jweb-on<type> attributes
+                // Server event handlers render as data-jweb-on<type> and
+                // Actions-DSL handlers as data-jweb-act<type> attributes
                 // (inline on<type>= handlers can never run under a nonce CSP).
                 // Capture-phase document listeners delegate every type — capture
                 // reaches the target even for non-bubbling events (focus, blur,
@@ -119,6 +120,8 @@ public final class JWebRuntime {
                         if(!t||!t.closest)return;
                         var el=t.closest('[data-jweb-on'+type+']');
                         if(el)self.call(el.getAttribute('data-jweb-on'+type),e);
+                        var a=t.closest('[data-jweb-act'+type+']');
+                        if(a)self.runAction(a.getAttribute('data-jweb-act'+type),e,a);
                     },true);
                 });
                 // mouseenter/mouseleave don't propagate at all — emulate them
@@ -129,6 +132,9 @@ public final class JWebRuntime {
                     var el=t.closest('[data-jweb-onmouseenter]');
                     if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))
                         self.call(el.getAttribute('data-jweb-onmouseenter'),e);
+                    var a=t.closest('[data-jweb-actmouseenter]');
+                    if(a&&!(e.relatedTarget&&a.contains(e.relatedTarget)))
+                        self.runAction(a.getAttribute('data-jweb-actmouseenter'),e,a);
                 },true);
                 document.addEventListener('mouseout',function(e){
                     var t=e.target;
@@ -136,7 +142,55 @@ public final class JWebRuntime {
                     var el=t.closest('[data-jweb-onmouseleave]');
                     if(el&&!(e.relatedTarget&&el.contains(e.relatedTarget)))
                         self.call(el.getAttribute('data-jweb-onmouseleave'),e);
+                    var a=t.closest('[data-jweb-actmouseleave]');
+                    if(a&&!(e.relatedTarget&&a.contains(e.relatedTarget)))
+                        self.runAction(a.getAttribute('data-jweb-actmouseleave'),e,a);
                 },true);
+            },
+
+            runAction:function(id,e,el){
+                // Actions-DSL handler: defined by a nonce'd script into the
+                // global map (page shell, streamed chunk, swapped fragment or
+                // domUpdate delivery). Mirrors inline-handler semantics:
+                // this = the attributed element, returning false cancels.
+                var fn=(window.__JWEB_ACTIONS__||{})[id];
+                if(!fn){console.warn('[JWeb] action not defined:',id);return;}
+                if(fn.call(el,e)===false)e.preventDefault();
+            },
+
+            pageNonce:function(){
+                // The document's CSP nonce, recovered from any nonce'd script
+                // (the content attribute is hidden post-parse; the IDL
+                // property is not). '' when the page has no CSP nonce.
+                if(this._nonce!==undefined)return this._nonce;
+                var s=document.scripts;
+                for(var i=0;i<s.length;i++){
+                    if(s[i].nonce){this._nonce=s[i].nonce;return this._nonce;}
+                }
+                return this._nonce='';
+            },
+
+            execScript:function(js){
+                // Scripts arriving outside the document parse (fragments,
+                // domUpdate payloads) only execute as fresh script elements;
+                // stamping the page nonce keeps that legal under CSP.
+                var s=document.createElement('script');
+                var n=this.pageNonce();
+                if(n)s.nonce=n;
+                s.textContent=js;
+                document.head.appendChild(s);
+                s.remove();
+            },
+
+            runFragmentScripts:function(tpl){
+                // Definition scripts riding a fetched fragment (marked
+                // data-jweb-act by the server). Executed once here, then
+                // removed so the swapped-in HTML stays inert.
+                var self=this;
+                tpl.content.querySelectorAll('script[data-jweb-act]').forEach(function(s){
+                    self.execScript(s.textContent);
+                    s.remove();
+                });
             },
 
             initThree:function(){
@@ -201,13 +255,29 @@ public final class JWebRuntime {
                 fetch(url,{method:opts.method||'GET',body:opts.body,credentials:'same-origin'})
                     .then(function(r){return r.text()})
                     .then(function(html){
+                        // Run + strip the fragment's action-definition
+                        // scripts first: innerHTML never executes scripts,
+                        // and the fragment's data-jweb-act handlers are dead
+                        // without their definitions
+                        if(html.indexOf('data-jweb-act')>-1){
+                            var tpl=document.createElement('template');
+                            tpl.innerHTML=html;
+                            self.runFragmentScripts(tpl);
+                            html=tpl.innerHTML;
+                        }
                         var apply=function(){
                             if(mode==='outer'){targetEl.outerHTML=html;}
                             else if(mode==='morph'){self.morph(targetEl,html);}
                             else{targetEl.innerHTML=html;}
                             document.dispatchEvent(new CustomEvent('jweb:swap',{detail:{url:url,target:target}}));
                         };
-                        if(document.startViewTransition){document.startViewTransition(apply);}
+                        if(document.startViewTransition){
+                            // An aborted transition (hidden tab, concurrent
+                            // transition) must not surface as an unhandled
+                            // rejection — the DOM update itself still ran
+                            var vt=document.startViewTransition(apply);
+                            if(vt&&vt.finished)vt.finished.catch(function(){});
+                        }
                         else{apply();}
                         if(push){history.pushState({jwebSwap:{url:url,target:target}},'',push);}
                     })
@@ -306,6 +376,9 @@ public final class JWebRuntime {
                         this.handleStateUpdate(msg.states);
                         break;
                     case 'domUpdate':
+                        // New Actions-DSL definitions first, so patched-in
+                        // data-jweb-act attributes resolve when clicked
+                        if(msg.actionsJs)this.execScript(msg.actionsJs);
                         this.handleDomUpdate(msg);
                         break;
                     case 'initState':

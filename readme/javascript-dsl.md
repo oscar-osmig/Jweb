@@ -475,9 +475,13 @@ webSocket(wsUrl("/live"))
 There is no bundler and no automatic script injection for DSL output. Three mechanisms:
 
 1. **Inline script tags** — the DSL produces a `String`; place it yourself:
-   `inlineScript(actions().add(...).build())` (unescaped `VRaw` under the hood).
-2. **Inline event attributes** — `attrs().onClick(action)` writes `action.inline()` into
-   `onclick` etc.
+   `inlineScript(actions().add(...).build())` (unescaped `VRaw` under the hood; the
+   serializer stamps the request's CSP nonce on the tag).
+2. **Event attributes** — `attrs().onClick(action)`. Inside a page render this emits a
+   `data-jweb-act<type>` attribute and ships the JS in a nonce-stamped definitions
+   script the runtime delegates to (inline `on<type>=` can never run under the
+   recommended nonce CSP); outside one it falls back to writing `action.inline()`
+   into `onclick` etc.
 3. **Auto-injected framework scripts** — the controller injects three scripts before
    `</body>`: the `Prefetch` script (external, cached `/jweb/prefetch.js`), the
    `__JWEB_DATA__` hydration JSON (inline, per request), and the reactive-state client

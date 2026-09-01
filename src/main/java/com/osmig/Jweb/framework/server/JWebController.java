@@ -189,7 +189,7 @@ public class JWebController {
             template.afterRender(request);
             html = applyTemplateExtras(html, template);
             if (context != null) {
-                html = injectHydrationData(html, buildHydrationScript(context));
+                html = injectHydrationData(html, buildHydrationScript(context), context);
             }
             return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
@@ -220,7 +220,7 @@ public class JWebController {
             // (skipped when no state context exists, e.g. 404 pages)
             if (context != null) {
                 String hydrationScript = buildHydrationScript(context);
-                html = injectHydrationData(html, hydrationScript);
+                html = injectHydrationData(html, hydrationScript, context);
             }
 
             // Short private cache so back/forward and quick revisits are free
@@ -261,20 +261,26 @@ public class JWebController {
         return data.toScriptTag();
     }
 
-    private String injectHydrationData(String html, String hydrationScript) {
+    private String injectHydrationData(String html, String hydrationScript,
+                                       StateManager.StateContext context) {
         // External, immutably-cached script references (the browser caches
         // them across navigations; the ?v= content hash busts on change).
-        // Only the per-request hydration data stays inline.
+        // Only the per-request hydration data and action definitions stay inline.
         String prefetchScript = externalPrefetchTag();
         String runtimeScript = externalRuntimeTag();
+        // Actions-DSL handlers registered during this render, as a
+        // nonce-stamped definitions script (inline on*= attributes can't
+        // run under the recommended CSP)
+        String actionsTag = com.osmig.Jweb.framework.js.ClientActions.drainScriptTag(context);
 
         // Fast path: if no scripts to inject, return as-is
-        if (prefetchScript.isEmpty() && hydrationScript.isEmpty() && runtimeScript.isEmpty()) {
+        if (prefetchScript.isEmpty() && hydrationScript.isEmpty()
+                && runtimeScript.isEmpty() && actionsTag.isEmpty()) {
             return html;
         }
 
         // Order: hydration data first so JWeb.init() can read __JWEB_DATA__
-        String scripts = prefetchScript + hydrationScript + runtimeScript;
+        String scripts = prefetchScript + hydrationScript + actionsTag + runtimeScript;
 
         // Use StringBuilder for efficient string building
         int bodyEnd = html.lastIndexOf(BODY_END);
@@ -297,8 +303,12 @@ public class JWebController {
         }
 
         // HTML fragment (no <body>/<html>) — served for swap targets;
-        // injecting scripts would duplicate them in the page after the swap
-        return html;
+        // injecting runtime/hydration would duplicate them in the page after
+        // the swap. Action definitions are the exception: the fragment's
+        // data-jweb-act attributes are dead without them, so they ride along
+        // and the runtime's swap() executes the marked tag (browsers never
+        // run scripts inserted via innerHTML on their own).
+        return actionsTag.isEmpty() ? html : html + actionsTag;
     }
 
     // Cached external script tags (content is fixed after startup; the
@@ -358,7 +368,7 @@ public class JWebController {
                 ? new java.util.ArrayList<>(context.getStates().values())
                 : java.util.List.of();
         if (context != null) {
-            html = injectHydrationData(html, buildHydrationScript(context, shellStates));
+            html = injectHydrationData(html, buildHydrationScript(context, shellStates), context);
         }
         var sentStateIds = new java.util.HashSet<String>();
         shellStates.forEach(s -> sentStateIds.add(s.getId()));
@@ -385,7 +395,8 @@ public class JWebController {
                 var pending = it.next();
                 if (pending.html().isDone()) {
                     out.write(streamChunk(pending.placeholderId(), pending.html().join(),
-                        lateStatesJson(context, sentStateIds)));
+                        lateStatesJson(context, sentStateIds),
+                        com.osmig.Jweb.framework.js.ClientActions.drainJs(context)));
                     it.remove();
                 }
             }
@@ -422,16 +433,30 @@ public class JWebController {
      * hydration data for content that didn't exist when the shell flushed.
      */
     public static String streamChunk(String placeholderId, String contentHtml, String lateStatesJson) {
+        return streamChunk(placeholderId, contentHtml, lateStatesJson, null);
+    }
+
+    /**
+     * A streamed block that also carries the Actions-DSL definitions its
+     * render registered ({@code ClientActions.drainJs}) — the chunk's
+     * {@code data-jweb-act} attributes are dead until they arrive, and the
+     * shell's definitions script flushed long ago.
+     */
+    public static String streamChunk(String placeholderId, String contentHtml,
+                                     String lateStatesJson, String lateActionsJs) {
         String templateId = placeholderId + "-c";
         // Same escape as HydrationData.toScriptTag: '<' only occurs inside
         // JSON strings, so "</script>" in a state value can't break out
         String late = lateStatesJson == null ? "" :
             ";if(window.JWeb&&JWeb.lateStates)JWeb.lateStates(" + lateStatesJson.replace("<", "\\u003C") + ")";
+        // Already parser-neutralized by ClientActions (it is JS, not JSON —
+        // the blanket '<' escape above would corrupt it)
+        String acts = lateActionsJs == null ? "" : ";" + lateActionsJs;
         return "<template id=\"" + templateId + "\">" + contentHtml + "</template>"
             + "<script" + com.osmig.Jweb.framework.security.CspNonce.attr() + ">(function(){var p=document.getElementById('" + placeholderId + "'),"
             + "t=document.getElementById('" + templateId + "');"
             + "if(p&&t){p.replaceWith(t.content.cloneNode(true));t.remove();}})()"
-            + late + "</script>";
+            + acts + late + "</script>";
     }
 
     private ResponseEntity<String> handleNotFound(String path) {
@@ -481,7 +506,7 @@ public class JWebController {
                 html = applyTemplateExtras(html, page);
             }
             String hydrationScript = buildHydrationScript(context);
-            html = injectHydrationData(html, hydrationScript);
+            html = injectHydrationData(html, hydrationScript, context);
 
             // Check if this is a prefetch request (has X-Prefetch header)
             boolean isPrefetch = "true".equals(servletRequest.getHeader("X-Prefetch"));

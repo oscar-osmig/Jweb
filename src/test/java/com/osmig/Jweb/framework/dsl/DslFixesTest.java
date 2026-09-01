@@ -121,10 +121,27 @@ class DslFixesTest {
 
     @Test
     void onClickAcceptsActions() {
+        // Outside a render context (static export, bare toHtml) the classic
+        // inline attribute renders — there is no page to deliver definitions
         String html = El.button(El.attrs().onClick(
             com.osmig.Jweb.framework.js.Actions.reload()), El.text("Retry")).toHtml();
-        assertTrue(html.contains("onclick="), "onclick attribute expected: " + html);
+        assertTrue(html.contains("onclick="), "inline fallback expected: " + html);
         assertTrue(html.contains("reload"), "reload JS expected: " + html);
+
+        // Inside one, the CSP-safe data attribute renders instead and the JS
+        // registers for the page's nonce-stamped definitions script
+        var context = com.osmig.Jweb.framework.state.StateManager.createContext();
+        try {
+            String csp = El.button(El.attrs().onClick(
+                com.osmig.Jweb.framework.js.Actions.reload()), El.text("Retry")).toHtml();
+            assertTrue(csp.contains("data-jweb-actclick=\"a"), csp);
+            assertFalse(csp.contains("onclick="), "inline attribute must be gone: " + csp);
+            String defs = com.osmig.Jweb.framework.js.ClientActions.drainJs(context);
+            assertNotNull(defs);
+            assertTrue(defs.contains("location.reload()"), defs);
+        } finally {
+            com.osmig.Jweb.framework.state.StateManager.clearContext();
+        }
     }
 
     @Test

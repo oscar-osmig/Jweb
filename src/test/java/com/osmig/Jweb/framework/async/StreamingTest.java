@@ -154,6 +154,58 @@ class StreamingTest {
     }
 
     @Test
+    void actionsInsideAStreamedBlockRideTheirChunk() {
+        var context = com.osmig.Jweb.framework.state.StateManager.createContext();
+        StreamingContext ctx = StreamingContext.open();
+        try {
+            Suspense.of((java.util.concurrent.Callable<String>) () -> "data")
+                .loading(() -> span(text("...")))
+                .render(data -> p(
+                    jweb.El.attrs().onClick(com.osmig.Jweb.framework.js.Actions.show("panel")),
+                    text(data)))
+                .toHtml();
+            String resolved = ctx.pendings().get(0).html().join();
+
+            // The block's element carries the delegation attribute, not inline JS
+            assertTrue(resolved.contains("data-jweb-actclick=\"a"), resolved);
+            assertFalse(resolved.contains("onclick="), resolved);
+
+            // Its definition is pending for the chunk (registered via the
+            // propagated context on the loader thread), and the chunk's
+            // nonce'd script carries it into the page
+            String late = com.osmig.Jweb.framework.js.ClientActions.drainJs(context);
+            assertNotNull(late, "the block's action must be pending for its chunk");
+            assertTrue(late.contains("panel"), late);
+            assertTrue(late.contains("__JWEB_ACTIONS__"), late);
+
+            String chunk = JWebController.streamChunk("jw-s-1", resolved, null, late);
+            assertTrue(chunk.contains("__JWEB_ACTIONS__"), chunk);
+
+            // Drained means delivered: the next chunk carries nothing again
+            assertNull(com.osmig.Jweb.framework.js.ClientActions.drainJs(context));
+        } finally {
+            com.osmig.Jweb.framework.state.StateManager.clearContext();
+        }
+    }
+
+    @Test
+    void actionHandlersDelegateInsteadOfInliningUnderCsp() {
+        // The client side of the Actions-DSL contract: delegation listeners
+        // for data-jweb-act, definitions looked up in the global map, and a
+        // nonce-stamped executor for definitions that arrive outside the
+        // document parse (fragments, domUpdate payloads)
+        String runtime = com.osmig.Jweb.framework.js.JWebRuntime.getScript();
+        assertTrue(runtime.contains("data-jweb-act"), "action delegation selector missing");
+        assertTrue(runtime.contains("runAction:function"), "action dispatcher missing");
+        assertTrue(runtime.contains("__JWEB_ACTIONS__"), "definitions map lookup missing");
+        assertTrue(runtime.contains("execScript:function"), "nonce-stamped executor missing");
+        assertTrue(runtime.contains("pageNonce:function"), "page nonce recovery missing");
+        assertTrue(runtime.contains("runFragmentScripts"), "fragment definitions execution missing");
+        assertTrue(runtime.contains("actionsJs"), "domUpdate definitions delivery missing");
+        assertTrue(runtime.contains("data-jweb-actmouseenter"), "non-propagating events need emulation");
+    }
+
+    @Test
     void contextRegistersInOrder() {
         StreamingContext ctx = StreamingContext.open();
         String a = ctx.register(CompletableFuture.completedFuture("<a>"));

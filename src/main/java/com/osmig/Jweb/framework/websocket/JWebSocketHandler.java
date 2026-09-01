@@ -179,7 +179,10 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             patches.add(new DomPatch(componentId, newHtml));
         }
 
-        sendMessage(session, new DomUpdateResponse(patches));
+        // Re-renders can mint Actions-DSL handlers the page has never seen
+        // (conditional branches); ship their definitions with the patches
+        String actionsJs = com.osmig.Jweb.framework.js.ClientActions.drainJs(context);
+        sendMessage(session, new DomUpdateResponse(patches, actionsJs));
     }
 
     /**

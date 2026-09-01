@@ -227,16 +227,26 @@ Two typed forms exist — there is **no** `onclick(String)` string setter:
 //    requires the client runtime to be wired (see State & Realtime doc)
 button(attrs().onClick(e -> counter.update(n -> n + 1)), "Increment")
 
-// 2. JS DSL Action — inlined into the attribute
+// 2. JS DSL Action — runs entirely in the browser
 import static jweb.Actions.*;
 button(attrs().onClick(toggle("panel")), "Toggle")
 
 // DialogHelper/DetailsHelper return Actions too — attach the same way:
 button(attrs().onClick(DialogHelper.showModal("confirm-dialog")), "Open")
 
-// For genuinely raw JS strings, use set():
+// For genuinely raw JS strings, use set() — but note this renders a real
+// inline attribute, which a nonce CSP (Middlewares.recommended) blocks:
 button(attrs().set("onclick", "console.log('hi')"), "Log")
 ```
+
+Both typed forms are CSP-safe. Inside a page render neither writes an inline
+`on<type>=` attribute (a nonce CSP can never allow those): server handlers
+render `data-jweb-on<type>`, Actions render `data-jweb-act<type>`, and the
+runtime delegates events to them. An Action's JS travels in a nonce-stamped
+definitions script — with the page, with its streamed chunk, or inside a
+swapped fragment (the runtime executes it on swap). Outside a render context
+(bare `toHtml()`, static export) Actions fall back to the classic inline
+attribute, which works wherever no CSP is enforced.
 
 Available on `Attributes` for both forms: `onClick`, `onChange`, `onInput`, `onSubmit`,
 `onFocus`, `onBlur`, `onKeyDown`, `onKeyUp`, mouse/drag/touch/scroll/animation events, and the
