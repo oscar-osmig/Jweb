@@ -379,6 +379,21 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T color(CSSValue value) { return prop("color", value); }
 
     public T fontFamily(String value) { return prop("font-family", value); }
+
+    /**
+     * Sets the {@code font} shorthand — style, variant, weight,
+     * size/line-height and family in one string.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().font("italic bold 14px/1.5 Georgia, serif")
+     * </pre>
+     *
+     * @param shorthand the full {@code font} shorthand value
+     * @return this builder for chaining
+     */
+    public T font(String shorthand) { return prop("font", shorthand); }
+
     public T fontSize(CSSValue value) { return prop("font-size", value); }
     public T fontWeight(CSSValue value) { return prop("font-weight", value); }
     public T fontWeight(int value) { return prop("font-weight", String.valueOf(value)); }
@@ -634,6 +649,8 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     public T gridAutoFlow(CSSValue value) { return prop("grid-auto-flow", value); }
     public T justifyItems(CSSValue value) { return prop("justify-items", value); }
+    /** {@code justify-self} — overrides the parent's {@code justify-items} for this one item. */
+    public T justifySelf(CSSValue value) { return prop("justify-self", value); }
     public T placeItems(CSSValue value) { return prop("place-items", value); }
     public T placeContent(CSSValue value) { return prop("place-content", value); }
     public T placeSelf(CSSValue value) { return prop("place-self", value); }
@@ -896,7 +913,16 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     // ==================== Filter ====================
 
     public T filter(String value) { return prop("filter", value); }
-    public T backdropFilter(String value) { return prop("backdrop-filter", value); }
+
+    /**
+     * Sets {@code backdrop-filter}. Also emits {@code -webkit-backdrop-filter}
+     * with the same value — Safari &lt; 18 only recognizes the prefixed name.
+     */
+    public T backdropFilter(String value) {
+        // Safari still needs the -webkit- prefix.
+        properties.put("-webkit-backdrop-filter", value);
+        return prop("backdrop-filter", value);
+    }
 
     public T filter(CSSValue... filters) {
         StringBuilder sb = new StringBuilder();
@@ -922,6 +948,83 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     public T clipPath(CSSValue value) { return prop("clip-path", value); }
 
+    /**
+     * Sets the legacy {@code clip} property — {@code rect(top, right, bottom, left)}.
+     * Superseded by {@code clip-path} for new code, but still the standard
+     * "sr-only" trick for visually hiding content while keeping it readable
+     * by assistive tech: clip to a zero-size rect on an absolutely
+     * positioned element.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().position(absolute).clip("rect(0, 0, 0, 0)").overflow("hidden")
+     * </pre>
+     *
+     * @param value a {@code rect(...)} value, or {@code auto}
+     * @return this builder for chaining
+     */
+    public T clip(CSSValue value) { return prop("clip", value); }
+
+    /** {@code clip} from a plain CSS string. */
+    public T clip(String value) { return prop("clip", value); }
+
+    // ==================== SVG Presentation ====================
+    // These are the CSS-property counterparts of the same-named SVG
+    // presentation *attributes* (see HtmlAttributes.fill/stroke/...). As CSS
+    // they override the attributes, can live in a stylesheet or :hover rule,
+    // and — unlike attributes — participate in transitions, which is what
+    // animating stroke-dashoffset (the standard SVG "line draw" effect) needs.
+
+    /** {@code fill} — SVG shape/text fill color. */
+    public T fill(CSSValue value) { return prop("fill", value); }
+    /** {@code fill} from a plain CSS string. */
+    public T fill(String value) { return prop("fill", value); }
+
+    /** {@code stroke} — SVG shape/text stroke color. */
+    public T stroke(CSSValue value) { return prop("stroke", value); }
+    /** {@code stroke} from a plain CSS string. */
+    public T stroke(String value) { return prop("stroke", value); }
+
+    /** {@code stroke-width}. */
+    public T strokeWidth(CSSValue value) { return prop("stroke-width", value); }
+    /** {@code stroke-width} from a plain CSS string. */
+    public T strokeWidth(String value) { return prop("stroke-width", value); }
+
+    /** {@code stroke-dasharray} — the on/off dash pattern for a stroke. */
+    public T strokeDasharray(CSSValue value) { return prop("stroke-dasharray", value); }
+    /** {@code stroke-dasharray} from a plain CSS string. */
+    public T strokeDasharray(String value) { return prop("stroke-dasharray", value); }
+
+    /**
+     * {@code stroke-dashoffset} — shifts the dash pattern along the path.
+     * Transitioning this from the path's length to {@code 0} against a
+     * {@code stroke-dasharray} of that same length is the standard SVG
+     * "line draw" animation.
+     */
+    public T strokeDashoffset(CSSValue value) { return prop("stroke-dashoffset", value); }
+    /** {@code stroke-dashoffset} from a plain CSS string. */
+    public T strokeDashoffset(String value) { return prop("stroke-dashoffset", value); }
+
+    /** {@code stroke-linecap} — {@code butt}, {@code round}, or {@code square}. */
+    public T strokeLinecap(CSSValue value) { return prop("stroke-linecap", value); }
+    /** {@code stroke-linecap} from a plain CSS string. */
+    public T strokeLinecap(String value) { return prop("stroke-linecap", value); }
+
+    /** {@code stroke-linejoin} — {@code miter}, {@code round}, or {@code bevel}. */
+    public T strokeLinejoin(CSSValue value) { return prop("stroke-linejoin", value); }
+    /** {@code stroke-linejoin} from a plain CSS string. */
+    public T strokeLinejoin(String value) { return prop("stroke-linejoin", value); }
+
+    /**
+     * {@code transform-box} — the reference box {@code transform} is relative
+     * to. SVG child elements usually need {@code fill-box} for a transform
+     * (e.g. {@code rotate()}) to pivot around the shape's own center instead
+     * of the SVG viewport's origin.
+     */
+    public T transformBox(CSSValue value) { return prop("transform-box", value); }
+    /** {@code transform-box} from a plain CSS string. */
+    public T transformBox(String value) { return prop("transform-box", value); }
+
     // ==================== Aspect Ratio ====================
 
     public T aspectRatio(String value) { return prop("aspect-ratio", value); }
@@ -940,6 +1043,14 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     public T webkitFontSmoothing(CSSValue value) { return prop("-webkit-font-smoothing", value); }
     public T mozOsxFontSmoothing(CSSValue value) { return prop("-moz-osx-font-smoothing", value); }
+
+    /**
+     * Sets {@code text-rendering} — a rendering-speed/quality hint.
+     * @param value {@code auto}, {@code optimizeSpeed}, {@code optimizeLegibility}, or {@code geometricPrecision}
+     */
+    public T textRendering(CSSValue value) { return prop("text-rendering", value); }
+    /** {@code text-rendering} from a plain CSS string. */
+    public T textRendering(String value) { return prop("text-rendering", value); }
 
     // ==================== Background Clip ====================
 
@@ -2487,6 +2598,9 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     /** {@code justify-items: <value>} from a plain CSS string. */
     public T justifyItems(String value) { return prop("justify-items", value); }
 
+    /** {@code justify-self: <value>} from a plain CSS string. */
+    public T justifySelf(String value) { return prop("justify-self", value); }
+
     /** {@code place-items: <value>} from a plain CSS string. */
     public T placeItems(String value) { return prop("place-items", value); }
 
@@ -3200,6 +3314,38 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
         properties.put(name, value);
         return self();
     }
+
+    /**
+     * Sets any CSS property by name — the last-resort escape hatch for a
+     * vendor-prefixed, brand-new, or otherwise uncovered property with no
+     * typed setter yet.
+     *
+     * <p>Identical to {@link #prop(String, String)}; {@code property} is
+     * simply the more discoverable name for this exact purpose. Use
+     * {@link #var(String, String)} instead when the name is a custom
+     * property ({@code --name}).</p>
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().property("interpolate-size", "allow-keywords")
+     * style().property("-webkit-tap-highlight-color", "transparent")
+     * </pre>
+     *
+     * @param name the CSS property name
+     * @param value the CSS value as a string
+     * @return this builder for chaining
+     */
+    public T property(String name, String value) { return prop(name, value); }
+
+    /**
+     * Sets any CSS property by name with a typed {@link CSSValue} — see
+     * {@link #property(String, String)}.
+     *
+     * @param name the CSS property name
+     * @param value the CSS value
+     * @return this builder for chaining
+     */
+    public T property(String name, CSSValue value) { return prop(name, value); }
 
     /**
      * Sets any CSS property by name with an unvalidated string value.

@@ -52,6 +52,11 @@ onClick("save-btn").then(all(
 
 // Click with function call
 onClick("delete-btn").then(call("deleteItem", "itemId"))
+
+// Double-click — same two flavours (server handler / Action) everywhere onClick
+// appears: attrs()/element handler attrs, the El facade, and Button.
+button(onDblClick(e -> zoomIn()), "Zoom")
+button(onDblClick(toggle("fullscreen-panel")), "Zoom")
 ```
 
 ---
@@ -509,6 +514,33 @@ public class AdminPage implements Template {
         );
     }
 }
+```
+
+---
+
+## Viewport, Media Queries & Web Audio
+
+```java
+import static jweb.Js.*;
+
+// Viewport & media queries (Val expressions)
+matchMedia("(min-width: 768px)")   // window.matchMedia(query)
+reducedMotion()                    // window.matchMedia('(prefers-reduced-motion: reduce)').matches
+viewportWidth(); viewportHeight()  // window.innerWidth / window.innerHeight
+
+// Web Audio synthesis (jweb.js.JSMedia)
+import static jweb.js.JSMedia.*;
+
+Val ctx = audioContext();
+Val gain = createGain(ctx);
+setValueAtTime(gain.dot("gain"), 0, 0);
+linearRampToValueAtTime(gain.dot("gain"), 1, 0.05);
+exponentialRampToValueAtTime(gain.dot("gain"), 0.0001, 0.4);
+resume(ctx);          // ctx.resume() — call from a click/keydown handler
+audioState(ctx);      // ctx.state
+
+Val buffer = createBuffer(ctx, 1, 44100, 44100);
+Val source = createBufferSource(ctx);
 ```
 
 ---

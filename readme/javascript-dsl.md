@@ -118,6 +118,13 @@ onClick("delete-btn")
 
 onClick("toggle-btn").toggle("panel")     // no-network shortcuts: toggle/show/hide
 onChange("country-select").then(get("/api/regions").ok(...))   // ChangeHandler wraps an action via then(...)
+
+// Double-click — same two flavours as onClick everywhere it appears
+// (attrs()/element handler attrs, the El/Elements facade, and Button):
+// a Consumer<Event> server handler, or an Action, both delegated
+// CSP-safe via data-jweb-ondblclick/data-jweb-actdblclick.
+button(onDblClick(e -> zoomIn()), "Zoom")
+button(onDblClick(toggle("fullscreen-panel")), "Zoom")
 ```
 
 ## Actions catalog
@@ -238,6 +245,11 @@ byId("submit")   // or $("submit")           → El (getElementById)
 Js.query(".card")                            → El (querySelector)
 JS.queryAll(".item")                         → Val (querySelectorAll)
 
+// Viewport & media queries
+matchMedia("(min-width: 768px)")             → Val (window.matchMedia(query))
+reducedMotion()                              → Val boolean (prefers-reduced-motion: reduce)
+viewportWidth(); viewportHeight()            → Val (window.innerWidth/innerHeight)
+
 // Val chains (~180 methods): arithmetic, comparison, string/array/number ops
 v("res").json()
 v("e").path("target.result")
@@ -335,7 +347,7 @@ sse("/events")
 | `JSIterator` | Generators, yield, async iterators, range/zip/chain |
 | `JSJson` | stringify/parse/safeParse/deepClone/isValidJson |
 | `JSMath` | Math.* wrappers, clamp, randomInt/randomRange |
-| `JSMedia` | audio/video control, MediaRecorder, Picture-in-Picture, Web Audio |
+| `JSMedia` | audio/video control, MediaRecorder, Picture-in-Picture, Web Audio synthesis |
 | `JSNotification` | Notification permission + builder (icon/badge/tag/actions) |
 | `JSObservers` | Intersection/Mutation/Resize observers |
 | `JSOperators` | Optional chaining, nullish coalescing, spread, in/delete/void |
@@ -463,6 +475,32 @@ local().getJsonOr("user", obj())
 session().set("draft", v("text"))
 cookie("theme").days(30).sameLax().set("dark")
 onStorageKeyChange("user", callback("e").log(eventNewValue(v("e"))))
+```
+
+### Web Audio synthesis
+
+```java
+import static jweb.js.JSMedia.*;
+
+Val ctx = audioContext();
+Val gain = createGain(ctx);
+Val osc = createOscillator(ctx);
+connect(osc, gain); connect(gain, destination(ctx));
+
+// Scheduling — these operate on an AudioParam (osc.frequency, gain.gain),
+// reached with .dot("frequency")/.dot("gain"); unlike setFrequency/setGainValue
+// (which stomp .value), these queue clickless, precisely-timed changes.
+setValueAtTime(gain.dot("gain"), 0, 0);
+linearRampToValueAtTime(gain.dot("gain"), 1, 0.05);
+exponentialRampToValueAtTime(gain.dot("gain"), 0.0001, 0.4);
+
+resume(ctx);        // short form of resumeAudioContext(ctx) — run from a
+                    // click/keydown handler; AudioContext starts suspended
+audioState(ctx);    // short form of audioContextState(ctx) → ctx.state
+
+// Buffered playback
+Val buffer = createBuffer(ctx, 1, 44100, 44100);
+Val source = createBufferSource(ctx);
 ```
 
 ### WebSocket (client)

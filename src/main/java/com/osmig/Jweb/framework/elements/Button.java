@@ -237,6 +237,28 @@ public class Button implements Element {
     }
 
     /**
+     * Registers a double-click handler — the same contract as
+     * {@code attrs().onDblClick(Consumer)}.
+     *
+     * @param handler the handler to execute on double-click
+     * @return this for chaining
+     */
+    public Button onDblClick(Consumer<Event> handler) {
+        return on("dblclick", handler);
+    }
+
+    /**
+     * Sets a double-click handler from the JavaScript Actions DSL — the same
+     * contract as {@code attrs().onDblClick(Action)}.
+     *
+     * @param action the action to execute on double-click
+     * @return this for chaining
+     */
+    public Button onDblClick(Action action) {
+        return on("dblclick", action);
+    }
+
+    /**
      * Registers a handler for any DOM event type.
      *
      * @param eventType the DOM event type (click, focus, …)

@@ -114,4 +114,27 @@ class JsModuleSimplificationTest {
         assertEquals(jweb.js.JSMedia.setVolume(v("audio"), 0.5).js(),
                      jweb.js.JSMedia.volume(v("audio"), 0.5).js());
     }
+
+    @Test
+    void webAudioSynthesisTierEmitsTheExactJs() {
+        assertEquals("ctx.createBuffer(2,44100,44100)",
+            jweb.js.JSMedia.createBuffer(v("ctx"), 2, 44100, 44100).js());
+        assertEquals("ctx.createBufferSource()", jweb.js.JSMedia.createBufferSource(v("ctx")).js());
+
+        assertEquals("gain.gain.setValueAtTime(0.0,0.0)",
+            jweb.js.JSMedia.setValueAtTime(v("gain").dot("gain"), 0, 0).js());
+        assertEquals("gain.gain.linearRampToValueAtTime(1.0,0.05)",
+            jweb.js.JSMedia.linearRampToValueAtTime(v("gain").dot("gain"), 1, 0.05).js());
+        assertEquals("gain.gain.exponentialRampToValueAtTime(1.0E-4,0.4)",
+            jweb.js.JSMedia.exponentialRampToValueAtTime(v("gain").dot("gain"), 0.0001, 0.4).js());
+    }
+
+    @Test
+    void audioContextShortNamesShareOneImplementationWithTheLongOnes() {
+        assertEquals(jweb.js.JSMedia.resumeAudioContext(v("ctx")).js(),
+                     jweb.js.JSMedia.resume(v("ctx")).js());
+        assertEquals(jweb.js.JSMedia.audioContextState(v("ctx")).js(),
+                     jweb.js.JSMedia.audioState(v("ctx")).js());
+        assertEquals("ctx.state", jweb.js.JSMedia.audioState(v("ctx")).js());
+    }
 }

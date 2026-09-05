@@ -93,4 +93,14 @@ class JsCoreSimplificationTest {
         assertEquals("arr.indexOf('x')", v("arr").indexOf("x").js());
         assertEquals("arr.indexOf(needle)", v("arr").indexOf(v("needle")).js());
     }
+
+    @Test
+    void matchMediaReducedMotionAndViewportSizeEmitTheExactJs() {
+        assertEquals("window.matchMedia('(min-width: 768px)')",
+            matchMedia("(min-width: 768px)").js());
+        assertEquals("window.matchMedia('(prefers-reduced-motion: reduce)').matches",
+            reducedMotion().js());
+        assertEquals("window.innerWidth", viewportWidth().js());
+        assertEquals("window.innerHeight", viewportHeight().js());
+    }
 }
