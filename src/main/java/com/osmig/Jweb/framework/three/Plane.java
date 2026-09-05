@@ -10,7 +10,7 @@ import java.util.Map;
 public class Plane extends MeshNode<Plane> {
 
     private double[] size;
-    private boolean mirror;
+    private Double mirror;
 
     /** Width (x) and height (y) in scene units. Default 1×1. */
     public Plane size(double width, double height) {
@@ -28,13 +28,25 @@ public class Plane extends MeshNode<Plane> {
 
     /**
      * Turns the plane into a real-time mirror (three.js {@code Reflector}) —
-     * a polished floor is {@code plane(20, 20).rotation(-90, 0, 0).mirror()}.
-     * {@code .color(...)} tints the reflection (darker = dimmer polish);
-     * other material properties don't apply to a mirror. For a satin finish,
-     * lay a translucent plane just above it.
+     * a polished floor is {@code plane(20, 20).flat().mirror()}.
+     * {@code .color(...)} tints the reflection (darker = dimmer polish).
+     * For a satin finish use {@link #mirror(double)}.
      */
     public Plane mirror() {
-        this.mirror = true;
+        this.mirror = 1.0;
+        return this;
+    }
+
+    /**
+     * A mirror of the given strength, 0–1: {@code 1} is chrome-sharp,
+     * {@code 0.4} a satin polished floor — the reflection shows through a
+     * surface in the plane's {@code color} and {@code roughness}.
+     */
+    public Plane mirror(double strength) {
+        if (strength < 0 || strength > 1) {
+            throw new IllegalArgumentException("mirror() strength must be within 0–1 — got " + strength);
+        }
+        this.mirror = strength;
         return this;
     }
 
@@ -46,7 +58,9 @@ public class Plane extends MeshNode<Plane> {
     @Override
     protected void fill(Map<String, Object> map) {
         if (size != null) map.put("size", vec(size));
-        if (mirror) map.put("mirror", true);
+        // the no-arg form stays `true` so older runtimes/JSON keep working;
+        // a strength serializes as the number (1 = chrome, <1 = satin)
+        if (mirror != null) map.put("mirror", mirror == 1.0 ? Boolean.TRUE : num(mirror));
         super.fill(map);
     }
 }

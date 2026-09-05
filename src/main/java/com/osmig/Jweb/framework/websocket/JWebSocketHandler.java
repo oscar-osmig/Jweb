@@ -174,7 +174,8 @@ public class JWebSocketHandler extends TextWebSocketHandler {
     private void sendThreePatches(WebSocketSession session) throws IOException {
         for (var patch : com.osmig.Jweb.framework.three.ThreePatchQueue.drain()) {
             sendMessage(session, new ThreePatchResponse(
-                    patch.sceneId(), patch.nodeMaps(), patch.cameraMap()));
+                    patch.sceneId(), patch.nodeMaps(), patch.cameraMap(),
+                    patch.addMaps(), patch.removeNames()));
         }
     }
 

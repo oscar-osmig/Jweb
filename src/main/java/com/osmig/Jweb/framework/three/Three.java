@@ -223,7 +223,60 @@ public class Three {
         return new Polyhedron("icosa").radius(radius);
     }
 
+    /**
+     * A ground surface lying flat — y up, centered on its position, no
+     * rotation needed — with optional seeded hills:
+     *
+     * <pre>{@code
+     * terrain(60, 60).hills(1.5).color("#C9B58A")   // low dunes
+     * }</pre>
+     */
+    public static Terrain terrain(double width, double depth) {
+        return new Terrain(width, depth);
+    }
+
+    // ==================== Materials ====================
+
+    /**
+     * A reusable material preset — declare the surface once, apply it with
+     * {@code .material(preset)} on any shape:
+     *
+     * <pre>{@code
+     * var brass = material().color("#A07C4B").metalness(0.85).roughness(0.35);
+     * box().material(brass)
+     * }</pre>
+     */
+    public static Material material() {
+        return new Material();
+    }
+
     // ==================== Curves ====================
+
+    /**
+     * A thin, unlit polyline through x,y,z points — outlines, guides,
+     * constellations, the pencil line of a diagram. ({@code wire}, because
+     * SVG owns {@code line}.) WebGL lines are one pixel wide; for thickness
+     * use {@link #tube}.
+     *
+     * <pre>{@code
+     * wire(-2, 0, 0,  0, 1.4, 0,  2, 0, 0).color("#fde68a").draw(1200)
+     * }</pre>
+     */
+    public static Line wire(double... points) {
+        return new Line(points);
+    }
+
+    /**
+     * A rectangular profile ({@code width × height}) swept along a smooth
+     * curve through x,y,z points — moldings, ribs, rails, gutters:
+     *
+     * <pre>{@code
+     * sweep(0.12, 0.06,  -3, 0, 0,  0, 2.2, 0,  3, 0, 0)   // one vault rib
+     * }</pre>
+     */
+    public static Sweep sweep(double width, double height, double... points) {
+        return new Sweep(width, height, points);
+    }
 
     /**
      * A round tube swept along a smooth curve through x,y,z points —
@@ -398,6 +451,20 @@ public class Three {
     /** A bulb-like light with the given strength. */
     public static PointLight pointLight(double intensity) {
         return new PointLight().intensity(intensity);
+    }
+
+    /**
+     * A cone of light aimed at a target — stage lamp, desk light, street
+     * light. Placed at {@code (2, 4, 2)} and aimed straight down unless told
+     * otherwise: {@code spotLight(40).position(0, 6, 0).angle(25).shadows()}.
+     */
+    public static SpotLight spotLight() {
+        return new SpotLight();
+    }
+
+    /** A cone of light with the given strength (a real lamp a few units away wants 20–60). */
+    public static SpotLight spotLight(double intensity) {
+        return new SpotLight().intensity(intensity);
     }
 
     /** Soft sky-and-ground illumination — the pleasant no-setup light. */

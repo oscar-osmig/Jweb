@@ -61,9 +61,27 @@ Because `scene(...)` is a `Tag`, every HTML attribute chains on it:
 | `disc()` / `disc(r)` | CircleGeometry | radius 1, double-sided |
 | `ring()` / `ring(inner, outer)` | RingGeometry | 0.5 → 1, double-sided |
 | `tetrahedron(r)` `octahedron(r)` `dodecahedron(r)` `icosahedron(r)` | the platonic solids | radius 1 |
+| `terrain(w, d)` / `.hills(h)` / `.hills(h, scale)` | PlaneGeometry, displaced | flat, lying down |
 
 (`disc`, not `circle` — the SVG element owns that name under dual wildcard
-imports. Same reason the text billboard below isn't called `label`.)
+imports. Same reason the text billboard below isn't called `label`, and the
+polyline is `wire`, not `line`.)
+
+`terrain` is ground that already lies flat — y up, centered on its
+position, no rotation to remember — with rolling hills on request:
+
+```java
+terrain(60, 60).color("#5B7F4A")                  // a lawn
+terrain(60, 60).hills(1.5).color("#C9B58A")       // low dunes
+terrain(60, 60).hills(3, 12).seed(4).detail(128)  // taller hills 12 units across,
+                                                  // reshuffled, finer mesh
+```
+
+Hills are seeded and deterministic (a re-render doesn't reshape the land);
+crests rise and troughs dip around the node's height by about half the hill
+height each way. `detail` is the mesh resolution per side (default 96,
+clamped 8–256). It's a normal mesh: shadows, clicks, hover and materials all
+apply.
 
 Every node shares the transform surface — chains never dead-end:
 
@@ -107,6 +125,29 @@ An elliptical vault is an `arc` squashed with `.scale(1, 0.7, 1)`. One
 `tube` through five points replaces a dozen hand-angled segments — and
 reads like what it is.
 
+Two more ride the same smooth curve:
+
+```java
+// a rectangular profile (width × height) swept along the curve —
+// moldings, ribs, rails, gutters, cornices. The square-section tube.
+sweep(0.12, 0.06,  -3, 0, 0,  0, 2.2, 0,  3, 0, 0)   // one vault rib, not 216 boxes
+    .closed()         // loop it
+    .steps(64)        // resolution along the curve (default max(24, points × 8))
+
+// a thin, unlit polyline — outlines, guides, constellations, the pencil
+// line of a diagram. (`wire`, because SVG owns `line`.)
+wire(-2, 0, 0,  0, 1.4, 0,  2, 0, 0)
+    .color("#fde68a").opacity(0.8)
+    .closed()                       // last point back to the first
+    .dashed(0.2, 0.1)               // dash, gap in scene units
+    .draw(1200)                     // draws itself over 1.2s on load; draw(ms, delayMs)
+```
+
+`draw` traces the line from nothing when the scene loads (or scrolls into
+view); combined with `dashed`, the dashes settle in once the trace is done.
+WebGL lines are always one pixel wide whatever the zoom — for a line with
+body, use `tube`. Lines are visual only: no clicks, no hover, no shadows.
+
 ## Materials
 
 Shapes use three.js's physically-based `MeshStandardMaterial`, with the
@@ -122,6 +163,36 @@ sphere()
     .wireframe()                // edges only
     .texture("/assets/crate.png")  // image as the material map
 ```
+
+### Glass
+
+```java
+box().glass()                                  // clear: light passes through and refracts
+sphere().glass(0.6).color("#cfe8ff")           // transmission 0–1, tinted
+cylinder().glass().roughness(0.4)              // frosted (default roughness 0.05)
+```
+
+Real transmission (`MeshPhysicalMaterial`), not a see-through opacity trick
+— the scene behind bends through it. It costs a second render of what's
+behind the glass; a vase or two is fine, a glass floor is a choice.
+
+### Material presets
+
+Declare a surface once and hand it to any number of shapes:
+
+```java
+var brass = material().color("#A07C4B").metalness(0.85).roughness(0.35);
+var frosted = material().glass(0.9).roughness(0.4);
+
+box().material(brass)
+sphere().material(brass).roughness(0.1)     // brass, but polished
+cylinder().material(frosted)
+```
+
+A preset carries every material verb (`color`, `emissive`, `metalness`,
+`roughness`, `opacity`, `wireframe`, `texture`, `glass`) and copies only the
+properties it set, so explicit calls before or after it still win in call
+order. It's a plain Java value — `var` needs no import.
 
 ## Billboards
 
@@ -149,10 +220,17 @@ directionalLight(1.2).position(5, 8, 4)   // sun-like, aims at the origin
 ambientLight(0.4)                          // even fill
 pointLight(2).position(0, 3, 0)            // bulb-like
 hemisphereLight("#bde0fe", "#3a5a40")      // sky + ground wash
+spotLight(40).position(0, 6, 0)            // a cone of light, aimed straight down
+    .target(0, 1, 0)                       // ...or at a point
+    .angle(25)                             // cone half-angle, degrees (default 30)
+    .penumbra(0.4)                         // edge softness 0–1 (default 0.3)
+    .shadows()
 ```
 
 A scene that declares **no lights** gets a soft hemisphere light so nothing
-renders black. Declare any light to take over completely.
+renders black. Declare any light to take over completely. Point and spot
+lights fall off with distance (physical units): a lamp a few units from
+its subject wants an intensity in the tens, not `1`.
 
 Shadows — normally a five-place configuration chore — are one call:
 
@@ -162,7 +240,8 @@ directionalLight(1.2).position(5, 8, 4).shadows()
 
 That single `.shadows()` enables the renderer's shadow map (soft PCF),
 configures the light's shadow camera, and makes every mesh in the scene cast
-and receive. `pointLight(...).shadows()` works the same way.
+and receive. `pointLight(...).shadows()` and `spotLight(...).shadows()`
+work the same way.
 
 ## Camera
 
@@ -315,9 +394,16 @@ plane(20, 20).flat().mirror().color("#4a443e")
 ```
 
 A real-time planar reflection (three.js `Reflector`). `.color(...)` tints
-it — darker is dimmer. A mirror is glass-sharp; for a satin polished floor,
-lay a translucent dark plane a hair above it and the reflection blurs into
-suggestion. Other material properties don't apply to a mirror.
+it — darker is dimmer. `mirror()` is chrome-sharp; a strength turns it
+satin:
+
+```java
+plane(20, 20).flat().mirror(0.4).color("#4a443e").roughness(0.7)   // polished stone
+```
+
+At a strength below 1 the reflection shows through a surface in the
+plane's `color` and `roughness` — `0.4` reads as a polished floor rather
+than a pool of mercury. Other material properties don't apply.
 
 ## Animation presets
 
@@ -327,13 +413,44 @@ box().spin(45)          // y axis, degrees per second
 box().spin(10, 20, 30)  // per axis
 model("/assets/drone.glb").float_()          // gentle hover: ±0.25 units
 sphere().float_(0.5, 1)                      // amplitude, cycles per second
+
+sphere().pulse()                             // scale breathes ±8%, one cycle per 2s
+sphere().pulse(0.15, 1)                      // ±amount (fraction), cycles per second
+torus().emissive("#5FA98A").glow()           // emissive breathes 60%–100%, 0.6 cps
+torus().emissive("#5FA98A").glow(0.5)        // cycles per second
+
+box().appear(600)                            // scales in from nothing over 600ms on load
+box().appear(600, 200)                       // ...after a 200ms delay
 ```
 
+`delay(ms)` holds `pulse`, `glow`, `float_` and `spin` still before they
+start, so a row can come alive one member at a time:
+
+```java
+repeat(6, i -> torus(0.5, 0.15).position(i * 1.4 - 3.5, 1, 0)
+    .emissive("#5FA98A").glow(0.5).delay(i * 220))
+```
+
+`appear` touches scale only, so it composes with `float_` and `spin`;
+`pulse` and `glow` wait for an `appear` to finish before they begin.
+
+`follow` moves a node along a closed, smooth path, facing the way it goes:
+
+```java
+cone(0.2, 0.6).rotation(90, 0, 0)            // a cylinder/cone points along y;
+    .follow(4,                               // 90° on x lays it along the path
+        3, 2, -2,   4, 2.5, -1,   3, 3, 0,   2, 2.5, -1)   // one lap every 4s
+```
+
+The path owns position; the declared rotation becomes an offset from the
+direction of travel (with none, the node's +z points along the path).
+
 Presets are why the render loop exists at all: a scene with no `spin`,
-`float_`, `autoRotate`, `.animate()`d model, drifting `particles` or
-`sway()` renders once and sleeps — and an animated scene's loop pauses
-whenever it scrolls offscreen (IntersectionObserver), so a 3D hero costs
-nothing once the reader is past it.
+`float_`, `pulse`, `glow`, `follow`, `autoRotate`, `.animate()`d model,
+drifting `particles` or `sway()` renders once and sleeps — one-shots like
+`appear` and `draw` run the loop only until they finish — and an animated
+scene's loop pauses whenever it scrolls offscreen (IntersectionObserver),
+so a 3D hero costs nothing once the reader is past it.
 
 ## Particles
 
@@ -358,6 +475,14 @@ Positions are seeded deterministically — a re-render doesn't reshuffle the
 sky; `.seed(n)` picks a different arrangement. `drift`/`fall` animate the
 cloud (and keep the loop alive); a static cloud is free after its first
 frame.
+
+A palette gives each particle one of several colors, chosen with the same
+seed as its position — embers in three oranges, confetti:
+
+```java
+particles(300).colors("#ff7a00", "#ffb347", "#ff3d00").size(0.06)
+    .spread(4, 3, 4).drift(2)
+```
 
 ## Groups
 
@@ -389,6 +514,24 @@ repeat(10, i -> cylinder(0.08, 1.5)   // a colonnade in one line
 
 `scene(...)`, `group(...)` and `repeat(...)` all skip nulls, so a
 conditional branch never needs an empty-group placeholder.
+
+### Instanced groups
+
+A group of hundreds of similar shapes can draw as GPU instances — one draw
+call per distinct geometry-and-material, whatever the count:
+
+```java
+repeat(400, i -> cylinder(0.1, 2).color(i % 2 == 0 ? "#bbb" : "#999")
+    .position(-20 + i % 40, 1, -10 + i / 40)).instanced()
+```
+
+Members are batched by shape, size and material; `color` may differ per
+member for free. What members give up is individuality: an instanced
+member can't be clicked, hovered, named or animated on its own — one
+carrying `spin`, `float_`, `pulse`, `glow`, `appear`, `follow`, `onClick`,
+a hover effect or a `name` falls back to a normal mesh (with one console
+warning per group). The group itself still moves, spins and takes clicks
+as a unit, and nested plain groups flatten into it.
 
 ## Models
 
@@ -557,6 +700,28 @@ answer, so outside a handler there's no page in flight and the patch is
 dropped with a warning. Position patches on a `float_()`ing node move its
 hover base along x/z and re-center the bob at the new height.
 
+### Adding and removing nodes
+
+The scene's structure changes the same way — nodes are built or disposed
+in place, camera and animation phases untouched:
+
+```java
+Three.patch("hall")
+     .add(sphere(0.3).name("orb").emissive("#5FA98A").appear(400))   // into the scene root
+     .addTo("shelf", box(0.4).name("crate"))                        // inside a named group
+     .remove("old-lamp", "dust")                                     // the whole subtree
+     .replace("vase", lathe(0, 0, 0.5, 0, 0.3, 1.2).color("#8a6"))   // same parent, same name
+     .node("orb").position(0, 2, 0).tween(600)                       // and patch what you added
+```
+
+Added nodes are exactly what `scene(...)` would have built — presets,
+clicks, hover, shadows, all of it. Removal releases the node's geometry,
+materials and textures and stops its animations. Within one patch removes
+apply first, then additions, then property patches — so an `add` and a
+`.node(...)` on the new name compose. `replace` gives the new node the old
+name unless it carries its own. An unknown group in `addTo` logs a warning
+and skips.
+
 ## Escape hatch: the raw three.js API
 
 The DSL covers scenes, not shaders. When you need the full API, give the
@@ -616,6 +781,12 @@ minimum and a console hint rather than an invisible scene.
 - A `mirror()` re-renders the scene from the reflected view — same
   order-of-magnitude note as bloom.
 - `particles(n)` is one draw call regardless of `n`; thousands are cheap.
+  So is an `.instanced()` group — a few calls for hundreds of shapes.
+- `glass()` renders what's behind it into a buffer first (three.js
+  transmission) — like bloom, a per-frame cost that scales with how much
+  glass is on screen.
+- `terrain` is a mesh of `detail²` quads (96² by default); it builds once
+  and costs nothing after.
 - Pixel ratio is capped at 2 to keep retina laptops cool.
 - Disposal is automatic and complete — geometries, materials, textures,
   composer targets and the GL context are released when the element leaves
@@ -634,3 +805,10 @@ minimum and a console hint rather than an invisible scene.
 - Draco/KTX2-compressed assets are not supported (no decoder shipped).
 - `onClick` server handlers and `Three.patch` need the JWeb runtime's
   WebSocket (on by default); `clickSwap` needs only fetch.
+- `wire(...)` lines are one pixel wide at any zoom (a WebGL limit) and
+  take no clicks or hover — use `tube` for a line with body.
+- Members of an `.instanced()` group are not individually clickable,
+  hoverable, nameable or animatable; members that need that fall back to
+  normal meshes (with a console warning).
+- The factory is `wire`, not `line`: `line(...)` is the SVG element under
+  the `El` wildcard, and a `double...` overload would be ambiguous with it.

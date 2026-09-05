@@ -20,6 +20,7 @@ public abstract class MeshNode<SELF extends MeshNode<SELF>> extends ThreeNode<SE
     private Double opacity;
     private boolean wireframe;
     private String texture;
+    private Double glass;
     private String hoverColor;
     private String hoverEmissive;
 
@@ -75,6 +76,46 @@ public abstract class MeshNode<SELF extends MeshNode<SELF>> extends ThreeNode<SE
         return self();
     }
 
+    /**
+     * Clear glass: light passes through and refracts (three.js
+     * {@code MeshPhysicalMaterial} transmission). {@code .color(...)} tints
+     * it; {@code .roughness(...)} frosts it (default 0.05, near-clear).
+     */
+    public SELF glass() {
+        return glass(1);
+    }
+
+    /** Glass with the given transmission, 0 (opaque) to 1 (fully clear). */
+    public SELF glass(double transmission) {
+        if (transmission < 0 || transmission > 1) {
+            throw new IllegalArgumentException("glass() transmission must be within 0–1 — got " + transmission);
+        }
+        this.glass = transmission;
+        return self();
+    }
+
+    /**
+     * Applies a {@link Material} preset: every property the preset set is
+     * copied onto this shape; explicit calls made later still override.
+     *
+     * <pre>{@code
+     * var brass = material().color("#A07C4B").metalness(0.85).roughness(0.35);
+     * box().material(brass)
+     * }</pre>
+     */
+    public SELF material(Material preset) {
+        if (preset == null) throw new IllegalArgumentException("material(preset): preset is null");
+        if (preset.color != null) this.color = preset.color;
+        if (preset.emissive != null) this.emissive = preset.emissive;
+        if (preset.metalness != null) this.metalness = preset.metalness;
+        if (preset.roughness != null) this.roughness = preset.roughness;
+        if (preset.opacity != null) this.opacity = preset.opacity;
+        if (preset.wireframe) this.wireframe = true;
+        if (preset.texture != null) this.texture = preset.texture;
+        if (preset.glass != null) this.glass = preset.glass;
+        return self();
+    }
+
     /** Material color while the pointer is over the shape (raycast, client-side). */
     public SELF hoverColor(String color) {
         this.hoverColor = color;
@@ -106,6 +147,7 @@ public abstract class MeshNode<SELF extends MeshNode<SELF>> extends ThreeNode<SE
         if (opacity != null) map.put("opacity", num(opacity));
         if (wireframe) map.put("wire", true);
         if (texture != null) map.put("map", texture);
+        if (glass != null) map.put("glass", num(glass));
         if (hoverColor != null) map.put("hovColor", hoverColor);
         if (hoverEmissive != null) map.put("hovEmissive", hoverEmissive);
     }

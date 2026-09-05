@@ -106,11 +106,62 @@ public final class ThreeRuntime {
                     for(var j=0;j+1<n.profile.length;j+=2)lp.push(new THREE.Vector2(n.profile[j],n.profile[j+1]));
                     return new THREE.LatheGeometry(lp,n.seg||32);
                 }
+                if(n.t==='sweep')return sweepGeometry(n);
+                if(n.t==='terrain')return terrainGeometry(n);
                 return null;
             }
 
+            // Sweep: a centered w×h rectangle extruded along a Catmull-Rom curve
+            function sweepGeometry(n){
+                var sp=[];
+                for(var i=0;i+2<n.pts.length;i+=3)sp.push(new THREE.Vector3(n.pts[i],n.pts[i+1],n.pts[i+2]));
+                var w=n.profile?n.profile[0]:0.1,h=n.profile?n.profile[1]:0.1;
+                var shape=new THREE.Shape();
+                shape.moveTo(-w/2,-h/2);shape.lineTo(w/2,-h/2);shape.lineTo(w/2,h/2);shape.lineTo(-w/2,h/2);shape.closePath();
+                var curve=new THREE.CatmullRomCurve3(sp,!!n.closed);
+                return new THREE.ExtrudeGeometry(shape,{extrudePath:curve,
+                    steps:n.steps||Math.max(24,sp.length*8),bevelEnabled:false});
+            }
+
+            // Terrain: a flat plane whose vertices ride seeded 3-octave value
+            // noise — deterministic per seed, so re-renders don't reshape the land
+            function lattice(ix,iz,seed){return mulberry((seed*374761393+ix*668265263+iz*2246822519)|0)();}
+            function vnoise(x,z,seed){
+                var x0=Math.floor(x),z0=Math.floor(z),fx=ease(x-x0),fz=ease(z-z0);
+                var a=lattice(x0,z0,seed),b=lattice(x0+1,z0,seed),c=lattice(x0,z0+1,seed),d=lattice(x0+1,z0+1,seed);
+                var top=a+(b-a)*fx,bottom=c+(d-c)*fx;
+                return top+(bottom-top)*fz;
+            }
+            function fbm(x,z,seed){
+                return (vnoise(x,z,seed)+0.5*vnoise(x*2+7.3,z*2+3.1,seed+1)+0.25*vnoise(x*4+1.7,z*4+9.2,seed+2))/1.75;
+            }
+            function terrainGeometry(n){
+                var w=n.size?n.size[0]:10,d=n.size?n.size[1]:10;
+                var seg=Math.max(8,Math.min(256,n.seg||96));
+                var g=new THREE.PlaneGeometry(w,d,seg,seg);
+                g.rotateX(-Math.PI/2);   // baked flat: the node's own rotation stays free
+                if(n.hills&&n.hills[0]>0){
+                    var h=n.hills[0],sc=(n.hills[1]>0)?n.hills[1]:w/4,seed=n.seed!=null?n.seed:1;
+                    var pos=g.attributes.position;
+                    for(var i=0;i<pos.count;i++){
+                        pos.setY(i,(fbm(pos.getX(i)/sc,pos.getZ(i)/sc,seed)-0.5)*2*h);
+                    }
+                    pos.needsUpdate=true;
+                }
+                g.computeVertexNormals();
+                return g;
+            }
+
             function material(n,inst){
-                var m=new THREE.MeshStandardMaterial({color:color(n.color,'#8b9dc3')});
+                var m;
+                if(n.glass!=null&&n.glass!==false){
+                    // physical transmission: light passes through and refracts
+                    m=new THREE.MeshPhysicalMaterial({color:color(n.color,'#ffffff'),
+                        transmission:n.glass===true?1:n.glass,roughness:n.rough!=null?n.rough:0.05,
+                        ior:1.5,thickness:0.5,transparent:false});
+                }else{
+                    m=new THREE.MeshStandardMaterial({color:color(n.color,'#8b9dc3')});
+                }
                 if(n.emissive)m.emissive=color(n.emissive,'#000000');
                 if(n.metal!=null)m.metalness=n.metal;
                 if(n.rough!=null)m.roughness=n.rough;
@@ -145,6 +196,89 @@ public final class ThreeRuntime {
                 if(n.solid!=null)inst.solidNodes.push({obj:obj,r:typeof n.solid==='number'?n.solid:null});
                 if(n.near!=null)inst.nears.push({obj:obj,d:n.near,name:n.name||'',inside:false,
                     enterH:n.nearH,enterAct:n.nearAct,leaveH:n.farH,leaveAct:n.farAct});
+                applyPresets(obj,n,inst);
+            }
+
+            // ==================== Motion presets ====================
+            // pulse/glow/follow run every frame; appear is a one-shot tween;
+            // delay holds all of them (spin/float included) until it elapses
+
+            var _fm=new THREE.Matrix4(),_fv=new THREE.Vector3(),_fup=new THREE.Vector3(0,1,0);
+
+            function applyPresets(obj,n,inst){
+                var delay=(n.delay||0)/1000;
+                var appearEnd=n.appear?(n.appear[0]+n.appear[1])/1000:0;
+                var start=inst.time+delay+appearEnd;   // continuous presets begin once the reveal is done
+                if(n.delay&&(n.spin||n['float'])){
+                    // spin/float were queued just above; hold them back until the delay elapses
+                    var held=[];
+                    if(n.spin&&inst.spins.length&&inst.spins[inst.spins.length-1].obj===obj)held.push({list:inst.spins,item:inst.spins.pop()});
+                    if(n['float']&&inst.floats.length&&inst.floats[inst.floats.length-1].obj===obj)held.push({list:inst.floats,item:inst.floats.pop()});
+                    if(held.length){inst.pending.push({at:inst.time+delay,held:held});inst.needsLoop=true;}
+                }
+                if(n.pulse){
+                    // base is captured on the first frame, after billboards have sized themselves
+                    inst.pulses.push({obj:obj,amt:n.pulse[0],cps:n.pulse[1],base:null,t0:start});
+                    inst.needsLoop=true;
+                }
+                if(n.glow&&obj.material&&!Array.isArray(obj.material)&&obj.material.emissive){
+                    inst.glows.push({obj:obj,mat:obj.material,cps:n.glow,base:obj.material.emissiveIntensity,t0:start});
+                    inst.needsLoop=true;
+                }
+                if(n.follow&&n.follow.pts&&n.follow.pts.length>=6){
+                    var fp=[];
+                    for(var i=0;i+2<n.follow.pts.length;i+=3)fp.push(new THREE.Vector3(n.follow.pts[i],n.follow.pts[i+1],n.follow.pts[i+2]));
+                    var fo={obj:obj,curve:new THREE.CatmullRomCurve3(fp,true),sec:n.follow.sec>0?n.follow.sec:10,
+                            rot:obj.quaternion.clone(),t0:inst.time+delay};
+                    inst.follows.push(fo);
+                    inst.needsLoop=true;
+                    stepFollow(fo,0);
+                }
+                if(n.appear){
+                    // hidden until the first frame captures the declared scale (billboards
+                    // size themselves after applyCommon), then scales in from nothing
+                    var am=n.appear[0]/1000,ad=n.appear[1]/1000,at0=inst.time,target=null;
+                    obj.visible=false;
+                    inst.tweens.push({t0:at0,dur:ad+am,step:function(){
+                        if(!target){target=obj.scale.clone();obj.visible=true;}
+                        var k=Math.max(0,Math.min(1,(inst.time-at0-ad)/am));
+                        obj.scale.copy(target).multiplyScalar(Math.max(1e-4,ease(k)));
+                    }});
+                }
+            }
+
+            function stepFollow(f,u){
+                f.curve.getPointAt(u,f.obj.position);
+                var tan=f.curve.getTangentAt(u);
+                _fm.lookAt(_fv.copy(f.obj.position).add(tan),f.obj.position,_fup);   // +z along the path
+                f.obj.quaternion.setFromRotationMatrix(_fm).multiply(f.rot);
+            }
+
+            function stepPresets(inst){
+                if(inst.pending.length){
+                    inst.pending=inst.pending.filter(function(p){
+                        if(inst.time<p.at)return true;
+                        p.held.forEach(function(h){h.list.push(h.item);});
+                        return false;
+                    });
+                }
+                inst.pulses.forEach(function(p){
+                    var t=inst.time-p.t0;
+                    if(t<0)return;
+                    if(!p.base)p.base=p.obj.scale.clone();
+                    var s=1+Math.sin(t*p.cps*Math.PI*2)*p.amt;
+                    p.obj.scale.set(p.base.x*s,p.base.y*s,p.base.z*s);
+                });
+                inst.glows.forEach(function(g){
+                    var t=inst.time-g.t0;
+                    if(t<0)return;
+                    g.mat.emissiveIntensity=g.base*(0.8+0.2*Math.sin(t*g.cps*Math.PI*2));   // 60%..100%
+                });
+                inst.follows.forEach(function(f){
+                    var t=inst.time-f.t0;
+                    if(t<0)return;
+                    stepFollow(f,(t/f.sec)%1);
+                });
             }
 
             function buildNode(n,inst,parent){
@@ -156,6 +290,7 @@ public final class ThreeRuntime {
                             color:n.color||'#889199',
                             textureWidth:1024,textureHeight:1024,clipBias:0.003});
                         applyCommon(refl,n,inst);
+                        addMirrorFinish(refl,n,inst,ms);
                         parent.add(refl);
                         return;
                     }
@@ -166,6 +301,12 @@ public final class ThreeRuntime {
                     if(inst.shadows){mesh.castShadow=true;mesh.receiveShadow=true;}
                     applyCommon(mesh,n,inst);
                     parent.add(mesh);
+                }else if(n.t==='line'){
+                    buildLine(n,inst,parent);
+                }else if(n.t==='spotLight'){
+                    buildSpotLight(n,inst);
+                }else if(n.t==='group'&&n.inst){
+                    buildInstanced(n,inst,parent);
                 }else if(n.t==='group'){
                     var g=new THREE.Group();
                     applyCommon(g,n,inst);
@@ -181,9 +322,21 @@ public final class ThreeRuntime {
                         orig[pi*3+2]=pos[pi*3+2]=(rand()-0.5)*spread[2];
                         phase[pi]=rand()*Math.PI*2;
                     }
+                    // palette: drawn after positions so adding colors never reshuffles the cloud
+                    var cols=null;
+                    if(n.colors&&n.colors.length){
+                        var pal=n.colors.map(function(c){return new THREE.Color(c);});
+                        cols=new Float32Array(cnt*3);
+                        for(var ci=0;ci<cnt;ci++){
+                            var pcol=pal[Math.min(pal.length-1,Math.floor(rand()*pal.length))];
+                            cols[ci*3]=pcol.r;cols[ci*3+1]=pcol.g;cols[ci*3+2]=pcol.b;
+                        }
+                    }
                     var pg=new THREE.BufferGeometry();
                     pg.setAttribute('position',new THREE.BufferAttribute(pos,3));
-                    var pm=new THREE.PointsMaterial({color:color(n.color,'#ffffff'),
+                    if(cols)pg.setAttribute('color',new THREE.BufferAttribute(cols,3));
+                    var pm=new THREE.PointsMaterial({color:cols?new THREE.Color('#ffffff'):color(n.color,'#ffffff'),
+                        vertexColors:!!cols,
                         size:n.size!=null?n.size:0.05,sizeAttenuation:true,
                         transparent:true,opacity:n.opacity!=null?n.opacity:1,depthWrite:false});
                     var pts=new THREE.Points(pg,pm);
@@ -328,6 +481,140 @@ public final class ThreeRuntime {
                 }else if(n.t!=='camera'){
                     console.warn('[JWeb] unknown scene node type:',n.t);
                 }
+            }
+
+            // ==================== Lines, spot lights, satin mirrors ====================
+
+            // Lines: a 1px unlit polyline; dashed/draw use LineDashedMaterial
+            function buildLine(n,inst,parent){
+                var lp=[];
+                for(var i=0;i+2<n.pts.length;i+=3)lp.push(new THREE.Vector3(n.pts[i],n.pts[i+1],n.pts[i+2]));
+                if(n.closed)lp.push(lp[0].clone());
+                var lg=new THREE.BufferGeometry().setFromPoints(lp);
+                var opts={color:color(n.color,'#ffffff')};
+                if(n.opacity!=null){opts.transparent=true;opts.opacity=n.opacity;}
+                var dashed=!!(n.dash||n.draw),lm;
+                if(dashed){
+                    opts.dashSize=n.dash?n.dash[0]:1;opts.gapSize=n.dash?n.dash[1]:0;
+                    lm=new THREE.LineDashedMaterial(opts);
+                }else{
+                    lm=new THREE.LineBasicMaterial(opts);
+                }
+                var line=new THREE.Line(lg,lm);
+                line.raycast=function(){};   // 1px lines make poor click targets; never steal a hit
+                if(dashed)line.computeLineDistances();
+                applyCommon(line,n,inst);
+                parent.add(line);
+                if(n.draw){
+                    // draws itself: a dash growing from 0 to the line's length, one gap behind it
+                    var ld=lg.attributes.lineDistance,total=ld.array[ld.count-1]||1;
+                    var dm=n.draw[0]/1000,dd=n.draw[1]/1000,t0=inst.time;
+                    lm.dashSize=0;lm.gapSize=total*2;
+                    inst.tweens.push({t0:t0,dur:dm+dd,step:function(){
+                        var k=Math.max(0,Math.min(1,(inst.time-t0-dd)/dm));
+                        if(k<1){lm.dashSize=total*ease(k);lm.gapSize=total*2;}
+                        else if(n.dash){lm.dashSize=n.dash[0];lm.gapSize=n.dash[1];}
+                        else{lm.dashSize=total*2;lm.gapSize=0;}
+                    }});
+                }
+            }
+
+            // Spot lights: a cone from pos toward target (default: straight down)
+            function buildSpotLight(n,inst){
+                var sp=new THREE.SpotLight(color(n.color,'#ffffff'),n.intensity!=null?n.intensity:1);
+                if(n.pos)vec(sp.position,n.pos);else sp.position.set(2,4,2);
+                sp.angle=(n.angle!=null?n.angle:30)*RAD;
+                sp.penumbra=n.penumbra!=null?n.penumbra:0.3;
+                if(n.target)vec(sp.target.position,n.target);
+                else sp.target.position.set(sp.position.x,sp.position.y-1,sp.position.z);
+                if(n.shadows){sp.castShadow=true;sp.shadow.mapSize.set(1024,1024);sp.shadow.bias=-0.0005;}
+                if(n.name)inst.objects[n.name]=sp;
+                sp.userData.jwebTarget=sp.target;   // so a remove patch takes the target along
+                inst.hasLight=true;
+                inst.scene.add(sp);
+                inst.scene.add(sp.target);
+            }
+
+            // Satin mirrors: a translucent lid a hair above the Reflector dims it to strength
+            function addMirrorFinish(refl,n,inst,ms){
+                var strength=n.mirror===true?1:n.mirror;
+                if(!(strength<1))return;
+                var lid=new THREE.Mesh(new THREE.PlaneGeometry(ms[0],ms[1]),
+                    new THREE.MeshStandardMaterial({color:color(n.color,'#889199'),transparent:true,
+                        opacity:1-strength,roughness:n.rough!=null?n.rough:0.6}));
+                lid.position.z=0.002;   // along the plane's local normal
+                if(inst.shadows)lid.receiveShadow=true;
+                refl.add(lid);
+            }
+
+            // ==================== Instanced groups ====================
+            // children batched into one InstancedMesh per geometry+material
+            // signature; color is per instance. Members needing their own
+            // behaviour (spin/float/click/hover/name/presets) fall back to meshes.
+
+            var INSTANCEABLE={box:1,sphere:1,plane:1,cylinder:1,cone:1,torus:1,capsule:1,disc:1,ring:1,
+                knot:1,tetra:1,octa:1,dodeca:1,icosa:1,tube:1,arc:1,lathe:1,sweep:1,terrain:1};
+
+            function perInstanceOnly(c){
+                return !!(c.spin||c['float']||c.click||c.clickAct||c.swap||c.hovScale||c.hovColor
+                    ||c.hovEmissive||c.name||c.pulse||c.glow||c.appear||c.follow||c.delay);
+            }
+
+            function localMatrix(c){
+                var p=c.pos||[0,0,0],r=c.rot||[0,0,0],s=c.scl||[1,1,1];
+                return new THREE.Matrix4().compose(new THREE.Vector3(p[0],p[1],p[2]),
+                    new THREE.Quaternion().setFromEuler(new THREE.Euler(r[0]*RAD,r[1]*RAD,r[2]*RAD)),
+                    new THREE.Vector3(s[0],s[1],s[2]));
+            }
+
+            function signature(c){
+                var s={};
+                for(var k in c)if(k!=='pos'&&k!=='rot'&&k!=='scl'&&k!=='color')s[k]=c[k];
+                return JSON.stringify(s);
+            }
+
+            function buildInstanced(n,inst,parent){
+                var g=new THREE.Group();
+                applyCommon(g,n,inst);
+                parent.add(g);
+                var batches={},keys=[],fallbacks=0;
+                function collect(children,holder,mat){
+                    (children||[]).forEach(function(c){
+                        if(c.t==='group'&&!c.inst&&!perInstanceOnly(c)){
+                            // a plain nested group flattens: its transform composes into the instances
+                            var sub=new THREE.Group();
+                            applyCommon(sub,c,inst);
+                            holder.add(sub);
+                            collect(c.children,sub,new THREE.Matrix4().multiplyMatrices(mat,localMatrix(c)));
+                            return;
+                        }
+                        var mirror=c.t==='plane'&&c.mirror;
+                        if(perInstanceOnly(c)||mirror||!INSTANCEABLE[c.t]){
+                            if(perInstanceOnly(c)&&(INSTANCEABLE[c.t]||c.t==='group'))fallbacks++;
+                            buildNode(c,inst,holder);
+                            return;
+                        }
+                        var sig=signature(c),b=batches[sig];
+                        if(!b){b=batches[sig]={proto:c,items:[],colored:false};keys.push(sig);}
+                        b.items.push({mat:new THREE.Matrix4().multiplyMatrices(mat,localMatrix(c)),color:c.color||null});
+                        if(c.color)b.colored=true;
+                    });
+                }
+                collect(n.children,g,new THREE.Matrix4());
+                keys.forEach(function(k){
+                    var b=batches[k],proto=b.proto;
+                    if(b.colored){proto=Object.assign({},proto);proto.color='#ffffff';}   // tint per instance
+                    var im=new THREE.InstancedMesh(geometry(proto),material(proto,inst),b.items.length);
+                    b.items.forEach(function(it,i){
+                        im.setMatrixAt(i,it.mat);
+                        if(b.colored)im.setColorAt(i,color(it.color,'#8b9dc3'));
+                    });
+                    im.instanceMatrix.needsUpdate=true;
+                    if(im.instanceColor)im.instanceColor.needsUpdate=true;
+                    if(inst.shadows){im.castShadow=true;im.receiveShadow=true;}
+                    g.add(im);
+                });
+                if(fallbacks)console.warn('[JWeb] instanced group: '+fallbacks+' member(s) carry spin/float/click/hover/name/presets and fall back to normal meshes');
             }
 
             function hit(inst,ev){
@@ -992,6 +1279,7 @@ public final class ThreeRuntime {
                 }
                 if(p.scl){
                     var sf=obj.scale.clone(),st=new THREE.Vector3(p.scl[0],p.scl[1],p.scl[2]);
+                    inst.pulses.forEach(function(pu){if(pu.obj===obj&&pu.base)pu.base.copy(st);});
                     startTween(inst,dur,function(k){obj.scale.lerpVectors(sf,st,k);});
                 }
                 var mat=obj.material&&!Array.isArray(obj.material)?obj.material:null;
@@ -1036,10 +1324,83 @@ public final class ThreeRuntime {
                 });
             }
 
+            // ==================== Structural patches ====================
+            // remove named subtrees (disposing them, purging every per-frame
+            // registration), then build additions — so a message may replace
+
+            function purgeObject(inst,o){
+                ['spins','floats','pulses','glows','follows'].forEach(function(k){
+                    inst[k]=inst[k].filter(function(e){return e.obj!==o;});
+                });
+                inst.pending=inst.pending.filter(function(p){
+                    return !p.held.some(function(h){return h.item.obj===o;});
+                });
+                inst.pclouds=inst.pclouds.filter(function(pc){return pc.geo!==o.geometry;});
+                inst.mixers=inst.mixers.filter(function(m){return m.getRoot()!==o;});
+                for(var k in inst.objects)if(inst.objects[k]===o)delete inst.objects[k];
+                if(inst.hovered===o)inst.hovered=null;
+                if(o.geometry)o.geometry.dispose();
+                if(o.material){
+                    (Array.isArray(o.material)?o.material:[o.material]).forEach(function(m){
+                        if(m.map)m.map.dispose();
+                        m.dispose();
+                    });
+                }
+                if(o.isInstancedMesh||o.isReflector)o.dispose();
+            }
+
+            function removeNode(inst,name,parents){
+                var obj=inst.objects[name];
+                if(!obj){console.warn('[JWeb] threePatch remove: no node named',name,'in scene',inst.el.id||'');return;}
+                parents[name]=obj.parent||inst.scene;
+                if(obj.parent)obj.parent.remove(obj);
+                var tgt=obj.userData&&obj.userData.jwebTarget;   // a spot light's aim point
+                if(tgt&&tgt.parent)tgt.parent.remove(tgt);
+                obj.traverse(function(o){purgeObject(inst,o);});
+            }
+
+            function enableShadows(inst){
+                inst.shadows=true;
+                inst.renderer.shadowMap.enabled=true;
+                inst.scene.traverse(function(o){
+                    if(o.isMesh&&!o.isReflector){o.castShadow=true;o.receiveShadow=true;}
+                });
+            }
+
+            function addNode(inst,entry,parents){
+                if(!entry||!entry.node)return;
+                var parent=inst.scene;
+                if(entry.replaces!=null){
+                    parent=parents[entry.replaces]||inst.scene;
+                }else if(entry.into){
+                    parent=inst.objects[entry.into];
+                    if(!parent){console.warn('[JWeb] threePatch add: no node named',entry.into,'to add into');return;}
+                }
+                buildNode(entry.node,inst,parent);
+                if(entry.node.shadows&&!inst.shadows)enableShadows(inst);
+                if(inst.interactive&&!inst.pointer)wireInteraction(inst);
+            }
+
+            function recomputeAnimated(inst){
+                inst.animated=inst.spins.length>0||inst.floats.length>0||inst.pulses.length>0
+                    ||inst.glows.length>0||inst.follows.length>0||inst.pending.length>0
+                    ||inst.needsLoop||inst.swayAmt>0||!!(inst.controls&&inst.controls.autoRotate);
+            }
+
+            function applyStructure(inst,msg){
+                var parents={};
+                (msg.remove||[]).forEach(function(name){removeNode(inst,name,parents);});
+                (msg.add||[]).forEach(function(e){addNode(inst,e,parents);});
+                recomputeAnimated(inst);
+                kick(inst);
+                if(!inst.raf)render(inst);
+            }
+
             function applyPatch(msg){
                 var el=msg.scene?document.getElementById(msg.scene):null;
                 var inst=el&&instances.get(el);
                 if(!inst){console.warn('[JWeb] threePatch for unknown scene:',msg.scene);return;}
+                if(msg.remove||msg.add)applyStructure(inst,msg);   // structure first: nodes may target additions
                 (msg.nodes||[]).forEach(function(p){
                     var obj=inst.objects[p.name];
                     if(!obj){console.warn('[JWeb] threePatch: no node named',p.name,'in scene',msg.scene);return;}
@@ -1084,6 +1445,7 @@ public final class ThreeRuntime {
 
                 var inst={el:el,renderer:renderer,scene:new THREE.Scene(),camera:null,controls:null,
                           objects:{},spins:[],floats:[],mixers:[],pclouds:[],tweens:[],
+                          pulses:[],glows:[],follows:[],pending:[],
                           hasLight:false,clickable:false,interactive:false,hovered:null,
                           needsLoop:false,walk:null,swayAmt:0,camBase:null,camLook:null,
                           composer:null,toneCfg:null,bloomCfg:null,suppressClick:false,
@@ -1222,6 +1584,7 @@ public final class ThreeRuntime {
                         }
                         pc.geo.attributes.position.needsUpdate=true;
                     });
+                    stepPresets(inst);
                     if(inst.walk&&inst.walk.active){
                         stepWalk(inst,dt);
                     }else if(inst.swayAmt){
@@ -1303,6 +1666,10 @@ public final class ThreeRuntime {
                             m.dispose();
                         });
                     }
+                });
+                // instance buffers and reflector render targets hang off the object, not its material
+                inst.scene.traverse(function(o){
+                    if(o.isInstancedMesh||o.isReflector)o.dispose();
                 });
                 inst.renderer.dispose();
                 if(inst.renderer.domElement.parentNode)inst.renderer.domElement.parentNode.removeChild(inst.renderer.domElement);

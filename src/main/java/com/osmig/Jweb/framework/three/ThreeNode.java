@@ -28,6 +28,12 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
     private double[] scale;
     private double[] spin;
     private double[] floating;
+    private double[] pulse;
+    private Double glow;
+    private int[] appear;
+    private Integer delay;
+    private Double followSeconds;
+    private double[] followPoints;
     private Double hoverScale;
     private String clickHandlerId;
     private String clickActionId;
@@ -111,6 +117,84 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
     /** Vertical hover: amplitude in scene units, speed in cycles per second. */
     public SELF float_(double amplitude, double cyclesPerSec) {
         this.floating = new double[]{amplitude, cyclesPerSec};
+        return self();
+    }
+
+    /** Scale breathes ±8% around the declared scale, one cycle every 2 seconds. */
+    public SELF pulse() {
+        return pulse(0.08, 0.5);
+    }
+
+    /** Scale breathes ±{@code amount} (a fraction, 0.1 = ±10%) at {@code cyclesPerSec}. */
+    public SELF pulse(double amount, double cyclesPerSec) {
+        if (amount <= 0 || cyclesPerSec <= 0) {
+            throw new IllegalArgumentException(
+                "pulse(amount, cyclesPerSec) must both be positive — got " + amount + ", " + cyclesPerSec);
+        }
+        this.pulse = new double[]{amount, cyclesPerSec};
+        return self();
+    }
+
+    /** Emissive brightness breathes between 60% and 100% of the declared glow, 0.6 cycles per second. */
+    public SELF glow() {
+        return glow(0.6);
+    }
+
+    /**
+     * Emissive breathing at the given pace (meshes with an {@code emissive};
+     * quiet on anything else). Rings that brighten one after another:
+     * {@code repeat(6, i -> torus(...).emissive("#5FA98A").glow(0.5).delay(i * 220))}.
+     */
+    public SELF glow(double cyclesPerSec) {
+        if (cyclesPerSec <= 0) {
+            throw new IllegalArgumentException("glow(cyclesPerSec) must be positive — got " + cyclesPerSec);
+        }
+        this.glow = cyclesPerSec;
+        return self();
+    }
+
+    /** Scales in from nothing to the declared scale over the given milliseconds on load. */
+    public SELF appear(int millis) {
+        return appear(millis, 0);
+    }
+
+    /** Scales in over {@code millis}, starting after {@code delayMillis}. Touches scale only. */
+    public SELF appear(int millis, int delayMillis) {
+        if (millis <= 0 || delayMillis < 0) {
+            throw new IllegalArgumentException(
+                "appear(ms, delay): ms must be positive and delay non-negative — got "
+                + millis + ", " + delayMillis);
+        }
+        this.appear = new int[]{millis, delayMillis};
+        return self();
+    }
+
+    /**
+     * Holds {@code pulse}, {@code glow}, {@code float_} and {@code spin} still
+     * for the given milliseconds before they start — stagger a row with
+     * {@code repeat(n, i -> ....delay(i * 200))}.
+     */
+    public SELF delay(int millis) {
+        if (millis < 0) throw new IllegalArgumentException("delay() must be non-negative — got " + millis);
+        this.delay = millis;
+        return self();
+    }
+
+    /**
+     * Travels a closed, smooth path through the x,y,z points, one lap every
+     * {@code seconds}, facing along the way — a pencil tracing an outline, a
+     * moon orbiting. The path owns position; the declared rotation becomes an
+     * offset from the direction of travel (a {@code cylinder} points along
+     * its y axis, so {@code .rotation(90, 0, 0)} lays it along the path).
+     */
+    public SELF follow(double seconds, double... points) {
+        if (seconds <= 0) throw new IllegalArgumentException("follow() seconds must be positive — got " + seconds);
+        if (points.length < 6 || points.length % 3 != 0) {
+            throw new IllegalArgumentException(
+                "follow() needs x,y,z triples for at least 2 points — got " + points.length + " values");
+        }
+        this.followSeconds = seconds;
+        this.followPoints = points;
         return self();
     }
 
@@ -264,6 +348,16 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
         if (scale != null) map.put("scl", vec(scale));
         if (spin != null) map.put("spin", vec(spin));
         if (floating != null) map.put("float", vec(floating));
+        if (pulse != null) map.put("pulse", vec(pulse));
+        if (glow != null) map.put("glow", num(glow));
+        if (appear != null) map.put("appear", List.of(appear[0], appear[1]));
+        if (delay != null) map.put("delay", delay);
+        if (followPoints != null) {
+            Map<String, Object> f = new LinkedHashMap<>();
+            f.put("sec", num(followSeconds));
+            f.put("pts", vec(followPoints));
+            map.put("follow", f);
+        }
         if (hoverScale != null) map.put("hovScale", num(hoverScale));
         if (clickHandlerId != null) map.put("click", clickHandlerId);
         if (clickActionId != null) map.put("clickAct", clickActionId);

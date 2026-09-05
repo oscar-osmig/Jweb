@@ -24,11 +24,18 @@ import java.util.Map;
  * <em>current</em> target's changes over that many milliseconds (position,
  * rotation, scale, colors, opacity); without it they apply instantly.
  * Angles are degrees, like everywhere in the DSL.</p>
+ *
+ * <p>The scene's structure changes the same way: {@link #add}, {@link #addTo},
+ * {@link #remove} and {@link #replace} build or dispose whole nodes in place.
+ * Removes always apply before additions, and property patches after both —
+ * so one patch can add a named node and tween it.</p>
  */
 public final class ThreePatch {
 
     private final String sceneId;
     private final List<Map<String, Object>> nodes = new ArrayList<>();
+    private final List<Map<String, Object>> adds = new ArrayList<>();
+    private final List<String> removes = new ArrayList<>();
     private Map<String, Object> camera;
     private Map<String, Object> current;
 
@@ -144,6 +151,72 @@ public final class ThreePatch {
         return this;
     }
 
+    // ==================== Structure ====================
+
+    /**
+     * Adds nodes to the live scene's root — built exactly as they would be
+     * in {@code scene(...)}, presets, clicks and all. Give them a
+     * {@code .name(...)} to patch or remove them later.
+     *
+     * <pre>{@code
+     * Three.patch("hall").add(sphere(0.3).name("orb").emissive("#5FA98A").appear(400))
+     * }</pre>
+     */
+    public ThreePatch add(ThreeNode<?>... nodes) {
+        for (ThreeNode<?> node : nodes) {
+            if (node != null) adds.add(entry(null, null, node.toMap()));
+        }
+        current = null;
+        return this;
+    }
+
+    /** Adds nodes inside the named group, sharing its transform and presets. */
+    public ThreePatch addTo(String groupName, ThreeNode<?>... nodes) {
+        if (groupName == null || groupName.isBlank()) {
+            throw new IllegalArgumentException("addTo(groupName, ...): the group name is blank");
+        }
+        for (ThreeNode<?> node : nodes) {
+            if (node != null) adds.add(entry(groupName, null, node.toMap()));
+        }
+        current = null;
+        return this;
+    }
+
+    /** Removes the named nodes (and everything under them), releasing their GPU resources. */
+    public ThreePatch remove(String... names) {
+        for (String name : names) {
+            if (name != null && !name.isBlank()) removes.add(name);
+        }
+        current = null;
+        return this;
+    }
+
+    /**
+     * Swaps the named node for a new one in the same parent. The new node
+     * inherits the old name unless it carries its own, so a later
+     * {@code replace} or {@code node(...)} finds it again.
+     */
+    public ThreePatch replace(String name, ThreeNode<?> node) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("replace(name, node): the name is blank");
+        }
+        if (node == null) throw new IllegalArgumentException("replace(name, node): the node is null");
+        Map<String, Object> map = node.toMap();
+        if (map.get("name") == null) map.put("name", name);
+        removes.add(name);
+        adds.add(entry(null, name, map));
+        current = null;
+        return this;
+    }
+
+    private static Map<String, Object> entry(String into, String replaces, Map<String, Object> node) {
+        Map<String, Object> e = new LinkedHashMap<>();
+        if (into != null) e.put("into", into);
+        if (replaces != null) e.put("replaces", replaces);
+        e.put("node", node);
+        return e;
+    }
+
     // ==================== Delivery (framework-internal) ====================
 
     /** The target scene element's id. */
@@ -159,5 +232,19 @@ public final class ThreePatch {
     /** The camera update, serialized — or null if untouched. */
     public Map<String, Object> cameraMap() {
         return camera;
+    }
+
+    /**
+     * Nodes to build into the live scene, in order: each entry is
+     * {@code {node: {...}}} plus {@code into: groupName} or
+     * {@code replaces: oldName} for the parent. Empty if none.
+     */
+    public List<Map<String, Object>> addMaps() {
+        return adds;
+    }
+
+    /** Names of nodes to remove — applied before any additions. Empty if none. */
+    public List<String> removeNames() {
+        return removes;
     }
 }

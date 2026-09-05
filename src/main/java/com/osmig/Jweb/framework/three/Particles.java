@@ -30,6 +30,7 @@ public class Particles extends ThreeNode<Particles> {
     private Double fall;
     private Double opacity;
     private Integer seed;
+    private String[] colors;
 
     Particles(int count) {
         if (count < 1) throw new IllegalArgumentException("particles() needs a positive count");
@@ -46,6 +47,33 @@ public class Particles extends ThreeNode<Particles> {
     public Particles color(jweb.CSSValue color) {
         this.color = color.css();
         return this;
+    }
+
+    /**
+     * A palette: each particle takes one of the colors, picked with the same
+     * seeded arrangement as its position — embers in three oranges, confetti.
+     * Overrides {@link #color}.
+     */
+    public Particles colors(String first, String... more) {
+        String[] all = new String[1 + (more == null ? 0 : more.length)];
+        all[0] = first;
+        if (more != null) System.arraycopy(more, 0, all, 1, more.length);
+        for (String c : all) {
+            if (c == null || c.isBlank()) throw new IllegalArgumentException("colors(): a color is blank");
+        }
+        this.colors = all;
+        return this;
+    }
+
+    /** A palette from typed CSS values. */
+    public Particles colors(jweb.CSSValue first, jweb.CSSValue... more) {
+        if (first == null) throw new IllegalArgumentException("colors(): a color is null");
+        String[] rest = new String[more == null ? 0 : more.length];
+        for (int i = 0; i < rest.length; i++) {
+            if (more[i] == null) throw new IllegalArgumentException("colors(): a color is null");
+            rest[i] = more[i].css();
+        }
+        return colors(first.css(), rest);
     }
 
     /** Point size in scene units (shrinks with distance). Default: 0.05. */
@@ -98,6 +126,7 @@ public class Particles extends ThreeNode<Particles> {
     protected void fill(Map<String, Object> map) {
         map.put("count", count);
         if (color != null) map.put("color", color);
+        if (colors != null) map.put("colors", java.util.List.of(colors));
         if (size != null) map.put("size", num(size));
         if (spread != null) map.put("spread", vec(spread));
         if (drift != null) map.put("drift", num(drift));

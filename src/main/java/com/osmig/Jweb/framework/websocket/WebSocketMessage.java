@@ -415,6 +415,8 @@ public final class WebSocketMessage {
         private String scene;
         private List<Map<String, Object>> nodes;
         private Map<String, Object> camera;
+        private List<Map<String, Object>> add;
+        private List<String> remove;
 
         public ThreePatchResponse() {
             setType("threePatch");
@@ -422,10 +424,38 @@ public final class WebSocketMessage {
 
         public ThreePatchResponse(String scene, List<Map<String, Object>> nodes,
                                   Map<String, Object> camera) {
+            this(scene, nodes, camera, null, null);
+        }
+
+        /**
+         * @param add    nodes to build into the live scene ({@code {into?, replaces?, node}} entries)
+         * @param remove names of nodes to remove, applied before {@code add}
+         */
+        public ThreePatchResponse(String scene, List<Map<String, Object>> nodes,
+                                  Map<String, Object> camera,
+                                  List<Map<String, Object>> add, List<String> remove) {
             this();
             this.scene = scene;
             this.nodes = (nodes == null || nodes.isEmpty()) ? null : nodes;
             this.camera = camera;
+            this.add = (add == null || add.isEmpty()) ? null : add;
+            this.remove = (remove == null || remove.isEmpty()) ? null : remove;
+        }
+
+        public List<Map<String, Object>> getAdd() {
+            return add;
+        }
+
+        public void setAdd(List<Map<String, Object>> add) {
+            this.add = add;
+        }
+
+        public List<String> getRemove() {
+            return remove;
+        }
+
+        public void setRemove(List<String> remove) {
+            this.remove = remove;
         }
 
         public String getScene() {
