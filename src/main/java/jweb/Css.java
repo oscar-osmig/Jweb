@@ -3,6 +3,7 @@ package jweb;
 import com.osmig.Jweb.framework.styles.Keyframes;
 import com.osmig.Jweb.framework.styles.MediaQuery;
 import com.osmig.Jweb.framework.styles.Stylesheet;
+import com.osmig.Jweb.framework.styles.ViewTransitions;
 
 /**
  * The CSS DSL — properties, units, colors, grid, animations, and variables
@@ -79,4 +80,13 @@ public class Css extends com.osmig.Jweb.framework.styles.CSS {
 
     /** Starts a stylesheet: {@code stylesheet().add(".card", style()...)} */
     public static Stylesheet stylesheet() { return Stylesheet.stylesheet(); }
+
+    // ==================== View Transitions ====================
+
+    /**
+     * Opts this document into cross-document View Transitions:
+     * {@code stylesheet().add(viewTransitions())} emits
+     * {@code @view-transition{navigation:auto}}.
+     */
+    public static ViewTransitions viewTransitions() { return ViewTransitions.viewTransitions(); }
 }

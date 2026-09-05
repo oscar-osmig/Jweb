@@ -234,6 +234,12 @@ public class Stylesheet {
         return this;
     }
 
+    /** Adds a {@code @view-transition} block. */
+    public Stylesheet add(ViewTransitions viewTransitions) {
+        rules.add(viewTransitions.build());
+        return this;
+    }
+
     /** Adds a plain rule. */
     public Stylesheet add(Rule rule) {
         rules.add(rule.build());

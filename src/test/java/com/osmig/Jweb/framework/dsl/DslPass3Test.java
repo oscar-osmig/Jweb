@@ -100,6 +100,10 @@ class DslPass3Test {
 
         String any = div(on("pointerdown", e -> {}), "x").toHtml();
         assertTrue(any.contains("onpointerdown"), any);
+
+        // onDblClick is an element argument the same way onClick is.
+        String dbl = button(onDblClick(e -> {}), "Zoom").toHtml();
+        assertTrue(dbl.contains("ondblclick"), dbl);
     }
 
     @Test

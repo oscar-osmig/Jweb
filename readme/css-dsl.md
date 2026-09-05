@@ -131,6 +131,30 @@ style().display("flex").cursor("copy").margin("0 auto")
 
 `prop(name, value)` remains the escape hatch for anything with no method at all. (It is no
 longer deprecated; `unsafeProp` is, since there was never anything unsafe about it.)
+`property(name, value)` is the same call under a more discoverable name — reach for it as
+the last resort for a vendor-prefixed or brand-new property; `var(name, value)` is only for
+custom properties (`--name`).
+
+### SVG presentation properties
+
+`fill`, `stroke`, `strokeWidth`, `strokeDasharray`, `strokeDashoffset`, `strokeLinecap`,
+`strokeLinejoin` and `transformBox` are CSS properties, distinct from the same-named
+`fill(...)`/`stroke(...)` **attributes** (`Attr`/`HtmlAttributes`) — as properties they can
+live in a stylesheet, respond to `:hover`, and participate in transitions:
+
+```java
+rule("path.route")
+    .fill("none").stroke(hex("#6366f1")).strokeWidth(px(2))
+    .strokeLinecap("round").strokeLinejoin("round")
+    .strokeDasharray("240").strokeDashoffset("240")
+    .transition("stroke-dashoffset 1.2s ease-out")
+
+rule("path.route.drawn").strokeDashoffset("0")   // add/remove the class to animate the draw-in
+```
+
+Also new: `font("italic bold 14px/1.5 Georgia, serif")` (the `font` shorthand), `justifySelf`,
+`textRendering`, and the legacy `clip("rect(0, 0, 0, 0)")` — still the standard
+`position(absolute).clip(...).overflow("hidden")` screen-reader-only pattern.
 
 ### Bare styles as element arguments
 
@@ -327,6 +351,11 @@ keyframes("fadeIn")
     .build();
 keyframes("pulse").at(0, style().opacity(1)).at(50, style().opacity(0.5)).at(100, style().opacity(1))
 // 12 presets: fadeIn/fadeOut/slideIn*/pulse/bounce/shake/spin/zoomIn/zoomOut
+
+// @view-transition — opts this document into cross-document View Transitions
+// (a plain navigation, not the SPA-style Navigation.startViewTransition()).
+// Without it, ::view-transition-* rules never fire on a full page navigation.
+stylesheet().add(viewTransitions())     // @view-transition{navigation:auto}
 ```
 
 ## Selectors

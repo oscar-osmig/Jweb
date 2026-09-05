@@ -326,4 +326,68 @@ class CssDslSimplificationTest {
         assertEquals(".btn { display: inline-flex; padding: 8px 16px; cursor: pointer; }",
             rule(".btn").display("inline-flex").padding("8px 16px").cursor("pointer").toRule());
     }
+
+    // ==================== Museum-app audit gaps ====================
+
+    @Test
+    void svgPresentationPropertiesSerialize() {
+        assertEquals(
+            "fill: none; stroke: currentColor; stroke-width: 2px; stroke-dasharray: 240; "
+                + "stroke-dashoffset: 0; stroke-linecap: round; stroke-linejoin: round; "
+                + "transform-box: fill-box;",
+            style()
+                .fill("none")
+                .stroke("currentColor")
+                .strokeWidth(px(2))
+                .strokeDasharray("240")
+                .strokeDashoffset("0")
+                .strokeLinecap("round")
+                .strokeLinejoin("round")
+                .transformBox("fill-box")
+                .build());
+
+        // CSSValue overloads coexist with the String ones.
+        assertEquals("fill: #f00; stroke-width: 2px;",
+            style().fill(CSSColors.red).strokeWidth(px(2)).build());
+    }
+
+    @Test
+    void fontJustifySelfTextRenderingAndClipAreFirstClass() {
+        assertEquals("font: italic bold 14px/1.5 Georgia, serif;",
+            style().font("italic bold 14px/1.5 Georgia, serif").build());
+        assertEquals("justify-self: end;", style().justifySelf("end").build());
+        assertEquals("text-rendering: optimizeLegibility;",
+            style().textRendering("optimizeLegibility").build());
+        assertEquals("clip: rect(0, 0, 0, 0);", style().clip("rect(0, 0, 0, 0)").build());
+    }
+
+    /** The general escape hatch — distinct name from {@code prop}, same behavior. */
+    @Test
+    void propertyIsTheGeneralEscapeHatch() {
+        assertEquals(style().prop("interpolate-size", "allow-keywords").build(),
+            style().property("interpolate-size", "allow-keywords").build());
+        assertEquals("gap: 8px;", style().property("gap", px(8)).build());
+    }
+
+    /** backdropFilter must emit the -webkit- twin immediately before the unprefixed property. */
+    @Test
+    void backdropFilterEmitsTheWebkitTwinRightBeforeTheUnprefixedProperty() {
+        String css = style().backdropFilter("blur(10px)").build();
+        assertEquals("-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);", css);
+
+        // The typed (CSSValue...) overload already did this — String must match it.
+        String typed = style().backdropFilter(CSS.blur(px(10))).build();
+        assertEquals(css, typed);
+    }
+
+    /** The cross-document View Transitions opt-in at-rule. */
+    @Test
+    void viewTransitionsAtRuleSerializesExactly() {
+        assertEquals("@view-transition{navigation:auto}", ViewTransitions.viewTransitions().build());
+        assertEquals("@view-transition{navigation:none}",
+            ViewTransitions.viewTransitions().navigation("none").build());
+
+        String css = Stylesheet.stylesheet().add(ViewTransitions.viewTransitions()).build();
+        assertEquals("@view-transition{navigation:auto}", css);
+    }
 }

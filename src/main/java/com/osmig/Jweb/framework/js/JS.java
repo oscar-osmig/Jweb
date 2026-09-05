@@ -209,6 +209,31 @@ public class JS extends Events {
         return new Val("document.querySelectorAll('" + esc(selector) + "')");
     }
 
+    // ==================== Viewport & Media Queries ====================
+
+    /** {@code window.matchMedia(query)} — a live MediaQueryList for the given query. */
+    public static Val matchMedia(String query) {
+        return new Val("window.matchMedia('" + esc(query) + "')");
+    }
+
+    /**
+     * {@code window.matchMedia('(prefers-reduced-motion: reduce)').matches} —
+     * true when the user has asked the OS to minimize animation.
+     */
+    public static Val reducedMotion() {
+        return new Val("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+    }
+
+    /** {@code window.innerWidth} — the viewport width in CSS pixels. */
+    public static Val viewportWidth() {
+        return new Val("window.innerWidth");
+    }
+
+    /** {@code window.innerHeight} — the viewport height in CSS pixels. */
+    public static Val viewportHeight() {
+        return new Val("window.innerHeight");
+    }
+
     // ==================== Math ====================
 
     public static Val floor(Val val) { return new Val("Math.floor(" + val.code + ")"); }

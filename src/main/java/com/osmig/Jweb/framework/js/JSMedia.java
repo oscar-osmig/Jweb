@@ -771,9 +771,24 @@ public class JSMedia {
         return new Val(ctx.js() + ".state");
     }
 
+    /** Gets AudioContext state: {@code ctx.state} — short form of {@link #audioContextState(Val)}. */
+    public static Val audioState(Val ctx) {
+        return audioContextState(ctx);
+    }
+
     /** Resumes AudioContext: ctx.resume() */
     public static Val resumeAudioContext(Val ctx) {
         return new Val(ctx.js() + ".resume()");
+    }
+
+    /**
+     * Resumes AudioContext: {@code ctx.resume()} — short form of
+     * {@link #resumeAudioContext(Val)}. AudioContext starts "suspended"
+     * until a user gesture resumes it, so this typically runs from a
+     * click/keydown handler.
+     */
+    public static Val resume(Val ctx) {
+        return resumeAudioContext(ctx);
     }
 
     /** Suspends AudioContext: ctx.suspend() */
@@ -814,6 +829,16 @@ public class JSMedia {
     /** Creates DelayNode with max delay: ctx.createDelay(maxDelay) */
     public static Val createDelay(Val ctx, double maxDelayTime) {
         return new Val(ctx.js() + ".createDelay(" + maxDelayTime + ")");
+    }
+
+    /** Creates an empty AudioBuffer: ctx.createBuffer(channels, length, sampleRate) */
+    public static Val createBuffer(Val ctx, int channels, int length, int sampleRate) {
+        return new Val(ctx.js() + ".createBuffer(" + channels + "," + length + "," + sampleRate + ")");
+    }
+
+    /** Creates AudioBufferSourceNode: ctx.createBufferSource() */
+    public static Val createBufferSource(Val ctx) {
+        return new Val(ctx.js() + ".createBufferSource()");
     }
 
     /** Creates MediaElementSourceNode: ctx.createMediaElementSource(elem) */
@@ -894,5 +919,26 @@ public class JSMedia {
     /** Sets oscillator type: osc.type = type (sine, square, sawtooth, triangle) */
     public static Val setOscillatorType(Val osc, String type) {
         return new Val(osc.js() + ".type='" + JS.esc(type) + "'");
+    }
+
+    // ==================== Web Audio API (Parameter Scheduling) ====================
+    // These schedule an AudioParam (e.g. a gain or oscillator frequency node's
+    // .gain/.frequency, reached with .dot("gain")/.dot("frequency")) instead of
+    // stomping its .value — the way to build clickless volume ramps, envelopes,
+    // and other precisely-timed changes.
+
+    /** Schedules an exact value at a given time: param.setValueAtTime(value, time) */
+    public static Val setValueAtTime(Val param, double value, double time) {
+        return new Val(param.js() + ".setValueAtTime(" + value + "," + time + ")");
+    }
+
+    /** Ramps linearly to a value by a given time: param.linearRampToValueAtTime(value, time) */
+    public static Val linearRampToValueAtTime(Val param, double value, double time) {
+        return new Val(param.js() + ".linearRampToValueAtTime(" + value + "," + time + ")");
+    }
+
+    /** Ramps exponentially to a value by a given time: param.exponentialRampToValueAtTime(value, time) */
+    public static Val exponentialRampToValueAtTime(Val param, double value, double time) {
+        return new Val(param.js() + ".exponentialRampToValueAtTime(" + value + "," + time + ")");
     }
 }

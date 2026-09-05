@@ -271,6 +271,28 @@ class HtmlDslSimplificationTest {
         assertTrue(Button.submit("Go").toTag().addClass("btn").toHtml().contains("class=\"btn\""));
     }
 
+    @Test
+    void onDblClickRendersLikeOnClick() {
+        // Button previously had onClick but no double-click equivalent at all.
+        String handler = Button.of("Zoom").onDblClick(e -> { }).toHtml();
+        assertTrue(handler.contains("data-jweb-ondblclick=\"h_"),
+            "server handlers delegate via data attribute, same as onClick: " + handler);
+
+        String action = Button.of("Zoom")
+            .onDblClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();
+        assertTrue(action.contains("ondblclick="), "inline fallback outside a render context: " + action);
+        assertTrue(action.contains("reload"), action);
+
+        // Same two flavours reach the element handler attrs (attrs()/El facade),
+        // and onDblClick is an alias for the existing onDoubleClick verb.
+        String attrHtml = div(attrs().onDblClick(e -> { }), "x").toHtml();
+        assertTrue(attrHtml.contains("data-jweb-ondblclick=\"h_"), attrHtml);
+
+        String viaAlias = div(attrs().onDblClick(com.osmig.Jweb.framework.js.Actions.reload()), "x").toHtml();
+        String viaOriginal = div(attrs().onDoubleClick(com.osmig.Jweb.framework.js.Actions.reload()), "x").toHtml();
+        assertEquals(viaOriginal, viaAlias);
+    }
+
     // ==================== H10 — exact HTML attribute spelling ====================
 
     @Test

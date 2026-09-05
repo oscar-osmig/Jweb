@@ -801,6 +801,15 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
     default SELF onDoubleClick(Consumer<Event> handler) { return on("dblclick", handler); }
 
     /**
+     * Alias for {@link #onDoubleClick(Consumer)} matching the DOM event name
+     * ({@code dblclick}).
+     *
+     * @param handler the handler to execute on double-click
+     * @return this for chaining
+     */
+    default SELF onDblClick(Consumer<Event> handler) { return onDoubleClick(handler); }
+
+    /**
      * Registers a drag event handler.
      *
      * @param handler the handler to execute during drag
@@ -1066,6 +1075,9 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
 
     /** Sets a double-click handler using a JavaScript Action. @param action the action to execute on dblclick @return this for chaining */
     default SELF onDoubleClick(Action action) { return on("dblclick", action); }
+
+    /** Alias for {@link #onDoubleClick(Action)} matching the DOM event name ({@code dblclick}). @param action the action to execute on double-click @return this for chaining */
+    default SELF onDblClick(Action action) { return onDoubleClick(action); }
 
     /**
      * Sets any event handler using a JavaScript Action.

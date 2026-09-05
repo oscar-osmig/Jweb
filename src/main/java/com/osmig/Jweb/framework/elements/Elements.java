@@ -203,6 +203,8 @@ public class Elements {
     public static Attributes onContextMenu(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onContextMenu(handler); }
     public static Attributes onWheel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onWheel(handler); }
     public static Attributes onDoubleClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDoubleClick(handler); }
+    /** Alias for {@link #onDoubleClick(java.util.function.Consumer)} matching the DOM event name ({@code dblclick}). */
+    public static Attributes onDblClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDblClick(handler); }
     public static Attributes onDrag(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDrag(handler); }
     public static Attributes onDragStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragStart(handler); }
     public static Attributes onDragEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragEnd(handler); }
@@ -239,6 +241,8 @@ public class Elements {
     public static Attributes onMouseEnter(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onMouseEnter(action); }
     public static Attributes onMouseLeave(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onMouseLeave(action); }
     public static Attributes onDoubleClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onDoubleClick(action); }
+    /** Alias for {@link #onDoubleClick(com.osmig.Jweb.framework.js.Actions.Action)} matching the DOM event name ({@code dblclick}). */
+    public static Attributes onDblClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onDblClick(action); }
 
     // ==================== Server-Driven UI as Arguments ====================
 

@@ -145,6 +145,34 @@ rule(".overlay")
     .zIndex(1000)
 ```
 
+### SVG Presentation
+
+CSS properties, not attributes — they can live in a stylesheet, respond to `:hover`,
+and (unlike the `fill(...)`/`stroke(...)` attributes) participate in transitions:
+
+```java
+rule("path.route")
+    .fill("none")
+    .stroke("currentColor")
+    .strokeWidth(px(2))
+    .strokeLinecap("round")
+    .strokeLinejoin("round")
+    .strokeDasharray("240")
+    .strokeDashoffset("240")   // animate to "0" for the classic "line draw" effect
+    .transformBox("fill-box")  // so transform-origin pivots on the shape, not the SVG viewport
+```
+
+### Escape Hatch
+
+For anything with no typed method yet — vendor-prefixed, brand-new, or otherwise uncovered:
+
+```java
+rule(".card").property("interpolate-size", "allow-keywords")
+```
+
+`property(name, value)` is the general escape hatch (`var(name, value)` is only for
+`--custom-properties`).
+
 ## Media Queries
 
 ```java
@@ -190,6 +218,18 @@ String css = styles(
     rule(".fade-in")
         .animation("fadeIn 0.3s ease-out")
 );
+```
+
+## View Transitions
+
+Opt a document into cross-document View Transitions (a plain multi-page navigation,
+not the SPA-style `document.startViewTransition()`):
+
+```java
+import static com.osmig.Jweb.framework.styles.ViewTransitions.*;
+
+Stylesheet.stylesheet().add(viewTransitions())
+// @view-transition{navigation:auto}
 ```
 
 ## Pseudo-selectors
