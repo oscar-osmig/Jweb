@@ -45,7 +45,9 @@ public final class ThreeRuntime {
         return Integer.toHexString(SCRIPT.hashCode());
     }
 
-    private static final String SCRIPT = """
+    // The interpreter is three text blocks joined at class-init: as one block it
+    // would exceed the class-file limit for a single string constant (64KB).
+    private static final String PART1 = """
         (function(){
             if(window.JWebThree)return;
             if(!window.THREE){console.error('[JWeb] three-runtime loaded without THREE');return;}
@@ -702,6 +704,9 @@ public final class ThreeRuntime {
                 });
             }
 
+        """;
+
+    private static final String PART2 = """
             // ==================== Sound ====================
 
             function audioListener(inst){
@@ -1243,6 +1248,9 @@ public final class ThreeRuntime {
                 setWalk(inst,!inst.walk.active);
             },true);
 
+        """;
+
+    private static final String PART3 = """
             // ==================== Live patches ====================
 
             function startTween(inst,dur,step){
@@ -1744,4 +1752,6 @@ public final class ThreeRuntime {
             scan();
         })();
         """;
+
+    private static final String SCRIPT = String.join("\n", PART1, PART2, PART3);
 }
