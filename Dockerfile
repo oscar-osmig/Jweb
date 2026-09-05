@@ -11,18 +11,18 @@ COPY src/ src/
 # from src/. Leave them out of the build context and maven-resources quietly
 # copies nothing, the endpoint throws on the first missing guide, and the docs
 # page returns 500. That is exactly how it shipped once.
-COPY README.md dsl-simplification.md ./
+COPY README.md dsl-simplification.md dsl-simplification-3.md ./
 COPY readme/ readme/
 
 RUN ./mvnw package -DskipTests -B -Pdemo
 
 # The build skips tests, so DocsTellTest cannot catch a missing guide here.
 # Fail the image build rather than let the endpoint discover it in production.
-RUN for f in target/classes/readme/README.md \
-             target/classes/readme/dsl-simplification.md \
-             target/classes/readme/guides/html-dsl.md \
-             target/classes/readme/guides/known-issues.md; do \
-      test -s "$f" || { echo "ERROR: $f missing — documentation is not in the build context"; exit 1; }; \
+# The list comes from DocsTell itself: every "readme/..." path it serves must
+# be on the classpath, so a guide added there but not COPYed above fails here
+# instead of shipping a 500 (dsl-simplification-3.md did exactly that once).
+RUN for f in $(grep -o '"readme/[^"]*"' src/main/java/com/osmig/Jweb/app/docs/DocsTell.java | tr -d '"'); do \
+      test -s "target/classes/$f" || { echo "ERROR: target/classes/$f missing — documentation is not in the build context"; exit 1; }; \
     done
 
 # Runtime stage
