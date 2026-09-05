@@ -25,8 +25,8 @@ public class UserCard implements Template {
     }
 
     public Element render() {
-        return div(attrs().class_("user-card"),
-            img(attrs().src(user.getAvatar()).alt(user.getName())),
+        return div(class_("user-card"),
+            img(src(user.getAvatar()), alt(user.getName())),
             h3(user.getName()),
             when(showEmail, () -> p(user.getEmail())),
             when(user.isAdmin(), () -> badge("Admin"))
@@ -54,10 +54,10 @@ public class Button implements Template {
     public Button disabled() { disabled = true; return this; }
 
     public Element render() {
-        return button(attrs()
-            .class_("btn btn-" + variant + " btn-" + size)
-            .disabled(disabled),
-            text(text));
+        return button(
+            class_("btn btn-" + variant + " btn-" + size),
+            attrs().disabled(disabled),
+            text);
     }
 }
 

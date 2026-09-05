@@ -173,7 +173,7 @@ div(class_("container"),
 > ✅ The controller invokes all of these for page routes and for Templates returned from
 > Router handlers: `beforeRender(request)` runs before `render()`, `pageTitle()` overrides the
 > layout title and `<title>`, `metaDescription()`/`extraHead()` inject into the head,
-> `scripts()`/`onMount()`/`onUnmount()` inject before `</body>`, and
+> `scripts()`/`onMount()`/`onUnmount()` (each an `Action`) inject before `</body>`, and
 > `cacheable()`/`cacheDuration()` drive the Cache-Control header.
 
 ### Layouts

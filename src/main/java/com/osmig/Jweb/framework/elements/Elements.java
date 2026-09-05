@@ -52,14 +52,20 @@ import java.util.function.Function;
  *       ({@link Attr}, {@link Attributes}, a style builder) and children may be
  *       mixed freely in one call. There is no separate {@code (Attributes, ...)}
  *       overload family; it was redundant.</li>
- *   <li><b>A lone String argument is escaped text</b> — {@code a("Home")} renders
- *       {@code <a>Home</a>}, {@code label("Email:")} renders
- *       {@code <label>Email:</label>}. Attribute-first forms keep their meaning
- *       when there is more than one argument ({@code a("/home", "Home")}).
- *       The two void-element exceptions are {@code img(src)} and
- *       {@code img(src, alt)}: an {@code <img>} cannot contain text, so a
- *       String there can only be a URL.</li>
+ *   <li><b>A String argument is escaped text, wherever it appears</b> —
+ *       {@code a("Home")} renders {@code <a>Home</a>}, {@code a(href("/"), "Home")}
+ *       renders {@code <a href="/">Home</a>}, and {@code label(for_("email"), "Email:")}
+ *       sets the target. No element treats its first String as an attribute.
+ *       The exceptions are void elements, which cannot contain text, so their
+ *       Strings are their most common attributes: {@code img(src)},
+ *       {@code img(src, alt)}, {@code meta(name, content)}, {@code input(type, name)};
+ *       and the code-bearing {@code inlineScript(js)} / {@code style(css)}, whose
+ *       String is emitted verbatim.</li>
  * </ol>
+ *
+ * <p>Event handlers, the swap family, {@code ref} and state {@code bind} are
+ * plain arguments too, so {@code attrs()} is only needed for the long tail:
+ * {@code button(id("save"), onClick(e -> save()), style().padding(px(8)), "Save")}.</p>
  *
  * <p>This class provides factory methods for all standard HTML elements organized by category:</p>
  * <ul>
@@ -112,8 +118,9 @@ public class Elements {
     public static Attr id(String value) { return Attr.id(value); }
     /** Creates a class attribute. Named class_ to avoid Java keyword conflict. @param value the CSS class(es) */
     public static Attr class_(String value) { return Attr.class_(value); }
-    /** Creates an inline style attribute. @param value the CSS styles */
-    public static Attr style_(String value) { return Attr.style(value); }
+    // The style attribute is a bare style() builder argument (jweb.Css.style()), or
+    // attrs().style(...); the title attribute is attrs().title(...). Neither has a
+    // trailing-underscore shortcut: an underscore marks a Java keyword, nothing else.
     /** Creates an href attribute for links. @param value the URL */
     public static Attr href(String value) { return Attr.href(value); }
     /** Creates a src attribute for images/scripts. @param value the source URL */
@@ -134,8 +141,6 @@ public class Elements {
     public static Attr method(String value) { return Attr.method(value); }
     /** Creates a target attribute for links. @param value the target (e.g., "_blank") */
     public static Attr target(String value) { return Attr.target(value); }
-    /** Creates a title attribute. Named title_ to avoid conflict. @param value the title text */
-    public static Attr title_(String value) { return Attr.title(value); }
     /** Creates a for attribute for labels. Named for_ to avoid Java keyword. @param value the target element ID */
     public static Attr for_(String value) { return Attr.for_(value); }
     /** Creates a role attribute for ARIA. @param value the ARIA role */
@@ -162,6 +167,106 @@ public class Elements {
     public static Attr aria(String name, String value) { return Attr.aria(name, value); }
     /** Creates any custom attribute. @param name the attribute name @param value the value */
     public static Attr attr(String name, String value) { return Attr.attr(name, value); }
+
+    // ==================== Event Handlers as Arguments ====================
+    // Every handler that Attributes accepts is also a plain element argument,
+    // so a button with a server handler and a style needs no attrs() bridge:
+    //
+    //   button(id("save"), onClick(e -> save()), style().padding(px(8)), "Save")
+    //   button(onClick(toggle("panel")), "Menu")          // client-side Action
+    //   form(swapForm("/contact", "#status"), ...)        // progressive swap
+    //
+    // Server handlers (Consumer<Event>) travel over the WebSocket; Actions run in
+    // the browser. Both are CSP-safe — see HtmlAttributes.
+
+    /** A server-side handler for any event type: {@code on("pointerdown", e -> ...)}. */
+    public static Attributes on(String eventType, java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().on(eventType, handler); }
+    /** A client-side Action for any event type: {@code on("pointerdown", show("x"))}. */
+    public static Attributes on(String eventType, com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().on(eventType, action); }
+
+    public static Attributes onClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onClick(handler); }
+    public static Attributes onChange(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onChange(handler); }
+    public static Attributes onInput(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onInput(handler); }
+    public static Attributes onSubmit(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onSubmit(handler); }
+    public static Attributes onFocus(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onFocus(handler); }
+    public static Attributes onBlur(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onBlur(handler); }
+    public static Attributes onKeyDown(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onKeyDown(handler); }
+    public static Attributes onKeyUp(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onKeyUp(handler); }
+    public static Attributes onKeyPress(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onKeyPress(handler); }
+    public static Attributes onMouseEnter(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseEnter(handler); }
+    public static Attributes onMouseLeave(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseLeave(handler); }
+    public static Attributes onMouseDown(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseDown(handler); }
+    public static Attributes onMouseUp(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseUp(handler); }
+    public static Attributes onMouseMove(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseMove(handler); }
+    public static Attributes onMouseOver(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseOver(handler); }
+    public static Attributes onMouseOut(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseOut(handler); }
+    public static Attributes onContextMenu(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onContextMenu(handler); }
+    public static Attributes onWheel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onWheel(handler); }
+    public static Attributes onDoubleClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDoubleClick(handler); }
+    public static Attributes onDrag(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDrag(handler); }
+    public static Attributes onDragStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragStart(handler); }
+    public static Attributes onDragEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragEnd(handler); }
+    public static Attributes onDragEnter(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragEnter(handler); }
+    public static Attributes onDragLeave(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragLeave(handler); }
+    public static Attributes onDragOver(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragOver(handler); }
+    public static Attributes onDrop(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDrop(handler); }
+    public static Attributes onTouchStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchStart(handler); }
+    public static Attributes onTouchMove(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchMove(handler); }
+    public static Attributes onTouchEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchEnd(handler); }
+    public static Attributes onTouchCancel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchCancel(handler); }
+    public static Attributes onScroll(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onScroll(handler); }
+    public static Attributes onToggle(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onToggle(handler); }
+    public static Attributes onCancel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onCancel(handler); }
+    public static Attributes onClose(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onClose(handler); }
+    public static Attributes onAnimationStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onAnimationStart(handler); }
+    public static Attributes onAnimationEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onAnimationEnd(handler); }
+    public static Attributes onAnimationIteration(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onAnimationIteration(handler); }
+    public static Attributes onTransitionEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTransitionEnd(handler); }
+    public static Attributes onLoad(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onLoad(handler); }
+    public static Attributes onError(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onError(handler); }
+    public static Attributes onCopy(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onCopy(handler); }
+    public static Attributes onCut(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onCut(handler); }
+    public static Attributes onPaste(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onPaste(handler); }
+
+    public static Attributes onClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onClick(action); }
+    public static Attributes onChange(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onChange(action); }
+    public static Attributes onInput(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onInput(action); }
+    public static Attributes onSubmit(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onSubmit(action); }
+    public static Attributes onFocus(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onFocus(action); }
+    public static Attributes onBlur(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onBlur(action); }
+    public static Attributes onKeyDown(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onKeyDown(action); }
+    public static Attributes onKeyUp(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onKeyUp(action); }
+    public static Attributes onMouseEnter(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onMouseEnter(action); }
+    public static Attributes onMouseLeave(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onMouseLeave(action); }
+    public static Attributes onDoubleClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onDoubleClick(action); }
+
+    // ==================== Server-Driven UI as Arguments ====================
+
+    /** Fetch {@code url} on click and replace {@code targetSelector}'s content with the fragment. */
+    public static Attributes swap(String url, String targetSelector) { return attrs().swap(url, targetSelector); }
+    /** Like {@link #swap} but replaces the target element itself. */
+    public static Attributes swapOuter(String url, String targetSelector) { return attrs().swapOuter(url, targetSelector); }
+    /** Like {@link #swap} but morphs the target in place, preserving focus and state. */
+    public static Attributes swapMorph(String url, String targetSelector) { return attrs().swapMorph(url, targetSelector); }
+    /** Submit the form to {@code actionUrl} and swap the response into {@code targetSelector}. */
+    public static Attributes swapForm(String actionUrl, String targetSelector) { return attrs().swapForm(actionUrl, targetSelector); }
+    /** Push {@code browserUrl} into history when the swap completes. */
+    public static Attributes swapPush(String browserUrl) { return attrs().swapPush(browserUrl); }
+    /** Give the element the ref's id, so the ref's Actions can target it. */
+    public static Attributes ref(com.osmig.Jweb.framework.ref.Ref ref) { return attrs().ref(ref); }
+
+    /**
+     * Bind an element's text to reactive state — the runtime patches it on
+     * every change: {@code span(bind(count), count.get())}.
+     */
+    public static Attributes bind(com.osmig.Jweb.framework.state.State<?> state) {
+        return com.osmig.Jweb.framework.state.StateBinding.bind(state);
+    }
+
+    /** Bind an input's value to reactive state, both ways. */
+    public static Attributes bindInput(com.osmig.Jweb.framework.state.State<?> state) {
+        return com.osmig.Jweb.framework.state.StateBinding.bindInput(state);
+    }
 
     // ==================== Document Structure ====================
 
@@ -249,9 +354,8 @@ public class Elements {
     public static Tag sup(Object... children) { return tag("sup", children); }
     public static Tag code(Object... children) { return tag("code", children); }
     public static Tag pre(Object... children) { return tag("pre", children); }
+    /** {@code blockquote("Quote")}; for a source URL: {@code blockquote(attr("cite", url), "Quote")}. */
     public static Tag blockquote(Object... children) { return tag("blockquote", children); }
-    /** {@code blockquote("Quote")} renders {@code <blockquote>Quote</blockquote>}. For a source URL use {@code blockquote(attr("cite", url), text(...))}. */
-    public static Tag blockquote(String text) { return tag("blockquote", TextElement.of(text)); }
     public static Tag hr(Object... attrs) { return tag("hr", attrs); }
     public static Tag br() { return tag("br"); }
     public static Tag abbr(Object... children) { return tag("abbr", children); }
@@ -259,15 +363,15 @@ public class Elements {
     public static Tag cite(Object... children) { return tag("cite", children); }
     public static Tag kbd(Object... children) { return tag("kbd", children); }
     public static Tag samp(Object... children) { return tag("samp", children); }
-    public static Tag var_(Object... children) { return tag("var", children); }
+    // <var> and <data> have no shortcut: var(...) is the CSS DSL's custom-property
+    // reference and data(name, value) is the data-* attribute. Use tag("var", ...)
+    // and tag("data", value("..."), "text") for the elements.
     public static Tag time(Object... children) { return tag("time", children); }
-    public static Tag data_(Object... children) { return tag("data", children); }
     public static Tag wbr() { return tag("wbr"); }
     public static Tag bdi(Object... children) { return tag("bdi", children); }
     public static Tag bdo(Object... children) { return tag("bdo", children); }
+    /** {@code q("Hello")}; for a source URL: {@code q(attr("cite", url), "Hello")}. */
     public static Tag q(Object... children) { return tag("q", children); }
-    /** {@code q("Hello")} renders {@code <q>Hello</q>}. For a source URL use {@code q(attr("cite", url), text(...))}. */
-    public static Tag q(String text) { return tag("q", TextElement.of(text)); }
     public static Tag dfn(Object... children) { return tag("dfn", children); }
     public static Tag ruby(Object... children) { return tag("ruby", children); }
     public static Tag rt(Object... children) { return tag("rt", children); }
@@ -283,13 +387,13 @@ public class Elements {
 
     // ==================== Links ====================
 
-    /** {@code a("Home")} renders {@code <a>Home</a>} — a lone String is text. */
-    public static Tag a(String text) { return tag("a", TextElement.of(text)); }
-    /** {@code a("/home", "Home")} renders {@code <a href="/home">Home</a>}. */
-    public static Tag a(String href, Object... children) {
-        return tag("a", new Attributes().href(href), children);
-    }
-    /** {@code a(href("/home"), class_("nav"), text("Home"))}. */
+    /**
+     * {@code a(href("/home"), "Home")} renders {@code <a href="/home">Home</a>};
+     * {@code a("Home")} renders {@code <a>Home</a>}. A String is always text —
+     * the old {@code a(href, text)} form that read the first String as the URL
+     * is gone, so {@code a("Hello ", strong("world"))} can no longer silently
+     * become a link to "Hello ".
+     */
     public static Tag a(Object... children) { return tag("a", children); }
 
     // ==================== Lists ====================
@@ -321,40 +425,34 @@ public class Elements {
     public static Tag input(String type, String name) {
         return tag("input", new Attributes().type(type).name(name));
     }
+    /** {@code textarea(name("bio"), "Hello")} — the String is the initial text. */
     public static Tag textarea(Object... items) { return tag("textarea", items); }
-    /** {@code textarea("Hello")} renders {@code <textarea>Hello</textarea>}. For the name use {@code textarea(name("bio"))}. */
-    public static Tag textarea(String text) { return tag("textarea", TextElement.of(text)); }
     public static Tag select(Object... children) { return tag("select", children); }
+    /**
+     * {@code option(value("us"), "United States")}. A lone {@code option("Chrome")}
+     * is text, which the browser also uses as the value — the same result the old
+     * {@code option(valueAndText)} produced.
+     */
     public static Tag option(Object... children) { return tag("option", children); }
-    public static Tag option(String value, String text) {
-        return tag("option", new Attributes().value(value), text);
-    }
+    /** {@code optgroup(attr("label", "Cars"), option(...), ...)}. */
     public static Tag optgroup(Object... children) { return tag("optgroup", children); }
-    /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. For the label use {@code optgroup(attr("label", "Cars"), ...)}. */
-    public static Tag optgroup(String text) { return tag("optgroup", TextElement.of(text)); }
+    /** {@code label(for_("email"), "Email:")}; {@code label("Email:")} is just text. */
     public static Tag label(Object... children) { return tag("label", children); }
-    /** {@code label("Email:")} renders {@code <label>Email:</label>}. For the target use {@code label(for_("email"), text(...))}. */
-    public static Tag label(String text) { return tag("label", TextElement.of(text)); }
-    /** {@code label("email", "Email:")} renders {@code <label for="email">Email:</label>}. */
-    public static Tag label(String forId, Object... children) {
-        return tag("label", new Attributes().for_(forId), children);
-    }
     public static Tag button(Object... children) { return tag("button", children); }
     public static Tag fieldset(Object... children) { return tag("fieldset", children); }
     public static Tag legend(Object... children) { return tag("legend", children); }
     public static Tag progress(Object... attrs) { return tag("progress", attrs); }
     public static Tag meter(Object... attrs) { return tag("meter", attrs); }
     public static Tag output(Object... children) { return tag("output", children); }
+    /** {@code datalist(id("browsers"), option("Chrome"), ...)}. */
     public static Tag datalist(Object... children) { return tag("datalist", children); }
-    /** {@code datalist("Browsers")} renders {@code <datalist>Browsers</datalist>}. For the id use {@code datalist(id("browsers"), ...)}. */
-    public static Tag datalist(String text) { return tag("datalist", TextElement.of(text)); }
 
     // ==================== Convenient Form Input Builders ====================
     // These provide concise shortcuts for common form inputs.
     // The full attrs() API remains available for complex cases.
     //
     // ID POLICY (uniform across every xxxInput helper): the input's id is set
-    // to its name, so label(name, "...") pairs with it out of the box. The one
+    // to its name, so label(for_(name), "...") pairs with it out of the box. The one
     // documented variation is radio(), whose id is "name-value" because a radio
     // group shares one name. hiddenInput() sets no id (nothing labels it).
     // Pass .id(...) via attrs() instead of the helper when you need another id.
@@ -597,35 +695,9 @@ public class Elements {
         return input(attrs().type("color").name(name).id(name).value(defaultColor));
     }
 
-    /**
-     * Creates a submit button with text.
-     *
-     * @deprecated Use {@code button(type("submit"), text)} instead.
-     */
-    @Deprecated
-    public static Tag submitButton(String text) {
-        return button(attrs().type("submit"), text);
-    }
-
-    /**
-     * Creates a submit button with attributes and text.
-     *
-     * @deprecated Use {@code button(attrs().type("submit")..., text)} instead.
-     */
-    @Deprecated
-    public static Tag submitButton(Attributes attrs, String text) {
-        return button(new Attributes(attrs.toMap()).type("submit"), text);
-    }
-
-    /**
-     * Creates a reset button with text.
-     *
-     * @deprecated Use {@code button(type("reset"), text)} instead.
-     */
-    @Deprecated
-    public static Tag resetButton(String text) {
-        return button(attrs().type("reset"), text);
-    }
+    // submitButton(text)/resetButton(text) are gone: button(type("submit"), text)
+    // is one argument longer, and the composite's name collided with the
+    // submitButton(...) helper nearly every app defines for itself.
 
     /**
      * Creates a labeled form field with label and input.
@@ -696,9 +768,6 @@ public class Elements {
     public static Tag noscript(Object... children) { return tag("noscript", children); }
     /** A {@code <template>} element. */
     public static Tag template(Object... children) { return tag("template", children); }
-    /** @deprecated Use {@link #template(Object...)} — {@code template} is not a Java keyword. */
-    @Deprecated
-    public static Tag template_(Object... children) { return tag("template", children); }
     public static Tag slot(Object... children) { return tag("slot", children); }
 
     // ==================== Text Helpers ====================
@@ -762,10 +831,10 @@ public class Elements {
      *
      * @param condition the initial condition to check
      * @return a Condition builder for chaining
-     * @deprecated Use {@code match(cond(a, ...), cond(b, ...), otherwise(...))} —
-     *             one of the two blessed conditional systems, alongside
-     *             {@code when(cond, element)}. The chain eagerly evaluates every
-     *             branch unless you remember to pass a Supplier.
+     * @deprecated One conditional shape: {@code when(cond, element)} /
+     *             {@code when(cond, () -> element)} — the same one the Three DSL
+     *             uses. For several branches, Java's own ternary and
+     *             {@code switch} expressions read better than a chain.
      */
     @Deprecated
     public static Condition when(boolean condition) {
@@ -775,7 +844,7 @@ public class Elements {
     /**
      * Conditionally renders one of two elements (lazy evaluation).
      *
-     * @deprecated Use {@code match(cond(c, ifTrue), otherwise(ifFalse))} instead.
+     * @deprecated Use a ternary: {@code condition ? ifTrue.get() : ifFalse.get()}.
      */
     @Deprecated
     public static Element ifElse(
@@ -914,7 +983,11 @@ public class Elements {
      *
      * @param cases the condition cases to evaluate
      * @return the element from the first matching condition
+     * @deprecated The DSL keeps one conditional shape — {@code when(cond, element)}.
+     *             A multi-way choice is what Java's {@code switch} expression is
+     *             for: {@code switch (role) { case ADMIN -> adminPanel(); ... }}.
      */
+    @Deprecated
     public static Element match(CondCase... cases) {
         for (CondCase c : cases) {
             if (c.matches()) {
@@ -930,7 +1003,9 @@ public class Elements {
      * @param condition the condition to check
      * @param element the element to render if condition is true
      * @return a CondCase
+     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
      */
+    @Deprecated
     public static CondCase cond(boolean condition, jweb.Element element) {
         return new CondCase(condition, element);
     }
@@ -941,7 +1016,9 @@ public class Elements {
      * @param condition the condition to check
      * @param element supplier for the element to render
      * @return a CondCase
+     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
      */
+    @Deprecated
     public static CondCase cond(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
         return new CondCase(condition, condition ? element.get() : null);
     }
@@ -951,7 +1028,9 @@ public class Elements {
      *
      * @param element the fallback element
      * @return a CondCase that always matches
+     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
      */
+    @Deprecated
     public static CondCase otherwise(jweb.Element element) {
         return new CondCase(true, element);
     }
@@ -961,14 +1040,18 @@ public class Elements {
      *
      * @param element supplier for the fallback element
      * @return a CondCase that always matches
+     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
      */
+    @Deprecated
     public static CondCase otherwise(java.util.function.Supplier<? extends jweb.Element> element) {
         return new CondCase(true, element.get());
     }
 
     /**
      * Represents a condition-element pair for pattern matching.
+     * @deprecated Part of the deprecated {@link #match(CondCase...)}.
      */
+    @Deprecated
     public record CondCase(boolean matches, jweb.Element element) {}
 
     // ==================== Generic Tag Factory ====================

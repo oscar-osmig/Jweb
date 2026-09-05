@@ -116,84 +116,13 @@ public class CSS extends CSSUnits {
     }
 
     // ==================== Selector Builder ====================
-
-    /**
-     * Starts building a CSS selector from scratch.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * select().tag("div").cls("container").hover()
-     * // Output: div.container:hover
-     * </pre>
-     *
-     * @return a new Selector builder instance
-     */
-    public static Selector select() {
-        return new Selector();
-    }
-
-    /**
-     * Creates a universal selector (*) that matches all elements.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * rule(all()).boxSizing(borderBox)
-     * // Output: * { box-sizing: border-box; }
-     * </pre>
-     *
-     * @return a Selector starting with the universal selector
-     */
-    public static Selector all() {
-        return new Selector().all();
-    }
-
-    /**
-     * Creates an element/tag type selector.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * rule(tag("button")).cursor(pointer)
-     * // Output: button { cursor: pointer; }
-     * </pre>
-     *
-     * @param tagName the HTML tag name (e.g., "div", "button", "p")
-     * @return a Selector starting with the tag selector
-     */
-    public static Selector tag(String tagName) {
-        return new Selector().tag(tagName);
-    }
-
-    /**
-     * Creates a class selector.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * rule(cls("btn").hover()).backgroundColor(darkBlue)
-     * // Output: .btn:hover { background-color: darkblue; }
-     * </pre>
-     *
-     * @param className the class name (without the leading dot)
-     * @return a Selector starting with the class selector
-     */
-    public static Selector cls(String className) {
-        return new Selector().cls(className);
-    }
-
-    /**
-     * Creates an ID selector.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * rule(id("header")).position(fixed)
-     * // Output: #header { position: fixed; }
-     * </pre>
-     *
-     * @param idName the element ID (without the leading hash)
-     * @return a Selector starting with the ID selector
-     */
-    public static Selector id(String idName) {
-        return new Selector().id(idName);
-    }
+    //
+    // The builder's static starters — select(), all(), tag(), cls(), id() —
+    // live in jweb.css.Selectors, not here. Their names are generic words that
+    // the HTML DSL also uses (id("x") is an attribute, tag(...) an element,
+    // select() a form control), so keeping them out of the Css facade is what
+    // lets `import static jweb.El.*` and `import static jweb.Css.*` coexist.
+    // A plain String selector always works: rule(".card:hover").
 
     /**
      * Fluent builder for constructing complex CSS selectors.

@@ -52,7 +52,7 @@ import java.util.List;
  *
  * // Create offer
  * createOffer(variable("pc"))
- *     .then(callback("offer").await_("", setLocalDescription(variable("pc"), variable("offer"))))
+ *     .then(callback("offer").await("", setLocalDescription(variable("pc"), variable("offer"))))
  *     .then(callback().call("sendToRemote", variable("pc").dot("localDescription")))
  *     .build()
  * </pre>

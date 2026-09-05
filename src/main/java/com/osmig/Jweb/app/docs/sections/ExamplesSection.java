@@ -17,8 +17,8 @@ State<Integer> count = useState(0);
 
 div(
     h1("Count: " + count.get()),
-    button(attrs().onClick(e -> count.update(c -> c + 1)), "+"),
-    button(attrs().onClick(e -> count.update(c -> c - 1)), "-")
+    button(onClick(e -> count.update(c -> c + 1)), "+"),
+    button(onClick(e -> count.update(c -> c - 1)), "-")
 )"""),
 
             docSubtitle("User Card"),
@@ -47,8 +47,8 @@ table(
         td(user.getName()),
         td(user.getEmail()),
         td(
-            button(attrs().onClick(call("editUser", String.valueOf(user.getId()))), "Edit"),
-            button(attrs().onClick(call("deleteUser", String.valueOf(user.getId()))), "Delete")
+            button(onClick(call("editUser", String.valueOf(user.getId()))), "Edit"),
+            button(onClick(call("deleteUser", String.valueOf(user.getId()))), "Delete")
         )
     )))
 )"""),

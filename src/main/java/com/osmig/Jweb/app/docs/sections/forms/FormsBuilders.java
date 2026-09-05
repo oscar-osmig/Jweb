@@ -54,38 +54,38 @@ Input.checkbox("newsletter").checked()
 
 // Radio group — same name, different values
 div(
-    label(for_("size-s"), text("Small")),
+    label(for_("size-s"), "Small"),
     Input.radio("size", "s").id("size-s"),
-    label(for_("size-m"), text("Medium")),
+    label(for_("size-m"), "Medium"),
     Input.radio("size", "m").id("size-m").checked(),
-    label(for_("size-l"), text("Large")),
+    label(for_("size-l"), "Large"),
     Input.radio("size", "l").id("size-l")
 )"""),
 
             h3Title("Select Dropdown"),
             codeBlock("""
 // Labeled select
-field("Country", select(attrs().name("country").id("country"),
-    option("us", "United States"),
-    option("uk", "United Kingdom"),
-    option("ca", "Canada")
+field("Country", select(name("country"), id("country"),
+    option(value("us"), "United States"),
+    option(value("uk"), "United Kingdom"),
+    option(value("ca"), "Canada")
 ))
 
 // With groups
-select(attrs().name("car"),
-    optgroup("Swedish Cars",
-        option("volvo", "Volvo"),
-        option("saab", "Saab")
+select(name("car"),
+    optgroup(attr("label", "Swedish Cars"),
+        option(value("volvo"), "Volvo"),
+        option(value("saab"), "Saab")
     ),
-    optgroup("German Cars",
-        option("mercedes", "Mercedes"),
-        option("audi", "Audi")
+    optgroup(attr("label", "German Cars"),
+        option(value("mercedes"), "Mercedes"),
+        option(value("audi"), "Audi")
     )
 )
 
 // Multi-select
-select(attrs().name("skills").multiple(),
-    each(skillsList, s -> option(s, s))
+select(name("skills"), attrs().multiple(),
+    each(skillsList, s -> option(value(s), s))
 )"""),
 
             docTip("Input builders automatically generate IDs and wire up labels for accessibility.")

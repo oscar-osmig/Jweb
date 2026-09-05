@@ -226,22 +226,22 @@ public class JSOperators {
     }
 
     /** In operator: prop in obj */
-    public static Val in_(String prop, Val obj) {
+    public static Val in(String prop, Val obj) {
         return new Val("('" + JS.esc(prop) + "' in " + obj.js() + ")");
     }
 
     /** In operator: prop in obj (dynamic key) */
-    public static Val in_(Val prop, Val obj) {
+    public static Val in(Val prop, Val obj) {
         return new Val("(" + prop.js() + " in " + obj.js() + ")");
     }
 
     /** Delete operator: delete obj.prop */
-    public static Val delete_(Val obj, String prop) {
+    public static Val delete(Val obj, String prop) {
         return new Val("delete " + obj.js() + "." + prop);
     }
 
     /** Delete operator: delete obj[key] */
-    public static Val delete_(Val obj, Val key) {
+    public static Val delete(Val obj, Val key) {
         return new Val("delete " + obj.js() + "[" + key.js() + "]");
     }
 

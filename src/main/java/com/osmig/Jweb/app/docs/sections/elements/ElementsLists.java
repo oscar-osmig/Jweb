@@ -49,7 +49,7 @@ List<User> users = userService.findAll();
 ul(each(users, user ->
     li(
         strong(user.getName()),
-        text(" - "),
+        " - ",
         span(user.getEmail())
     )
 ))""")

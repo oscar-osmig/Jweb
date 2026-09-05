@@ -103,7 +103,7 @@ public final class ThreeSection {
                         torusKnot()
                             .hoverScale(1.1)              // grows while hovered
                             .hoverEmissive("#4c1d95")     // glow highlight
-                            .onClick(Actions.toggle("info-panel"))"""),
+                            .onClick(toggle("info-panel"))"""),
 
                 docSubtitle("Environment & Model Animation"),
                 para("An equirectangular panorama lights the scene — sky(url) also " +
@@ -130,8 +130,8 @@ public final class ThreeSection {
                                   .walk(1.7).bounds(-8, -8, 8, 8).sway(),
                             ...).id("hall"),
 
-                        button(attrs().data("three-walk", "hall"),
-                            text("Walk here"))"""),
+                        button(data("three-walk", "hall"),
+                            "Walk here")"""),
 
                 docSubtitle("Live Patches"),
                 para("Three.patch updates named nodes in the rendered scene from a " +
@@ -170,7 +170,7 @@ public final class ThreeSection {
                 codeBlock("""
                         scene(bloom(),
                             sphere().emissive("#5FA98A"),        // now it glows
-                            plane(20, 20).rotation(-90, 0, 0)
+                            plane(20, 20).flat()
                                 .mirror().color("#4a443e"))"""),
 
                 docSubtitle("Scripting Interop"),

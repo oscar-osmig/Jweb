@@ -294,20 +294,9 @@ public class CSSGrid extends CSSColors {
         return () -> "span " + count;
     }
 
-    /**
-     * Creates a span value with a named line.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * style().gridColumn(span("sidebar"))  // grid-column: span sidebar
-     * </pre>
-     *
-     * @param lineName the name of the line to span to
-     * @return a CSSValue for the span
-     */
-    public static CSSValue span(String lineName) {
-        return () -> "span " + lineName;
-    }
+    // span(String lineName) — "span sidebar" for a named line — was removed: under the
+    // usual El.* + Css.* imports it captured span("text"), which is the <span> element
+    // nearly every time. Named-line spans: gridColumn("span sidebar").
 
     // ==================== Grid Template Areas ====================
 

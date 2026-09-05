@@ -27,13 +27,10 @@ app.post("/upload", req -> {
 
             h3Title("Upload Form"),
             codeBlock("""
-form(attrs()
-        .action("/upload")
-        .method("post")
-        .enctype("multipart/form-data"),
+form(action("/upload"), method("post"), attrs().enctype("multipart/form-data"),
 
-    input(attrs().type("file").name("document")),
-    button(attrs().type("submit"), "Upload")
+    input(type("file"), name("document")),
+    button(type("submit"), "Upload")
 )"""),
 
             h3Title("File Properties"),
@@ -76,7 +73,7 @@ FileUpload.validate(file)
             h3Title("Multiple Files"),
             codeBlock("""
 // HTML
-input(attrs().type("file").name("images").multiple().accept("image/*"))
+input(type("file"), name("images"), attrs().multiple().accept("image/*"))
 
 // Handler
 List<UploadedFile> images = FileUpload.getFiles(req, "images");

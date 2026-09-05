@@ -742,6 +742,27 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T animation(CSSValue name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction, CSSValue fillMode) {
         return prop("animation", name.css() + " " + duration.css() + " " + timing.css() + " " + delay.css() + " " + iterationCount.css() + " " + direction.css() + " " + fillMode.css());
     }
+
+    // The keyframes name is a plain String — no anim("...") wrapper needed:
+    //   style().animation("gradientShift", s(3), linear, s(0), infinite)
+    public T animation(String name, CSSValue duration) {
+        return prop("animation", name + " " + duration.css());
+    }
+    public T animation(String name, CSSValue duration, CSSValue timing) {
+        return animation(CSSValue.of(name), duration, timing);
+    }
+    public T animation(String name, CSSValue duration, CSSValue timing, CSSValue delay) {
+        return animation(CSSValue.of(name), duration, timing, delay);
+    }
+    public T animation(String name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount) {
+        return animation(CSSValue.of(name), duration, timing, delay, iterationCount);
+    }
+    public T animation(String name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction) {
+        return animation(CSSValue.of(name), duration, timing, delay, iterationCount, direction);
+    }
+    public T animation(String name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction, CSSValue fillMode) {
+        return animation(CSSValue.of(name), duration, timing, delay, iterationCount, direction, fillMode);
+    }
     public T animationName(CSSValue value) { return prop("animation-name", value); }
     public T animationDuration(CSSValue value) { return prop("animation-duration", value); }
     public T animationTimingFunction(CSSValue value) { return prop("animation-timing-function", value); }

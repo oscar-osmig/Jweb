@@ -27,9 +27,10 @@ div(
     when(hasNotifications, () -> notificationBadge(count))
 )"""),
 
-            h3Title("when().then().otherwise() - If/Else"),
-            para("Render different content for true and false conditions."),
-            codeBlock("""
+            before("v3.0.0",
+                h3Title("when().then().otherwise() - If/Else"),
+                para("Render different content for true and false conditions."),
+                codeBlock("""
 // If/else pattern
 when(isLoggedIn)
     .then(userMenu())
@@ -39,16 +40,16 @@ when(isLoggedIn)
 header(
     h1("My App"),
     nav(
-        a("/", "Home"),
+        a(href("/"), "Home"),
         when(isLoggedIn)
-            .then(a("/dashboard", "Dashboard"))
-            .otherwise(a("/login", "Sign In"))
+            .then(a(href("/dashboard"), "Dashboard"))
+            .otherwise(a(href("/login"), "Sign In"))
     )
 )"""),
 
-            h3Title("when().then().elif() - Multiple Conditions"),
-            para("Chain multiple conditions like if/else-if/else."),
-            codeBlock("""
+                h3Title("when().then().elif() - Multiple Conditions"),
+                para("Chain multiple conditions like if/else-if/else."),
+                codeBlock("""
 // Multiple conditions
 when(isAdmin)
     .then(adminPanel())
@@ -68,9 +69,9 @@ when(showPromo)
     .then(promoBanner())
     .end()"""),
 
-            h3Title("match() - Pattern Matching"),
-            para("Match against multiple conditions in a clean syntax."),
-            codeBlock("""
+                h3Title("match() - Pattern Matching"),
+                para("Match against multiple conditions in a clean syntax."),
+                codeBlock("""
 // Match pattern
 match(
     cond(isAdmin, adminPanel()),
@@ -86,7 +87,56 @@ div(
         cond(user.isVerified(), verifiedBadge()),
         otherwise(standardBadge())
     )
+)""")),
+
+            since("v3.0.0",
+                h3Title("Either/Or"),
+                para("Render different content for true and false conditions with a Java ternary."),
+                codeBlock("""
+// If/else pattern
+isLoggedIn ? userMenu() : loginButton()
+
+// In context
+header(
+    h1("My App"),
+    nav(
+        a(href("/"), "Home"),
+        isLoggedIn
+            ? a(href("/dashboard"), "Dashboard")
+            : a(href("/login"), "Sign In")
+    )
 )"""),
+
+                h3Title("Multi-Way Choices"),
+                para("One conditional shape — when(condition, element) — covers optional " +
+                     "content; Java's switch expression covers branching on a value. " +
+                     "There is no separate chain or match() to learn."),
+                codeBlock("""
+// Multiple conditions
+Element panel = switch (role) {
+    case ADMIN -> adminPanel();
+    case MODERATOR -> modPanel();
+    case USER -> userPanel();
+    default -> guestPanel();
+};
+
+// Status display
+Element status = switch (statusCode) {
+    case "success" -> successMessage();
+    case "warning" -> warningMessage();
+    case "error" -> errorMessage();
+    default -> infoMessage();
+};
+
+// Without a fallback, just skip rendering when false
+when(showPromo, () -> promoBanner())
+
+// User type display — arbitrary predicates read best as a ternary chain
+div(
+    user.isPremium() ? premiumBadge()
+        : user.isVerified() ? verifiedBadge()
+        : standardBadge()
+)""")),
 
             h3Title("Inline Ternary Conditions"),
             para("Java's native ternary operator works for simple inline conditions."),
@@ -100,7 +150,7 @@ div(hasError
     : span(class_("success"), "All good!"))
 
 // Styling
-div(attrs().class_(isDark ? "dark-theme" : "light-theme"))"""),
+div(class_(isDark ? "dark-theme" : "light-theme"))"""),
 
             h3Title("each() - Iteration"),
             para("Render a list of items."),
@@ -129,9 +179,9 @@ div(class_("user-list"),
 // With index (if needed)
 ul(
     each(IntStream.range(0, items.size()).boxed().toList(), i ->
-        li(attrs().data("index", String.valueOf(i)),
+        li(data("index", String.valueOf(i)),
             strong((i + 1) + ". "),
-            text(items.get(i))
+            items.get(i)
         )
     )
 )"""),
@@ -144,18 +194,16 @@ div(class_("dashboard"),
     // Header with conditional user display
     header(
         h1("Dashboard"),
-        when(currentUser != null)
-            .then(userDropdown(currentUser))
-            .otherwise(a("/login", "Sign In"))
+        currentUser != null ? userDropdown(currentUser) : a(href("/login"), "Sign In")
     ),
 
     // Main content with role-based rendering
     main(
-        match(
-            cond(isAdmin, adminContent()),
-            cond(isEditor, editorContent()),
-            otherwise(viewerContent())
-        )
+        switch (role) {
+            case ADMIN -> adminContent();
+            case EDITOR -> editorContent();
+            default -> viewerContent();
+        }
     ),
 
     // Conditional sidebar
@@ -163,7 +211,7 @@ div(class_("dashboard"),
         aside(
             h3("Quick Links"),
             each(quickLinks, link ->
-                a(link.getUrl(), link.getTitle())
+                a(href(link.getUrl()), link.getTitle())
             )
         )
     ),

@@ -6,6 +6,7 @@ import jweb.state.State;
 
 import static jweb.El.*;
 import static jweb.Css.*;
+import static jweb.Js.*;
 import static jweb.State.useState;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
@@ -17,11 +18,10 @@ public final class DemoStreamingPage {
     public static Element content() {
         return div(style().maxWidth(px(700)).margin(zero, auto)
                 .padding(clamp(rem(2), vw(6), rem(3)), GUTTER),
-            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
-                text("Streaming SSR")),
+            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT), "Streaming SSR"),
             p(style().marginTop(SP_2).color(TEXT_LIGHT),
-                text("This shell arrived instantly. The blocks below streamed in "
-                    + "when their data was ready — no JavaScript written.")),
+                "This shell arrived instantly. The blocks below streamed in "
+                    + "when their data was ready — no JavaScript written."),
             actionsBlock(),
             block("Fast query (400ms)", 400),
             block("Slow query (1200ms)", 1200),
@@ -38,25 +38,21 @@ public final class DemoStreamingPage {
     private static Element actionsBlock() {
         return div(style().marginTop(SP_6),
             h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
-                text("Client-only action (Actions DSL, CSP-safe)")),
-            button(attrs().id("toggle-details")
-                    .onClick(jweb.Actions.toggle("actions-panel"))
-                    .style().marginTop(SP_2).padding(SP_1, SP_3)
-                        .borderRadius(ROUNDED).cursor(pointer).done(),
-                text("Toggle details")),
-            div(attrs().id("actions-panel")
-                    .style().marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
-                        .backgroundColor(hex("#fefce8")).color(hex("#854d0e")).done(),
-                text("Toggled entirely in the browser — under the page's nonce CSP.")),
+                "Client-only action (Actions DSL, CSP-safe)"),
+            button(id("toggle-details"), onClick(toggle("actions-panel")), buttonStyle(),
+                "Toggle details"),
+            div(id("actions-panel"),
+                style().marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
+                    .backgroundColor(hex("#fefce8")).color(hex("#854d0e")),
+                "Toggled entirely in the browser — under the page's nonce CSP."),
             // Raw set("onclick", js): the serializer rewrites even this
             // hand-written form to delegation at render time
-            button(attrs().id("raw-inline")
-                    .set("onclick", "document.getElementById('raw-note').textContent="
-                        + "'The raw handler ran — rewritten to delegation at render time.'")
-                    .style().marginTop(SP_2).marginLeft(SP_2).padding(SP_1, SP_3)
-                        .borderRadius(ROUNDED).cursor(pointer).done(),
-                text("Raw set(\"onclick\") handler")),
-            p(attrs().id("raw-note"), text("Not clicked yet."))
+            button(id("raw-inline"),
+                attrs().set("onclick", "document.getElementById('raw-note').textContent="
+                    + "'The raw handler ran — rewritten to delegation at render time.'"),
+                buttonStyle().marginLeft(SP_2),
+                "Raw set(\"onclick\") handler"),
+            p(id("raw-note"), "Not clicked yet.")
         );
     }
 
@@ -68,13 +64,10 @@ public final class DemoStreamingPage {
     private static Element fragmentBlock() {
         return div(style().marginTop(SP_6),
             h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
-                text("Fragment swap carrying its own action")),
-            button(attrs().id("load-fragment")
-                    .swap("/demo/streaming/fragment", "#frag-slot")
-                    .style().marginTop(SP_2).padding(SP_1, SP_3)
-                        .borderRadius(ROUNDED).cursor(pointer).done(),
-                text("Load fragment")),
-            div(attrs().id("frag-slot").style().marginTop(SP_2).done())
+                "Fragment swap carrying its own action"),
+            button(id("load-fragment"), swap("/demo/streaming/fragment", "#frag-slot"),
+                buttonStyle(), "Load fragment"),
+            div(id("frag-slot"), style().marginTop(SP_2))
         );
     }
 
@@ -83,14 +76,11 @@ public final class DemoStreamingPage {
         return div(
             style().padding(SP_3).borderRadius(ROUNDED)
                    .backgroundColor(hex("#fdf2f8")).color(hex("#9d174d")),
-            p(text("This fragment was fetched and swapped in.")),
-            button(attrs().id("frag-action")
-                    .onClick(jweb.Actions.hide("frag-note"))
-                    .style().marginTop(SP_2).padding(SP_1, SP_3)
-                        .borderRadius(ROUNDED).cursor(pointer).done(),
-                text("Hide the note")),
-            p(attrs().id("frag-note"), text("Its button works because the "
-                + "definitions script rode along and ran on swap."))
+            p("This fragment was fetched and swapped in."),
+            button(id("frag-action"), onClick(hide("frag-note")), buttonStyle(),
+                "Hide the note"),
+            p(id("frag-note"), "Its button works because the "
+                + "definitions script rode along and ran on swap.")
         );
     }
 
@@ -103,33 +93,24 @@ public final class DemoStreamingPage {
     private static Element statefulBlock() {
         return div(style().marginTop(SP_6),
             h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
-                text("Reactive state, streamed in (800ms)")),
-            Suspense.of((java.util.concurrent.Callable<String>) () -> {
+                "Reactive state, streamed in (800ms)"),
+            Suspense.of(() -> {
                 Thread.sleep(800);
                 return "ready";
             })
-            .loading(() -> p(style().color(TEXT_LIGHT), text("Loading...")))
+            .loading(() -> p(style().color(TEXT_LIGHT), "Loading..."))
             .render(data -> {
                 State<Integer> clicks = useState(0);
                 return div(
                     style().padding(SP_3).borderRadius(ROUNDED)
                            .backgroundColor(hex("#eef2ff")).color(hex("#3730a3")),
-                    p(text("Clicks: "),
-                        span(attrs().data("state", clicks.getId()),
-                            text(String.valueOf(clicks.get())))),
-                    button(attrs().onClick(e -> clicks.set(clicks.get() + 1))
-                            .style().marginTop(SP_2).padding(SP_1, SP_3)
-                                .borderRadius(ROUNDED).cursor(pointer).done(),
-                        text("Click me")),
+                    p("Clicks: ", span(bind(clicks), clicks.get())),
+                    button(onClick(e -> clicks.update(n -> n + 1)), buttonStyle(), "Click me"),
                     // Actions-DSL handler born on the block's render thread:
                     // its definition rides the chunk's script, late
-                    button(attrs().id("late-action")
-                            .onClick(jweb.Actions.toggle("late-note"))
-                            .style().marginTop(SP_2).marginLeft(SP_2).padding(SP_1, SP_3)
-                                .borderRadius(ROUNDED).cursor(pointer).done(),
-                        text("Toggle note (client-only)")),
-                    p(attrs().id("late-note"),
-                        text("A streamed-in Actions-DSL handler toggled this."))
+                    button(id("late-action"), onClick(toggle("late-note")),
+                        buttonStyle().marginLeft(SP_2), "Toggle note (client-only)"),
+                    p(id("late-note"), "A streamed-in Actions-DSL handler toggled this.")
                 );
             })
         );
@@ -137,16 +118,20 @@ public final class DemoStreamingPage {
 
     private static Element block(String label, long delayMs) {
         return div(style().marginTop(SP_6),
-            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), text(label)),
-            Suspense.of((java.util.concurrent.Callable<String>) () -> {
+            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), label),
+            Suspense.of(() -> {
                 Thread.sleep(delayMs);
                 return "Data loaded after " + delayMs + "ms";
             })
-            .loading(() -> p(style().color(TEXT_LIGHT), text("Loading...")))
+            .loading(() -> p(style().color(TEXT_LIGHT), "Loading..."))
             .render(data -> p(
                 style().padding(SP_3).borderRadius(ROUNDED)
                        .backgroundColor(hex("#f0fdf4")).color(hex("#15803d")),
-                text(data)))
+                data))
         );
+    }
+
+    private static jweb.Style<?> buttonStyle() {
+        return style().marginTop(SP_2).padding(SP_1, SP_3).borderRadius(ROUNDED).cursor(pointer);
     }
 }

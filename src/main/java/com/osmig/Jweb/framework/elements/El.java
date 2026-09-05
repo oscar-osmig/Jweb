@@ -81,9 +81,6 @@ public final class El {
     public static Tag h6(Object... c) { return TextElements.h6(c); }
     public static Tag strong(Object... c) { return TextElements.strong(c); }
     public static Tag em(Object... c) { return TextElements.em(c); }
-    /** {@code a("Home")} renders {@code <a>Home</a>} — a lone String is text. */
-    public static Tag a(String text) { return Tag.create("a", TextElement.of(text)); }
-    public static Tag a(String h, Object... c) { return TextElements.a(h, c); }
     public static Tag a(Attributes a, Object... c) { return TextElements.a(a, c); }
     public static Tag a(Object... c) { return TextElements.a(c); }
     public static Tag small(Object... c) { return TextElements.small(c); }
@@ -113,8 +110,7 @@ public final class El {
     /** {@code textarea("Hello")} renders {@code <textarea>Hello</textarea>}. For the name use {@code textarea(name("bio"))}. */
     public static Tag textarea(String text) { return Tag.create("textarea", TextElement.of(text)); }
     public static Tag select(Object... c) { return FormElements.select(c); }
-    public static Tag option(String v, String t) { return FormElements.option(v, t); }
-    public static Tag option(String vt) { return FormElements.option(vt); }
+    public static Tag option(Object... c) { return FormElements.option(c); }
     public static Tag label(Object... c) { return FormElements.label(c); }
     /** {@code label("Email:")} renders {@code <label>Email:</label>}. For the target use {@code label(for_("email"), ...)}. */
     public static Tag label(String text) { return Tag.create("label", TextElement.of(text)); }
@@ -207,7 +203,6 @@ public final class El {
     public static Tag dd(Attributes a, Object... c) { return DefinitionElements.dd(a, c); }
 
     // ==================== Interactive/Semantic Text ====================
-    public static Tag abbr(String abbreviation, String title) { return InteractiveElements.abbr(abbreviation, title); }
     public static Tag abbr(Object... c) { return InteractiveElements.abbr(c); }
     public static Tag dfn(Object... c) { return InteractiveElements.dfn(c); }
     public static Tag cite(Object... c) { return InteractiveElements.cite(c); }
@@ -217,11 +212,9 @@ public final class El {
     public static Tag blockquote(Object... c) { return InteractiveElements.blockquote(c); }
     /** {@code blockquote("Quote")} renders {@code <blockquote>Quote</blockquote>}. For a source URL use {@code blockquote(attr("cite", url), ...)}. */
     public static Tag blockquote(String text) { return Tag.create("blockquote", TextElement.of(text)); }
-    public static Tag blockquote(String citeUrl, Object... c) { return InteractiveElements.blockquote(citeUrl, c); }
     public static Tag blockquote(Attributes a, Object... c) { return InteractiveElements.blockquote(a, c); }
     public static Tag kbd(Object... c) { return InteractiveElements.kbd(c); }
     public static Tag samp(Object... c) { return InteractiveElements.samp(c); }
-    public static Tag var_(Object... c) { return InteractiveElements.var_(c); }
     public static Tag mark(Object... c) { return InteractiveElements.mark(c); }
     public static Tag sub(Object... c) { return InteractiveElements.sub(c); }
     public static Tag sup(Object... c) { return InteractiveElements.sup(c); }
@@ -238,12 +231,10 @@ public final class El {
     public static Tag datalist(Object... c) { return Tag.create("datalist", c); }
     /** {@code datalist("Browsers")} renders {@code <datalist>Browsers</datalist>}. For the id use {@code datalist(id("browsers"), ...)}. */
     public static Tag datalist(String text) { return Tag.create("datalist", TextElement.of(text)); }
-    public static Tag datalist(String id, Object... c) { return FormEnhancements.datalist(id, c); }
     public static Tag datalist(Attributes a, Object... c) { return FormEnhancements.datalist(a, c); }
     public static Tag optgroup(Object... c) { return Tag.create("optgroup", c); }
     /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. For the label use {@code optgroup(attr("label", "Cars"), ...)}. */
     public static Tag optgroup(String text) { return Tag.create("optgroup", TextElement.of(text)); }
-    public static Tag optgroup(String label, Object... c) { return FormEnhancements.optgroup(label, c); }
     public static Tag fieldset(Object... c) { return FormEnhancements.fieldset(c); }
     public static Tag fieldset(Attributes a, Object... c) { return FormEnhancements.fieldset(a, c); }
     public static Tag legend(Object... c) { return FormEnhancements.legend(c); }

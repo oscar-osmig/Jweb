@@ -18,7 +18,7 @@ ul(each(items, item -> li(item)))
 // Complex items
 List<User> users = userService.findAll();
 div(each(users, user ->
-    div(attrs().class_("user-card"),
+    div(class_("user-card"),
         h3(user.getName()),
         p(user.getEmail()),
         when(user.isAdmin(), () -> badge("Admin"))
@@ -35,7 +35,7 @@ ol(each(IntStream.range(0, items.size()).boxed().toList(), i ->
 
 // Alternating rows
 table(tbody(each(IntStream.range(0, users.size()).boxed().toList(), i ->
-    tr(attrs().class_(i % 2 == 0 ? "even" : "odd"),
+    tr(class_(i % 2 == 0 ? "even" : "odd"),
         td(users.get(i).getName()),
         td(users.get(i).getEmail())
     )
@@ -43,18 +43,15 @@ table(tbody(each(IntStream.range(0, users.size()).boxed().toList(), i ->
 
 // Separator between items
 div(each(IntStream.range(0, items.size()).boxed().toList(), i ->
-    span(
-        text(items.get(i)),
-        when(i < items.size() - 1, () -> text(", "))
-    )
+    span(items.get(i), i < items.size() - 1 ? ", " : "")
 ))"""),
 
             h3Title("Empty State"),
             codeBlock("""
 // Show empty state when list is empty
-when(items.isEmpty())
-    .then(div(attrs().class_("empty"), text("No items found")))
-    .otherwise(ul(each(items, item -> li(item))))""")
+items.isEmpty()
+    ? div(class_("empty"), "No items found")
+    : ul(each(items, item -> li(item)))""")
         );
     }
 }

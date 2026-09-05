@@ -21,9 +21,9 @@ public class Panel implements Template {
     }
 
     public Element render() {
-        return div(attrs().class_("panel"),
-            div(attrs().class_("panel-header"), h3(title)),
-            div(attrs().class_("panel-body"), fragment(children))
+        return div(class_("panel"),
+            div(class_("panel-header"), h3(title)),
+            div(class_("panel-body"), fragment(children))
         );
     }
 }
@@ -50,10 +50,10 @@ public class Dialog implements Template {
     }
 
     public Element render() {
-        return div(attrs().class_("dialog"),
-            div(attrs().class_("dialog-header"), header),
-            div(attrs().class_("dialog-body"), body),
-            div(attrs().class_("dialog-footer"), footer)
+        return div(class_("dialog"),
+            div(class_("dialog-header"), header),
+            div(class_("dialog-body"), body),
+            div(class_("dialog-footer"), footer)
         );
     }
 }
@@ -64,7 +64,7 @@ new Dialog(
     p("Are you sure you want to delete this item?"),
     fragment(
         button("Cancel"),
-        button(attrs().class_("btn-danger"), text("Delete"))
+        button(class_("btn-danger"), "Delete")
     )
 )""")
         );

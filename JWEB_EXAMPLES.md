@@ -16,7 +16,8 @@ import static jweb.El.*;            // elements, attributes, typed inputs, condi
 import static jweb.Css.*;           // style(), rule(), units, colors, media()
 import static jweb.css.Supports.*;  // @supports feature queries (Level 15)
 import static jweb.State.*;         // useState, useComputed, useEffect
-import static jweb.Actions.*;       // client-side actions DSL (Levels 17-19)
+import static jweb.Js.*;            // client-side actions + JS DSL (Levels 17-19)
+import static jweb.css.Selectors.*; // cls()/tag()/id() selector builder (Level 10)
 ```
 
 ---
@@ -81,7 +82,7 @@ div(attrs().style()
         .alignItems(center)
         .gap(rem(1))
     .done(),
-    span(text("Centered content"))   // bare span(String) is the grid-line span from Css
+    span("Centered content")
 )
 
 // Direct InlineStyle usage (no .done() needed)
@@ -106,13 +107,11 @@ List<String> items = List.of("Apple", "Banana", "Cherry");
 ul(each(items, item -> li(item)))
 
 // Conditional rendering with when()
-// (note: with jweb.Css.* also imported, a bare span("...") resolves to the
-// grid-line span() — wrap the string in text() or lead with an Attr)
 boolean isLoggedIn = true;
 
 div(
-    when(isLoggedIn, () -> span(text("Welcome back!"))),
-    when(!isLoggedIn, () -> a("/login", "Sign In"))
+    when(isLoggedIn, () -> span("Welcome back!")),
+    when(!isLoggedIn, () -> a(href("/login"), "Sign In"))
 )
 
 // If-else rendering
@@ -176,9 +175,9 @@ public class CounterPage implements Template {
     public Element render() {
         return div(
             h1("Counter: " + count.get()),
-            button(attrs().onClick(e -> count.set(count.get() + 1)), "+"),
-            button(attrs().onClick(e -> count.set(count.get() - 1)), "-"),
-            button(attrs().onClick(e -> count.set(0)), "Reset")
+            button(onClick(e -> count.set(count.get() + 1)), "+"),
+            button(onClick(e -> count.set(count.get() - 1)), "-"),
+            button(onClick(e -> count.set(0)), "Reset")
         );
     }
 }
@@ -491,9 +490,9 @@ public class MainLayout implements Template {
                         a(attrs().href("/").style().color(white).textDecoration(none),
                             strong("MyApp")),
                         div(attrs().style().display(flex).gap(rem(1)),
-                            a("/features", "Features"),
-                            a("/pricing", "Pricing"),
-                            a("/about", "About")
+                            a(href("/features"), "Features"),
+                            a(href("/pricing"), "Pricing"),
+                            a(href("/about"), "About")
                         )
                     )
                 ),
@@ -526,7 +525,7 @@ public class HomePage implements Template {
                 h1("Welcome to MyApp"),
                 p("Build amazing web applications with Java.")
             )
-        ).render();
+        );
     }
 }
 ```
@@ -573,16 +572,16 @@ form(attrs().id("register-form"),
     // Selection inputs — checkbox(name, value) renders only the input
     // (id = name); pair it with label(forId, text)
     div(attrs().style().marginBottom(rem(1)),
-        checkbox("terms", "yes"), label("terms", "I agree to the terms"),
-        checkbox("newsletter", "yes"), label("newsletter", "Subscribe to newsletter")
+        checkbox("terms", "yes"), label(for_("terms"), "I agree to the terms"),
+        checkbox("newsletter", "yes"), label(for_("newsletter"), "Subscribe to newsletter")
     ),
 
     // Radio group — radio(name, value); generated ids are "name-value"
     div(attrs().style().marginBottom(rem(1)),
         p("Select plan:"),
-        radio("plan", "free"), label("plan-free", "Free Plan"),
-        radio("plan", "pro"), label("plan-pro", "Pro Plan"),
-        radio("plan", "enterprise"), label("plan-enterprise", "Enterprise Plan")
+        radio("plan", "free"), label(for_("plan-free"), "Free Plan"),
+        radio("plan", "pro"), label(for_("plan-pro"), "Pro Plan"),
+        radio("plan", "enterprise"), label(for_("plan-enterprise"), "Enterprise Plan")
     ),
 
     // Date inputs
@@ -774,7 +773,7 @@ String styles = CSSNested.rule(".card")
 // Building JavaScript with type-safe DSL
 public class DashboardScripts {
     public static String dashboardHandlers() {
-        return script()
+        return actions()
             .withHelpers()                    // Include helper functions
 
             // State management
@@ -852,13 +851,13 @@ public class DashboardScripts {
         // Async try-catch-finally — the caught error is available as _err
         asyncTry(
             // Validate first
-            await_(fetch("/api/orders/validate")
+            await(fetch("/api/orders/validate")
                 .headerFromVar("X-Auth", "authToken")
                 .ok(noop())
                 .fail(setText("status", "Validation failed"))),
 
             // Process payment
-            await_(fetch("/api/payments")
+            await(fetch("/api/payments")
                 .post()
                 .headerFromVar("X-Auth", "authToken")
                 .body("{orderId: orderId}")
@@ -866,7 +865,7 @@ public class DashboardScripts {
                 .fail(setText("status", "Payment failed"))),
 
             // Confirm order
-            await_(fetch("/api/orders/confirm")
+            await(fetch("/api/orders/confirm")
                 .post()
                 .body("{paymentId: paymentId}")
                 .ok(all(
@@ -902,23 +901,23 @@ public class DashboardScripts {
 .add(define("updateUI")
     .does(
         // Single element query
-        query("#status-text")
+        dom("#status-text")
             .setText("Updated!")
             .addClass("success")
             .show(),                       // show() = display:block
 
         // Query with attribute selector
-        query("[data-tab='active']")
+        dom("[data-tab='active']")
             .removeClass("hidden")
             .addClass("visible"),
 
         // Multiple elements — batch operations apply to every match
-        queryAll(".notification")
+        domAll(".notification")
             .addClass("fade-out")
             .hide(),
 
         // Chained operations
-        query("#user-panel")
+        dom("#user-panel")
             .removeClass("loading")
             .addClass("loaded")
             .attr("data-ready", "true")
@@ -926,7 +925,7 @@ public class DashboardScripts {
 
         // Per-element action with a named loop variable
         // (args to call() are raw JS expressions)
-        queryAll(".btn")
+        domAll(".btn")
             .forEach("el", call("registerButton", "el.id"))
     ))
 ```
@@ -980,9 +979,9 @@ public class AdvancedPage implements Template {
     }
 
     // Inline script code appended at the end of <body>
-    // (a String of JS — e.g. an Actions-DSL script().build())
+    // (an Action — an actions() builder is one)
     @Override
-    public Optional<String> scripts() {
+    public Optional<Action> scripts() {
         return Optional.of(dashboardHandlers());
     }
 
@@ -1007,13 +1006,13 @@ public class AdvancedPage implements Template {
 
     // Client-side mount/unmount hooks (for script generation)
     @Override
-    public String onMount() {
-        return "console.log('Dashboard mounted'); initDashboard();";
+    public Action onMount() {
+        return call("initDashboard");
     }
 
     @Override
-    public String onUnmount() {
-        return "console.log('Dashboard unmounting'); cleanup();";
+    public Action onUnmount() {
+        return call("cleanup");
     }
 }
 ```
@@ -1049,7 +1048,7 @@ div(class_("showcase"),
                 .float_()                                    // gentle hover
         )
     ).id("showcase"),
-    div(attrs().style(s -> s.marginTop(rem(1))), text("Click a shape")).id("panel")
+    div(id("panel"), style().marginTop(rem(1)), "Click a shape")
 )
 ```
 
@@ -1085,8 +1084,8 @@ And `scene(...).id("hero")` exposes the raw three.js objects to scripts via
 | 14 | Batch classes & conditional styling (`attrs().classes()`, `classIf()`, `classToggle()`) |
 | 15 | CSS feature queries (`@supports`) |
 | 16 | Nested CSS with pseudo-selectors |
-| 17 | JavaScript Actions DSL (`script()`, `state()`, `refs()`) |
+| 17 | JavaScript Actions DSL (`actions()`, `state()`, `refs()`) |
 | 18 | Async/Await & Fetch Builder |
-| 19 | DOM Query Builder (`query()`, `queryAll()`) |
+| 19 | DOM Query Builder (`dom()`, `domAll()`) |
 | 20 | Template Lifecycle Hooks |
 | 21 | 3D scenes (`scene()`, shapes, lights, `shadows()`, `clickSwap`, `JWebThree`) |

@@ -204,6 +204,7 @@ public final class Toast {
      * @param message the message to display
      * @return JavaScript code string
      */
+    @Deprecated
     public static String showJs(String type, String message) {
         return "Toast." + type + "('" + escapeJs(message) + "')";
     }
@@ -240,6 +241,7 @@ public final class Toast {
      * @param durationMs duration in milliseconds (0 = no auto-dismiss)
      * @return JavaScript code string
      */
+    @Deprecated
     public static String showJs(String type, String message, int durationMs) {
         return "Toast." + type + "('" + escapeJs(message) + "'," + durationMs + ")";
     }
@@ -247,6 +249,7 @@ public final class Toast {
     /**
      * Returns JavaScript to show a success toast.
      */
+    @Deprecated
     public static String successJs(String message) {
         return showJs("success", message);
     }
@@ -254,6 +257,7 @@ public final class Toast {
     /**
      * Returns JavaScript to show an error toast.
      */
+    @Deprecated
     public static String errorJs(String message) {
         return showJs("error", message);
     }
@@ -261,6 +265,7 @@ public final class Toast {
     /**
      * Returns JavaScript to show a warning toast.
      */
+    @Deprecated
     public static String warningJs(String message) {
         return showJs("warning", message);
     }
@@ -268,6 +273,7 @@ public final class Toast {
     /**
      * Returns JavaScript to show an info toast.
      */
+    @Deprecated
     public static String infoJs(String message) {
         return showJs("info", message);
     }
@@ -281,6 +287,7 @@ public final class Toast {
      * @param successMsg message shown on success
      * @param errorMsg message shown on error
      */
+    @Deprecated
     public static String promiseJs(String promiseExpr, String loadingMsg, String successMsg, String errorMsg) {
         return "Toast.promise(" + promiseExpr + ",{loading:'" + escapeJs(loadingMsg) +
                "',success:'" + escapeJs(successMsg) + "',error:'" + escapeJs(errorMsg) + "'})";
@@ -376,6 +383,15 @@ public final class Toast {
         public Builder message(String message) { this.message = message; return this; }
         public Builder duration(int ms) { this.duration = ms; return this; }
         public Builder persistent() { this.duration = 0; return this; }
+        /** An action button on the toast: {@code .action("Reload", reload())}. */
+        public Builder action(String label, com.osmig.Jweb.framework.js.Actions.Action onClick) {
+            this.actionLabel = label;
+            this.actionJs = onClick.build();
+            return this;
+        }
+
+        /** @deprecated Pass an {@code Action} — {@link #action(String, com.osmig.Jweb.framework.js.Actions.Action)}. */
+        @Deprecated
         public Builder action(String label, String onClickJs) {
             this.actionLabel = label;
             this.actionJs = onClickJs;

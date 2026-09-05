@@ -20,17 +20,17 @@ By design (know them, don't "fix" them):
   controllers under `/api/v*` and router/page routes elsewhere.
 - **Page routes are exact-match only** — no `:param` support (use Router routes for that).
   They are GET/HEAD-only (other methods get a 405).
-- **`Js.*` and `Actions.*` wildcard imports collide** (`script`, `query`, `fetch`, ...) —
-  that's why they remain two facades in the `jweb` surface. Import one wildcard and qualify
-  the other. (The old `CSSColors.*`+`CSSUnits.*` collisions on `lightDark`/`colorMix` are
-  resolved inside `jweb.Css`.)
-- **`jweb.El.*` + `jweb.Css.*` share a few names** (`id`, `fill`, `style`, `em`, `s`, ...).
-  Most uses resolve by arity/argument types; when the compiler reports an ambiguous
-  reference, use `attrs().id(...)`-style instance calls or qualify one side
-  (`Css.id(...)`).
-- **Single-`String` calls to `q`/`abbr`/`blockquote`** resolve to the varargs (child)
-  overload, not the `(citeUrl, ...)` overload — pass `Attributes` explicitly when you need
-  the cite URL.
+- **The four DSL wildcards coexist** (`jweb.El.*`, `jweb.Css.*`, `jweb.Js.*`,
+  `jweb.Three.*`) — since 3.0 no call is ambiguous across them, and a scratch file that
+  compiles the common calls under all four imports is the check to re-run when adding a
+  static to any facade. The names that are still shared resolve by argument type
+  (`em(1.2)` is a unit, `em("x")` an element; `span(2)` a grid span, `span("x")` an
+  element). Three deliberate qualifications remain: `Three.patch(id)` (bare `patch(url)`
+  is HTTP PATCH), the CSS Selector-builder starters live in `jweb.css.Selectors`, and
+  `object()` with no arguments is the JS object builder, not `<object>`.
+- **Under `Js.*`, `fetch(url)`, `call(fn)` and `sleep(ms)` are the page-level `Action`
+  forms.** The expression-level twins are `fetch(str(url))` / `fetch(v("url"))`,
+  `JS.call(fn, args...)` and `delay(ms)`.
 - **Typed input helpers stay in `Input.*`** (`Input.text("name")`, `Input.email(...)`) — they
   can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
@@ -65,7 +65,7 @@ The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2h
   widened to `jweb.Element`/`jweb.CSSValue`); dependents must recompile — automatic with
   JitPack source builds; locally, run a `clean` build after pulling.
 - One semantic pick in the `El` merge: `data(name, value)` = `data-*` attribute (the
-  `Elements` meaning); the `<data>` element is `data_(...)`.
+  `Elements` meaning); the `<data>` element is `tag("data", ...)`.
 - Internally, `CSSColors←CSSGrid←CSSAnimations←CSSVariables←CSSUnits←CSS` and
   `Async←Runtime←Events←JS` now form inheritance chains purely for static-import
   aggregation; duplicate helpers (`lightDark`, `colorMix`, `var`, `env`) resolve to the
@@ -222,10 +222,11 @@ works end-to-end:
 
 ## ✅ DSL (fixed)
 
-- `El` now re-exports: conditionals (`when`/`match`/`cond`/`otherwise`), `errorBoundary`,
-  `hr`, `video`/`audio`/`canvas`/`iframe`/`track`, popover members, `srcset`/`responsiveImg`/
-  `lazyImg`.
-- `option(String)` 1-arg form (value = text).
+- `El` now re-exports: conditionals (`when(cond, x)`; `match`/`cond`/`otherwise` and the
+  `when(cond).then(...)` chain are deprecated since 3.0), `errorBoundary`, `hr`,
+  `video`/`audio`/`canvas`/`iframe`/`track`, popover members, `srcset`.
+- `option("Chrome")` is text, which the browser also uses as the value; `option(value("v"), "text")`
+  sets both. (3.0: the old `option(value, text)` two-String form is gone — a String is text.)
 - VDOM attribute values escape `'` as well as `"`.
 
 ## ✅ Dead code & config (cleaned)

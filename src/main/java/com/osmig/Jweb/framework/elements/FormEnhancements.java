@@ -58,18 +58,8 @@ public class FormEnhancements {
     // ==================== Datalist ====================
 
     /**
-     * Creates a datalist element for autocomplete suggestions.
-     *
-     * @param id the datalist ID (link to input via list attribute)
-     * @param children option elements
-     * @return a Tag
-     */
-    public static Tag datalist(String id, Object... children) {
-        return Tag.create("datalist", new Attr("id", id), children);
-    }
-
-    /**
-     * Creates a datalist element with attributes.
+     * Creates a datalist element with attributes:
+     * {@code datalist(id("browsers"), option("Chrome"), ...)}.
      *
      * @param attrs the attributes
      * @param children the children
@@ -80,17 +70,6 @@ public class FormEnhancements {
     }
 
     // ==================== Optgroup ====================
-
-    /**
-     * Creates an optgroup element for grouping options in a select.
-     *
-     * @param label the group label
-     * @param children option elements
-     * @return a Tag
-     */
-    public static Tag optgroup(String label, Object... children) {
-        return Tag.create("optgroup", new Attr("label", label), children);
-    }
 
     /**
      * Creates a disabled optgroup.

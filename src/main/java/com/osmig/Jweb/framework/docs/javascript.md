@@ -156,7 +156,7 @@ windowFunc("doSomething")
 asyncFunc("loadData")
     .does(
         show("loading"),
-        await_(fetch("/api/data").ok(assignVar("data", "_data"))),
+        await(fetch("/api/data").ok(assignVar("data", "_data"))),
         hide("loading"),
         call("renderData")
     )
@@ -211,21 +211,21 @@ fetch("/api/resource").delete()
 
 ```java
 // Simple await
-await_(fetch("/api/data").ok(processData()))
+await(fetch("/api/data").ok(processData()))
 
 // Async function with await
 asyncFunc("loadDashboard")
     .does(
         assignVar("isLoading", "true"),
-        await_(fetch("/api/user").ok(assignVar("user", "_data"))),
-        await_(fetch("/api/stats").ok(assignVar("stats", "_data"))),
+        await(fetch("/api/user").ok(assignVar("user", "_data"))),
+        await(fetch("/api/stats").ok(assignVar("stats", "_data"))),
         assignVar("isLoading", "false"),
         call("renderDashboard")
     )
 
 // Try-catch-finally
 asyncTry(
-    await_(fetch("/api/data").ok(processData()))
+    await(fetch("/api/data").ok(processData()))
 )
 .catch_("error",
     logError("error"),
@@ -369,37 +369,20 @@ getInputValue("password-input").storeTo("password")
 
 ---
 
-## Level 12: Templates (HTML Generation)
+## Level 12: Rendering lists — on the server
+
+The client-side template engine (`template(...)`, `field(...)`, `renderList(...)`) was
+removed in 3.0. Rendering belongs on the server: build the markup with the HTML DSL,
+return it as a fragment, and swap it in — no JavaScript written:
 
 ```java
-// Template for list items
-template("item")
-    .div().style("padding:1rem;border:1px solid #ddd").child()
-        .div().style("font-weight:bold").text(escapedField("name")).end()
-        .div().style("color:#666").text(field("description")).end()
-        .button().onClick("selectItem", "id").text("Select").end()
-    .end()
-    .buildAs("itemCard")
+// Route returning a fragment
+app.get("/items/list", req -> ul(each(items(), item ->
+    li(strong(item.name()), " — ", item.description(),
+       button(onClick(call("selectItem", String.valueOf(item.id()))), "Select")))));
 
-// Render list using template
-renderList("items-container")
-    .from("items")
-    .using("itemCard")
-    .empty("No items found")
-    .build()
-
-// Template with conditionals
-template("r")
-    .div().style("padding:1rem").child()
-        .div().text(escapedField("title")).end()
-        .when("isAdmin")
-            .button().onClick("edit", "id").text("Edit").end()
-        .endWhen()
-        .whenEquals("status", "ACTIVE")
-            .span().style("color:green").text("Active").end()
-        .endWhen()
-    .end()
-    .buildAs("rowTemplate")
+// Any element can pull it in; the JWeb runtime does the fetch + swap
+button(swap("/items/list", "#items-container"), "Refresh")
 ```
 
 ---
@@ -440,46 +423,24 @@ externalService("emailjs")
 ```java
 public class AdminScripts {
     public static String handlers() {
-        return script()
-            .withHelpers()
+        return actions()
 
             .state(state()
                 .var("isLoggedIn", false)
-                .var("currentUser", "null")
-                .array("items"))
+                .var("currentUser", "null"))
 
             .refs(refs()
                 .add("container", "items-container")
                 .add("modal", "modal-overlay")
                 .add("form", "item-form"))
 
-            // Template for item cards
-            .raw(template("item")
-                .div().style("padding:1rem;background:#fff;margin:0.5rem;border-radius:8px").child()
-                    .div().style("font-weight:bold").text(escapedField("name")).end()
-                    .button().onClick("editItem", "id").text("Edit").end()
-                    .button().onClick("deleteItem", "id").text("Delete").end()
-                .end()
-                .buildAs("itemCard"))
-
-            // Render function
-            .add(define("renderItems")
-                .does(raw(renderList("items-container")
-                    .from("items")
-                    .using("itemCard")
-                    .empty("No items yet")
-                    .build())))
-
-            // Load items
+            // Load items: the server renders the list fragment, the client swaps it in
             .add(asyncFunc("loadItems")
                 .does(
                     show("loading"),
-                    fetch("/api/items")
+                    fetch("/items/list")
                         .headerFromVar("Authorization", "authToken")
-                        .ok(all(
-                            assignVar("items", "_data"),
-                            call("renderItems")
-                        ))
+                        .ok(setInnerHtml("items-container").fromVar("_data"))
                         .fail(showMessage("error").error("Failed to load")),
                     hide("loading")
                 ))

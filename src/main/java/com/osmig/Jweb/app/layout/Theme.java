@@ -69,7 +69,7 @@ public final class Theme {
         return style()
             .background(BRAND_GRADIENT)
             .backgroundSize(percent(300), percent(100))
-            .animation(anim("gradientShift"), s(3), linear, s(0), infinite);
+            .animation("gradientShift", s(3), linear, s(0), infinite);
     }
 
     /**

@@ -31,18 +31,16 @@ div(
 )
 
 // With attributes
-div(attrs().id("main").class_("container"),
+div(id("main"), class_("container"),
     h1("Title"),
     p("Content")
 )
 
-// With inline styles (lambda syntax)
-div(attrs()
-    .class_("card")
-    .style(s -> s
+// With inline styles (bare style() builder)
+div(class_("card"),
+    style()
         .padding(rem(1))
-        .backgroundColor(white)
-    ),
+        .backgroundColor(white),
     p("Styled content")
 )"""),
 

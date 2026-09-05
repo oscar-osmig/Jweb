@@ -20,7 +20,7 @@ table(
         tr(td("Jane"), td("jane@test.com"), td("User"))
     ),
     tfoot(
-        tr(td(attrs().colspan("3"), text("2 users total")))
+        tr(td(attrs().colspan("3"), "2 users total"))
     )
 )"""),
 
@@ -36,8 +36,8 @@ table(
         td(user.getName()),
         td(user.getEmail()),
         td(
-            button(attrs().class_("btn-edit"), text("Edit")),
-            button(attrs().class_("btn-delete"), text("Delete"))
+            button(class_("btn-edit"), "Edit"),
+            button(class_("btn-delete"), "Delete")
         )
     )))
 )"""),
@@ -48,7 +48,7 @@ th(attrs()
     .class_("sortable")
     .data("sort", "name")
     .set("onclick", "sortTable('name')"),
-    text("Name "), span(attrs().class_("sort-icon")))""")
+    "Name ", span(class_("sort-icon")))""")
         );
     }
 }

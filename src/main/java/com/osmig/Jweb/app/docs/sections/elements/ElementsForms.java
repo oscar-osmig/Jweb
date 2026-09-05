@@ -12,52 +12,52 @@ public final class ElementsForms {
             para("Build forms with type-safe input elements and attributes."),
             codeBlock("""
 // Basic form
-form(attrs().action("/submit").method("POST"),
-    label(attrs().for_("email"), "Email:"),
-    input(attrs()
-        .type("email")
-        .name("email")
-        .id("email")
-        .placeholder("you@example.com")
-        .required()
+form(action("/submit"), method("POST"),
+    label(for_("email"), "Email:"),
+    input(
+        type("email"),
+        name("email"),
+        id("email"),
+        placeholder("you@example.com"),
+        required()
     ),
-    button(attrs().type("submit"), "Submit")
+    button(type("submit"), "Submit")
 )"""),
 
             h3Title("Input Types"),
             para("All HTML5 input types are supported."),
             codeBlock("""
 // Text inputs
-input(attrs().type("text").name("username"))
-input(attrs().type("password").name("pwd"))
-input(attrs().type("email").name("email"))
-input(attrs().type("tel").name("phone"))
-input(attrs().type("url").name("website"))
-input(attrs().type("search").name("q"))
+input(type("text"), name("username"))
+input(type("password"), name("pwd"))
+input(type("email"), name("email"))
+input(type("tel"), name("phone"))
+input(type("url"), name("website"))
+input(type("search"), name("q"))
 
 // Number inputs
 input(attrs().type("number").name("qty").min(1).max(100))
 input(attrs().type("range").name("volume").min(0).max(100))
 
 // Date/time inputs
-input(attrs().type("date").name("birthday"))
-input(attrs().type("time").name("appointment"))
-input(attrs().type("datetime-local").name("meeting"))
-input(attrs().type("month").name("expiry"))
-input(attrs().type("week").name("week"))
+input(type("date"), name("birthday"))
+input(type("time"), name("appointment"))
+input(type("datetime-local"), name("meeting"))
+input(type("month"), name("expiry"))
+input(type("week"), name("week"))
 
 // Selection inputs
-input(attrs().type("checkbox").name("agree").value("yes"))
-input(attrs().type("radio").name("color").value("red"))
+input(type("checkbox"), name("agree"), value("yes"))
+input(type("radio"), name("color"), value("red"))
 
 // File input
 input(attrs().type("file").name("avatar").accept("image/*"))
 
 // Hidden input
-input(attrs().type("hidden").name("csrf").value(token))
+input(type("hidden"), name("csrf"), value(token))
 
 // Color picker
-input(attrs().type("color").name("theme").value("#6366f1"))"""),
+input(type("color"), name("theme"), value("#6366f1"))"""),
 
             h3Title("Textarea"),
             para("Multi-line text input."),
@@ -66,7 +66,7 @@ input(attrs().type("color").name("theme").value("#6366f1"))"""),
 textarea(attrs().name("message").rows(5).cols(40))
 
 // With default content
-textarea(attrs().name("bio").placeholder("Tell us about yourself"),
+textarea(name("bio"), placeholder("Tell us about yourself"),
     "Default text here"
 )
 
@@ -82,36 +82,36 @@ textarea(attrs()
             para("Dropdown selects with options."),
             codeBlock("""
 // Basic select
-select(attrs().name("country"),
-    option("", "Select a country"),
-    option("us", "United States"),
-    option("uk", "United Kingdom"),
-    option("ca", "Canada")
+select(name("country"),
+    option(value(""), "Select a country"),
+    option(value("us"), "United States"),
+    option(value("uk"), "United Kingdom"),
+    option(value("ca"), "Canada")
 )
 
 // With selected option
-select(attrs().name("size"),
-    option("sm", "Small"),
+select(name("size"),
+    option(value("sm"), "Small"),
     option(attrs().value("md").set("selected", ""), "Medium"),
-    option("lg", "Large")
+    option(value("lg"), "Large")
 )
 
 // Multiple select
 select(attrs().name("colors").multiple(),
-    option("red", "Red"),
-    option("green", "Green"),
-    option("blue", "Blue")
+    option(value("red"), "Red"),
+    option(value("green"), "Green"),
+    option(value("blue"), "Blue")
 )
 
 // Optgroup
-select(attrs().name("car"),
-    optgroup("Swedish Cars",
-        option("volvo", "Volvo"),
-        option("saab", "Saab")
+select(name("car"),
+    optgroup(attr("label", "Swedish Cars"),
+        option(value("volvo"), "Volvo"),
+        option(value("saab"), "Saab")
     ),
-    optgroup("German Cars",
-        option("mercedes", "Mercedes"),
-        option("audi", "Audi")
+    optgroup(attr("label", "German Cars"),
+        option(value("mercedes"), "Mercedes"),
+        option(value("audi"), "Audi")
     )
 )"""),
 
@@ -120,19 +120,19 @@ select(attrs().name("car"),
             codeBlock("""
 // Submit button (default)
 button("Submit")
-button(attrs().type("submit"), "Save")
+button(type("submit"), "Save")
 
 // Reset button
-button(attrs().type("reset"), "Clear Form")
+button(type("reset"), "Clear Form")
 
 // Regular button (for JS actions)
-button(attrs().type("button").set("onclick", "handleClick()"), "Click Me")
+button(type("button"), onClick(call("handleClick")), "Click Me")
 
 // Disabled button
-button(attrs().disabled(), "Cannot Click")
+button(disabled(), "Cannot Click")
 
 // Button with icon
-button(attrs().class_("btn-icon"),
+button(class_("btn-icon"),
     svg(...),  // Icon SVG
     span("Download")
 )"""),
@@ -150,11 +150,11 @@ input(attrs()
     .autocomplete("username")      // Browser autocomplete hint
 )
 
-input(attrs()
-    .type("email")
-    .name("email")
-    .required()
-    .placeholder("you@example.com")
+input(
+    type("email"),
+    name("email"),
+    required(),
+    placeholder("you@example.com")
 )
 
 input(attrs()
@@ -168,10 +168,10 @@ input(attrs()
             h3Title("Complete Form Example"),
             para("A complete registration form with validation."),
             codeBlock("""
-form(attrs().action("/register").method("POST").class_("form"),
+form(action("/register"), method("POST"), class_("form"),
     // Username field
     div(class_("field"),
-        label(attrs().for_("username"), "Username"),
+        label(for_("username"), "Username"),
         input(attrs()
             .type("text")
             .id("username")
@@ -185,7 +185,7 @@ form(attrs().action("/register").method("POST").class_("form"),
 
     // Email field
     div(class_("field"),
-        label(attrs().for_("email"), "Email"),
+        label(for_("email"), "Email"),
         input(attrs()
             .type("email")
             .id("email")
@@ -197,7 +197,7 @@ form(attrs().action("/register").method("POST").class_("form"),
 
     // Password field
     div(class_("field"),
-        label(attrs().for_("password"), "Password"),
+        label(for_("password"), "Password"),
         input(attrs()
             .type("password")
             .id("password")
@@ -210,17 +210,12 @@ form(attrs().action("/register").method("POST").class_("form"),
 
     // Terms checkbox
     div(class_("field-checkbox"),
-        input(attrs()
-            .type("checkbox")
-            .id("terms")
-            .name("terms")
-            .required()
-        ),
-        label(attrs().for_("terms"), "I agree to the terms")
+        input(type("checkbox"), id("terms"), name("terms"), required()),
+        label(for_("terms"), "I agree to the terms")
     ),
 
     // Submit
-    button(attrs().type("submit").class_("btn-primary"), "Register")
+    button(type("submit"), class_("btn-primary"), "Register")
 )"""),
 
             docTip("Use the for_ attribute on labels to associate them with inputs by id for accessibility.")

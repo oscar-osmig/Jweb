@@ -93,7 +93,7 @@ figure(
 )
 
 // Code listing with caption
-figure(attrs().class_("code-example"),
+figure(class_("code-example"),
     pre(code("const greeting = 'Hello World';")),
     figcaption("Example: Variable declaration")
 )
@@ -117,7 +117,7 @@ dl(
 )
 
 // Metadata / key-value pairs
-dl(attrs().class_("metadata"),
+dl(class_("metadata"),
     dt("Author"),    dd("Jane Doe"),
     dt("Published"), dd("2026-01-29"),
     dt("Category"),  dd("Technology")
@@ -129,7 +129,7 @@ dl(attrs().class_("metadata"),
 import static jweb.El.*;
 
 // Abbreviation with tooltip expansion
-p("The ", abbr("HTML", "HyperText Markup Language"), " spec")
+p("The ", abbr(attr("title", "HyperText Markup Language"), "HTML"), " spec")
 // Hovering shows "HyperText Markup Language"
 
 // Definition term
@@ -142,7 +142,7 @@ p("As described in ", cite("The Art of Programming"), "...")
 p("She said, ", q("Hello World"), " and it ran.")
 
 // Blockquote with source URL
-blockquote("https://example.com",
+blockquote(attr("cite", "https://example.com"),
     p("Knowledge is power.")
 )
 
@@ -153,7 +153,7 @@ p("Press ", kbd("Ctrl"), "+", kbd("C"), " to copy.")
 p("The program outputs: ", samp("Hello World"))
 
 // Variable
-p("Let ", var_("x"), " = 5")
+p("Let ", tag("var", "x"), " = 5")
 
 // Highlighted text
 p("Search results for: ", mark("JWeb framework"))
@@ -176,30 +176,30 @@ import static jweb.El.*;
 
 // Autocomplete with datalist
 input(attrs().list("browsers").name("browser")),
-datalist("browsers",
-    option("Chrome", "Chrome"),
-    option("Firefox", "Firefox"),
-    option("Safari", "Safari"),
-    option("Edge", "Edge")
+datalist(id("browsers"),
+    option("Chrome"),
+    option("Firefox"),
+    option("Safari"),
+    option("Edge")
 )
 
 // Grouped options in select
-select(attrs().name("car"),
-    optgroup("Swedish Cars",
-        option("volvo", "Volvo"),
-        option("saab", "Saab")),
-    optgroup("German Cars",
-        option("bmw", "BMW"),
-        option("audi", "Audi"))
+select(name("car"),
+    optgroup(attr("label", "Swedish Cars"),
+        option(value("volvo"), "Volvo"),
+        option(value("saab"), "Saab")),
+    optgroup(attr("label", "German Cars"),
+        option(value("bmw"), "BMW"),
+        option(value("audi"), "Audi"))
 )
 
 // Fieldset with legend (groups related controls)
 fieldset(
     legend("Personal Information"),
     label("Name:"),
-    input(attrs().type("text").name("name")),
+    input(type("text"), name("name")),
     label("Email:"),
-    input(attrs().type("email").name("email"))
+    input(type("email"), name("email"))
 )
 
 // Specialized input types

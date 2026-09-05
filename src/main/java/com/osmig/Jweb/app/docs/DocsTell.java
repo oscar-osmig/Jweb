@@ -48,6 +48,7 @@ public final class DocsTell {
      */
     private static final List<Topic> TOPICS = List.of(
         new Topic("overview", "Overview and quick start", "readme/README.md"),
+        new Topic("migrating-to-3", "Migrating to 3.x — handlers as arguments, a String is text, one JS import, and what breaks silently", "readme/dsl-simplification-3.md"),
         new Topic("migrating-to-2", "Migrating to 2.x — what changed, and what breaks silently", "readme/dsl-simplification.md"),
         new Topic("why-jweb", "Why JWeb, and the honest trade-offs", "readme/guides/why-jweb.md"),
         new Topic("architecture", "Architecture: rendering pipeline, request flow, routing, middleware", "readme/guides/architecture.md"),
@@ -245,44 +246,60 @@ public final class DocsTell {
             Requires Java 21+. Spring Boot's web starter arrives transitively. Annotate the
             application class with `@JWebApplication` (not `@SpringBootApplication`).
 
-            ## The six rules the DSL follows
+            ## The seven rules the DSL follows
 
-            Everything in the HTML, CSS and JavaScript DSLs is a consequence of one of these:
+            Everything in the HTML, CSS, JavaScript and Three DSLs is a consequence of one
+            of these:
 
-            1. **A lone String child is text.** `a("Home")` renders `<a>Home</a>`.
-            2. **Every element is `name(Object... attributesAndChildren)`.** Attributes and
-               children mix in any order, in one call.
+            1. **A String argument is text, wherever it appears.** `a("Home")` renders
+               `<a>Home</a>`; `a(href("/"), "Home")` renders `<a href="/">Home</a>`. Only
+               void elements take positional Strings: `img(src, alt)`, `meta(name, content)`.
+            2. **Every element is `name(Object...)`.** Attributes, event handlers, a bare
+               `style()` builder and children mix in any order, in one call:
+               `button(id("save"), onClick(e -> save()), style().padding(px(8)), "Save")`.
+               `attrs()` is only for the long tail.
             3. **Every CSS property takes a plain String as well as a typed value.**
                `cursor("copy")` and `cursor(pointer)` both work.
             4. **A Java keyword gets a trailing underscore, and nothing else does.**
-               `if_`, `return_`.
-            5. **A block takes its body inline.** There is no `endFor()`, `endWhile()`,
-               `endTry()`, `endSwitch()`.
+               `if_`, `return_`, `class_`, `for_` — but `then`, `elif`, `let`, `await`.
+            5. **A block takes its body inline.** `if_(cond, a).elif(c2, b).else_(c)`; no
+               `end()`, `endFor()`, `endWhile()`, `endTry()`, `endSwitch()`.
             6. **Platform names win.** `writeText`, `getRandomValues`, `getItem`,
                `fillStyle`, `pushState(state, url)`.
+            7. **The four DSL imports coexist, and anything that emits JavaScript is an
+               `Action`, never a String.** `Ref.focus()`, `Toast.success(...)`,
+               `UI.Modal.open(id)`, a Template's `onMount()` — all Actions.
 
-            ## Do not emit 1.x syntax
+            ## Do not emit 1.x or 2.x syntax
 
-            Version 2.0.0 is source-compatible but NOT binary-compatible with 1.x, and three
-            changes do not produce a compile error:
+            Version 3.0.0 is source- and binary-incompatible with 2.x, and these changes do
+            not produce a compile error:
 
-            - `textarea("hello")` renders the text `hello`. It used to set `name="hello"`.
-              Use `textarea(name("bio"))`.
-            - `JSHistory.pushState(state, url)` takes its arguments in platform order. The
-              `(String url, Val state)` and 3-argument forms are deleted.
-            - 29 CSS animation presets were deleted. They never animated anything, so
-              nothing visible changes.
+            - `a("/home", "Home")` now renders the text `/homeHome`. Emit
+              `a(href("/home"), "Home")`. Likewise `label(for_("id"), "Text")` and
+              `option(value("v"), "Text")` — never a leading String that means an attribute.
+            - Under `import static jweb.Js.*`, `call("fn")`, `fetch("/url")` and
+              `sleep(ms)` are page-level Actions; the expression forms are `JS.call(...)`,
+              `fetch(str("/url"))`, `delay(ms)`.
+            - `span("x")` is the `<span>` element even with `jweb.Css.*` imported.
 
-            Also gone: 139 element overloads, and the attribute surface moved to the
-            `HtmlAttributes` interface. Full detail is in the `migrating-to-2` topic below.
+            Also gone: `attrs().onClick(...)` as the only way to attach a handler (write
+            `onClick(...)` as an argument), `text("...")` as a requirement (a bare String is
+            text), `new Nav().render()` (a Template is an Element), `match/cond/otherwise`
+            (use `when(cond, x)`, a ternary or a `switch` expression), the `jweb.Actions`
+            import as a separate layer (it is `jweb.Js`), `Css.raw` (`CSSValue.of`), the
+            Selector starters in `Css` (`jweb.css.Selectors`), and the `*Js()` String
+            helpers (Actions). Full detail is in the `migrating-to-3` topic below.
 
             ## Imports
 
-            Elements, styles and JS all come from single static imports:
+            Elements, styles, JS and 3D all come from single static imports that coexist:
 
             ```java
-            import static jweb.El.*;   // div, h1, p, text, a, form, ...
-            import static jweb.Css.*;  // style(), px(), rem(), hex(), ...
+            import static jweb.El.*;    // div, h1, p, a, form, onClick, swap, bind, ...
+            import static jweb.Css.*;   // style(), px(), rem(), hex(), media(), ...
+            import static jweb.Js.*;    // toggle, show, fetch, onSubmit("id"), actions(), ...
+            import static jweb.Three.*; // scene, box, camera, ... (Three.patch stays qualified)
             ```
 
             `div`, `h1`, `p` and `text` must all resolve to `jweb.El`. An IDE will happily

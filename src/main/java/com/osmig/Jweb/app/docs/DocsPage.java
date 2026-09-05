@@ -3,7 +3,6 @@ package com.osmig.Jweb.app.docs;
 import jweb.Element;
 import jweb.Template;
 
-import com.osmig.Jweb.framework.styles.Stylesheet.Rule;
 import static jweb.El.*;
 import static jweb.Css.*;
 import static jweb.css.Selectors.*;
@@ -79,23 +78,23 @@ public class DocsPage implements Template {
             // The "On This Page" rail is opt-in: hidden until its script finds
             // headers (adds .has-headers) AND the screen is wide enough.
             .rule(".subheader-sidebar", style().display(none))
-            .mediaQuery(media().minWidth(px(1100)),
-                new Rule(".subheader-sidebar.has-headers", style().display(block)))
+            .add(media().minWidth(px(1100))
+                .rule(".subheader-sidebar.has-headers", style().display(block)))
             // Phone: stack vertically; the section sidebar becomes a
             // horizontally scrolling chip strip above the content.
-            .mediaQuery(media().maxWidth(px(767)),
-                new Rule(".docs-layout", style().flexDirection(column)),
-                new Rule(".docs-sidebar", style()
+            .add(media().maxWidth(px(767))
+                .rule(".docs-layout", style().flexDirection(column))
+                .rule(".docs-sidebar", style()
                     .width(auto).padding(SP_3, SP_4)
                     .prop("border-right", "none")
                     .borderBottom(px(1), solid, BORDER)
-                    .overflowX(auto).overflowY(hidden)),
-                new Rule(".docs-sidebar-inner", style()
-                    .display(flex).alignItems(center).gap(SP_4)),
-                new Rule(".docs-nav-section", style().marginBottom(zero)),
-                new Rule(".docs-nav-title", style().display(none)),
-                new Rule(".docs-nav-links", style().flexDirection(row)),
-                new Rule(".docs-nav-link", style().whiteSpace(nowrap)))
+                    .overflowX(auto).overflowY(hidden))
+                .rule(".docs-sidebar-inner", style()
+                    .display(flex).alignItems(center).gap(SP_4))
+                .rule(".docs-nav-section", style().marginBottom(zero))
+                .rule(".docs-nav-title", style().display(none))
+                .rule(".docs-nav-links", style().flexDirection(row))
+                .rule(".docs-nav-link", style().whiteSpace(nowrap)))
             .rule(scrollbar(".docs-content"), style().width(px(6)))
             .rule(scrollbarTrack(".docs-content"), style().background(transparent))
             .rule(scrollbarThumb(".docs-content"), style().background(rgba(0, 0, 0, 0.1)).borderRadius(px(3)))
@@ -130,8 +129,8 @@ public class DocsPage implements Template {
             .rule(".code-copy-btn.copied", style()
                 .color(hex("#6ee7b7")).borderColor(rgba(110, 231, 183, 0.4)))
             // Touch screens have no hover — keep the button always visible.
-            .mediaQuery(media().noHover(),
-                new Rule(".code-copy-btn", style().opacity(1)))
+            .add(media().noHover()
+                .rule(".code-copy-btn", style().opacity(1)))
             // Version chip on the dependency block: a details/summary dropdown
             // styled like the copy button, sitting just left of it. Always
             // visible — it carries information (the version), not just an action.

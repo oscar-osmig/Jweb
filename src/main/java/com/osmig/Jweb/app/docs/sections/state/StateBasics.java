@@ -19,10 +19,8 @@ public class Counter implements Template {
     public Element render() {
         return div(
             h1("Count: " + count.get()),
-            button(attrs().onClick(e -> count.set(count.get() + 1)),
-                text("Increment")),
-            button(attrs().onClick(e -> count.set(count.get() - 1)),
-                text("Decrement"))
+            button(onClick(e -> count.set(count.get() + 1)), "Increment"),
+            button(onClick(e -> count.set(count.get() - 1)), "Decrement")
         );
     }
 }"""),

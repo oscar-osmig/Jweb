@@ -593,13 +593,13 @@ public class JWebController {
 
         StringBuilder bodyExtras = new StringBuilder();
         String scriptOpen = "<script" + com.osmig.Jweb.framework.security.CspNonce.attr() + ">";
-        page.scripts().ifPresent(js -> bodyExtras.append(scriptOpen).append(js).append("</script>"));
-        String mount = page.onMount();
+        page.scripts().ifPresent(js -> bodyExtras.append(scriptOpen).append(js.build()).append("</script>"));
+        String mount = page.onMount() == null ? null : page.onMount().build();
         if (mount != null && !mount.isBlank()) {
             bodyExtras.append(scriptOpen).append("document.addEventListener('DOMContentLoaded',function(){")
                 .append(mount).append("});</script>");
         }
-        String unmount = page.onUnmount();
+        String unmount = page.onUnmount() == null ? null : page.onUnmount().build();
         if (unmount != null && !unmount.isBlank()) {
             bodyExtras.append(scriptOpen).append("window.addEventListener('beforeunload',function(){")
                 .append(unmount).append("});</script>");

@@ -12,35 +12,31 @@ public final class FormsInputs {
             para("All HTML5 input types are supported."),
             codeBlock("""
 // Text inputs
-input(attrs().type("text").name("name"))
-input(attrs().type("email").name("email"))
-input(attrs().type("password").name("password"))
-input(attrs().type("tel").name("phone"))
-input(attrs().type("url").name("website"))
-input(attrs().type("search").name("query"))
+input(type("text"), name("name"))
+input(type("email"), name("email"))
+input(type("password"), name("password"))
+input(type("tel"), name("phone"))
+input(type("url"), name("website"))
+input(type("search"), name("query"))
 
 // Number inputs
-input(attrs().type("number").name("age").min("0").max("120"))
-input(attrs().type("range").name("volume").min("0").max("100"))
+input(type("number"), name("age"), attrs().min("0").max("120"))
+input(type("range"), name("volume"), attrs().min("0").max("100"))
 
 // Date/time inputs
-input(attrs().type("date").name("birthdate"))
-input(attrs().type("time").name("appointment"))
-input(attrs().type("datetime-local").name("meeting"))
+input(type("date"), name("birthdate"))
+input(type("time"), name("appointment"))
+input(type("datetime-local"), name("meeting"))
 
 // Other inputs
-input(attrs().type("color").name("favorite"))
-input(attrs().type("file").name("avatar").accept("image/*"))
-input(attrs().type("hidden").name("userId").value("123"))"""),
+input(type("color"), name("favorite"))
+input(type("file"), name("avatar"), attrs().accept("image/*"))
+input(type("hidden"), name("userId"), value("123"))"""),
 
             h3Title("Textarea"),
             codeBlock("""
-textarea(attrs()
-    .name("bio")
-    .rows(4)
-    .cols(50)
-    .placeholder("Tell us about yourself...")
-    .maxlength(500))""")
+textarea(name("bio"), placeholder("Tell us about yourself..."),
+    attrs().rows(4).cols(50).maxlength(500))""")
         );
     }
 }

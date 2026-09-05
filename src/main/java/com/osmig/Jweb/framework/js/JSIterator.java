@@ -16,11 +16,11 @@ import java.util.List;
  *
  * // Generator function
  * generator("fibonacci")
- *     .let_("a", 0)
- *     .let_("b", 1)
+ *     .let("a", 0)
+ *     .let("b", 1)
  *     .while_(variable("true"))
  *         .yield_(variable("a"))
- *         .let_("temp", variable("a"))
+ *         .let("temp", variable("a"))
  *         .set("a", variable("b"))
  *         .set("b", variable("temp").plus(variable("b")))
  *     .endWhile();
@@ -34,9 +34,9 @@ import java.util.List;
  *
  * // Async generator
  * asyncGenerator("fetchPages")
- *     .let_("page", 1)
+ *     .let("page", 1)
  *     .while_(variable("page").lte(10))
- *         .awaitYield_(fetch("/api/data?page=" + variable("page")))
+ *         .awaitYield(fetch("/api/data?page=" + variable("page")))
  *         .inc("page")
  *     .endWhile();
  * </pre>
@@ -120,7 +120,7 @@ public class JSIterator {
             this.params = params;
         }
 
-        public GeneratorFunc let_(String name, Object value) {
+        public GeneratorFunc let(String name, Object value) {
             body.add("let " + name + "=" + JS.toJs(value));
             return this;
         }
@@ -316,7 +316,7 @@ public class JSIterator {
                 return this;
             }
 
-            public WhileBuilder let_(String name, Object value) {
+            public WhileBuilder let(String name, Object value) {
                 bodyStmts.add("let " + name + "=" + JS.toJs(value));
                 return this;
             }
@@ -380,7 +380,7 @@ public class JSIterator {
             this.params = params;
         }
 
-        public AsyncGeneratorFunc let_(String name, Object value) {
+        public AsyncGeneratorFunc let(String name, Object value) {
             body.add("let " + name + "=" + JS.toJs(value));
             return this;
         }
@@ -408,7 +408,7 @@ public class JSIterator {
         /**
          * Awaits and yields a value: yield await expr
          */
-        public AsyncGeneratorFunc awaitYield_(Val expr) {
+        public AsyncGeneratorFunc awaitYield(Val expr) {
             body.add("yield await " + expr.js());
             return this;
         }
@@ -432,7 +432,7 @@ public class JSIterator {
         /**
          * Awaits an expression and assigns to a variable.
          */
-        public AsyncGeneratorFunc await_(String varName, Val expr) {
+        public AsyncGeneratorFunc await(String varName, Val expr) {
             body.add("const " + varName + "=await " + expr.js());
             return this;
         }
@@ -440,7 +440,7 @@ public class JSIterator {
         /**
          * Awaits an expression without assignment.
          */
-        public AsyncGeneratorFunc await_(Val expr) {
+        public AsyncGeneratorFunc await(Val expr) {
             body.add("await " + expr.js());
             return this;
         }
@@ -554,7 +554,7 @@ public class JSIterator {
                 return this;
             }
 
-            public ForAwaitOfBuilder await_(String name, Val expr) {
+            public ForAwaitOfBuilder await(String name, Val expr) {
                 bodyStmts.add("const " + name + "=await " + expr.js());
                 return this;
             }
@@ -595,12 +595,12 @@ public class JSIterator {
                 return this;
             }
 
-            public WhileBuilder awaitYield_(Val expr) {
+            public WhileBuilder awaitYield(Val expr) {
                 bodyStmts.add("yield await " + expr.js());
                 return this;
             }
 
-            public WhileBuilder await_(String name, Val expr) {
+            public WhileBuilder await(String name, Val expr) {
                 bodyStmts.add("const " + name + "=await " + expr.js());
                 return this;
             }
@@ -610,7 +610,7 @@ public class JSIterator {
                 return this;
             }
 
-            public WhileBuilder let_(String name, Object value) {
+            public WhileBuilder let(String name, Object value) {
                 bodyStmts.add("let " + name + "=" + JS.toJs(value));
                 return this;
             }

@@ -17,8 +17,8 @@ public final class UIComponentsSection {
                         .title("Confirm Action")
                         .body(p("Are you sure?"))
                         .footer(
-                            button(attrs().set("onclick", Modal.closeJs("confirm-modal")), "Cancel"),
-                            button(attrs().set("onclick", "handleConfirm()"), "Confirm")
+                            button(onClick(Modal.close("confirm-modal")), "Cancel"),
+                            button(onClick(call("handleConfirm")), "Confirm")
                         )
                         .build()"""),
 
@@ -44,11 +44,11 @@ public final class UIComponentsSection {
             codeBlock("""
                         // Setup in layout
                         Toast.setup()
-                        
-                        // Trigger via JavaScript
-                        Toast.success("Saved successfully!")
-                        Toast.error("Something went wrong")
-                        Toast.info("New message received")"""),
+
+                        // Actions to wire into a click handler
+                        button(onClick(Toast.success("Saved successfully!")), "Save")
+                        button(onClick(Toast.error("Something went wrong")), "Retry")
+                        button(onClick(Toast.info("New message received")), "Notify")"""),
 
             docTip("All UI components include keyboard navigation and ARIA accessibility.")
         );

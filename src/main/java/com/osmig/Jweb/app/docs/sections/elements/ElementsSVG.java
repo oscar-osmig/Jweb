@@ -157,7 +157,7 @@ svg(viewBox("0 0 200 200"),
         ),
 
         // Reusable symbol
-        symbol(attrs().id("star").viewBox("0 0 24 24"),
+        symbol(id("star"), viewBox("0 0 24 24"),
             path(d("M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"))
         )
     ),

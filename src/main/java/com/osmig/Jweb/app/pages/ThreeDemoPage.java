@@ -4,6 +4,8 @@ import jweb.Element;
 
 import static jweb.El.*;
 import static jweb.Css.*;
+import static jweb.Js.*;
+import jweb.Three;
 import static jweb.Three.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
@@ -15,12 +17,11 @@ public final class ThreeDemoPage {
     public static Element content() {
         return div(style().maxWidth(px(700)).margin(zero, auto)
                 .padding(clamp(rem(2), vw(6), rem(3)), GUTTER),
-            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
-                text("3D scenes in pure Java")),
+            h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT), "3D scenes in pure Java"),
             p(style().marginTop(SP_2).color(TEXT_LIGHT),
-                text("Declared like any other element — three.js loads lazily, and "
+                "Declared like any other element — three.js loads lazily, and "
                     + "the runtime owns the render loop, shadows, sizing and cleanup. "
-                    + "Drag to orbit. Click a shape.")),
+                    + "Drag to orbit. Click a shape."),
 
             scene(style().marginTop(SP_6).height(px(420)).borderRadius(ROUNDED),
                 background("#0f172a"),
@@ -28,7 +29,7 @@ public final class ThreeDemoPage {
                 camera().position(6, 4, 8).lookAt(0, 0.8, 0).autoRotate(1),
                 directionalLight(1.2).position(5, 8, 4).shadows(),
                 ambientLight(0.35),
-                plane(30, 30).rotation(-90, 0, 0).color("#1e293b").roughness(0.9),
+                plane(30, 30).flat().color("#1e293b").roughness(0.9),
                 group(
                     torus(1, 0.35).color("#8b5cf6").position(-2.4, 1.2, 0)
                         .rotation(90, 0, 0).spin(0, 0, 25).name("torus")
@@ -42,13 +43,13 @@ public final class ThreeDemoPage {
                 ).name("stage")
             ).id("showcase"),
 
-            div(style().marginTop(SP_3), pickFragment(null)).id("pick-panel"),
+            div(id("pick-panel"), style().marginTop(SP_3), pickFragment(null)),
 
             p(style().marginTop(SP_6).color(TEXT_LIGHT).fontSize(TEXT_SM),
-                text("Every shape above is a builder chain: shadows are one call on the "
+                "Every shape above is a builder chain: shadows are one call on the "
                     + "light, the camera circles on its own, the cone hovers with "
                     + "float_(), and clicking raycasts into the same swap pipeline "
-                    + "as any link — the panel below the scene is server-rendered.")),
+                    + "as any link — the panel below the scene is server-rendered."),
 
             scene(style().marginTop(SP_6).height(px(320)).borderRadius(ROUNDED),
                 camera().position(2.5, 2, 4).orbit(),
@@ -59,21 +60,21 @@ public final class ThreeDemoPage {
             ).id("classic"),
 
             p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
-                text("The classic: box().color(\"#10b981\").spin() over a grid() — "
-                    + "the render loop only runs because something animates.")),
+                "The classic: box().color(\"#10b981\").spin() over a grid() — "
+                    + "the render loop only runs because something animates."),
 
             h2(style().marginTop(SP_6).fontSize(TEXT_LG).fontWeight(600).color(TEXT),
-                text("Hover, billboards and client-side clicks")),
+                "Hover, billboards and client-side clicks"),
             scene(style().marginTop(SP_2).height(px(380)).borderRadius(ROUNDED),
                 background("#0b1120"),
                 camera().position(0, 2.2, 7).lookAt(0, 1, 0).orbit(),
                 directionalLight(1.1).position(4, 6, 3),
                 ambientLight(0.35),
-                disc(6).rotation(-90, 0, 0).color("#111c33").roughness(0.95),
+                disc(6).flat().color("#111c33").roughness(0.95),
                 torusKnot(1, 0.28).color("#a855f7").metalness(0.6).roughness(0.2)
                     .position(0, 1.4, 0).spin(0, 25, 0).name("knot")
                     .hoverScale(1.1).hoverEmissive("#4c1d95")
-                    .onClick(jweb.Actions.toggle("knot-caption")),
+                    .onClick(toggle("knot-caption")),
                 billboard("torusKnot() — click it").size(0.45).position(0, 3.2, 0)
                     .background("rgba(15,23,42,0.85)").color("#e2e8f0"),
                 icosahedron(0.7).wireframe().color("#22d3ee")
@@ -83,22 +84,22 @@ public final class ThreeDemoPage {
                 ring(0.75, 0.95).color("#38bdf8").position(-2.6, 1, 0).spin(0, 0, 40)
             ).id("playground"),
 
-            p(attrs().id("knot-caption")
-                    .style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
-                        .backgroundColor(hex("#f5f3ff")).color(hex("#5b21b6")).done(),
-                text("Clicked! That ran an Actions-DSL handler — toggle(\"knot-caption\") — "
+            p(id("knot-caption"),
+                style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
+                    .backgroundColor(hex("#f5f3ff")).color(hex("#5b21b6")),
+                "Clicked! That ran an Actions-DSL handler — toggle(\"knot-caption\") — "
                     + "raycast in the scene, dispatched client-side, no server involved. "
-                    + "The grow-on-hover is hoverScale(1.1), the glow hoverEmissive(...).")),
+                    + "The grow-on-hover is hoverScale(1.1), the glow hoverEmissive(...)."),
 
             p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
-                text("New surface: torusKnot(), icosahedron().wireframe(), capsule(), "
+                "New surface: torusKnot(), icosahedron().wireframe(), capsule(), "
                     + "ring(), a disc() floor and a billboard(\"...\") label that always "
                     + "faces the camera. Hover effects and the click are declared on the "
                     + "shapes — and the render loop pauses whenever the scene scrolls "
-                    + "offscreen.")),
+                    + "offscreen."),
 
             h2(style().marginTop(SP_6).fontSize(TEXT_LG).fontWeight(600).color(TEXT),
-                text("Walk through it — and patch it live")),
+                "Walk through it — and patch it live"),
             scene(style().marginTop(SP_2).height(px(460)).borderRadius(ROUNDED),
                 background("#0c0a09"),
                 fog("#0c0a09", 14, 34),
@@ -109,8 +110,8 @@ public final class ThreeDemoPage {
                 pointLight(1.2).color("#ffd9a0").position(0, 3.4, 1),
                 pointLight(0.8).color("#ffe0b0").position(0, 3.2, -4.5),
                 // the polished floor: a real mirror under a satin veil
-                plane(8, 14).rotation(-90, 0, 0).mirror().color("#4a443e"),
-                plane(8, 14).rotation(-90, 0, 0).color("#191512").roughness(0.4)
+                plane(8, 14).flat().mirror().color("#4a443e"),
+                plane(8, 14).flat().color("#191512").roughness(0.4)
                     .opacity(0.72).position(0, 0.01, 0),
                 // walls and the far portal
                 plane(8.2, 4.6).position(0, 2.3, -7).color("#25211c").roughness(1),
@@ -140,33 +141,30 @@ public final class ThreeDemoPage {
             ).id("walkable"),
 
             div(style().marginTop(SP_3).display(flex).gap(SP_2).flexWrap(wrap),
-                button(attrs().data("three-walk", "walkable")
-                        .style().padding(SP_2, SP_3).borderRadius(ROUNDED)
-                        .border(px(1), solid, hex("#d6d3d1")).cursor(pointer).done(),
-                    text("🚶 Walk here — W A S D, drag to look, Esc to step out")),
-                button(attrs()
-                        .onClick(e -> patch("walkable").camera()
-                            .position(0, 2.2, -0.6).lookAt(0, 2.1, -4.5).tween(1200))
-                        .style().padding(SP_2, SP_3).borderRadius(ROUNDED)
-                        .border(px(1), solid, hex("#d6d3d1")).cursor(pointer).done(),
-                    text("Glide to the arch")),
-                button(attrs()
-                        .onClick(e -> patch("walkable").camera()
-                            .position(0, 1.9, 7.2).lookAt(0, 1.8, -2.5).tween(1200))
-                        .style().padding(SP_2, SP_3).borderRadius(ROUNDED)
-                        .border(px(1), solid, hex("#d6d3d1")).cursor(pointer).done(),
-                    text("Back to the door"))),
+                button(data("three-walk", "walkable"), chipStyle(),
+                    "🚶 Walk here — W A S D, drag to look, Esc to step out"),
+                button(onClick(e -> Three.patch("walkable").camera()
+                            .position(0, 2.2, -0.6).lookAt(0, 2.1, -4.5).tween(1200)),
+                    chipStyle(), "Glide to the arch"),
+                button(onClick(e -> Three.patch("walkable").camera()
+                            .position(0, 1.9, 7.2).lookAt(0, 1.8, -2.5).tween(1200)),
+                    chipStyle(), "Back to the door")),
 
             p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
-                text("camera().walk(1.6).bounds(...) hands you your feet — the button is "
+                "camera().walk(1.6).bounds(...) hands you your feet — the button is "
                     + "just data-three-walk=\"walkable\", no script. The floor is "
-                    + "plane().mirror() under a satin overlay, the archway is one arc(), "
+                    + "plane().flat().mirror() under a satin overlay, the archway is one arc(), "
                     + "the columns are lathe() profiles, the vine is one tube(), the dust "
                     + "is particles(140).drift(), and bloom() makes the lantern's emissive "
                     + "actually glow. Clicking the lantern runs a server handler that "
                     + "answers with Three.patch — watch it re-light in place, mid-walk, "
-                    + "no reload. The camera buttons are server patches too."))
+                    + "no reload. The camera buttons are server patches too.")
         );
+    }
+
+    private static jweb.Style<?> chipStyle() {
+        return style().padding(SP_2, SP_3).borderRadius(ROUNDED)
+            .border(px(1), solid, hex("#d6d3d1")).cursor(pointer);
     }
 
     private static final java.util.concurrent.atomic.AtomicBoolean LANTERN_COOL =
@@ -176,7 +174,7 @@ public final class ThreeDemoPage {
     private static void relightLantern(com.osmig.Jweb.framework.events.Event e) {
         boolean cool = !LANTERN_COOL.get();
         LANTERN_COOL.set(cool);
-        patch("walkable")
+        Three.patch("walkable")
             .node("lantern").emissive(cool ? "#22d3ee" : "#e8b36b")
                 .color(cool ? "#a5f3fc" : "#ffd9a0").tween(500)
             .node("lantern-light").color(cool ? "#22d3ee" : "#e8b36b")
@@ -202,8 +200,8 @@ public final class ThreeDemoPage {
         }
         return div(style().padding(SP_3).borderRadius(ROUNDED)
                 .backgroundColor(hex("#f8fafc")).border(px(1), solid, hex("#e2e8f0")),
-            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), text(title)),
-            p(style().marginTop(SP_1).color(TEXT_LIGHT), text(detail))
+            h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT), title),
+            p(style().marginTop(SP_1).color(TEXT_LIGHT), detail)
         );
     }
 }

@@ -15,7 +15,7 @@ import java.util.Map;
 public final class DocVersions {
 
     /** Every selectable version, newest first. */
-    private static final List<String> ALL = List.of("v2.2.3", "v2.2.0", "v2.1.0", "v2.0.0");
+    private static final List<String> ALL = List.of("v3.0.0", "v2.2.3", "v2.2.0", "v2.1.0", "v2.0.0");
 
     /** Sections that did not always exist, mapped to the version that added them. */
     private static final Map<String, String> INTRODUCED = Map.of(

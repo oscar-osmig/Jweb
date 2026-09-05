@@ -76,7 +76,7 @@ sphere(0.5)
 ```
 
 **Angles are degrees end-to-end** (matching the CSS DSL); the runtime converts
-to radians. A ground plane is `plane(30, 30).rotation(-90, 0, 0)`.
+to radians. A ground plane is `plane(30, 30).flat()` — the same as `.rotation(-90, 0, 0)`, named.
 
 ## Curves
 
@@ -274,7 +274,7 @@ brightness around it.
 ### Mirrors
 
 ```java
-plane(20, 20).rotation(-90, 0, 0).mirror().color("#4a443e")
+plane(20, 20).flat().mirror().color("#4a443e")
 ```
 
 A real-time planar reflection (three.js `Reflector`). `.color(...)` tints
@@ -382,7 +382,7 @@ clip name logs the clips the file actually has.
 Clicking a shape raycasts into the scene and dispatches through the same
 pipelines as element events. Two flavors:
 
-**Swap a fragment** — the 3D counterpart of `attrs().swap(url, target)`:
+**Swap a fragment** — the 3D counterpart of `swap(url, target)` on an element:
 
 ```java
 sphere().name("product")
@@ -390,7 +390,7 @@ sphere().name("product")
 ```
 
 **Run a server handler** — the same event pipeline as
-`attrs().onClick(...)`, over the live WebSocket:
+`onClick(...)` on an element, over the live WebSocket:
 
 ```java
 box().name("die").onClick(e -> rolls.set(rolls.get() + 1))
@@ -400,7 +400,7 @@ box().name("die").onClick(e -> rolls.set(rolls.get() + 1))
 with no server round-trip (and CSP-safe, like every Action handler):
 
 ```java
-sphere().onClick(jweb.Actions.toggle("info-panel"))
+sphere().onClick(toggle("info-panel"))          // import static jweb.Js.*
 ```
 
 The handler's `event.value()` (and `dataset.mesh`) carry the node's `name`.
@@ -416,7 +416,7 @@ torusKnot()
     .hoverScale(1.1)             // grows while hovered (any node type)
     .hoverEmissive("#4c1d95")    // glow highlight (meshes)
     .hoverColor("#f43f5e")       // or a straight color swap (meshes)
-    .onClick(jweb.Actions.show("hint"))
+    .onClick(show("hint"))
 ```
 
 ## Live patches
@@ -444,10 +444,10 @@ without it they apply instantly.
 `.camera()` glides the framing — `position`, `lookAt`, `tween`:
 
 ```java
-button(attrs().onClick(e ->
+button(onClick(e ->
     Three.patch("hall").camera()
          .position(0, 2.2, -0.6).lookAt(0, 2.1, -4.5).tween(1200)),
-    text("Approach the arch"))
+    "Approach the arch")
 ```
 
 Camera patches respect whoever owns the camera: under OrbitControls they

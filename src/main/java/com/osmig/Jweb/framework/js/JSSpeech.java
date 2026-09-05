@@ -33,7 +33,7 @@ import com.osmig.Jweb.framework.js.JS.Func;
  *     .continuous(true)
  *     .interimResults(true)
  *     .onResult(callback("e")
- *         .let_("text", transcript(variable("e")))
+ *         .let("text", transcript(variable("e")))
  *         .log(variable("text")))
  *     .onEnd(callback().log("Recognition ended"))
  *     .build("rec")

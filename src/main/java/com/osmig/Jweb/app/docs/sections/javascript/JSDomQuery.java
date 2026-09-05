@@ -11,7 +11,7 @@ public final class JSDomQuery {
             h3Title("DOM Query Builder"),
             para("Fluent API for querying and manipulating DOM elements."),
             codeBlock("""
-import static jweb.Actions.*;
+import static jweb.Js.*;
 
 // Query single element
 dom("#status")

@@ -22,7 +22,7 @@ public class Nav implements Template {
                 .alignItems(center).justifyContent(spaceBetween),
             a(href("/"), style()
                 .color(white).fontSize(rem(1.25)).fontWeight(700)
-                .textDecoration(none), text("JWeb")),
+                .textDecoration(none), "JWeb"),
             div(style()
                     .display(flex).flexWrap(wrap).alignItems(center)
                     .gap(clamp(SP_3, vw(3), rem(1.5))),
@@ -34,9 +34,9 @@ public class Nav implements Template {
         );
     }
 
-    private Element link(String href, String label) {
-        return a(href(href), style()
+    private Element link(String url, String label) {
+        return a(href(url), style()
             .color(rgba(255, 255, 255, 0.9)).fontSize(TEXT_SM)
-            .textDecoration(none).fontWeight(500), text(label));
+            .textDecoration(none).fontWeight(500), label);
     }
 }

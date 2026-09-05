@@ -91,7 +91,7 @@ reload()
 download("/files/report.pdf")
 
 // Smooth-scroll to element
-query("#section-id").scrollIntoView()"""),
+dom("#section-id").scrollIntoView()"""),
 
             h3Title("Fetch Requests"),
             codeBlock("""

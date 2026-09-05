@@ -23,6 +23,6 @@ public final class ContactStatus {
         return div(
             style().padding(rem(0.75), rem(1)).borderRadius(px(6))
                    .backgroundColor(bg).color(fg).fontSize(rem(0.875)),
-            text(message));
+            message);
     }
 }

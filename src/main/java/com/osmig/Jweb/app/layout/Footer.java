@@ -22,7 +22,7 @@ public class Footer implements Template {
                 .padding(SP_4, GUTTER)
                 .textAlign(center),
             p(style().color(TEXT_LIGHT).fontSize(TEXT_SM),
-                text("© 2025 - Built with JWeb Framework"))
+                "© 2025 - Built with JWeb Framework")
         );
     }
 }

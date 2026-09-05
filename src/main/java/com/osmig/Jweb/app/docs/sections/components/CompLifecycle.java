@@ -58,24 +58,24 @@ public Optional<String> metaDescription() {
 @Override
 public Optional<Element> extraHead() {
     return Optional.of(fragment(
-        meta(attrs().name("og:title").content(getTitle())),
-        meta(attrs().name("og:image").content(getImageUrl())),
+        meta("og:title", getTitle()),
+        meta("og:image", getImageUrl()),
         link(attrs().rel("preconnect").href("https://fonts.googleapis.com")),
-        link(attrs().rel("stylesheet").href("/css/page.css"))
+        css("/css/page.css")
     ));
 }"""),
 
             h3Title("Client-Side Lifecycle"),
-            para("JavaScript hooks for DOM ready and cleanup."),
+            para("Actions to run on DOM ready and cleanup."),
             codeBlock("""
 @Override
-public String onMount() {
-    return "initCharts(); setupWebSocket();";
+public Action onMount() {
+    return all(call("initCharts"), call("setupWebSocket"));
 }
 
 @Override
-public String onUnmount() {
-    return "closeWebSocket(); saveScrollPosition();";
+public Action onUnmount() {
+    return all(call("closeWebSocket"), call("saveScrollPosition"));
 }"""),
 
             h3Title("Caching"),

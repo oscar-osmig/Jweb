@@ -17,28 +17,26 @@ public final class ElementsModern {
 import static jweb.el.DialogHelper.*;
 
 // Define the dialog
-dialog(attrs().id("confirm-dialog"),
+dialog(id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure you want to proceed?"),
     div(class_("dialog-actions"),
-        button(attrs().onClick(close("confirm-dialog")), "Cancel"),
-        button(attrs().onClick(close("confirm-dialog", "confirmed")), "Confirm")
+        button(onClick(close("confirm-dialog")), "Cancel"),
+        button(onClick(close("confirm-dialog", "confirmed")), "Confirm")
     )
 )
 
 // Open as modal (with backdrop)
-button(attrs().onClick(showModal("confirm-dialog")), "Open Modal")
+button(onClick(showModal("confirm-dialog")), "Open Modal")
 
 // Open as non-modal
-button(attrs().onClick(show("confirm-dialog")), "Open Non-Modal")
+button(onClick(show("confirm-dialog")), "Open Non-Modal")
 
 // Toggle
-button(attrs().onClick(toggle("confirm-dialog")), "Toggle")
+button(onClick(toggle("confirm-dialog")), "Toggle")
 
 // Close on backdrop click
-dialog(attrs()
-    .id("my-dialog")
-    .onClick(closeOnBackdropClick("my-dialog")),
+dialog(id("my-dialog"), onClick(closeOnBackdropClick("my-dialog")),
     div(class_("dialog-content"),
         h2("Click outside to close"),
         p("Dialog content here")
@@ -64,24 +62,24 @@ details(attrs().open(),
 
 // FAQ Accordion (exclusive - using name attribute)
 div(class_("faq"),
-    details(attrs().name("faq"),
+    details(name("faq"),
         summary("What is JWeb?"),
         p("JWeb is a pure Java web framework...")
     ),
-    details(attrs().name("faq"),
+    details(name("faq"),
         summary("How do I get started?"),
         p("Add the dependency and create a page...")
     ),
-    details(attrs().name("faq"),
+    details(name("faq"),
         summary("Is it production ready?"),
         p("Yes, JWeb is production ready...")
     )
 )
 
 // Control with JavaScript helpers
-button(attrs().onClick(openAll("faq")), "Expand All")
-button(attrs().onClick(closeAll("faq")), "Collapse All")
-button(attrs().onClick(openExclusive("faq-1", "faq")), "Open First Only")"""),
+button(onClick(openAll("faq")), "Expand All")
+button(onClick(closeAll("faq")), "Collapse All")
+button(onClick(openExclusive("faq-1", "faq")), "Open First Only")"""),
 
             h3Title("Progress Bar"),
             para("Display progress of a task."),
@@ -142,7 +140,7 @@ div(
             para("Define reusable HTML templates and content slots."),
             codeBlock("""
 // Template (not rendered, used by JavaScript)
-template(attrs().id("card-template"),
+template(id("card-template"),
     div(class_("card"),
         h3(class_("card-title")),
         p(class_("card-content")),
@@ -156,10 +154,10 @@ slot("header")          // Named slot
 
 // Output (for calculation results)
 form(attrs().set("oninput", "result.value = a.valueAsNumber + b.valueAsNumber"),
-    input(attrs().type("number").name("a").value("0")),
-    text(" + "),
-    input(attrs().type("number").name("b").value("0")),
-    text(" = "),
+    input(type("number"), name("a"), value("0")),
+    " + ",
+    input(type("number"), name("b"), value("0")),
+    " = ",
     output(attrs().name("result").set("for", "a b"), "0")
 )"""),
 
@@ -181,11 +179,11 @@ p("Flight duration: ",
 )
 
 // Data (machine-readable value)
-data("12345", "Product Name")
+tag("data", value("12345"), "Product Name")
 // Renders: <data value="12345">Product Name</data>
 
 // Useful for product IDs, prices, etc.
-p("Price: ", data("99.99", "$99.99"))"""),
+p("Price: ", tag("data", value("99.99"), "$99.99"))"""),
 
             h3Title("Text Direction"),
             para("Control text direction for internationalization."),
@@ -205,7 +203,7 @@ bdo(attrs().dir("ltr"), "This text is left-to-right")"""),
             codeBlock("""
 // Ruby annotation for Japanese/Chinese
 ruby(
-    text("漢"),
+    "漢",
     rp("("),
     rt("かん"),  // Reading/pronunciation
     rp(")")
@@ -213,7 +211,7 @@ ruby(
 
 // Multiple characters
 ruby(
-    text("東京"),
+    "東京",
     rp("("),
     rt("とうきょう"),
     rp(")")

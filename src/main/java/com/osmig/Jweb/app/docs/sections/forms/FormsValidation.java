@@ -12,38 +12,33 @@ public final class FormsValidation {
             para("Use built-in validation attributes."),
             codeBlock("""
 // Required field
-input(attrs().type("text").name("name").required())
+input(type("text"), name("name"), required())
 
 // Email validation
-input(attrs().type("email").name("email").required())
+input(type("email"), name("email"), required())
 
 // Min/max length
-input(attrs().type("text").name("username")
-    .minlength(3).maxlength(20))
+input(type("text"), name("username"),
+    attrs().minlength(3).maxlength(20))
 
 // Number range
-input(attrs().type("number").name("age")
-    .min("18").max("100"))
+input(type("number"), name("age"),
+    attrs().min("18").max("100"))
 
 // Pattern validation
-input(attrs().type("text").name("phone")
-    .pattern("[0-9]{3}-[0-9]{3}-[0-9]{4}")
-    .title("Format: 123-456-7890"))"""),
+input(type("text"), name("phone"),
+    attrs().pattern("[0-9]{3}-[0-9]{3}-[0-9]{4}")
+        .title("Format: 123-456-7890"))"""),
 
             h3Title("Custom Error Messages"),
             codeBlock("""
-input(attrs()
-    .type("email")
-    .name("email")
-    .required()
-    .title("Please enter a valid email address"))
+input(type("email"), name("email"), required(),
+    attrs().title("Please enter a valid email address"))
 
 // Custom validation message via JavaScript
-input(attrs()
-    .type("text")
-    .name("username")
-    .pattern("[a-z0-9_]+")
-    .data("error", "Username can only contain lowercase letters, numbers, and underscores"))"""),
+input(type("text"), name("username"),
+    attrs().pattern("[a-z0-9_]+"),
+    data("error", "Username can only contain lowercase letters, numbers, and underscores"))"""),
 
             h3Title("Server-Side Validation"),
             codeBlock("""

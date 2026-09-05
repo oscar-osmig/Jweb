@@ -30,11 +30,11 @@ String bounceKeyframes = keyframes("bounce")
             h3Title("Using Animations"),
             codeBlock("""
 // Apply animation to element
-.animation(anim("fadeIn"), s(1), ease)
+.animation("fadeIn", s(1), ease)
 //          name, duration, timing
 
 // With all options
-.animationName(anim("bounce"))
+.animationName("bounce")
 .animationDuration(s(2))
 .animationTimingFunction(easeInOut)
 .animationDelay(ms(500))

@@ -59,7 +59,7 @@ public Element render() {
                 "Debounce batches rapid changes to avoid multiple reloads"
             ),
             docTip("State-preserving reload uses the same DOM morphing engine as "
-                   + "attrs().swapMorph(...). If the JWeb runtime isn't on the page it "
+                   + "swapMorph(...). If the JWeb runtime isn't on the page it "
                    + "falls back to a normal full reload."),
 
             docSubtitle("IDE Setup"),

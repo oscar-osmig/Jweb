@@ -13,13 +13,13 @@ wrapped in a View Transition when the browser supports it:
 app.get("/products/list", req -> productList(req.queryInt("page", 1)));
 
 // Client: no JS written — the JWeb runtime handles it
-button(attrs().swap("/products/list?page=2", "#products")
-              .swapPush("/products?page=2"),          // optional history entry
-    text("Next page"))
+button(swap("/products/list?page=2", "#products"),
+       swapPush("/products?page=2"),                  // optional history entry
+    "Next page")
 
 // Progressive forms: POST + swap the response fragment
-form(attrs().swapForm("/comments", "#comment-list"),
-    Input.text("message"), button(text("Post")))
+form(swapForm("/comments", "#comment-list"),
+    Input.text("message"), button("Post"))
 ```
 
 `swapOuter(url, sel)` replaces the target element itself; `swapMorph(url, sel)` **morphs
@@ -60,7 +60,7 @@ static final TypedRoute.Path2<String, Integer> POST =
 app.get(USER, (req, id) -> userPage(id));             // id is already a Long
 app.get(POST, (req, slug, page) -> comments(slug, page));
 
-a(USER.url(42L), text("Profile"))                     // "/users/42", URL-encoded
+a(href(USER.url(42L)), "Profile")                        // "/users/42", URL-encoded
 ```
 
 Bad parameter values (e.g. `/users/abc`) return 400, not 500.

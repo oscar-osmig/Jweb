@@ -40,7 +40,7 @@ public class Runtime extends Async {
             return this;
         }
 
-        public IIFE let_(String name, Object value) {
+        public IIFE let(String name, Object value) {
             parts.add("let " + name + "=" + JS.toJs(value));
             return this;
         }
@@ -102,7 +102,7 @@ public class Runtime extends Async {
             return this;
         }
 
-        public Guard let_(String name, Object value) {
+        public Guard let(String name, Object value) {
             parts.add("let " + name + "=" + JS.toJs(value));
             return this;
         }

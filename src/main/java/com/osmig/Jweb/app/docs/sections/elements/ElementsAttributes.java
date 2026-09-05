@@ -9,7 +9,9 @@ public final class ElementsAttributes {
     public static Element render() {
         return section(
             h3Title("Attributes API"),
-            para("The attrs() builder provides type-safe, fluent attribute building."),
+            para("attrs() is the long tail — most attributes, event handlers, styles, refs " +
+                 "and state bindings are plain element arguments; attrs() combines what's " +
+                 "left (classIf, custom attributes, and other chains) into one fluent builder."),
 
             h3Title("Basic Attributes"),
             codeBlock("""
@@ -53,36 +55,30 @@ attrs()
             h3Title("Inline Styles"),
             para("Three ways to add inline styles."),
             codeBlock("""
-// 1. Lambda syntax (recommended - no .done() needed)
-div(attrs()
-    .class_("card")
-    .style(s -> s
+// 1. A bare style() builder as an argument (recommended)
+div(class_("card"),
+    style()
         .display(flex)
         .padding(rem(1))
         .backgroundColor(white)
-        .borderRadius(px(8))
-    ),
+        .borderRadius(px(8)),
     content
 )
 
-// 2. Continuing attributes after style with .done()
-a(attrs()
-    .style()
-        .color(blue)
-        .textDecoration(none)
-    .done()
-    .href("/home")
-    .class_("nav-link"),
+// 2. Mixed with other attributes — no attrs()/.done() bridge needed
+a(style().color(blue).textDecoration(none),
+    href("/home"),
+    class_("nav-link"),
     "Home"
 )
 
-// 3. Pass a Style object
+// 3. Pass a pre-built Style object
 Style cardStyle = style()
     .padding(rem(1.5))
     .backgroundColor(white)
     .borderRadius(px(8));
 
-div(attrs().style(cardStyle), content)"""),
+div(cardStyle, content)"""),
 
             h3Title("Layout Shortcuts"),
             para("Quick flexbox and grid setup."),
@@ -126,15 +122,13 @@ attrs()
 // Renders: aria-label="Close dialog" aria-expanded="true" ...
 
 // Role
-attrs().role("button")
-attrs().role("navigation")
-attrs().role("dialog")
+role("button")
+role("navigation")
+role("dialog")
 
-// Combining for accessible button
-button(attrs()
-    .class_("icon-btn")
-    .aria("label", "Close")
-    .title("Close window"),
+// Combining for accessible button — title has no shortcut, so it's the
+// one thing attrs() still needs to carry
+button(class_("icon-btn"), aria("label", "Close"), attrs().title("Close window"),
     span("x")
 )"""),
 
@@ -235,9 +229,10 @@ picture(
     img(attrs().src("/small.jpg").alt("Responsive image"))
 )"""),
 
-            h3Title("Event Handlers"),
-            para("Attach JavaScript event handlers."),
-            codeBlock("""
+            before("v3.0.0",
+                h3Title("Event Handlers"),
+                para("Attach JavaScript event handlers."),
+                codeBlock("""
 // Click handlers
 button(attrs().onClick(call("handleClick")), "Click")
 button(attrs().onClick(call("deleteItem", id)), "Delete")
@@ -267,7 +262,42 @@ import static jweb.Actions.*;
 
 button(attrs().onClick(show("panel")), "Show")
 button(attrs().onClick(hide("modal")), "Close")
-button(attrs().onClick(toggle("dropdown")), "Toggle")"""),
+button(attrs().onClick(toggle("dropdown")), "Toggle")""")),
+
+            since("v3.0.0",
+                h3Title("Event Handlers"),
+                para("Handlers are plain element arguments — no attrs() bridge needed."),
+                codeBlock("""
+// Click handlers
+button(onClick(call("handleClick")), "Click")
+button(onClick(call("deleteItem", id)), "Delete")
+
+// Form events (server-side Java handlers)
+form(onSubmit(e -> handleSubmit(e)))
+input(onChange(e -> updateValue(e.value())))
+input(onInput(e -> search(e.value())))
+input(onFocus(e -> showHint()))
+input(onBlur(e -> hideHint()))
+
+// Mouse events
+div(
+    onMouseEnter(e -> showTooltip()),
+    onMouseLeave(e -> hideTooltip())
+)
+
+// Keyboard events
+input(onKeyDown(e -> handleKey(e)))
+input(onKeyUp(e -> handleKeyUp(e)))
+
+// Raw JS strings when needed — attrs() is still the long tail
+form(attrs().set("onsubmit", "return handleSubmit(event)"))
+
+// Using the JS DSL
+import static jweb.Js.*;
+
+button(onClick(show("panel")), "Show")
+button(onClick(hide("modal")), "Close")
+button(onClick(toggle("dropdown")), "Toggle")""")),
 
             h3Title("Custom Attributes"),
             para("Set any attribute not in the API."),

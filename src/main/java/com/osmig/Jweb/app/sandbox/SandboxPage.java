@@ -6,7 +6,6 @@ import com.osmig.Jweb.app.sandbox.SandboxDsl.Result;
 import com.osmig.Jweb.app.sandbox.SandboxFiles.Mode;
 import com.osmig.Jweb.app.sandbox.SandboxFiles.SandboxFile;
 
-import com.osmig.Jweb.framework.styles.Stylesheet.Rule;
 import static jweb.El.*;
 import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
@@ -295,31 +294,31 @@ public class SandboxPage implements Template {
                 .prop("background-image", "radial-gradient(circle, #e2e8f0 1px, transparent 1px)")
                 .prop("background-size", "16px 16px"))
             .rule(".sandbox-shake", style()
-                .animation(anim("sbShake"), s(0.4), linear, s(0), num(1)))
+                .animation("sbShake", s(0.4), linear, s(0), num(1)))
             // Phone: tree becomes a flat horizontal strip; panes stack
-            .mediaQuery(media().maxWidth(px(767)),
-                new Rule(".sandbox-layout", style().flexDirection(column)),
-                new Rule(".sandbox-tree", style()
+            .add(media().maxWidth(px(767))
+                .rule(".sandbox-layout", style().flexDirection(column))
+                .rule(".sandbox-tree", style()
                     .width(auto).padding(SP_2, SP_4)
                     .flexDirection(row)
                     .prop("border-right", "none")
-                    .borderBottom(px(1), solid, BORDER)),
-                new Rule(".sandbox-tree-inner", style()
+                    .borderBottom(px(1), solid, BORDER))
+                .rule(".sandbox-tree-inner", style()
                     .display(flex).alignItems(center).gap(SP_2)
-                    .overflowX(auto).overflowY(hidden)),
-                new Rule(".sandbox-tree-foot", style().display(none)),
-                new Rule(".sandbox-kids.collapsed", style().prop("display", "contents")),
-                new Rule(".sandbox-folder", style().display(none)),
-                new Rule(".sandbox-depth-1, .sandbox-depth-2, .sandbox-depth-3", style()
-                    .paddingLeft(SP_2)),
-                new Rule(".sandbox-split", style().flexDirection(column)),
-                new Rule(".sandbox-gutter", style().display(none)),
-                new Rule(".sandbox-code, .sandbox-preview", style().minHeight(px(320))),
-                new Rule(".sandbox-preview", style()
+                    .overflowX(auto).overflowY(hidden))
+                .rule(".sandbox-tree-foot", style().display(none))
+                .rule(".sandbox-kids.collapsed", style().prop("display", "contents"))
+                .rule(".sandbox-folder", style().display(none))
+                .rule(".sandbox-depth-1, .sandbox-depth-2, .sandbox-depth-3", style()
+                    .paddingLeft(SP_2))
+                .rule(".sandbox-split", style().flexDirection(column))
+                .rule(".sandbox-gutter", style().display(none))
+                .rule(".sandbox-code, .sandbox-preview", style().minHeight(px(320)))
+                .rule(".sandbox-preview", style()
                     .prop("border-left", "none")
-                    .borderTop(px(1), solid, BORDER)),
-                new Rule(".sandbox-stage", style().padding(SP_4)))
-            .keyframes(keyframes("sbShake")
+                    .borderTop(px(1), solid, BORDER))
+                .rule(".sandbox-stage", style().padding(SP_4)))
+            .add(keyframes("sbShake")
                 .at(0, style().prop("transform", "translateX(0)"))
                 .at(25, style().prop("transform", "translateX(-5px)"))
                 .at(50, style().prop("transform", "translateX(5px)"))

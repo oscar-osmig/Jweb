@@ -39,10 +39,11 @@ class DslFixesTest {
     }
 
     @Test
-    void singleArgOptionUsesValueAsText() {
-        String html = El.option("blue").toHtml();
-        assertTrue(html.contains("value=\"blue\""));
-        assertTrue(html.contains(">blue<"));
+    void singleArgOptionIsText() {
+        // A String is text everywhere; the browser uses the text as the value.
+        assertEquals("<option>blue</option>", El.option("blue").toHtml());
+        assertEquals("<option value=\"b\">Blue</option>",
+            El.option(Attr.value("b"), "Blue").toHtml());
     }
 
     @Test

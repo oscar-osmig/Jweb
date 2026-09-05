@@ -31,8 +31,8 @@ import static com.osmig.Jweb.framework.js.JS.*;
  *
  * // Async function
  * asyncFunc("loadData")
- *     .await_("response", fetch("/api/data").get().toVal())
- *     .await_("data", v("response").json())
+ *     .await("response", fetch("/api/data").get().toVal())
+ *     .await("data", v("response").json())
  *     .return_(v("data"));
  *
  * // Promise.all
@@ -40,8 +40,8 @@ import static com.osmig.Jweb.framework.js.JS.*;
  *     fetch("/api/users").get().toVal(),
  *     fetch("/api/posts").get().toVal()
  * ).then(callback("results")
- *     .let_("users", v("results").at(0))
- *     .let_("posts", v("results").at(1))
+ *     .let("users", v("results").at(0))
+ *     .let("posts", v("results").at(1))
  *     .call("render", v("users"), v("posts"))
  * ).build();
  * </pre>
@@ -56,19 +56,14 @@ public class Async {
     // ==================== Fetch Builder ====================
 
     /**
-     * Creates a fetch request builder.
+     * Creates an expression-level fetch builder from a URL expression —
+     * {@code fetch(str("/api/users"))} or {@code fetch(v("apiUrl"))}.
      *
-     * @param url the URL to fetch
-     * @return a FetchBuilder for configuring the request
-     */
-    public static FetchBuilder fetch(String url) {
-        return new FetchBuilder("'" + JS.esc(url) + "'");
-    }
-
-    /**
-     * Creates a fetch request builder with a dynamic URL.
+     * <p>{@code fetch("/api/users")} with a plain String is the page-level
+     * {@code Actions} builder ({@code .ok(...)}/{@code .fail(...)}); this one
+     * is the raw {@code fetch(...)} promise chain.</p>
      *
-     * @param urlExpr the URL expression (e.g., v("apiUrl"))
+     * @param urlExpr the URL expression
      * @return a FetchBuilder for configuring the request
      */
     public static FetchBuilder fetch(Val urlExpr) {
@@ -421,7 +416,7 @@ public class Async {
             this.params = params;
         }
 
-        public AsyncFunc let_(String name, Object value) {
+        public AsyncFunc let(String name, Object value) {
             body.add("let " + name + "=" + JS.toJs(value));
             return this;
         }
@@ -441,7 +436,7 @@ public class Async {
          * @param varName the variable to assign the result to
          * @param expr the expression to await
          */
-        public AsyncFunc await_(String varName, Val expr) {
+        public AsyncFunc await(String varName, Val expr) {
             body.add("const " + varName + "=await " + expr.js());
             return this;
         }
@@ -449,7 +444,7 @@ public class Async {
         /**
          * Awaits an expression without assignment.
          */
-        public AsyncFunc await_(Val expr) {
+        public AsyncFunc await(Val expr) {
             body.add("await " + expr.js());
             return this;
         }
@@ -525,6 +520,7 @@ public class Async {
 
         private void appendStmt(StringBuilder sb, Object s) {
             if (s instanceof Stmt st) sb.append(st.code).append(";");
+            else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
             else if (s instanceof Val val) sb.append(val.js()).append(";");
             else if (s instanceof String str) {
                 sb.append(str);
@@ -546,17 +542,17 @@ public class Async {
                 this.parent = parent;
             }
 
-            public TryBuilder await_(String varName, Val expr) {
+            public TryBuilder await(String varName, Val expr) {
                 tryStmts.add("const " + varName + "=await " + expr.js());
                 return this;
             }
 
-            public TryBuilder await_(Val expr) {
+            public TryBuilder await(Val expr) {
                 tryStmts.add("await " + expr.js());
                 return this;
             }
 
-            public TryBuilder let_(String name, Object value) {
+            public TryBuilder let(String name, Object value) {
                 tryStmts.add("let " + name + "=" + JS.toJs(value));
                 return this;
             }
@@ -874,19 +870,8 @@ public class Async {
         return new Val("new Promise(function(r){setTimeout(r," + ms + ")})");
     }
 
-    /**
-     * Creates a sleep function that can be awaited.
-     * @param ms milliseconds to sleep
-     * @return a Val representing the sleep promise
-     *
-     * @deprecated Promise helpers live in {@code JSPromise} — one home per
-     *     platform API, so a wildcard import of both no longer clashes.
-     *     Use {@code #delay(int)}.
-     */
-    @Deprecated
-    public static Val sleep(int ms) {
-        return delay(ms);
-    }
+    // sleep(ms) as an expression is delay(ms); sleep(ms) as a page-level
+    // Action lives in Actions and is what an unqualified sleep(...) resolves to.
 
     // ==================== Event to Promise ====================
 

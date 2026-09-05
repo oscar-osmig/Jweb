@@ -35,18 +35,18 @@ pre("Preformatted text")"""),
             para("Create anchor links with href shorthand or full attributes."),
             codeBlock("""
 // Simple link (href shorthand)
-a("/home", "Home")
-a("/about", "About Us")
+a(href("/home"), "Home")
+a(href("/about"), "About Us")
 
 // Link with attributes
-a(attrs().href("/contact").class_("nav-link"), "Contact")
+a(href("/contact"), class_("nav-link"), "Contact")
 
 // External link (opens in new tab securely)
 a(attrs().href("https://example.com").targetBlank(), "External Site")
 // Adds: target="_blank" rel="noopener noreferrer"
 
 // Link with multiple children
-a(attrs().href("/profile"),
+a(href("/profile"),
     img("/avatar.png", "Avatar"),
     span("View Profile")
 )"""),
@@ -59,9 +59,9 @@ body(
     header(
         h1("Site Title"),
         nav(
-            a("/", "Home"),
-            a("/about", "About"),
-            a("/contact", "Contact")
+            a(href("/"), "Home"),
+            a(href("/about"), "About"),
+            a(href("/contact"), "Contact")
         )
     ),
     main(
@@ -71,12 +71,12 @@ body(
         ),
         aside(
             h3("Related Links"),
-            ul(li(a("/related", "Related Item")))
+            ul(li(a(href("/related"), "Related Item")))
         )
     ),
     footer(
         p("© 2026 My Company"),
-        address(a("mailto:email@example.com", "Contact Us"))
+        address(a(href("mailto:email@example.com"), "Contact Us"))
     )
 )
 
@@ -88,8 +88,8 @@ section(
 
 // Search section (HTML5.2)
 search(
-    form(attrs().action("/search"),
-        input(attrs().type("search").name("q")),
+    form(action("/search"),
+        input(type("search"), name("q")),
         button("Search")
     )
 )"""),

@@ -87,7 +87,7 @@ primitive for design systems:
 public static Style<?> brandFlow() {
     return style().background(BRAND_GRADIENT)
                   .backgroundSize(percent(300), percent(100))
-                  .animation(anim("gradientShift"), s(3), linear, s(0), infinite);
+                  .animation("gradientShift", s(3), linear, s(0), infinite);
 }
 
 // Anywhere:
@@ -186,10 +186,10 @@ Stylesheet sheet = Stylesheet.stylesheet()
     .variables("--primary", "#6366f1", "--radius", "8px")
     .rule("body", style().margin(zero).fontFamily("system-ui, sans-serif"))
     .rule(".hero", style().padding(rem(4)).textAlign(center))
-    .keyframes(Keyframes.keyframes("gradientShift")
+    .add(keyframes("gradientShift")
         .from(style().backgroundPosition(percent(0), percent(50)))
         .to(style().backgroundPosition(percent(100), percent(50))))
-    .mediaQuery(MediaQuery.md(), new Stylesheet.Rule(".sidebar", style().display(block)));
+    .add(md().rule(".sidebar", style().display(block)));
 
 // Emit:
 sheet.build();          // formatted CSS
@@ -198,7 +198,9 @@ sheet.toStyleTag();     // "<style>…</style>" string (the sample app's Head.ja
                         // uses build() inside style(...) instead)
 ```
 
-Also accepts `fontFace(FontFace)`, `supports(Supports)`, `raw(css)`, `comment(text)`.
+`add(...)` is the one verb for every at-rule builder — a `media()`/`md()` query that
+already carries its rules, `container(...)`, `keyframes(...)`, `fontFace(...)`,
+`supports(...)`. `raw(css)` and `comment(text)` append text.
 
 ### 3. Per-element styles with pseudo-classes — `Tag.styled()`
 
@@ -222,7 +224,8 @@ cqw(10), cqh(10), cqi(10), cqb(10), cqmin(5), cqmax(5)   // container query unit
 fr(1), num(1.5)
 ms(300), s(0.5), deg(45), rad(1.57), turn(0.25)
 auto, zero, none, inherit, initial, unset
-raw("anything")                                 // escape hatch
+CSSValue.of("anything")                        // typed escape hatch — rarely needed, since
+                                                // every property also takes a plain String
 
 // Math
 calc("100% - 20px"), min(...), max(...), clamp(rem(1), vw(4), rem(2))
@@ -336,6 +339,8 @@ rule(".card:hover")
 rule("li:nth-child(2n+1)")
 
 // 2. The Selector builder, when you are composing one — chainable, keeps its type
+import static jweb.css.Selectors.*;          // the starters live here, not in Css:
+                                             // id/tag/select are also HTML DSL names
 rule(cls("card").hover())                    // .card:hover
 rule(cls("input").focusVisible())
 rule(tag("li").nthChild("2n+1"))

@@ -12,18 +12,18 @@ public final class ElementsMedia {
             para("Display images with required alt text for accessibility."),
             codeBlock("""
 // Basic image
-img(attrs().src("/images/logo.png").alt("Company Logo"))
+img(src("/images/logo.png"), alt("Company Logo"))
 
 // Responsive image
-img(attrs()
-    .src("/images/hero.jpg")
-    .alt("Hero image")
-    .class_("responsive")
-    .loading("lazy"))
+img(
+    src("/images/hero.jpg"),
+    alt("Hero image"),
+    class_("responsive"),
+    loading("lazy"))
 
 // Figure with caption
 figure(
-    img(attrs().src("/images/chart.png").alt("Sales chart")),
+    img(src("/images/chart.png"), alt("Sales chart")),
     figcaption("Q4 2024 Sales Performance")
 )"""),
 
@@ -31,23 +31,23 @@ figure(
             para("Create anchor links for navigation."),
             codeBlock("""
 // Internal link
-a(attrs().href("/about"), text("About Us"))
+a(href("/about"), "About Us")
 
 // External link (opens in new tab)
 a(attrs()
     .href("https://github.com")
     .target("_blank")
     .rel("noopener noreferrer"),
-    text("GitHub"))
+    "GitHub")
 
 // Download link
 a(attrs()
     .href("/files/report.pdf")
     .download("report.pdf"),
-    text("Download Report"))
+    "Download Report")
 
 // Email link
-a(attrs().href("mailto:contact@example.com"), text("Email Us"))""")
+a(href("mailto:contact@example.com"), "Email Us")""")
         );
     }
 }

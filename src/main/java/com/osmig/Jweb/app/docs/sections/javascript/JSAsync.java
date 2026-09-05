@@ -11,17 +11,17 @@ public final class JSAsync {
             h3Title("Async/Await"),
             para("Build asynchronous JavaScript with type-safe async functions."),
             codeBlock("""
-import static jweb.Actions.*;
+import static jweb.Js.*;
 
 // Simple await
-await_(fetch("/api/data").ok(processData()))
+await(fetch("/api/data").ok(processData()))
 
 // Async function
 asyncFunc("loadDashboard")
     .does(
         assign("isLoading", "true"),
-        await_(fetch("/api/user").ok(assign("user", "_data"))),
-        await_(fetch("/api/stats").ok(assign("stats", "_data"))),
+        await(fetch("/api/user").ok(assign("user", "_data"))),
+        await(fetch("/api/stats").ok(assign("stats", "_data"))),
         assign("isLoading", "false"),
         call("renderDashboard")
     )"""),
@@ -30,7 +30,7 @@ asyncFunc("loadDashboard")
             para("Handle errors in async operations."),
             codeBlock("""
 asyncTry(
-    await_(fetch("/api/data").ok(processData()))
+    await(fetch("/api/data").ok(processData()))
 )
 .catch_(all(
     log("Load failed"),
@@ -89,7 +89,7 @@ asyncFunc("search")
     )
     .raw("if(searchQuery !== query) return;")
     .does(
-        await_(fetch("/api/search?q=").appendVar("query")
+        await(fetch("/api/search?q=").appendVar("query")
             .ok(call("showResults", "_data")))
     )"""),
 

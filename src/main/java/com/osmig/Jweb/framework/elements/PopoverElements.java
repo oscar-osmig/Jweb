@@ -188,33 +188,20 @@ public class PopoverElements {
 
     // ==================== Popover JS Helpers ====================
 
-    /**
-     * Generates JS to show a popover: document.getElementById(id).showPopover()
-     *
-     * @param id the popover element ID
-     * @return the JavaScript string
-     */
-    public static String showPopover(String id) {
-        return "document.getElementById('" + id + "').showPopover()";
+    // Actions — plug into any handler: button(onClick(showPopover("tips")), "Tips")
+
+    /** An Action that shows the popover ({@code showPopover()}). */
+    public static com.osmig.Jweb.framework.js.Actions.Action showPopover(String id) {
+        return () -> "document.getElementById('" + id + "').showPopover()";
     }
 
-    /**
-     * Generates JS to hide a popover: document.getElementById(id).hidePopover()
-     *
-     * @param id the popover element ID
-     * @return the JavaScript string
-     */
-    public static String hidePopover(String id) {
-        return "document.getElementById('" + id + "').hidePopover()";
+    /** An Action that hides the popover ({@code hidePopover()}). */
+    public static com.osmig.Jweb.framework.js.Actions.Action hidePopover(String id) {
+        return () -> "document.getElementById('" + id + "').hidePopover()";
     }
 
-    /**
-     * Generates JS to toggle a popover: document.getElementById(id).togglePopover()
-     *
-     * @param id the popover element ID
-     * @return the JavaScript string
-     */
-    public static String togglePopover(String id) {
-        return "document.getElementById('" + id + "').togglePopover()";
+    /** An Action that toggles the popover ({@code togglePopover()}). */
+    public static com.osmig.Jweb.framework.js.Actions.Action togglePopover(String id) {
+        return () -> "document.getElementById('" + id + "').togglePopover()";
     }
 }

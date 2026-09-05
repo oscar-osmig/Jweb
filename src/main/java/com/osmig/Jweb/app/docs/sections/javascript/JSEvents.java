@@ -82,7 +82,7 @@ swipe(v("carousel"))
 
 // Touch events
 onTouchStart(byId("canvas"), callback("e")
-    .let_("touch", firstTouch(v("e")))
+    .let("touch", firstTouch(v("e")))
     .call("startDrag", v("touch"))
 )"""),
 
@@ -92,7 +92,7 @@ onTouchStart(byId("canvas"), callback("e")
 // Connect to SSE endpoint
 sse("/api/notifications")
     .onMessage(callback("e")
-        .let_("data", JSJson.parse(v("e").dot("data")))
+        .let("data", JSJson.parse(v("e").dot("data")))
         .call("showNotification", v("data"))
     )
     .onError(callback()

@@ -18,8 +18,8 @@ byId("myId")           // document.getElementById('myId')
 $("myId")                 // Shorthand
 
 // Query selectors
-query(".my-class")        // document.querySelector('.my-class')
-queryAll(".items")        // document.querySelectorAll('.items')
+dom(".my-class")          // document.querySelector('.my-class')
+domAll(".items")          // document.querySelectorAll('.items')
 
 // Element manipulation
 byId("btn")
@@ -38,15 +38,14 @@ byId("tooltip").hide()"""),
 
             h3Title("Control Flow"),
             codeBlock("""
-// If/else
+// If/else — the body is inline, nothing closes it
 func("checkAge", "age")
-    .if_(v("age").gte(18))
-        .then_(return_(str("adult")))
+    .if_(v("age").gte(18), return_(str("adult")))
     .else_(return_(str("minor")))
 
 // For loop
 func("sum", "items")
-    .let_("total", 0)
+    .let("total", 0)
     .forOf("item", v("items"))
         .body(v("total").addAssign(v("item")))
     .endFor()
@@ -61,9 +60,9 @@ func("countdown", "n")
 // Switch
 func("handleAction", "action")
     .switch_(v("action"))
-        .case_("add").then_(call("add"), "break")
-        .case_("remove").then_(call("remove"), "break")
-        .default_().then_(call("noop"))
+        .case_("add").then(call("add"), "break")
+        .case_("remove").then(call("remove"), "break")
+        .default_().then(call("noop"))
     .endSwitch()"""),
 
             h3Title("Array Methods"),

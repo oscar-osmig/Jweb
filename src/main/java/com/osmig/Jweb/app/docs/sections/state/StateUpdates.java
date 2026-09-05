@@ -32,25 +32,25 @@ visible.update(v -> !v);"""),
 State<Integer> x = useState(0);
 State<Integer> y = useState(0);
 
-button(attrs().onClick(e -> {
+button(onClick(e -> {
     x.set(100);  // Batched
     y.set(200);  // Batched
     // Single re-render after both updates
-}), text("Move"))"""),
+}), "Move")"""),
 
             h3Title("Conditional Updates"),
             codeBlock("""
 State<Integer> count = useState(0);
 
 // Only update if condition met
-button(attrs().onClick(e -> {
+button(onClick(e -> {
     if (count.get() < 10) {
         count.update(c -> c + 1);
     }
-}), text("Increment (max 10)"))
+}), "Increment (max 10)")
 
 // Reset to initial
-button(attrs().onClick(e -> count.set(0)), text("Reset"))""")
+button(onClick(e -> count.set(0)), "Reset")""")
         );
     }
 }

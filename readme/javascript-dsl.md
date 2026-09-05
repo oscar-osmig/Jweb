@@ -2,48 +2,51 @@
 
 # JavaScript DSL
 
-43 modules, ~23,700 lines, generating client-side JavaScript from type-safe Java. Two layers:
+43 modules, ~23,000 lines, generating client-side JavaScript from type-safe Java. One
+import, two layers:
 
-- **`Actions`** — the high-level, user-facing layer: form/click handlers, fetch chains, DOM
-  actions, message boxes. This is what pages normally use.
-- **`JS`** — the low-level expression/statement layer: values, functions, control flow, DOM
-  access. Use it when `Actions` doesn't cover the shape you need.
+```java
+import static jweb.Js.*;
+```
 
-## Two script builders — different names now
+- **Actions** — the page-level layer: form/click handlers, fetch chains, DOM actions,
+  message boxes. Everything here is an `Action`, and an `Action` plugs into any element
+  handler. This is what pages normally use.
+- **Expressions and statements** — values (`v`, `str`, `obj`), functions, control flow,
+  DOM access. Use it when an Action doesn't cover the shape you need.
 
-`Js.script()` and `Actions.actions()` are different builders:
+`jweb.Actions` is the same surface under its old name (importing both is harmless). Every
+browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) keeps its own
+import and lives at `jweb.js.*` — e.g. `import static jweb.js.JSClipboard.*;`.
 
-| | `Js.script()` | `Actions.actions()` |
+Where the two layers shared a name, the page-level `Action` form owns it: `fetch("/url")`
+is the `.ok(...)/.fail(...)` builder, `call("fn")` and `sleep(ms)` are Actions. The
+expression twins are `fetch(str("/url"))` / `fetch(v("apiUrl"))`, `JS.call("fn", args...)`
+and `delay(ms)`.
+
+## Two script builders
+
+`script()` and `actions()` are different builders:
+
+| | `script()` | `actions()` |
 |---|---|---|
 | Output | bare statements | wrapped in an IIFE `(function(){...})()` |
-| Accepts | `var_/let_/const_`, `Func`, `AsyncFunc`, raw | handlers (`onSubmit`/`onClick`/...), `state()`, `onLoad()`, raw |
+| Accepts | `var_/let/const_`, `Func`, `AsyncFunc`, raw | handlers (`onSubmit`/`onClick`/...), `state()`, `onLoad()`, raw |
 
-`Actions.actions()` was called `script()`, and `Actions.dom()`/`domAll()` were called
-`query()`/`queryAll()`. They were renamed because those names collided with `Js.*`, which
-is what made the two facades unusable in one file. The old names still work, deprecated.
+`actions()` is itself an `Action`, so a whole script can be returned from a Template's
+`scripts()` hook. The DOM query builders are `dom(selector)` / `domAll(selector)`.
 
 **Helpers are auto-injected.** Generated handlers reference `$_('id')` (plus `esc()` and
 `fmtDate()`); `build()` detects their use and prepends the definitions automatically.
-`withHelpers()` is deprecated — it is no longer needed.
 
-**Actions plug into event attributes directly** — no raw JS strings:
+**Actions plug into element handlers directly** — no raw JS strings:
 
 ```java
-button(attrs().onClick(reload()), text("Retry"))
-button(attrs().onClick(toggle("panel")), text("Menu"))
-button(attrs().onClick(Toast.success("Saved!")), text("Save"))   // typed Toast actions
+button(onClick(reload()), "Retry")
+button(onClick(toggle("panel")), "Menu")
+button(onClick(Toast.success("Saved!")), "Save")      // typed Toast actions
+button(onClick(inputRef.focus()), "Focus")            // Ref methods are Actions
 ```
-
-Short imports: `import static jweb.Actions.*;` is the high-level layer;
-`import static jweb.Js.*;` is the low-level layer and also folds in the legacy
-`Events`, `Runtime` and `Async` modules, so one import covers all four. Every
-browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) keeps
-its own import but lives at `jweb.js.*` with the same class name — e.g.
-`import static jweb.js.JSClipboard.*;`.
-
-`Js.*` and `Actions.*` still share a few static names (`call`, `fetch`, `sleep`), so
-wildcard-importing both can still be ambiguous for those. Convention: import `Actions.*` in
-page code and qualify `Js.` when you need the low-level layer.
 
 ## Handlers take a `Func`
 
@@ -156,7 +159,7 @@ renderList("list").from("items")             // items = JS array variable
         .build())
 
 // Async
-asyncBlock(await_(get("/api/a").ok(...)), await_(get("/api/b").ok(...)))
+asyncBlock(await(get("/api/a").ok(...)), await(get("/api/b").ok(...)))
 sleep(500)
 ```
 
@@ -215,16 +218,20 @@ Func formatTime = func("formatTime", "seconds")
     .return_(v("hrs").padStart(2, "0"));
 Func cb = callback("e").log("clicked", v("e").path("target.id"));
 
-// Control flow on Func bodies
+// Control flow on Func bodies — every block takes its body inline, nothing closes it
 func("check", "x")
-    .if_(v("x").gt(10)).then_(...).elif_(...).else_(...).end()
-    .forOf("item", v("list"), stmt1, stmt2)          // body inline — no endFor()
-    .while_(v("go"), stmt)                           // same for while_/for_/forIn/doWhile
+    .if_(v("x").gt(10), call("big"))                 // if / else if / else
+    .elif(v("x").gt(5), call("mid"))
+    .else_(call("small"))
+    .forOf("item", v("list"), stmt1, stmt2)          // same for while_/for_/forIn/doWhile
+    .while_(v("go"), stmt)
     .try_().body(...).catch_("err", stmt)            // catch_ with a body closes the try
     .switch_(v("mode")).case_("a", stmt, "break").default_(stmt);   // default_ closes it
 
-// The builder forms with endFor()/endWhile()/endTry()/endSwitch() still work; the
-// inline forms above just remove the closer you had to remember.
+// A trailing underscore marks a Java keyword and nothing else: if_/else_/for_/while_/
+// try_/catch_/switch_/case_/default_/return_/const_/var_/null_/this_ keep it;
+// then, elif, let, await, in, delete do not. An Action is a statement anywhere a
+// statement goes: .if_(cond, toggle("panel")) works.
 
 // DOM
 byId("submit")   // or $("submit")           → El (getElementById)
@@ -251,8 +258,8 @@ String js = Js.script()
 ```java
 asyncFunc("loadData")
     .does(
-        await_(get("/api/users").ok(assign("users", response("users")))),
-        await_(get("/api/posts").ok(assign("posts", response("posts")))),
+        await(get("/api/users").ok(assign("users", response("users")))),
+        await(get("/api/posts").ok(assign("posts", response("posts")))),
         call("renderDashboard")
     )
 
@@ -405,7 +412,7 @@ draggable("card-1")
 dropZone("target-area")
     .dropEffect("move")
     .onDrop(callback("e")
-        .let_("data", getData(v("e"), "text/plain"))
+        .let("data", getData(v("e"), "text/plain"))
         .log("Dropped:", v("data")))
     .build();
 ```
@@ -477,12 +484,14 @@ There is no bundler and no automatic script injection for DSL output. Three mech
 1. **Inline script tags** — the DSL produces a `String`; place it yourself:
    `inlineScript(actions().add(...).build())` (unescaped `VRaw` under the hood; the
    serializer stamps the request's CSP nonce on the tag).
-2. **Event attributes** — `attrs().onClick(action)`. Inside a page render this emits a
-   `data-jweb-act<type>` attribute and ships the JS in a nonce-stamped definitions
-   script the runtime delegates to (inline `on<type>=` can never run under the
-   recommended nonce CSP); the serializer applies the same rewrite to raw
-   `set("on<type>", js)` strings at render time. Outside a page render both fall
-   back to classic inline attributes (`attrs().inlineHandlers()` forces that).
+2. **Event handlers** — `onClick(action)` as an element argument (or `attrs().onClick(...)`).
+   Inside a page render this emits a `data-jweb-act<type>` attribute and ships the JS
+   in a nonce-stamped definitions script the runtime delegates to (inline `on<type>=`
+   can never run under the recommended nonce CSP); the serializer applies the same
+   rewrite to raw `set("on<type>", js)` strings at render time. Outside a page render
+   both fall back to classic inline attributes (`attrs().inlineHandlers()` forces that).
+   A Template's `onMount()`/`onUnmount()` hooks return Actions and are wrapped in the
+   right listener for you.
 3. **Auto-injected framework scripts** — the controller injects three scripts before
    `</body>`: the `Prefetch` script (external, cached `/jweb/prefetch.js`), the
    `__JWEB_DATA__` hydration JSON (inline, per request), and the reactive-state client

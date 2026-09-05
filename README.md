@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 2.2.3** | **Last Updated: 2026-09-01**
+**Version 3.0.0** | **Last Updated: 2026-09-04**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -18,7 +18,7 @@ JWeb is built on these core principles:
 4. **Component-Based** — Build UIs from composable, reusable pieces.
 5. **Reactive** — State changes propagate to the UI (see [State & Realtime](./readme/state-and-realtime.md) for current wiring status).
 6. **Minimal Dependencies** — Built on Spring Boot, no JavaScript toolchain required.
-7. **Modular Architecture** — Clean separation with focused files. Facade entry points (`jweb.El.*` for HTML, `jweb.Css.*` for CSS, `jweb.Js.*`/`jweb.Actions.*` for JavaScript) hide complexity while keeping internals maintainable.
+7. **Modular Architecture** — Clean separation with focused files. Facade entry points (`jweb.El.*` for HTML, `jweb.Css.*` for CSS, `jweb.Js.*` for JavaScript) hide complexity while keeping internals maintainable.
 
 ---
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v2.2.3</version>
+    <version>v3.0.0</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v2.2.3' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.0' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -87,23 +87,27 @@ public class App {
 
 Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest commit.
 
-### Upgrading from 1.x
+### Upgrading to 3.0
 
-2.0.0 is **source-compatible but not binary-compatible**. 139 element overloads were removed
-and the attribute surface moved to an interface, so recompile against the new jar rather than
-dropping it in beside the old one.
+3.0.0 is a syntax release: handlers, swaps and state bindings are plain element arguments,
+a String argument is always text, the four DSL imports (`El`, `Css`, `Js`, `Three`) coexist
+without ambiguity, and everything that emits JavaScript is an `Action` rather than a String.
+Recompile against the new jar.
 
-Two call sites still compile but now mean something different — worth checking by hand:
+Three call sites still compile but now mean something different — check them by hand:
 
-- `textarea("hello")` renders the text `hello`; it used to set `name="hello"`. Use
-  `textarea(name("bio"))`.
-- `JSHistory.pushState(state, url)` takes its arguments in platform order. The
-  `(String url, Val state)` and 3-argument forms are deleted, so those calls fail to compile
-  rather than changing meaning.
+- `a("/home", "Home")` renders the text `/homeHome`; the first String is no longer the
+  href. Write `a(href("/home"), "Home")`.
+- `label("email", "Email:")` and `option("us", "United States")` likewise: use
+  `label(for_("email"), ...)` and `option(value("us"), ...)`.
+- `call("fn")`, `fetch("/url")` and `sleep(ms)` under `import static jweb.Js.*` are the
+  page-level `Action` forms; the expression forms are `JS.call(...)`, `fetch(str("/url"))`
+  and `delay(ms)`.
 
-A third change — 29 deleted CSS animation presets — is invisible, because none of them
-animated anything. Everything else either still compiles with a deprecation warning or fails
-loudly. Full details: **[dsl-simplification.md](dsl-simplification.md)**.
+Everything else either still compiles with a deprecation warning or fails loudly. Full
+details and the before/after for each change:
+**[dsl-simplification-3.md](dsl-simplification-3.md)** (and
+[dsl-simplification.md](dsl-simplification.md) for the 2.0 pass).
 
 ---
 
@@ -184,8 +188,8 @@ Everything you import lives in the `jweb` package:
 // Static DSLs
 import static jweb.El.*;      // HTML: elements, attributes, typed inputs, conditionals
 import static jweb.Css.*;     // CSS: style(), units, colors, grid, media(), keyframes()
-import static jweb.Js.*;      // low-level JS + events + reactive runtime + async
-import static jweb.Actions.*; // declarative event actions (kept separate from Js)
+import static jweb.Js.*;      // JS: handlers, actions, expressions, events, async — one import
+// (jweb.Actions is the same surface under its old name)
 import static jweb.State.*;   // server-driven state hooks
 import static jweb.UI.*;      // prebuilt components
 import static jweb.Layout.*;  // layout primitives
@@ -238,7 +242,8 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
-| [Migrating to 2.0](./dsl-simplification.md) | What changed in the DSL pass, the six rules it follows now, and the breaking changes to check by hand |
+| [Migrating to 3.0](./dsl-simplification-3.md) | The 3.0 syntax pass: handlers as arguments, a String is always text, one JS import, and the call sites that silently change meaning |
+| [Migrating to 2.0](./dsl-simplification.md) | The 2.0 pass: the six rules the DSL follows and the breaking changes to check by hand |
 | [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |
 
 Additional internal reference docs ship with the framework source at

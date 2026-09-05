@@ -37,7 +37,7 @@ class JwebShortImportsTest {
             attrs().role("main"),
             svg(viewBox(0, 0, 24, 24), path(d("M0 0h24v24H0z"))), // legacy El extras
             textInput("name", "Your name"),                        // Elements typed inputs
-            submitButton("Go"));
+            button(type("submit"), "Go"));
         String html = el.toHtml();
         assertTrue(html.contains("viewBox"));
         assertTrue(html.contains("type=\"text\""));

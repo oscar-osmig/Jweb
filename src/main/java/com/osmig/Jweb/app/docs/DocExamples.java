@@ -163,21 +163,21 @@ public final class DocExamples {
                 public class Card implements Template {
                     private final String title;
                     private final String content;
-                
+
                     public Card(String title, String content) {
                         this.title = title;
                         this.content = content;
                     }
-                
+
                     @Override
                     public Element render() {
-                        return div(attrs().class_("card").style()
+                        return div(class_("card"), style()
                                 .padding(SP_4).backgroundColor(hex("#f8fafc"))
-                                .borderRadius(ROUNDED).done(),
+                                .borderRadius(ROUNDED),
                             h3(style().fontSize(TEXT_LG).fontWeight(600),
-                                text(title)),
+                                title),
                             p(style().color(TEXT_LIGHT).marginTop(SP_2),
-                                text(content))
+                                content)
                         );
                     }
                 }""";
@@ -226,10 +226,10 @@ public final class DocExamples {
                             body(style()
                                     .display(flex).flexDirection(column)
                                     .minHeight(vh(100)),
-                                new Nav().render(),
+                                new Nav(),
                                 main(style().flex(1),
                                     content),
-                                new Footer().render()
+                                new Footer()
                             )
                         );
                     }
@@ -240,12 +240,11 @@ public final class DocExamples {
             when(isLoggedIn, () ->
                 span("Welcome, " + userName)
             )
-            
-            // Choose between two elements
-            ifElse(isAdmin,
-                () -> a("/admin", "Admin Panel"),
-                () -> a("/dashboard", "Dashboard")
-            )""";
+
+            // Choose between two elements — a Java ternary
+            isAdmin
+                ? a(href("/admin"), "Admin Panel")
+                : a(href("/dashboard"), "Dashboard")""";
 
     public static final String TEMPLATES_LIST = """
 List<User> users = getUsers();
@@ -278,7 +277,7 @@ div(style()
     .padding(rem(2))
     .backgroundColor(hex("#f5f5f5"))
     .borderRadius(px(8)),
-    text("Styled content")
+    "Styled content"
 )""";
 
     public static final String STYLING_UNITS = """
@@ -440,8 +439,8 @@ public class Counter implements Template {
     public Element render() {
         return div(
             h1("Count: " + count.get()),
-            button(attrs().onClick(e -> count.set(count.get() + 1)),
-                text("Increment"))
+            button(onClick(e -> count.set(count.get() + 1)),
+                "Increment")
         );
     }
 }""";
@@ -490,16 +489,12 @@ public class LoginForm implements Template {
 
     @Override
     public Element render() {
-        return form(attrs().onSubmit(this::handleSubmit),
-            input(attrs()
-                .type("email")
-                .value(email.get())
-                .onInput(e -> email.set(e.value()))),
-            input(attrs()
-                .type("password")
-                .value(password.get())
-                .onInput(e -> password.set(e.value()))),
-            button(type("submit"), text("Login"))
+        return form(onSubmit(this::handleSubmit),
+            input(type("email"), value(email.get()),
+                onInput(e -> email.set(e.value()))),
+            input(type("password"), value(password.get()),
+                onInput(e -> password.set(e.value()))),
+            button(type("submit"), "Login")
         );
     }
 
@@ -512,8 +507,8 @@ public class LoginForm implements Template {
     public static final String STATE_PATTERNS = """
 // Boolean toggle
 State<Boolean> isOpen = useState(false);
-button(attrs().onClick(e -> isOpen.update(open -> !open)),
-    text(isOpen.get() ? "Close" : "Open"))
+button(onClick(e -> isOpen.update(open -> !open)),
+    isOpen.get() ? "Close" : "Open")
 
 // List management
 State<List<Todo>> todos = useState(new ArrayList<>());
@@ -547,53 +542,45 @@ String id = count.getId();""";
     // ==================== Forms Section ====================
 
     public static final String FORMS_BASIC = """
-form(attrs().action("/submit").method("POST"),
+form(action("/submit"), method("POST"),
     div(class_("form-group"),
-        label(for_("email"), text("Email")),
-        input(attrs()
-            .type("email")
-            .id("email")
-            .name("email")
-            .placeholder("you@example.com")
-            .required())
+        label(for_("email"), "Email"),
+        input(type("email"), id("email"), name("email"),
+            placeholder("you@example.com"), required())
     ),
     div(class_("form-group"),
-        label(for_("password"), text("Password")),
-        input(attrs()
-            .type("password")
-            .id("password")
-            .name("password")
-            .required())
+        label(for_("password"), "Password"),
+        input(type("password"), id("password"), name("password"), required())
     ),
-    button(type("submit"), text("Sign In"))
+    button(type("submit"), "Sign In")
 )""";
 
     public static final String FORMS_ELEMENTS = """
 // Text inputs
-input(attrs().type("text").name("username"))
-input(attrs().type("email").name("email"))
-input(attrs().type("password").name("password"))
-input(attrs().type("number").name("age"))
+input(type("text"), name("username"))
+input(type("email"), name("email"))
+input(type("password"), name("password"))
+input(type("number"), name("age"))
 
 // Textarea
-textarea(attrs().name("bio").placeholder("Tell us about yourself"))
+textarea(name("bio"), placeholder("Tell us about yourself"))
 
 // Select dropdown
-select(attrs().name("country"),
-    option("us", "United States"),
-    option("uk", "United Kingdom"),
-    option("ca", "Canada")
+select(name("country"),
+    option(value("us"), "United States"),
+    option(value("uk"), "United Kingdom"),
+    option(value("ca"), "Canada")
 )
 
 // Checkboxes and radios
-input(attrs().type("checkbox").name("agree").checked())
-input(attrs().type("radio").name("plan").value("basic"))
+input(type("checkbox"), name("agree"), checked())
+input(type("radio"), name("plan"), value("basic"))
 
 // File upload
-input(attrs().type("file").name("avatar"))
+input(type("file"), name("avatar"))
 
 // Hidden fields
-input(attrs().type("hidden").name("csrf").value(token))""";
+input(type("hidden"), name("csrf"), value(token))""";
 
     public static final String FORMS_VALIDATION = """
 import jweb.FormValidator;
@@ -661,26 +648,24 @@ private Element showErrors(Map<String, List<String>> errors) {
 
     public static final String FORMS_EVENTS = """
 // Form submit
-form(attrs().onSubmit(e -> {
+form(onSubmit(e -> {
     e.preventDefault();
     submitForm();
 }))
 
 // Input change
-input(attrs().onChange(e -> {
+input(onChange(e -> {
     String value = e.value();
     updateState(value);
 }))
 
 // Real-time input
-input(attrs().onInput(e -> {
+input(onInput(e -> {
     searchTerm.set(e.value());
 }))
 
 // Focus/blur
-input(attrs()
-    .onFocus(e -> showHint())
-    .onBlur(e -> validateField()))""";
+input(onFocus(e -> showHint()), onBlur(e -> validateField()))""";
 
     // ==================== Form Builder Section ====================
 
@@ -737,18 +722,18 @@ Form.create()
     .label("Country")
     .placeholder("Select a country")
     .required()
-    .option("us", "United States", true)  // pre-selected
-    .option("uk", "United Kingdom")
-    .option("ca", "Canada")
-    .option("de", "Germany")
+    .option(value("us"), "United States", true)  // pre-selected
+    .option(value("uk"), "United Kingdom")
+    .option(value("ca"), "Canada")
+    .option(value("de"), "Germany")
 )""";
 
     public static final String FORM_BUILDER_RADIO = """
 .radio("plan", r -> r
     .label("Subscription Plan")
-    .option("basic", "Basic - $9/month")
-    .option("pro", "Professional - $29/month", true)  // pre-selected
-    .option("enterprise", "Enterprise - $99/month")
+    .option(value("basic"), "Basic - $9/month")
+    .option(value("pro"), "Professional - $29/month", true)  // pre-selected
+    .option(value("enterprise"), "Enterprise - $99/month")
 )""";
 
     public static final String FORM_BUILDER_BUTTONS = """
@@ -785,14 +770,14 @@ Form.create()
     // Preferences
     .select("country", s -> s
         .label("Country")
-        .option("us", "United States")
-        .option("uk", "United Kingdom")
+        .option(value("us"), "United States")
+        .option(value("uk"), "United Kingdom")
         .required())
 
     .radio("plan", r -> r
         .label("Plan")
-        .option("free", "Free", true)  // pre-selected
-        .option("pro", "Pro - $10/mo"))
+        .option(value("free"), "Free", true)  // pre-selected
+        .option(value("pro"), "Pro - $10/mo"))
 
     .checkbox("newsletter", f -> f
         .label("Subscribe to newsletter"))
@@ -812,10 +797,10 @@ import static jweb.Layout.*;""";
 // Full page with header, main, footer
 Layout.page(
     Layout.header(
-        a(attrs().href("/"), text("Logo")),
+        a(href("/"), "Logo"),
         nav(
-            a(attrs().href("/about"), text("About")),
-            a(attrs().href("/contact"), text("Contact"))
+            a(href("/about"), "About"),
+            a(href("/contact"), "Contact")
         )
     ),
     Layout.main(
@@ -825,7 +810,7 @@ Layout.page(
         )
     ),
     Layout.footer(
-        text("© 2024 My Company")
+        "© 2024 My Company"
     )
 )""";
 
@@ -866,8 +851,8 @@ Layout.center(
 
 // Space between items
 Layout.spaceBetween(
-    div(text("Left")),
-    div(text("Right"))
+    div("Left"),
+    div("Right")
 )
 
 // Wrapping items with gap
@@ -908,14 +893,14 @@ Layout.columns("1fr", "2fr", rem(2),
     public static final String LAYOUTS_SIDEBAR = """
 // Left sidebar
 Layout.sidebar(px(250),      // sidebar width
-    div(text("Sidebar")),    // sidebar content
-    div(text("Main content")) // main content
+    div("Sidebar"),    // sidebar content
+    div("Main content") // main content
 )
 
 // Right sidebar
 Layout.sidebarRight(px(300),
-    div(text("Main content")),
-    div(text("Sidebar"))
+    div("Main content"),
+    div("Sidebar")
 )""";
 
     public static final String LAYOUTS_STACK = """
@@ -937,13 +922,13 @@ Layout.cluster(rem(0.5),
     public static final String LAYOUTS_SPECIAL = """
 // Split layout (left/right)
 Layout.split(
-    div(text("Left side")),
-    div(text("Right side"))
+    div("Left side"),
+    div("Right side")
 )
 
 // Aspect ratio container
 Layout.aspectRatio("16/9",
-    img(attrs().src("/video-thumbnail.jpg"))
+    img(src("/video-thumbnail.jpg"))
 )
 
 // Full-height centered cover
@@ -956,7 +941,7 @@ Layout.fullCover(
 
 // Sticky header
 Layout.stickyHeader(
-    nav(text("This sticks to top when scrolling"))
+    nav("This sticks to top when scrolling")
 )
 
 // Scrollable container
@@ -1055,10 +1040,10 @@ UI.skeletonCircle(px(48))        // circle (for avatar)""";
 
     public static final String UI_TYPOGRAPHY = """
 // Inline code
-p(text("Use the "), UI.inlineCode("npm install"), text(" command"))
+p("Use the ", UI.inlineCode("npm install"), " command")
 
 // Keyboard shortcut
-p(text("Press "), UI.kbd("Ctrl"), text(" + "), UI.kbd("S"), text(" to save"))
+p("Press ", UI.kbd("Ctrl"), " + ", UI.kbd("S"), " to save")
 
 // Code block with syntax highlighting colors
 UI.codeBlock(\"\"\"
@@ -1145,12 +1130,11 @@ form(), input(), textarea(), select(), option(), button(), label()
 img(), video(), audio(), canvas(), svg(), iframe()
 
 // Helpers
-text("content")      // Text node
+text("content")      // Text node (rarely needed — a bare String is text)
 raw("<b>html</b>")   // Unescaped HTML
 fragment(...)        // Group without wrapper
 each(list, mapper)   // List iteration
-when(cond, supplier) // Conditional
-ifElse(cond, t, f)   // Conditional with else""";
+when(cond, supplier) // Conditional — Java's ternary/switch handle the rest""";
 
     public static final String DSL_ATTRIBUTES = """
 attrs()
@@ -1407,10 +1391,10 @@ app.use("/admin", (req, chain) -> {
     public static final String SECURITY_CSRF = """
 import jweb.Csrf;
 
-form(attrs().action("/submit").method("POST"),
+form(action("/submit"), method("POST"),
     Csrf.tokenField(req),  // hidden _csrf input
     // ... form fields
-    button(type("submit"), text("Submit"))
+    button(type("submit"), "Submit")
 )""";
 
     // ==================== UI Components Section ====================
@@ -1458,8 +1442,8 @@ UI.Accordion.create("faq")
 Toast.setup()
 
 // Show from a click handler
-button(attrs().onClick(Toast.success("Saved!")), text("Save"))
-button(attrs().onClick(Toast.error("Failed")), text("Delete"))
+button(onClick(Toast.success("Saved!")), "Save")
+button(onClick(Toast.error("Failed")), "Delete")
 
 // Show on page load
 Toast.initial(Toast.Type.SUCCESS, "Welcome!")""";

@@ -103,8 +103,8 @@ public final class SetupSection {
                         @Override
                         public Element render() {
                             return div(style().maxWidth(px(700)).margin(zero, auto).padding(rem(3)),
-                                h1(style().fontSize(rem(2)).fontWeight(700), text("Welcome")),
-                                p(style().color(hex("#64748b")), text("Your first JWeb page."))
+                                h1(style().fontSize(rem(2)).fontWeight(700), "Welcome"),
+                                p(style().color(hex("#64748b")), "Your first JWeb page.")
                             );
                         }
                     }"""),
@@ -134,7 +134,7 @@ public final class SetupSection {
                         public Element render() {
                             return html(
                                 head(metaCharset(), metaViewport(), title("My App")),
-                                body(nav(a(href("/"), text("Home"))), main(content))
+                                body(nav(a(href("/"), "Home")), main(content))
                             );
                         }
                     }

@@ -96,8 +96,8 @@ import static jweb.js.JSGeolocation.*;
 // Get current position
 getCurrentPosition()
     .onSuccess(callback("pos")
-        .let_("lat", v("pos").dot("coords").dot("latitude"))
-        .let_("lng", v("pos").dot("coords").dot("longitude"))
+        .let("lat", v("pos").dot("coords").dot("latitude"))
+        .let("lng", v("pos").dot("coords").dot("longitude"))
         .call("showOnMap", v("lat"), v("lng"))
     )
     .onError(callback("err").log(v("err")))
@@ -151,7 +151,7 @@ isHidden()
 // Handle visibility change
 onVisibilityChange(callback()
     .if_(isVisible())
-        .then_(call("resumeVideo"))
+        .then(call("resumeVideo"))
     .else_(call("pauseVideo"))
 )
 

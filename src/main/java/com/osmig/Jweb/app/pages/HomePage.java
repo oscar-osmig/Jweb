@@ -26,17 +26,18 @@ public class HomePage implements Template {
         return section(style().textAlign(center).marginBottom(SP_8),
             h1(style()
                 .fontSize(clamp(rem(1.9), vw(6.5), TEXT_4XL)).fontWeight(800).color(TEXT)
-                .prop("text-wrap", "balance"),
-                text("Java Web Framework")),
+                .textWrap("balance"),
+                "Java Web Framework"),
             p(style()
                 .fontSize(TEXT_LG).color(TEXT_LIGHT)
                 .maxWidth(px(600)).margin(rem(1.5), auto, zero),
-                text("Build complete web applications entirely in Java. " +
-                     "Type-safe components, fluent DSL, and zero frontend tooling required.")),
+                "Build complete web applications entirely in Java. " +
+                "Type-safe components, fluent DSL, and zero frontend tooling required."),
             a(href("/docs"), style()
                 .display(inlineBlock).marginTop(SP_6).padding(SP_3, SP_6)
                 .apply(brandFlow())
-                .color(white).borderRadius(ROUNDED).fontWeight(600).textDecoration(none), text("Get Started"))
+                .color(white).borderRadius(ROUNDED).fontWeight(600).textDecoration(none),
+                "Get Started")
         );
     }
 
@@ -63,10 +64,8 @@ public class HomePage implements Template {
                 .overflow(hidden),
             brandBorder(ROUNDED_LG),
             div(style().position(relative).zIndex(1),
-                h2(style().fontSize(TEXT_LG).fontWeight(600).color(PRIMARY),
-                    text(title)),
-                p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_2),
-                    text(desc))
+                h2(style().fontSize(TEXT_LG).fontWeight(600).color(PRIMARY), title),
+                p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_2), desc)
             )
         );
     }

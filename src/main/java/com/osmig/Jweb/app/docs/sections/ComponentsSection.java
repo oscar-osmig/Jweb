@@ -25,7 +25,7 @@ public class MyComponent implements Template {
     }
 
     public Element render() {
-        return div(text(prop));
+        return div(prop);
     }
 }
 

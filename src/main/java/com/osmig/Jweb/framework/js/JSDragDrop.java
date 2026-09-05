@@ -27,7 +27,7 @@ import com.osmig.Jweb.framework.js.JS.Func;
  * dropZone("target-area")
  *     .dropEffect("move")
  *     .onDrop(callback("e")
- *         .let_("data", getData(variable("e"), "text/plain"))
+ *         .let("data", getData(variable("e"), "text/plain"))
  *         .log(variable("data")))
  *     .onDragOver(callback("e")
  *         .unsafeRaw("e.currentTarget.classList.add('drag-over')"))

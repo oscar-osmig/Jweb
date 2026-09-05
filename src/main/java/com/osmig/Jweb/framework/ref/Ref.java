@@ -1,64 +1,30 @@
 package com.osmig.Jweb.framework.ref;
 
-import java.util.UUID;
+import com.osmig.Jweb.framework.js.Actions.Action;
+import com.osmig.Jweb.framework.js.JS;
+import com.osmig.Jweb.framework.js.JS.Val;
+
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Ref for referencing DOM elements.
+ * A reference to a DOM element for imperative, client-side operations —
+ * focusing, scrolling, toggling a class. JWeb is server-rendered, so a ref is
+ * a unique id plus a set of {@link Action}s that target it; those plug into any
+ * event handler like every other Action:
  *
- * <p>Refs provide a way to get a reference to a DOM element for imperative operations
- * like focusing, scrolling, or measuring. Since JWeb is server-rendered, refs work
- * by generating unique IDs that can be used client-side.</p>
- *
- * <h2>Basic Usage</h2>
  * <pre>{@code
- * Ref inputRef = Ref.create();
+ * Ref search = Ref.create();
  *
  * form(
- *     input(attrs().ref(inputRef).type("text").name("search")),
- *     // Generate JS to focus the input on click
- *     button(attrs().set("onclick", inputRef.focus()), "Focus")
+ *     input(ref(search), type("text"), name("q")),
+ *     button(onClick(search.focus()), "Focus the search box")
  * )
  * }</pre>
  *
- * <h2>Named Refs</h2>
- * <pre>{@code
- * Ref modalRef = Ref.create("main-modal");
- *
- * div(attrs().ref(modalRef).class_("modal"),
- *     // modal content
- * )
- *
- * // Later, use the ID
- * button(onClick(e -> openModal(modalRef.id())), "Open Modal")
- * }</pre>
- *
- * <h2>Multiple Refs</h2>
- * <pre>{@code
- * Ref emailRef = Ref.create();
- * Ref passwordRef = Ref.create();
- *
- * form(
- *     input(attrs().ref(emailRef).type("email")),
- *     input(attrs().ref(passwordRef).type("password")),
- *     button(type("submit"), "Login")
- * )
- * }</pre>
- *
- * <h2>Using with JavaScript</h2>
- * <pre>{@code
- * Ref scrollTargetRef = Ref.create();
- *
- * div(
- *     button(attrs().onClick("scrollToElement('" + scrollTargetRef.id() + "')"),
- *         "Scroll to section"
- *     ),
- *     // ... more content
- *     section(attrs().ref(scrollTargetRef),
- *         h2("Target Section")
- *     )
- * )
- * }</pre>
+ * <p>{@code Ref.create("main-modal")} prefixes the generated id;
+ * {@code Ref.of("existing-id")} targets an element you named yourself.
+ * {@link #get(String)} is a JS expression ({@link Val}) for reading a
+ * property, so it composes with the rest of the JS DSL.</p>
  *
  * @see com.osmig.Jweb.framework.attributes.Attributes#ref(Ref)
  */
@@ -72,205 +38,114 @@ public final class Ref {
         this.id = id;
     }
 
-    /**
-     * Creates a new ref with an auto-generated ID.
-     *
-     * @return a new Ref
-     */
+    /** A ref with an auto-generated id ({@code jweb-ref-N}). */
     public static Ref create() {
         return new Ref("jweb-ref-" + counter.incrementAndGet());
     }
 
-    /**
-     * Creates a new ref with a custom ID prefix.
-     *
-     * <p>The final ID will be: prefix-{unique number}</p>
-     *
-     * @param prefix the ID prefix
-     * @return a new Ref
-     */
+    /** A ref whose id is {@code prefix-N}. */
     public static Ref create(String prefix) {
         return new Ref(prefix + "-" + counter.incrementAndGet());
     }
 
-    /**
-     * Creates a ref with an exact ID (no suffix added).
-     *
-     * <p>Use this when you need a specific, predictable ID.</p>
-     *
-     * @param id the exact ID to use
-     * @return a new Ref
-     */
+    /** A ref to an element with exactly this id. */
     public static Ref of(String id) {
         return new Ref(id);
     }
 
-    /**
-     * Gets the element ID for this ref.
-     *
-     * @return the HTML id attribute value
-     */
+    /** The element id this ref carries. */
     public String id() {
         return id;
     }
 
-    /**
-     * Gets a JavaScript selector for this element.
-     *
-     * @return document.getElementById('id') expression
-     */
+    /** The JS expression that resolves the element: {@code document.getElementById('id')}. */
     public String selector() {
         return "document.getElementById('" + id + "')";
     }
 
-    /**
-     * Gets a CSS selector for this element.
-     *
-     * @return #id selector
-     */
+    /** The CSS selector for this element: {@code #id}. */
     public String cssSelector() {
         return "#" + id;
     }
 
-    /**
-     * Generates JavaScript to focus this element.
-     *
-     * @return focus() call
-     */
-    public String focus() {
-        return selector() + ".focus()";
+    /** Focus the element. */
+    public Action focus() {
+        return action(".focus()");
+    }
+
+    /** Blur the element. */
+    public Action blur() {
+        return action(".blur()");
+    }
+
+    /** Smooth-scroll the element into view. */
+    public Action scrollIntoView() {
+        return action(".scrollIntoView({behavior:'smooth'})");
     }
 
     /**
-     * Generates JavaScript to blur this element.
-     *
-     * @return blur() call
-     */
-    public String blur() {
-        return selector() + ".blur()";
-    }
-
-    /**
-     * Generates JavaScript to scroll this element into view.
-     *
-     * @return scrollIntoView() call
-     */
-    public String scrollIntoView() {
-        return selector() + ".scrollIntoView({behavior:'smooth'})";
-    }
-
-    /**
-     * Generates JavaScript to scroll this element into view with options.
+     * Scroll the element into view with options.
      *
      * @param behavior "smooth" or "instant"
      * @param block "start", "center", "end", or "nearest"
-     * @return scrollIntoView() call with options
      */
-    public String scrollIntoView(String behavior, String block) {
-        return selector() + ".scrollIntoView({behavior:'" + behavior + "',block:'" + block + "'})";
+    public Action scrollIntoView(String behavior, String block) {
+        return action(".scrollIntoView({behavior:'" + behavior + "',block:'" + block + "'})");
     }
 
-    /**
-     * Generates JavaScript to click this element.
-     *
-     * @return click() call
-     */
-    public String click() {
-        return selector() + ".click()";
+    /** Click the element. */
+    public Action click() {
+        return action(".click()");
     }
 
-    /**
-     * Generates JavaScript to get a property value.
-     *
-     * @param property the property name
-     * @return property access expression
-     */
-    public String get(String property) {
-        return selector() + "." + property;
+    /** Read a property of the element — a JS expression: {@code ref.get("value")}. */
+    public Val get(String property) {
+        return JS.expr(selector() + "." + property);
     }
 
-    /**
-     * Generates JavaScript to set a property value.
-     *
-     * @param property the property name
-     * @param value the value (will be quoted if string)
-     * @return property assignment expression
-     */
-    public String set(String property, String value) {
-        return selector() + "." + property + "='" + escapeJs(value) + "'";
+    /** Set a String property: {@code ref.set("value", "hello")}. */
+    public Action set(String property, String value) {
+        return action("." + property + "='" + escapeJs(value) + "'");
     }
 
-    /**
-     * Generates JavaScript to set a numeric property value.
-     *
-     * @param property the property name
-     * @param value the numeric value
-     * @return property assignment expression
-     */
-    public String set(String property, Number value) {
-        return selector() + "." + property + "=" + value;
+    /** Set a numeric property. */
+    public Action set(String property, Number value) {
+        return action("." + property + "=" + value);
     }
 
-    /**
-     * Generates JavaScript to add a CSS class.
-     *
-     * @param className the class to add
-     * @return classList.add() call
-     */
-    public String addClass(String className) {
-        return selector() + ".classList.add('" + className + "')";
+    /** Add a CSS class. */
+    public Action addClass(String className) {
+        return action(".classList.add('" + className + "')");
     }
 
-    /**
-     * Generates JavaScript to remove a CSS class.
-     *
-     * @param className the class to remove
-     * @return classList.remove() call
-     */
-    public String removeClass(String className) {
-        return selector() + ".classList.remove('" + className + "')";
+    /** Remove a CSS class. */
+    public Action removeClass(String className) {
+        return action(".classList.remove('" + className + "')");
     }
 
-    /**
-     * Generates JavaScript to toggle a CSS class.
-     *
-     * @param className the class to toggle
-     * @return classList.toggle() call
-     */
-    public String toggleClass(String className) {
-        return selector() + ".classList.toggle('" + className + "')";
+    /** Toggle a CSS class. */
+    public Action toggleClass(String className) {
+        return action(".classList.toggle('" + className + "')");
     }
 
-    /**
-     * Generates JavaScript to set a style property.
-     *
-     * @param property the CSS property (camelCase)
-     * @param value the value
-     * @return style assignment
-     */
-    public String setStyle(String property, String value) {
-        return selector() + ".style." + property + "='" + escapeJs(value) + "'";
+    /** Set an inline style property (camelCase name). */
+    public Action setStyle(String property, String value) {
+        return action(".style." + property + "='" + escapeJs(value) + "'");
     }
 
-    /**
-     * Generates JavaScript to set an attribute.
-     *
-     * @param name the attribute name
-     * @param value the value
-     * @return setAttribute() call
-     */
-    public String setAttribute(String name, String value) {
-        return selector() + ".setAttribute('" + name + "','" + escapeJs(value) + "')";
+    /** Set an attribute. */
+    public Action setAttribute(String name, String value) {
+        return action(".setAttribute('" + name + "','" + escapeJs(value) + "')");
     }
 
-    /**
-     * Generates JavaScript to remove an attribute.
-     *
-     * @param name the attribute name
-     * @return removeAttribute() call
-     */
-    public String removeAttribute(String name) {
-        return selector() + ".removeAttribute('" + name + "')";
+    /** Remove an attribute. */
+    public Action removeAttribute(String name) {
+        return action(".removeAttribute('" + name + "')");
+    }
+
+    private Action action(String tail) {
+        String js = selector() + tail;
+        return () -> js;
     }
 
     private static String escapeJs(String value) {

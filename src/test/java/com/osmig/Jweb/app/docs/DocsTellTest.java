@@ -97,13 +97,15 @@ class DocsTellTest {
         assertTrue(all.contains("pushState(state, url)"),
             "the pushState argument-order change must be stated up front");
         assertTrue(all.contains("jweb.El"), "the import rule must be stated up front");
+        assertTrue(all.contains("a(href(\"/home\"), \"Home\")"),
+            "the 3.0 href-is-text change must be stated up front");
     }
 
     @Test
     void aTopicFetchedAloneStillCarriesTheHeader() {
         String one = DocsTell.topic("css-dsl");
         assertNotNull(one);
-        assertTrue(one.contains("The six rules the DSL follows"),
+        assertTrue(one.contains("The seven rules the DSL follows"),
             "a narrowed fetch must not lose the rules");
         assertTrue(one.contains("JWeb " + DocsTell.version()),
             "a narrowed fetch must not lose the version");

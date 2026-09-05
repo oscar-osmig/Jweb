@@ -57,9 +57,7 @@ void toggleTodo(int index) {
 ul(each(IntStream.range(0, todos.get().size()).boxed().toList(), i -> {
     Todo todo = todos.get().get(i);
     return li(
-        input(attrs().type("checkbox")
-            .checked(todo.done())
-            .onChange(e -> toggleTodo(i))),
+        input(type("checkbox"), attrs().checked(todo.done()), onChange(e -> toggleTodo(i))),
         span(todo.text())
     );
 }))""")

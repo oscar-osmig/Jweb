@@ -37,7 +37,7 @@ import java.util.Map;
  * @deprecated Replaced by {@code jweb.Actions} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class Actions {
+public class Actions extends JS {
 
     protected Actions() {}
 
@@ -291,18 +291,6 @@ public class Actions {
     }
 
     /**
-     * Render a list of items into a container.
-     * Usage: renderList("container").from("dataVar").using("templateFunc").empty("No items")
-     *
-     * @deprecated Rendering belongs on the server: return an HTML fragment and swap it in
-     *     (see {@code attrs().swap(...)}), or build the markup with the HTML DSL.
-     */
-    @Deprecated
-    public static ListRenderer renderList(String containerId) {
-        return new ListRenderer(containerId);
-    }
-
-    /**
      * Set innerHTML of an element.
      * Usage: setInnerHtml("container").to(html) or .fromVar("htmlVar")
      */
@@ -310,46 +298,8 @@ public class Actions {
         return new HtmlSetter(elementId);
     }
 
-    /**
-     * Build a JS template function for rendering items.
-     * Usage: template("r").div().style("...").text(field("email")).end()
-     *
-     * @deprecated String-template engine outside HTML/JS parity. Render server-side with the HTML DSL.
-     */
-    @Deprecated
-    public static TemplateBuilder template(String itemVar) {
-        return new TemplateBuilder(itemVar);
-    }
-
-    /**
-     * Reference a field from the item in a template.
-     *
-     * @deprecated Part of the deprecated {@link #template(String)} engine.
-     */
-    @Deprecated
-    public static TemplateField field(String name) {
-        return new TemplateField(name);
-    }
-
-    /**
-     * Reference a field with escaping for safe HTML.
-     *
-     * @deprecated Part of the deprecated {@link #template(String)} engine.
-     */
-    @Deprecated
-    public static TemplateField escapedField(String name) {
-        return new TemplateField(name, true);
-    }
-
-    /**
-     * Format a timestamp field as a date.
-     *
-     * @deprecated Part of the deprecated {@link #template(String)} engine.
-     */
-    @Deprecated
-    public static TemplateDateField dateField(String name) {
-        return new TemplateDateField(name);
-    }
+    // The client-side template engine (template/field/dateField/renderList) is
+    // gone: rendering belongs on the server — return a fragment and swap it in.
 
     /**
      * Create a color switch based on a value.
@@ -719,16 +669,6 @@ public class Actions {
 
     /** Build a complete script from multiple handlers. */
     public static ScriptBuilder actions() {
-        return new ScriptBuilder();
-    }
-
-    /**
-     * @deprecated Use {@link #actions()}. {@code script} clashes with
-     *     {@code Js.script} under a wildcard import, which is why
-     *     {@code jweb.Actions} and {@code jweb.Js} could not be used together.
-     */
-    @Deprecated
-    public static ScriptBuilder script() {
         return new ScriptBuilder();
     }
 
@@ -1457,7 +1397,7 @@ public class Actions {
          * <p>Example:</p>
          * <pre>
          * define("loadData").async().params("id").does(
-         *     await_(fetch_("/api/data/" + expr("id"))),
+         *     await(fetch_("/api/data/" + expr("id"))),
          *     ...
          * )
          * // Output: async function loadData(id) { await fetch('/api/data/' + id); ... }
@@ -1507,14 +1447,14 @@ public class Actions {
      *
      * <p>Example:</p>
      * <pre>
-     * await_(fetch_("/api/data"))
+     * await(fetch_("/api/data"))
      * // Output: await fetch('/api/data')
      * </pre>
      *
      * @param action the action to await
      * @return an Action that wraps with await
      */
-    public static Action await_(Action action) {
+    public static Action await(Action action) {
         return () -> "await " + action.build();
     }
 
@@ -1523,14 +1463,14 @@ public class Actions {
      *
      * <p>Example:</p>
      * <pre>
-     * await_("response.json()")
+     * await("response.json()")
      * // Output: await response.json()
      * </pre>
      *
      * @param expression the JavaScript expression to await
      * @return an Action that wraps with await
      */
-    public static Action await_(String expression) {
+    public static Action await(String expression) {
         return () -> "await " + expression;
     }
 
@@ -1541,7 +1481,7 @@ public class Actions {
      * <p>Example:</p>
      * <pre>
      * asyncBlock(
-     *     await_(fetch_("/api/data")),
+     *     await(fetch_("/api/data")),
      *     setText("result", "done")
      * )
      * // Output: (async()=>{await fetch('/api/data');$_('result').textContent='done'})()
@@ -1572,7 +1512,7 @@ public class Actions {
      * <p>Example:</p>
      * <pre>
      * asyncTry(
-     *     await_(fetch_("/api/data"))
+     *     await(fetch_("/api/data"))
      * ).catch_(
      *     showMessage("error").error("Failed to load")
      * )
@@ -1712,7 +1652,7 @@ public class Actions {
      *
      * <p>Example:</p>
      * <pre>
-     * await_(sleep(1000))
+     * await(sleep(1000))
      * // Output: await new Promise(r=>setTimeout(r,1000))
      * </pre>
      *
@@ -1730,7 +1670,7 @@ public class Actions {
      *
      * <p>Example:</p>
      * <pre>
-     * await_(get("/api/users"))
+     * await(get("/api/users"))
      * // Output: await fetch('/api/users')
      * </pre>
      *
@@ -1746,7 +1686,7 @@ public class Actions {
      *
      * <p>Example:</p>
      * <pre>
-     * await_(post("/api/users").json("{\"name\":\"John\"}"))
+     * await(post("/api/users").json("{\"name\":\"John\"}"))
      * // Output: await fetch('/api/users',{method:'POST',headers:{'Content-Type':'application/json'},body:'{"name":"John"}'})
      * </pre>
      *
@@ -2322,22 +2262,6 @@ public class Actions {
      * @return a DOMQueryAll builder
      */
     public static DOMQueryAll domAll(String selector) {
-        return new DOMQueryAll(selector);
-    }
-
-    /**
-     * @deprecated Use {@link #dom(String)}. {@code query} clashes with
-     *     {@code Js.query} under a wildcard import, which is why
-     *     {@code jweb.Actions} and {@code jweb.Js} could not be used together.
-     */
-    @Deprecated
-    public static DOMQuery query(String selector) {
-        return new DOMQuery(selector);
-    }
-
-    /** @deprecated Use {@link #domAll(String)} — see {@link #query(String)}. */
-    @Deprecated
-    public static DOMQueryAll queryAll(String selector) {
         return new DOMQueryAll(selector);
     }
 
@@ -3519,7 +3443,7 @@ public class Actions {
 
     // ==================== Script Builder ====================
 
-    public static class ScriptBuilder {
+    public static class ScriptBuilder implements Action {
         // Package-visible: ClientActions closes the same helpers over
         // attribute-action definitions
         static final String HELPERS =
@@ -3640,368 +3564,6 @@ public class Actions {
 
         private static boolean usesHelpers(String js) {
             return js.contains("$_(") || js.contains("esc(") || js.contains("fmtDate(");
-        }
-    }
-
-    // ==================== Template Builder ====================
-
-    /**
-     * Represents a value that can be used in templates.
-     */
-    public interface TemplateValue {
-        String toTemplateJs(String itemVar);
-    }
-
-    /**
-     * A field reference from the item object.
-     */
-    public static class TemplateField implements TemplateValue {
-        private final String name;
-        private final boolean escape;
-
-        TemplateField(String name) { this.name = name; this.escape = false; }
-        TemplateField(String name, boolean escape) { this.name = name; this.escape = escape; }
-
-        @Override
-        public String toTemplateJs(String itemVar) {
-            if (escape) {
-                return "${esc(" + itemVar + "." + name + ")}";
-            }
-            return "${" + itemVar + "." + name + "}";
-        }
-    }
-
-    /**
-     * A date field that gets formatted.
-     */
-    public static class TemplateDateField implements TemplateValue {
-        private final String name;
-        private String format = "MMM d, yyyy 'at' h:mm a";
-
-        TemplateDateField(String name) { this.name = name; }
-
-        public TemplateDateField format(String fmt) {
-            this.format = fmt;
-            return this;
-        }
-
-        @Override
-        public String toTemplateJs(String itemVar) {
-            return "${" + itemVar + "." + name + "?new Date(" + itemVar + "." + name + ").toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):''}";
-        }
-    }
-
-    /**
-     * Builder for JS template functions.
-     * Generates a function that takes an item and returns HTML string.
-     */
-    public static class TemplateBuilder {
-        private final String itemVar;
-        private final StringBuilder html = new StringBuilder();
-        private final java.util.Deque<String> tagStack = new java.util.ArrayDeque<>();
-        private boolean needsClosingBracket = false;
-
-        TemplateBuilder(String itemVar) { this.itemVar = itemVar; }
-
-        /** Start a div element. */
-        public TemplateBuilder div() {
-            closeOpeningTag();
-            html.append("<div");
-            tagStack.push("div");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Start a span element. */
-        public TemplateBuilder span() {
-            closeOpeningTag();
-            html.append("<span");
-            tagStack.push("span");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Start a button element. */
-        public TemplateBuilder button() {
-            closeOpeningTag();
-            html.append("<button");
-            tagStack.push("button");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Start a code element. */
-        public TemplateBuilder code() {
-            closeOpeningTag();
-            html.append("<code");
-            tagStack.push("code");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Start an input element (self-closing). */
-        public TemplateBuilder input() {
-            closeOpeningTag();
-            html.append("<input");
-            tagStack.push("input");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Start a p element. */
-        public TemplateBuilder p() {
-            closeOpeningTag();
-            html.append("<p");
-            tagStack.push("p");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Start an h3 element. */
-        public TemplateBuilder h3() {
-            closeOpeningTag();
-            html.append("<h3");
-            tagStack.push("h3");
-            needsClosingBracket = true;
-            return this;
-        }
-
-        /** Add style attribute with raw CSS string. */
-        public TemplateBuilder style(String css) {
-            html.append(" style=\"").append(esc(css).replace("\"", "&quot;")).append("\"");
-            return this;
-        }
-
-        /** Add style attribute using the CSS DSL Style object. */
-        public TemplateBuilder style(jweb.Style<?> styleObj) {
-            return style(styleObj.css());
-        }
-
-        /** Add id attribute. */
-        public TemplateBuilder id(String id) {
-            html.append(" id=\"").append(esc(id)).append("\"");
-            return this;
-        }
-
-        /** Add id from field. */
-        public TemplateBuilder idFromField(String fieldName) {
-            html.append(" id=\"${" + itemVar + "." + fieldName + "}\"");
-            return this;
-        }
-
-        /** Add class attribute. */
-        public TemplateBuilder cls(String className) {
-            html.append(" class=\"").append(esc(className)).append("\"");
-            return this;
-        }
-
-        /** Add onclick with function call using item fields. */
-        public TemplateBuilder onClick(String funcName, String... fields) {
-            html.append(" onclick=\"").append(funcName).append("(");
-            for (int i = 0; i < fields.length; i++) {
-                if (i > 0) html.append(",");
-                html.append("'${").append(itemVar).append(".").append(fields[i]).append("}'");
-            }
-            html.append(")\"");
-            return this;
-        }
-
-        /** Add onclick with function call using escaped item fields. */
-        public TemplateBuilder onClickEscaped(String funcName, String... fields) {
-            html.append(" onclick=\"").append(funcName).append("(");
-            for (int i = 0; i < fields.length; i++) {
-                if (i > 0) html.append(",");
-                html.append("'${esc(").append(itemVar).append(".").append(fields[i]).append(")}'");
-            }
-            html.append(")\"");
-            return this;
-        }
-
-        /** Add value attribute from field. */
-        public TemplateBuilder valueFromField(String fieldName) {
-            html.append(" value=\"${" + itemVar + "." + fieldName + "}\"");
-            return this;
-        }
-
-        /** Add readonly attribute. */
-        public TemplateBuilder readonly() {
-            html.append(" readonly");
-            return this;
-        }
-
-        /** Add any attribute. */
-        public TemplateBuilder attr(String name, String value) {
-            html.append(" ").append(name).append("=\"").append(esc(value)).append("\"");
-            return this;
-        }
-
-        /** Close the opening tag and add content. */
-        public TemplateBuilder text(String literal) {
-            closeOpeningTag();
-            html.append(esc(literal));
-            return this;
-        }
-
-        /** Add text from field. */
-        public TemplateBuilder text(TemplateValue value) {
-            closeOpeningTag();
-            html.append(value.toTemplateJs(itemVar));
-            return this;
-        }
-
-        /** Add raw HTML (careful - no escaping). */
-        public TemplateBuilder html(String rawHtml) {
-            closeOpeningTag();
-            html.append(rawHtml);
-            return this;
-        }
-
-        /** Add child elements (closes opening tag first). */
-        public TemplateBuilder child() {
-            closeOpeningTag();
-            return this;
-        }
-
-        /** End current element. */
-        public TemplateBuilder end() {
-            String tag = tagStack.pop();
-            if ("input".equals(tag)) {
-                html.append("/>");
-            } else {
-                closeOpeningTag();
-                html.append("</").append(tag).append(">");
-            }
-            return this;
-        }
-
-        /** Conditional block - show only if field is truthy. */
-        public TemplateBuilder when(String fieldName) {
-            closeOpeningTag();
-            html.append("${" + itemVar + "." + fieldName + "?`");
-            tagStack.push("when");
-            return this;
-        }
-
-        /** Conditional block - show only if field equals value. */
-        public TemplateBuilder whenEquals(String fieldName, String value) {
-            closeOpeningTag();
-            html.append("${" + itemVar + "." + fieldName + "==='" + esc(value) + "'?`");
-            tagStack.push("when");
-            return this;
-        }
-
-        /** End conditional block. */
-        public TemplateBuilder endWhen() {
-            tagStack.pop();
-            html.append("`:''}");
-            return this;
-        }
-
-        /**
-         * Add a status badge with dynamic colors.
-         * Usage: .badge("status", "statusBg", "statusTxt")
-         * Creates a pill-shaped badge using color functions for bg/text.
-         */
-        public TemplateBuilder badge(String fieldName, String bgColorFunc, String txtColorFunc) {
-            closeOpeningTag();
-            html.append("<span style=\"padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;font-weight:500;")
-                .append("background:${").append(bgColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")};")
-                .append("color:${").append(txtColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")}\"")
-                .append(">${").append(itemVar).append(".").append(fieldName).append("}</span>");
-            return this;
-        }
-
-        /**
-         * Add a status badge with custom base styles.
-         */
-        public TemplateBuilder badge(String fieldName, String bgColorFunc, String txtColorFunc, String extraStyles) {
-            closeOpeningTag();
-            html.append("<span style=\"").append(esc(extraStyles)).append(";")
-                .append("background:${").append(bgColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")};")
-                .append("color:${").append(txtColorFunc).append("(").append(itemVar).append(".").append(fieldName).append(")}\"")
-                .append(">${").append(itemVar).append(".").append(fieldName).append("}</span>");
-            return this;
-        }
-
-        private void closeOpeningTag() {
-            if (needsClosingBracket) {
-                html.append(">");
-                needsClosingBracket = false;
-            }
-        }
-
-        /** Build the template function. */
-        public String build() {
-            return itemVar + "=>`" + html.toString() + "`";
-        }
-
-        /** Build as a named function. */
-        public String buildAs(String funcName) {
-            return "function " + funcName + "(" + itemVar + "){return `" + html.toString() + "`;}";
-        }
-    }
-
-    // ==================== List Renderer ====================
-
-    /**
-     * Render a list of items from a JS array variable.
-     */
-    public static class ListRenderer implements Action {
-        private final String containerId;
-        private String dataVar;
-        private String templateFunc;
-        private String emptyMessage = "No items found";
-        private String emptyStyles = "text-align:center;padding:3rem;color:#6b7280";
-        private String selector = "div"; // child selector within container
-
-        ListRenderer(String containerId) { this.containerId = containerId; }
-
-        /** JS variable containing the array data. */
-        public ListRenderer from(String varName) {
-            this.dataVar = varName;
-            return this;
-        }
-
-        /** Function name that generates HTML for each item. */
-        public ListRenderer using(String funcName) {
-            this.templateFunc = funcName;
-            return this;
-        }
-
-        /** Message to show when list is empty. */
-        public ListRenderer empty(String message) {
-            this.emptyMessage = message;
-            return this;
-        }
-
-        /** Styles for empty message. */
-        public ListRenderer emptyStyles(String styles) {
-            this.emptyStyles = styles;
-            return this;
-        }
-
-        /** Child element selector within container (default: "div"). */
-        public ListRenderer into(String selector) {
-            this.selector = selector;
-            return this;
-        }
-
-        @Override
-        public String build() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("{const _c=$_('" + containerId + "')");
-            if (!"".equals(selector)) {
-                sb.append(".querySelector('" + esc(selector) + "')");
-            }
-            sb.append(";");
-
-            // Check if empty
-            sb.append("if(!" + dataVar + ".length){");
-            sb.append("_c.innerHTML='<div style=\"" + esc(emptyStyles) + "\">" + esc(emptyMessage) + "</div>';");
-            sb.append("}else{");
-            sb.append("_c.innerHTML=" + dataVar + ".map(" + templateFunc + ").join('');");
-            sb.append("}}");
-            return sb.toString();
         }
     }
 

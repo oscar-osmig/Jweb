@@ -21,7 +21,7 @@ public class Card implements Template {
     }
 
     public Element render() {
-        return div(attrs().class_("card"),
+        return div(class_("card"),
             h3(title),
             p(content)
         );

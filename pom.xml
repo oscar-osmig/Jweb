@@ -13,7 +13,7 @@
 	</parent>
 	<groupId>com.osmig</groupId>
 	<artifactId>Jweb</artifactId>
-	<version>2.2.3</version>
+	<version>3.0.0</version>
 	<name>Jweb</name>
 	<description>JWeb - Build web apps in pure Java</description>
 	<url>https://github.com/oscar-osmig/Jweb</url>
@@ -218,6 +218,7 @@
 										<!-- The 2.x migration guide: /docs/tell serves it so an
 										     assistant does not emit 1.x syntax. -->
 										<include>dsl-simplification.md</include>
+										<include>dsl-simplification-3.md</include>
 									</includes>
 								</resource>
 								<!-- The long-form guides. Needed on the classpath because

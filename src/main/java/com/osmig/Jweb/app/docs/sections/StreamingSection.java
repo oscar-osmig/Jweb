@@ -23,7 +23,7 @@ public final class StreamingSection {
                             Suspense.of(() -> reports.slowQuery()) // streams in when ready
                                 .loading(() -> p("Crunching numbers..."))
                                 .render(data -> reportTable(data))
-                        )).render()));"""),
+                        ))));"""),
 
             docSubtitle("How It Works"),
             docList(

@@ -23,6 +23,11 @@ public class Disc extends MeshNode<Disc> {
         return this;
     }
 
+    /** Lays the disc flat on the ground (rotation −90° about x) — a round floor. */
+    public Disc flat() {
+        return rotation(-90, 0, 0);
+    }
+
     @Override
     protected String type() {
         return "disc";

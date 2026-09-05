@@ -791,18 +791,26 @@ public class UI {
                 modal);
         }
 
-        /**
-         * Returns JavaScript to open a modal.
-         */
-        public static String openJs(String id) {
-            return "document.getElementById('" + id + "').style.display='flex'";
+        /** An Action that opens the modal: {@code button(onClick(UI.Modal.open("confirm")), "Delete")}. */
+        public static com.osmig.Jweb.framework.js.Actions.Action open(String id) {
+            return () -> "document.getElementById('" + id + "').style.display='flex'";
         }
 
-        /**
-         * Returns JavaScript to close a modal.
-         */
+        /** An Action that closes the modal. */
+        public static com.osmig.Jweb.framework.js.Actions.Action close(String id) {
+            return () -> "document.getElementById('" + id + "').style.display='none'";
+        }
+
+        /** @deprecated Use {@link #open(String)} — an Action, not a JS string. */
+        @Deprecated
+        public static String openJs(String id) {
+            return open(id).build();
+        }
+
+        /** @deprecated Use {@link #close(String)} — an Action, not a JS string. */
+        @Deprecated
         public static String closeJs(String id) {
-            return "document.getElementById('" + id + "').style.display='none'";
+            return close(id).build();
         }
     }
 

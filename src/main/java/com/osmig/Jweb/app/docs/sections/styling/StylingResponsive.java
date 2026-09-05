@@ -38,7 +38,6 @@ media().minWidth(px(600)).maxWidth(px(1200))"""),
 
             h3Title("Responsive Example"),
             codeBlock("""
-import com.osmig.Jweb.framework.styles.Stylesheet.Rule;
 import static jweb.Css.*;   // brings in stylesheet(), media(), style()
 
 String css = stylesheet()
@@ -49,12 +48,12 @@ String css = stylesheet()
         .gap(rem(1)))
 
     // Tablet and up
-    .mediaQuery(media().minWidth(px(768)),
-        new Rule(".grid", style().gridTemplateColumns(fr(1), fr(1))))
+    .add(media().minWidth(px(768))
+        .rule(".grid", style().gridTemplateColumns(fr(1), fr(1))))
 
     // Desktop
-    .mediaQuery(media().minWidth(px(1024)),
-        new Rule(".grid", style().gridTemplateColumns(fr(1), fr(1), fr(1))))
+    .add(media().minWidth(px(1024))
+        .rule(".grid", style().gridTemplateColumns(fr(1), fr(1), fr(1))))
     .build();"""),
 
             h3Title("Dark Mode"),

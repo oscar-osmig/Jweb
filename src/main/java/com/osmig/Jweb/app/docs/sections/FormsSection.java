@@ -15,12 +15,12 @@ public final class FormsSection {
 
             docSubtitle("Overview"),
             para("Create forms with the form() element and various input elements. " +
-                 "Use attrs() to set attributes like name, type, and validation rules."),
+                 "Attribute shortcuts like name, type, and validation rules are plain arguments."),
             codeBlock("""
-form(attrs().action("/submit").method("POST"),
-    input(attrs().type("text").name("name").required()),
-    input(attrs().type("email").name("email").required()),
-    button(attrs().type("submit"), text("Submit"))
+form(action("/submit"), method("POST"),
+    input(type("text"), name("name"), required()),
+    input(type("email"), name("email"), required()),
+    button(type("submit"), "Submit")
 )"""),
 
             FormsBasics.render(),

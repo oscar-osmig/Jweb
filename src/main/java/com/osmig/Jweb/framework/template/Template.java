@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.template;
 
 import com.osmig.Jweb.framework.core.Element;
+import com.osmig.Jweb.framework.js.Actions.Action;
 import com.osmig.Jweb.framework.server.Request;
 import com.osmig.Jweb.framework.vdom.VNode;
 
@@ -122,39 +123,38 @@ public interface Template extends Element {
     }
 
     /**
-     * Returns JavaScript to execute when the component mounts (DOM ready).
-     * The returned code is wrapped in a DOMContentLoaded listener.
+     * An Action to run when the component mounts (DOM ready). It is wrapped
+     * in a DOMContentLoaded listener for you.
      *
      * <p>Example:</p>
      * <pre>
      * &#64;Override
-     * public String onMount() {
-     *     return "initCharts(); setupEventListeners();";
+     * public Action onMount() {
+     *     return all(call("initCharts"), call("setupEventListeners"));
      * }
      * </pre>
      *
-     * @return JavaScript code to execute, or null/empty for none
+     * @return the Action to run, or null for none
      */
-    default String onMount() {
+    default Action onMount() {
         return null;
     }
 
     /**
-     * Returns JavaScript to execute when the component unmounts.
-     * Useful for cleanup (removing listeners, cancelling timers).
-     * Note: This is called via beforeunload or SPA navigation.
+     * An Action to run when the component unmounts (beforeunload or SPA
+     * navigation) — cleanup such as cancelling timers.
      *
      * <p>Example:</p>
      * <pre>
      * &#64;Override
-     * public String onUnmount() {
-     *     return "clearInterval(refreshTimer);";
+     * public Action onUnmount() {
+     *     return call("clearInterval", v("refreshTimer"));
      * }
      * </pre>
      *
-     * @return JavaScript code to execute, or null/empty for none
+     * @return the Action to run, or null for none
      */
-    default String onUnmount() {
+    default Action onUnmount() {
         return null;
     }
 
@@ -207,24 +207,22 @@ public interface Template extends Element {
     }
 
     /**
-     * Returns inline scripts for this template.
-     * These are added at the end of the body.
+     * A script for this template, added at the end of the body. Any
+     * {@code Action} works; a whole {@code actions()} builder is one too.
      *
      * <p>Example:</p>
      * <pre>
      * &#64;Override
-     * public Optional&lt;String&gt; scripts() {
+     * public Optional&lt;Action&gt; scripts() {
      *     return Optional.of(
-     *         script()
-     *             .add(onClick("btn").does(toggle("panel")))
-     *             .build()
+     *         actions().add(onClick("btn").does(toggle("panel")))
      *     );
      * }
      * </pre>
      *
-     * @return inline script code, or empty for none
+     * @return the script Action, or empty for none
      */
-    default Optional<String> scripts() {
+    default Optional<Action> scripts() {
         return Optional.empty();
     }
 

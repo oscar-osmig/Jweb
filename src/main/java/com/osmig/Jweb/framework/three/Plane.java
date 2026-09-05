@@ -19,6 +19,14 @@ public class Plane extends MeshNode<Plane> {
     }
 
     /**
+     * Lays the plane flat on the ground (rotation −90° about x), so a floor is
+     * {@code plane(20, 20).flat()} rather than a rotation to remember.
+     */
+    public Plane flat() {
+        return rotation(-90, 0, 0);
+    }
+
+    /**
      * Turns the plane into a real-time mirror (three.js {@code Reflector}) —
      * a polished floor is {@code plane(20, 20).rotation(-90, 0, 0).mirror()}.
      * {@code .color(...)} tints the reflection (darker = dimmer polish);

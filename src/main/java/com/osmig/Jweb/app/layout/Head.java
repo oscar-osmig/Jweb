@@ -3,7 +3,6 @@ package com.osmig.Jweb.app.layout;
 import jweb.Element;
 import jweb.Template;
 
-import com.osmig.Jweb.framework.styles.Stylesheet.Rule;
 import static jweb.El.*;
 import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
@@ -59,11 +58,11 @@ public class Head implements Template {
                 .textDecoration(none))
             .rule("a:hover", style()
                 .color(PRIMARY_DARK))
-            .mediaQuery(media().prefersReducedMotion(),
-                new Rule("*", style()
+            .add(media().prefersReducedMotion()
+                .rule("*", style()
                     .animationDuration(ms(0))
                     .transitionDuration(ms(0))))
-            .keyframes(keyframes("gradientShift")
+            .add(keyframes("gradientShift")
                 .at(0, style().backgroundPosition(percent(0), percent(50)))
                 .at(50, style().backgroundPosition(percent(100), percent(50)))
                 .at(100, style().backgroundPosition(percent(0), percent(50))))

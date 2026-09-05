@@ -28,8 +28,8 @@ when(showExtra, () -> fragment(
 // Return multiple elements from a method
 public Element renderUserInfo(User user) {
     return fragment(
-        span(attrs().class_("name"), text(user.getName())),
-        span(attrs().class_("email"), text(user.getEmail()))
+        span(class_("name"), user.getName()),
+        span(class_("email"), user.getEmail())
     );
 }"""),
 
@@ -41,7 +41,7 @@ raw("<svg>...</svg>")
 
 // Safe usage: only with trusted/sanitized content
 String sanitizedMarkdown = markdownToHtml(trustedContent);
-div(attrs().class_("markdown-body"), raw(sanitizedMarkdown))"""),
+div(class_("markdown-body"), raw(sanitizedMarkdown))"""),
 
             warn("Never use raw() with user-provided content. It can lead to XSS vulnerabilities.")
         );

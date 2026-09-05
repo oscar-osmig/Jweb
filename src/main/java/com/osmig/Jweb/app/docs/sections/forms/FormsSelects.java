@@ -12,28 +12,28 @@ public final class FormsSelects {
             para("Create select elements with options."),
             codeBlock("""
 // Basic select
-select(attrs().name("country"),
-    option(attrs().value(""), "Select a country"),
-    option(attrs().value("us"), "United States"),
-    option(attrs().value("uk"), "United Kingdom"),
-    option(attrs().value("ca"), "Canada")
+select(name("country"),
+    option(value(""), "Select a country"),
+    option(value("us"), "United States"),
+    option(value("uk"), "United Kingdom"),
+    option(value("ca"), "Canada")
 )
 
 // With selected option
-select(attrs().name("status"),
-    option(attrs().value("active").set("selected", ""), "Active"),
-    option(attrs().value("inactive"), "Inactive")
+select(name("status"),
+    option(value("active"), attrs().set("selected", ""), "Active"),
+    option(value("inactive"), "Inactive")
 )
 
 // Option groups
-select(attrs().name("car"),
-    optgroup("Swedish Cars",
-        option(attrs().value("volvo"), "Volvo"),
-        option(attrs().value("saab"), "Saab")
+select(name("car"),
+    optgroup(attr("label", "Swedish Cars"),
+        option(value("volvo"), "Volvo"),
+        option(value("saab"), "Saab")
     ),
-    optgroup("German Cars",
-        option(attrs().value("mercedes"), "Mercedes"),
-        option(attrs().value("audi"), "Audi")
+    optgroup(attr("label", "German Cars"),
+        option(value("mercedes"), "Mercedes"),
+        option(value("audi"), "Audi")
     )
 )"""),
 
@@ -41,10 +41,10 @@ select(attrs().name("car"),
             codeBlock("""
 List<Country> countries = countryService.findAll();
 
-select(attrs().name("country"),
-    option(attrs().value(""), "Select..."),
+select(name("country"),
+    option(value(""), "Select..."),
     each(countries, c ->
-        option(attrs().value(c.code()), c.name())
+        option(value(c.code()), c.name())
     )
 )""")
         );

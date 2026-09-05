@@ -16,7 +16,7 @@ class JsBuilderStyleTest {
         String js = script()
             .const_("count", 0)
             .add(func("render", "items")
-                .let_("total", v("items").length())
+                .let("total", v("items").length())
                 .if_(v("total").eq(0), return_())
                 .forOf("item", v("items"),
                     call("console.log", v("item")))

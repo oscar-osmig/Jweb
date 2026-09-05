@@ -20,6 +20,11 @@ public class Ring extends MeshNode<Ring> {
         return this;
     }
 
+    /** Lays the ring flat on the ground (rotation −90° about x). */
+    public Ring flat() {
+        return rotation(-90, 0, 0);
+    }
+
     @Override
     protected String type() {
         return "ring";

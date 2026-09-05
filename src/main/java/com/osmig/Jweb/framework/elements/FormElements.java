@@ -20,33 +20,17 @@ public final class FormElements {
     public static Tag input(Object... attrs) { return Tag.create("input", attrs); }
     public static Tag input(Attributes attrs) { return new Tag("input", attrs); }
     public static Tag textarea(Object... items) { return Tag.create("textarea", items); }
-    /** {@code textarea("Hello")} renders {@code <textarea>Hello</textarea>} — a lone String is text. */
-    public static Tag textarea(String text) { return Tag.create("textarea", TextElement.of(text)); }
     public static Tag textarea(Attributes attrs, Object... children) { return new Tag("textarea", attrs, Tag.toVNodes(children)); }
     public static Tag select(Object... children) { return Tag.create("select", children); }
     public static Tag select(Attributes attrs, Object... children) { return new Tag("select", attrs, Tag.toVNodes(children)); }
 
-    public static Tag option(String value, String text) {
-        return new Tag("option", new Attributes().value(value), Tag.toVNodes(new Object[]{text}));
-    }
-
-    /** Option whose value equals its visible text. */
-    public static Tag option(String valueAndText) {
-        return option(valueAndText, valueAndText);
-    }
+    /** {@code option(value("us"), "United States")}; a lone String is text (and thus the value). */
+    public static Tag option(Object... children) { return Tag.create("option", children); }
 
     public static Tag optgroup(Object... children) { return Tag.create("optgroup", children); }
-    /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. */
-    public static Tag optgroup(String text) { return Tag.create("optgroup", TextElement.of(text)); }
     public static Tag optgroup(Attributes attrs, Object... children) { return new Tag("optgroup", attrs, Tag.toVNodes(children)); }
     public static Tag label(Object... children) { return Tag.create("label", children); }
-    /** {@code label("Email:")} renders {@code <label>Email:</label>} — a lone String is text. */
-    public static Tag label(String text) { return Tag.create("label", TextElement.of(text)); }
     public static Tag label(Attributes attrs, Object... children) { return new Tag("label", attrs, Tag.toVNodes(children)); }
-
-    public static Tag label(String forId, Object... children) {
-        return new Tag("label", new Attributes().for_(forId), Tag.toVNodes(children));
-    }
 
     public static Tag button(Object... children) { return Tag.create("button", children); }
     public static Tag button(Attributes attrs, Object... children) { return new Tag("button", attrs, Tag.toVNodes(children)); }

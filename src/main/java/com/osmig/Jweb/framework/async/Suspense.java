@@ -94,16 +94,9 @@ public class Suspense<T> implements Element {
         return new Suspense<>(loader);
     }
 
-    /**
-     * Creates a Suspense from a Supplier (no checked exceptions).
-     *
-     * @param loader the data loading supplier
-     * @param <T> the data type
-     * @return a new Suspense builder
-     */
-    public static <T> Suspense<T> of(Supplier<T> loader) {
-        return new Suspense<>(loader::get);
-    }
+    // There is deliberately no of(Supplier<T>) twin: a lambda that throws
+    // nothing fits Callable just as well, and having both made every
+    // Suspense.of(() -> ...) call ambiguous until it was cast.
 
     /**
      * Creates a Suspense from a CompletableFuture.
@@ -312,7 +305,7 @@ public class Suspense<T> implements Element {
             Supplier<T> loader,
             Element loading,
             Function<T, ? extends jweb.Element> content) {
-        return Suspense.of(loader)
+        return Suspense.of(loader::get)
             .loading(loading)
             .render(content);
     }
@@ -332,7 +325,7 @@ public class Suspense<T> implements Element {
             Element loading,
             Function<Throwable, ? extends jweb.Element> error,
             Function<T, ? extends jweb.Element> content) {
-        return Suspense.of(loader)
+        return Suspense.of(loader::get)
             .loading(loading)
             .error(error)
             .render(content);
@@ -349,7 +342,7 @@ public class Suspense<T> implements Element {
     public static <T> Element suspendSilent(
             Supplier<T> loader,
             Function<T, ? extends jweb.Element> content) {
-        return Suspense.of(loader)
+        return Suspense.of(loader::get)
             .loading(() -> new VFragment(List.of()))
             .error(e -> () -> new VFragment(List.of()))
             .render(content);
@@ -378,7 +371,7 @@ public class Suspense<T> implements Element {
             Supplier<T> loader,
             Element loading,
             Function<T, ? extends jweb.Element> content) {
-        return Suspense.of(loader)
+        return Suspense.of(loader::get)
             .nonBlocking()
             .loading(loading)
             .render(content);
@@ -399,7 +392,7 @@ public class Suspense<T> implements Element {
             Element loading,
             long timeoutMs,
             Function<T, ? extends jweb.Element> content) {
-        return Suspense.of(loader)
+        return Suspense.of(loader::get)
             .nonBlocking(timeoutMs, TimeUnit.MILLISECONDS)
             .loading(loading)
             .render(content);

@@ -222,7 +222,7 @@ public class JSStorage {
         }
 
         /** Deletes this cookie */
-        public Val delete_() {
+        public Val delete() {
             return new Val("document.cookie='" + JS.esc(name) + "=;max-age=0;path=" + path + "'");
         }
 

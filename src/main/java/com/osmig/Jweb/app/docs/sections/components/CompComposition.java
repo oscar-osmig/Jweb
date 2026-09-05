@@ -16,7 +16,7 @@ public class Avatar implements Template {
     private final String src, alt;
     public Avatar(String src, String alt) { this.src = src; this.alt = alt; }
     public Element render() {
-        return img(attrs().src(src).alt(alt).class_("avatar"));
+        return img(src(src), alt(alt), class_("avatar"));
     }
 }
 
@@ -24,7 +24,7 @@ public class UserName implements Template {
     private final String name;
     public UserName(String name) { this.name = name; }
     public Element render() {
-        return span(attrs().class_("username"), text(name));
+        return span(class_("username"), name);
     }
 }
 
@@ -33,7 +33,7 @@ public class UserBadge implements Template {
     private final User user;
     public UserBadge(User user) { this.user = user; }
     public Element render() {
-        return div(attrs().class_("user-badge"),
+        return div(class_("user-badge"),
             new Avatar(user.getAvatar(), user.getName()),
             new UserName(user.getName())
         );

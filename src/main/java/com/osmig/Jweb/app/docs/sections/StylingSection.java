@@ -28,7 +28,7 @@ import jweb.Style;"""),
                  "argument — no attrs() ceremony. It composes with Attr shortcuts like " +
                  "class_() and id()."),
             codeBlock("""
-                    div(style().padding(SP_4).color(TEXT), text("hi"))
+                    div(style().padding(SP_4).color(TEXT), "hi")
 
                     div(class_("card"), id("hero"),
                         style().margin(zero).borderRadius(px(12)),
@@ -42,7 +42,7 @@ import jweb.Style;"""),
                     public static jweb.Style<?> brandFlow() {
                         return style().background(BRAND_GRADIENT)
                                       .backgroundSize(percent(300), percent(100))
-                                      .animation(anim("gradientShift"), s(3), linear, s(0), infinite);
+                                      .animation("gradientShift", s(3), linear, s(0), infinite);
                     }
 
                     // Anywhere:
@@ -58,15 +58,13 @@ import jweb.Style;"""),
             docSubtitle("Inline Styles"),
             para("Apply styles directly to elements using the style builder."),
             codeBlock("""
-// Lambda syntax (recommended)
-div(attrs()
-    .class_("card")
-    .style(s -> s
+// Bare style() builder as a standalone argument
+div(class_("card"),
+    style()
         .padding(rem(1.5))
         .backgroundColor(white)
         .borderRadius(px(8))
-        .boxShadow(px(0), px(2), px(8), rgba(0, 0, 0, 0.1))
-    ),
+        .boxShadow(px(0), px(2), px(8), rgba(0, 0, 0, 0.1)),
     content
 )
 
@@ -76,7 +74,7 @@ Style cardStyle = style()
     .backgroundColor(white)
     .borderRadius(px(8));
 
-div(attrs().style(cardStyle), content)"""),
+div(cardStyle, content)"""),
 
             docSubtitle("CSS Rules"),
             para("Generate CSS rules for stylesheets."),

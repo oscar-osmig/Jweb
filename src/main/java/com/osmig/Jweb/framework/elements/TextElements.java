@@ -48,10 +48,6 @@ public final class TextElements {
         return Tag.create("a", children);
     }
 
-    public static Tag a(String href, Object... children) {
-        return new Tag("a", new Attributes().href(href), Tag.toVNodes(children));
-    }
-
     public static Tag a(Attributes attrs, Object... children) {
         return new Tag("a", attrs, Tag.toVNodes(children));
     }

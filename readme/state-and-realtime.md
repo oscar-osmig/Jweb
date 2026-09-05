@@ -69,15 +69,22 @@ The client runtime patches elements by attribute:
 | `data-state-text="on:off"` | picks text by truthiness |
 | `data-state-toggle="state_1"` | toggles the `toggle-on` class |
 
-`StateBinding.bind(state)` / `StateBinding.bindInput(state)` return `Attributes` carrying
-`data-state-bind`. A `jweb:stateChange` CustomEvent fires on every patch.
+`bind(state)` / `bindInput(state)` (in `jweb.El`) are element arguments carrying
+`data-state-bind`, so a live counter is one line:
+
+```java
+p("Clicks: ", span(bind(clicks), clicks.get()))
+button(onClick(e -> clicks.update(n -> n + 1)), "Click me")
+```
+
+A `jweb:stateChange` CustomEvent fires on every patch.
 
 ## Server-Side Events (`events/`)
 
 Attach Java lambdas to DOM events; the framework registers them and renders a JS call:
 
 ```java
-button(attrs().onClick(e -> count.update(n -> n + 1)), "Increment")
+button(onClick(e -> count.update(n -> n + 1)), "Increment")
 // renders: <button onclick="JWeb.call('h_1_9f3c2a…', event)">Increment</button>
 ```
 
@@ -217,18 +224,20 @@ Portal.toast(content);     // "toasts"
 
 ## Refs (`ref/`)
 
-Type-safe element references whose methods generate JS snippets:
+Type-safe element references whose methods are `Action`s, so they plug into any handler:
 
 ```java
 Ref inputRef = Ref.create();          // id "jweb-ref-<n>"; or Ref.of("existing-id")
 
 form(
-    input(attrs().ref(inputRef).type("text")),
-    button(attrs().set("onclick", inputRef.focus()), "Focus the input")
+    input(ref(inputRef), type("text")),
+    button(onClick(inputRef.focus()), "Focus the input")
 )
 
-inputRef.scrollIntoView(); inputRef.addClass("highlight");
-inputRef.set("value", "hello"); inputRef.selector();     // document.getElementById('...')
+inputRef.scrollIntoView(); inputRef.addClass("highlight");   // Actions
+inputRef.set("value", "hello");                              // Action
+inputRef.get("value");                                       // a JS expression (Val)
+inputRef.selector();                                         // document.getElementById('...')
 ```
 
 ## Toasts (`ui/Toast`)
@@ -239,16 +248,17 @@ import com.osmig.Jweb.framework.ui.Toast;
 // One-time setup in the layout (container + styles + script):
 body(content, Toast.setup())                       // or setup(Position.TOP_RIGHT)
 
-// Trigger from actions/attributes (returns JS strings):
-button(attrs().set("onclick", Toast.successJs("Saved!")), "Save")
-Toast.errorJs("Failed"); Toast.warningJs("Careful"); Toast.infoJs("FYI");
+// Trigger from any handler — typed Actions:
+button(onClick(Toast.success("Saved!")), "Save")
+Toast.error("Failed"); Toast.warning("Careful"); Toast.info("FYI");
+// (the *Js String variants are deprecated)
 
 // Show on page load:
 Toast.initial(Toast.Type.SUCCESS, "Welcome back!")
 
-// Builder
+// Builder — the action button takes an Action too
 Toast.builder().type(Toast.Type.INFO).message("Update available")
-     .duration(8000).action("Reload", "location.reload()").build()
+     .duration(8000).action("Reload", reload()).build()
 ```
 
 (The methods are `toastScript()`/`init()`/`setup()` — there is no `Toast.script()`.)
@@ -263,7 +273,7 @@ A large static library of prebuilt components: `primaryButton/secondaryButton/da
 ```java
 UI.Modal.create("confirm").title("Delete?").body(p("This cannot be undone."))
    .footer(UI.dangerButton("Delete", e -> ...)).build()
-UI.Modal.openJs("confirm");   // JS string
+button(onClick(UI.Modal.open("confirm")), "Delete")   // open/close are Actions
 
 UI.Tabs.create("settings").tab("general", "General", generalPanel)
    .tab("advanced", "Advanced", advancedPanel).style(UI.Tabs.TabStyle.PILLS).build()

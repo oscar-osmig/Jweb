@@ -196,6 +196,50 @@ public class Stylesheet {
         return this;
     }
 
+    // ==================== add(...) — one verb for every at-rule ====================
+    //
+    //   stylesheet()
+    //       .rule("body", style().margin(zero))
+    //       .add(md().rule(".sidebar", style().display(block)))
+    //       .add(keyframes("spin").from(...).to(...))
+    //       .add(fontFace("Inter").src(...))
+
+    /** Adds a media query that already carries its rules: {@code add(md().rule(".x", style()...))}. */
+    public Stylesheet add(MediaQuery mediaQuery) {
+        rules.add(mediaQuery.build());
+        return this;
+    }
+
+    /** Adds a container query that already carries its rules. */
+    public Stylesheet add(ContainerQuery containerQuery) {
+        rules.add(containerQuery.build());
+        return this;
+    }
+
+    /** Adds a {@code @keyframes} block. */
+    public Stylesheet add(Keyframes keyframes) {
+        rules.add(keyframes.build());
+        return this;
+    }
+
+    /** Adds a {@code @font-face} block. */
+    public Stylesheet add(FontFace fontFace) {
+        rules.add(fontFace.build());
+        return this;
+    }
+
+    /** Adds a {@code @supports} block that already carries its rules. */
+    public Stylesheet add(Supports supports) {
+        rules.add(supports.build());
+        return this;
+    }
+
+    /** Adds a plain rule. */
+    public Stylesheet add(Rule rule) {
+        rules.add(rule.build());
+        return this;
+    }
+
     /**
      * Builds the complete stylesheet.
      *

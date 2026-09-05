@@ -146,7 +146,7 @@
  * <pre>
  * // Create a function with loops and DOM manipulation
  * Func updateList = func("updateList", "items")
- *     .let_("container", getElem("list"))
+ *     .let("container", getElem("list"))
  *     .call("container.innerHTML", "")
  *     .forOf("item", variable("items"))
  *         .body(

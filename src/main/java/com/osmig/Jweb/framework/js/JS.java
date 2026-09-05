@@ -384,7 +384,7 @@ public class JS extends Events {
             return this;
         }
 
-        public Script let_(String name, Object value) {
+        public Script let(String name, Object value) {
             parts.add("let " + name + "=" + toJs(value));
             return this;
         }
@@ -455,7 +455,7 @@ public class JS extends Events {
             return this;
         }
 
-        public Func let_(String name, Object value) {
+        public Func let(String name, Object value) {
             body.add("let " + name + "=" + toJs(value));
             return this;
         }
@@ -490,7 +490,16 @@ public class JS extends Events {
             return this;
         }
 
-        /** Simple if statement: if_(condition, stmt1, stmt2, ...) */
+        /**
+         * An if statement with its body inline; {@link #elif} and
+         * {@link #else_} extend it, and nothing closes it:
+         *
+         * <pre>
+         * .if_(v("x").gt(10), call("big"))
+         * .elif(v("x").gt(5), call("mid"))
+         * .else_(call("small"))
+         * </pre>
+         */
         public Func if_(Val condition, Object... thenStmts) {
             StringBuilder sb = new StringBuilder("if(").append(condition.code).append("){");
             for (Object s : thenStmts) appendStmt(sb, s);
@@ -499,7 +508,28 @@ public class JS extends Events {
             return this;
         }
 
-        /** Start an if/elif/else chain: if_(condition).then_(...).elif_(cond2).then_(...).else_(...).end() */
+        /** An {@code else if} branch on the preceding {@link #if_(Val, Object...)}. */
+        public Func elif(Val condition, Object... stmts) {
+            return branch("else if(" + condition.code + ")", stmts);
+        }
+
+        /** The {@code else} branch on the preceding {@link #if_(Val, Object...)}. */
+        public Func else_(Object... stmts) {
+            return branch("else", stmts);
+        }
+
+        private Func branch(String head, Object... stmts) {
+            if (body.isEmpty() || !body.get(body.size() - 1).startsWith("if(")) {
+                throw new IllegalStateException(head + " must directly follow if_(condition, ...) or elif(...)");
+            }
+            StringBuilder sb = new StringBuilder(body.remove(body.size() - 1)).append(head).append("{");
+            for (Object s : stmts) appendStmt(sb, s);
+            sb.append("}");
+            body.add(sb.toString());
+            return this;
+        }
+
+        /** Start an if/elif/else chain: if_(condition).then(...).elif(cond2).then(...).else_(...).end() */
         public IfBuilder if_(Val condition) {
             return new IfBuilder(this, condition);
         }
@@ -750,9 +780,9 @@ public class JS extends Events {
          * <pre>
          * func("example")
          *     .switch_(variable("action"))
-         *         .case_("add").then_(call("add"), "break")
-         *         .case_("remove").then_(call("remove"), "break")
-         *         .default_().then_(call("noop"))
+         *         .case_("add").then(call("add"), "break")
+         *         .case_("remove").then(call("remove"), "break")
+         *         .default_().then(call("noop"))
          *     .endSwitch()
          * </pre>
          *
@@ -788,6 +818,7 @@ public class JS extends Events {
 
         private void appendStmt(StringBuilder sb, Object s) {
             if (s instanceof Stmt st) sb.append(st.code).append(";");
+            else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
             else if (s instanceof Val val) sb.append(val.code).append(";");
             else if (s instanceof String str) {
                 sb.append(str);
@@ -804,9 +835,9 @@ public class JS extends Events {
      * <p>Usage:</p>
      * <pre>
      * func("example")
-     *     .if_(condition1).then_(stmt1, stmt2)
-     *     .elif_(condition2).then_(stmt3)
-     *     .elif_(condition3).then_(stmt4)
+     *     .if_(condition1).then(stmt1, stmt2)
+     *     .elif(condition2).then(stmt3)
+     *     .elif(condition3).then(stmt4)
      *     .else_(stmt5, stmt6)
      *     .end()
      * </pre>
@@ -822,8 +853,8 @@ public class JS extends Events {
         }
 
         /** Statements to execute if condition is true */
-        public IfBuilder then_(Object... stmts) {
-            if (!needsThen) throw new IllegalStateException("then_() already called");
+        public IfBuilder then(Object... stmts) {
+            if (!needsThen) throw new IllegalStateException("then() already called");
             sb.append("{");
             for (Object s : stmts) appendStmt(sb, s);
             sb.append("}");
@@ -832,8 +863,8 @@ public class JS extends Events {
         }
 
         /** Add an else-if branch */
-        public IfBuilder elif_(Val condition) {
-            if (needsThen) throw new IllegalStateException("then_() must be called before elif_()");
+        public IfBuilder elif(Val condition) {
+            if (needsThen) throw new IllegalStateException("then() must be called before elif()");
             sb.append("else if(").append(condition.code).append(")");
             needsThen = true;
             return this;
@@ -841,7 +872,7 @@ public class JS extends Events {
 
         /** Add an else branch and finish the chain */
         public Func else_(Object... stmts) {
-            if (needsThen) throw new IllegalStateException("then_() must be called before else_()");
+            if (needsThen) throw new IllegalStateException("then() must be called before else_()");
             sb.append("else{");
             for (Object s : stmts) appendStmt(sb, s);
             sb.append("}");
@@ -851,13 +882,14 @@ public class JS extends Events {
 
         /** Finish the chain without an else branch */
         public Func end() {
-            if (needsThen) throw new IllegalStateException("then_() must be called before end()");
+            if (needsThen) throw new IllegalStateException("then() must be called before end()");
             parent.body.add(sb.toString());
             return parent;
         }
 
         private void appendStmt(StringBuilder sb, Object s) {
             if (s instanceof Stmt st) sb.append(st.code).append(";");
+            else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
             else if (s instanceof Val val) sb.append(val.code).append(";");
             else if (s instanceof String str) {
                 sb.append(str);
@@ -898,6 +930,7 @@ public class JS extends Events {
         public ForBuilder body(Object... stmts) {
             for (Object s : stmts) {
                 if (s instanceof Stmt st) bodyStmts.add(st.code);
+                else if (s instanceof Actions.Action a) bodyStmts.add(a.build());
                 else if (s instanceof Val val) bodyStmts.add(val.code);
                 else if (s instanceof String str) bodyStmts.add(str);
             }
@@ -936,6 +969,7 @@ public class JS extends Events {
         public WhileBuilder body(Object... stmts) {
             for (Object s : stmts) {
                 if (s instanceof Stmt st) bodyStmts.add(st.code);
+                else if (s instanceof Actions.Action a) bodyStmts.add(a.build());
                 else if (s instanceof Val val) bodyStmts.add(val.code);
                 else if (s instanceof String str) bodyStmts.add(str);
             }
@@ -972,6 +1006,7 @@ public class JS extends Events {
         public DoWhileBuilder body(Object... stmts) {
             for (Object s : stmts) {
                 if (s instanceof Stmt st) bodyStmts.add(st.code);
+                else if (s instanceof Actions.Action a) bodyStmts.add(a.build());
                 else if (s instanceof Val val) bodyStmts.add(val.code);
                 else if (s instanceof String str) bodyStmts.add(str);
             }
@@ -1011,6 +1046,7 @@ public class JS extends Events {
         public TryBuilder body(Object... stmts) {
             for (Object s : stmts) {
                 if (s instanceof Stmt st) tryStmts.add(st.code);
+                else if (s instanceof Actions.Action a) tryStmts.add(a.build());
                 else if (s instanceof Val val) tryStmts.add(val.code);
                 else if (s instanceof String str) tryStmts.add(str);
             }
@@ -1037,6 +1073,7 @@ public class JS extends Events {
             this.catchVar = varName;
             for (Object s : body) {
                 if (s instanceof Stmt st) catchStmts.add(st.code);
+                else if (s instanceof Actions.Action a) catchStmts.add(a.build());
                 else if (s instanceof Val val) catchStmts.add(val.code);
                 else if (s instanceof String str) catchStmts.add(str);
             }
@@ -1086,6 +1123,7 @@ public class JS extends Events {
             public CatchBuilder body(Object... stmts) {
                 for (Object s : stmts) {
                     if (s instanceof Stmt st) parent.catchStmts.add(st.code);
+                    else if (s instanceof Actions.Action a) parent.catchStmts.add(a.build());
                     else if (s instanceof Val val) parent.catchStmts.add(val.code);
                     else if (s instanceof String str) parent.catchStmts.add(str);
                 }
@@ -1115,6 +1153,7 @@ public class JS extends Events {
             public FinallyBuilder body(Object... stmts) {
                 for (Object s : stmts) {
                     if (s instanceof Stmt st) parent.finallyStmts.add(st.code);
+                    else if (s instanceof Actions.Action a) parent.finallyStmts.add(a.build());
                     else if (s instanceof Val val) parent.finallyStmts.add(val.code);
                     else if (s instanceof String str) parent.finallyStmts.add(str);
                 }
@@ -1159,7 +1198,7 @@ public class JS extends Events {
          * </pre>
          */
         public SwitchBuilder case_(Object caseValue, Object... stmts) {
-            return new CaseBuilder(this, toJs(caseValue)).then_(stmts);
+            return new CaseBuilder(this, toJs(caseValue)).then(stmts);
         }
 
         /** Adds the default clause. */
@@ -1169,7 +1208,7 @@ public class JS extends Events {
 
         /** Default clause with its statements inline — closes the switch. */
         public Func default_(Object... stmts) {
-            new CaseBuilder(this, null).then_(stmts);
+            new CaseBuilder(this, null).then(stmts);
             return endSwitch();
         }
 
@@ -1195,7 +1234,7 @@ public class JS extends Events {
             }
 
             /** Adds statements to this case. */
-            public SwitchBuilder then_(Object... stmts) {
+            public SwitchBuilder then(Object... stmts) {
                 StringBuilder sb = new StringBuilder();
                 if (caseValue != null) {
                     sb.append("case ").append(caseValue).append(":");
@@ -1204,6 +1243,7 @@ public class JS extends Events {
                 }
                 for (Object s : stmts) {
                     if (s instanceof Stmt st) sb.append(st.code).append(";");
+                    else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
                     else if (s instanceof Val val) sb.append(val.code).append(";");
                     else if (s instanceof String str) {
                         sb.append(str);

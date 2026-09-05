@@ -14,12 +14,18 @@ public final class JavaScriptSection {
                  "compile-time checks, and no context switching."),
 
             docSubtitle("Import Statements"),
-            codeBlock("""
+            before("v3.0.0",
+                codeBlock("""
 // Core JS DSL — script building, DOM, events, async/fetch
 import static jweb.Js.*;
 
 // High-level UI actions (separate import — shares names with Js)
-import static jweb.Actions.*;"""),
+import static jweb.Actions.*;""")),
+            since("v3.0.0",
+                codeBlock("""
+// One import — Actions and Js are the same surface now: script building,
+// DOM, events, async/fetch, and the high-level UI actions
+import static jweb.Js.*;""")),
 
             docSubtitle("Two Approaches"),
             para("Use Actions DSL for common UI patterns, or JS DSL for custom logic."),
@@ -51,7 +57,7 @@ onChange("search-input")
 // Variables and values
 script()
     .var_("count", 0)
-    .let_("name", str("John"))
+    .let("name", str("John"))
     .const_("PI", 3.14159)
 
 // Variable references

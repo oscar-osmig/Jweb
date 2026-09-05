@@ -30,8 +30,8 @@ div(
     header(
         h1("Welcome"),
         nav(
-            a(attrs().href("/"), text("Home")),
-            a(attrs().href("/about"), text("About"))
+            a(href("/"), "Home"),
+            a(href("/about"), "About")
         )
     ),
     main(

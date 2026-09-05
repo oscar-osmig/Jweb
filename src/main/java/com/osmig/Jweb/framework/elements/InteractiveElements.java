@@ -16,7 +16,7 @@ import com.osmig.Jweb.framework.attributes.Attributes;
  * import static com.osmig.Jweb.framework.elements.El.*;
  *
  * // Abbreviation with expansion
- * p("The ", abbr("HTML", "HyperText Markup Language"), " specification")
+ * p("The ", abbr(attr("title", "HyperText Markup Language"), "HTML"), " specification")
  *
  * // Definition of a term
  * p("A ", dfn("closure"), " is a function that captures its scope.")
@@ -34,10 +34,10 @@ import com.osmig.Jweb.framework.attributes.Attributes;
  * p("The program outputs: ", samp("Hello World"))
  *
  * // Variable
- * p("Let ", var_("x"), " equal 5.")
+ * p("Let ", tag("var", "x"), " equal 5.")
  *
  * // Blockquote with cite
- * blockquote("https://example.com",
+ * blockquote(attr("cite", "https://example.com"),
  *     p("To be or not to be, that is the question.")
  * )
  * }</pre>
@@ -48,18 +48,8 @@ public final class InteractiveElements {
     // ==================== Abbreviation ====================
 
     /**
-     * Creates an abbr element with title.
-     *
-     * @param abbreviation the abbreviation text
-     * @param title the full expansion
-     * @return a Tag
-     */
-    public static Tag abbr(String abbreviation, String title) {
-        return Tag.create("abbr", new Attr("title", title), abbreviation);
-    }
-
-    /**
-     * Creates an abbr element with children.
+     * Creates an abbr element with children:
+     * {@code abbr(attr("title", "HyperText Markup Language"), "HTML")}.
      *
      * @param children the content
      * @return a Tag
@@ -127,17 +117,6 @@ public final class InteractiveElements {
         return Tag.create("q", children);
     }
 
-    /**
-     * Creates a q element with a cite URL.
-     *
-     * @param citeUrl the source URL
-     * @param children the quoted text
-     * @return a Tag
-     */
-    public static Tag q(String citeUrl, Object... children) {
-        return Tag.create("q", new Attr("cite", citeUrl), children);
-    }
-
     // ==================== Blockquote ====================
 
     /**
@@ -148,17 +127,6 @@ public final class InteractiveElements {
      */
     public static Tag blockquote(Object... children) {
         return Tag.create("blockquote", children);
-    }
-
-    /**
-     * Creates a blockquote element with a cite URL.
-     *
-     * @param citeUrl the source URL
-     * @param children the quoted content
-     * @return a Tag
-     */
-    public static Tag blockquote(String citeUrl, Object... children) {
-        return Tag.create("blockquote", new Attr("cite", citeUrl), children);
     }
 
     /**
@@ -196,17 +164,8 @@ public final class InteractiveElements {
         return Tag.create("samp", children);
     }
 
-    // ==================== Variable ====================
-
-    /**
-     * Creates a var element for a mathematical or programming variable.
-     *
-     * @param children the variable name
-     * @return a Tag
-     */
-    public static Tag var_(Object... children) {
-        return Tag.create("var", children);
-    }
+    // <var> is tag("var", ...): var(...) belongs to the CSS DSL, and a trailing
+    // underscore marks a Java keyword only.
 
     // ==================== Mark (Highlight) ====================
 

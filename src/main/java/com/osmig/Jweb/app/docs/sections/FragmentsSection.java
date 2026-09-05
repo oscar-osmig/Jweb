@@ -22,19 +22,19 @@ public final class FragmentsSection {
                         productList(PAGE.from(req)));
 
                     // Client: zero JavaScript written
-                    button(attrs().swap("/products/list?page=2", "#products"),
-                        text("Next page"))"""),
+                    button(swap("/products/list?page=2", "#products"),
+                        "Next page")"""),
 
             docSubtitle("Progressive Forms"),
             para("swapForm posts the form data and swaps the returned fragment into the " +
                  "target. With the action attribute set, the form still works when " +
                  "JavaScript is disabled — it just submits natively to the same route."),
             codeBlock("""
-                    form(attrs().action("/contact/submit").method("post")   // no-JS fallback
-                            .swapForm("/contact/submit", "#form-status"),   // progressive swap
+                    form(action("/contact/submit"), method("post"),          // no-JS fallback
+                            swapForm("/contact/submit", "#form-status"),         // progressive swap
                         field("Name", "name", "text", "Your name"),
-                        div(attrs().id("form-status")),
-                        submitButton("Send"))
+                        div(id("form-status")),
+                        button(type("submit"), "Send"))
 
                     // The route returns a status fragment:
                     app.post("/contact/submit", ctx -> {
@@ -48,7 +48,7 @@ public final class FragmentsSection {
                  "input survive. Ideal for lists or dashboards that refresh while the " +
                  "user is interacting."),
             codeBlock("""
-                    div(attrs().id("inbox").swapMorph("/inbox/refresh", "#inbox"))"""),
+                    div(id("inbox"), swapMorph("/inbox/refresh", "#inbox"))"""),
 
             docSubtitle("History & Events"),
             docList(

@@ -113,7 +113,7 @@ public class CSSAnimations extends CSSGrid {
      */
     @Deprecated
     public static CSSValue animName(String name) {
-        return raw(name);
+        return () -> name;
     }
 
     // ==================== Timing Functions ====================
@@ -502,7 +502,7 @@ public class CSSAnimations extends CSSGrid {
      * @return CSSValue for timeline reference
      */
     public static CSSValue timeline(String name) {
-        return raw(name);
+        return () -> name;
     }
 
     // ==================== Animation Range ====================

@@ -15,9 +15,10 @@ public final class ConditionalsSection {
                  "and handle multiple cases cleanly."),
 
             docSubtitle("Overview"),
-            para("Use when() for optional content, cond() for either/or choices, " +
-                 "and each() for list iteration."),
-            codeBlock("""
+            before("v3.0.0",
+                para("Use when() for optional content, cond() for either/or choices, " +
+                     "and each() for list iteration."),
+                codeBlock("""
 // Show if true
 when(condition, () -> element())
 
@@ -27,7 +28,20 @@ when(condition)
     .otherwise(falseElement())
 
 // Iterate
-each(list, item -> renderItem(item))"""),
+each(list, item -> renderItem(item))""")),
+            since("v3.0.0",
+                para("One conditional shape covers optional content — when(condition, element) " +
+                     "— and Java already has the rest: a ternary for either/or, a switch " +
+                     "expression for multiple cases, and each() for list iteration."),
+                codeBlock("""
+// Show if true
+when(condition, () -> element())
+
+// Either/or
+condition ? trueElement() : falseElement()
+
+// Iterate
+each(list, item -> renderItem(item))""")),
 
             CondWhen.render(),
             CondTernary.render(),

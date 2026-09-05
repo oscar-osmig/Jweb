@@ -17,7 +17,7 @@ when(isLoggedIn, () -> span("Welcome back!"))
 // With complex element
 when(user != null, () ->
     div(
-        img(attrs().src(user.getAvatar())),
+        img(src(user.getAvatar())),
         span(user.getName())
     )
 )
@@ -35,7 +35,7 @@ when(cart.hasItems(), () ->
             codeBlock("""
 // Show login link when NOT logged in
 when(!isLoggedIn, () ->
-    a(attrs().href("/login"), text("Please log in"))
+    a(href("/login"), "Please log in")
 )
 
 // Show empty state

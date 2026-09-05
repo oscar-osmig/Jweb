@@ -49,7 +49,7 @@ public final class RoutingSection {
                         TypedRoute.path("/users/:id", Long.class);
 
                     app.get(USER, (req, id) -> userPage(id));   // id is a Long
-                    a(USER.url(42L), text("Profile"))           // "/users/42"
+                    a(href(USER.url(42L)), "Profile")           // "/users/42"
 
                     // Query params: parsed, defaulted, no null checks
                     static final Query<Integer> PAGE = Query.of("page", Integer.class).orElse(1);

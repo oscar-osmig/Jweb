@@ -61,9 +61,9 @@ class HtmlDslSimplificationTest {
 
     @Test
     void multiArgumentAttributeFirstFormsStillWork() {
-        assertEquals("<a href=\"/home\">Home</a>", a("/home", "Home").toHtml());
-        assertEquals("<label for=\"email\">Email:</label>", label("email", "Email:").toHtml());
-        assertEquals("<option value=\"v\">t</option>", option("v", "t").toHtml());
+        assertEquals("<a href=\"/home\">Home</a>", a(href("/home"), "Home").toHtml());
+        assertEquals("<label for=\"email\">Email:</label>", label(for_("email"), "Email:").toHtml());
+        assertEquals("<option value=\"v\">t</option>", option(value("v"), "t").toHtml());
     }
 
     @Test

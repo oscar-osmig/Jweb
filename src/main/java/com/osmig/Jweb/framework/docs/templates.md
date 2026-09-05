@@ -288,24 +288,16 @@ public class InteractivePage implements Template {
 ```java
 public class DashboardPage implements Template {
 
-    // JavaScript to run when DOM is ready
+    // An Action to run when the DOM is ready (wrapped in DOMContentLoaded for you)
     @Override
-    public String onMount() {
-        return """
-            initCharts();
-            setupWebSocket();
-            startAutoRefresh();
-            """;
+    public Action onMount() {
+        return all(call("initCharts"), call("setupWebSocket"), call("startAutoRefresh"));
     }
 
-    // JavaScript for cleanup (page unload/SPA navigation)
+    // Cleanup on page unload / SPA navigation
     @Override
-    public String onUnmount() {
-        return """
-            stopAutoRefresh();
-            closeWebSocket();
-            saveScrollPosition();
-            """;
+    public Action onUnmount() {
+        return all(call("stopAutoRefresh"), call("closeWebSocket"), call("saveScrollPosition"));
     }
 
     @Override
@@ -414,14 +406,14 @@ public class BlogPostPage implements Template {
     }
 
     @Override
-    public String onMount() {
-        return "initSyntaxHighlighting(); setupCommentForm();";
+    public Action onMount() {
+        return all(call("initSyntaxHighlighting"), call("setupCommentForm"));
     }
 
     @Override
-    public Optional<String> scripts() {
+    public Optional<Action> scripts() {
         return Optional.of(
-            script()
+            actions()
                 .add(onSubmit("comment-form")
                     .loading("Posting...")
                     .post("/api/posts/" + post.getId() + "/comments")
@@ -612,8 +604,8 @@ public class Pagination implements Template {
 |------|-------------|---------|
 | `beforeRender(Request)` | Before `render()` | Data loading, validation, setup |
 | `afterRender(Request)` | After `render()` | Cleanup, logging, analytics |
-| `onMount()` | DOM ready (client) | Initialize JS, bind events |
-| `onUnmount()` | Page leave (client) | Cleanup timers, save state |
+| `onMount()` | DOM ready (client) | An `Action` to run — initialize, bind events |
+| `onUnmount()` | Page leave (client) | An `Action` to run — cleanup timers, save state |
 | `pageTitle()` | Head generation | Set `<title>` tag |
 | `metaDescription()` | Head generation | SEO meta tags |
 | `extraHead()` | Head generation | Custom meta, CSS, scripts |
