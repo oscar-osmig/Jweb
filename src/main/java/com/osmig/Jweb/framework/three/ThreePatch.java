@@ -110,6 +110,21 @@ public final class ThreePatch {
         return put("visible", visible);
     }
 
+    /** Volume 0–1 (sounds); eases with {@link #tween}. */
+    public ThreePatch volume(double volume) {
+        return put("vol", ThreeNode.num(volume));
+    }
+
+    /** Starts a sound from the beginning (once the visitor's first gesture has unlocked audio). */
+    public ThreePatch play() {
+        return put("play", true);
+    }
+
+    /** Stops a sound. */
+    public ThreePatch stop() {
+        return put("play", false);
+    }
+
     /** Where the camera looks (camera target only). */
     public ThreePatch lookAt(double x, double y, double z) {
         return put("look", ThreeNode.vec(new double[]{x, y, z}));

@@ -32,6 +32,13 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
     private String clickHandlerId;
     private String clickActionId;
     private String[] clickSwap;
+    private Object solid;
+    private String link;
+    private Double near;
+    private String nearHandlerId;
+    private String nearActionId;
+    private String farHandlerId;
+    private String farActionId;
 
     /** The node's type tag in the serialized scene graph (e.g. {@code "box"}). */
     protected abstract String type();
@@ -169,6 +176,82 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
         return self();
     }
 
+    // ==================== Places that react ====================
+
+    /**
+     * Makes the node solid to a walking camera: its footprint — the
+     * world-space bounding box, so a whole group counts as one — blocks
+     * the walker. Walls, benches, pillars, furniture. Things below knee
+     * height are stepped over, things above head height walked under.
+     */
+    public SELF solid() {
+        this.solid = Boolean.TRUE;
+        return self();
+    }
+
+    /** Solid to the walker as a cylinder of the given radius around the node's center — trunks, columns. */
+    public SELF solid(double radius) {
+        this.solid = radius;
+        return self();
+    }
+
+    /**
+     * Clicking the node navigates to the URL — a doorway, a painting that is
+     * a portal. Uses JWeb's client navigation (with its view transition)
+     * when the Navigation script is on the page, a plain navigation
+     * otherwise; {@code <body>} gets {@code three-crossing} first so CSS can
+     * fade the way out. A drag that ends on the node is not a click.
+     */
+    public SELF link(String url) {
+        this.link = url;
+        return self();
+    }
+
+    /**
+     * Watches the camera's distance to the node: within {@code distance}
+     * scene units the scene element and {@code <body>} carry
+     * {@code three-near-<name>} and a bubbling {@code jweb:three-near} event
+     * fires (again on leaving, with {@code detail.inside === false}) — a
+     * veil that brightens as you approach, a label that appears, in CSS
+     * alone. Needs a {@code .name(...)}.
+     */
+    public SELF near(double distance) {
+        this.near = distance;
+        return self();
+    }
+
+    /**
+     * Runs a server handler when the camera comes within {@code distance};
+     * {@code event.value()} is the node's name and
+     * {@code event.dataset("pose")} the camera's {@code x,y,z,yaw}.
+     */
+    public SELF onNear(double distance, Consumer<Event> handler) {
+        this.near = distance;
+        this.nearHandlerId = EventRegistry.register("near", handler).getId();
+        return self();
+    }
+
+    /** Runs a client Actions handler when the camera comes within {@code distance}. */
+    public SELF onNear(double distance, com.osmig.Jweb.framework.js.Actions.Action action) {
+        this.near = distance;
+        this.nearActionId = com.osmig.Jweb.framework.js.ClientActions.register(action.inline());
+        return self();
+    }
+
+    /** Runs a server handler when the camera leaves the {@link #near} distance again (3 units if none was set). */
+    public SELF onFar(Consumer<Event> handler) {
+        if (near == null) near = 3.0;
+        this.farHandlerId = EventRegistry.register("far", handler).getId();
+        return self();
+    }
+
+    /** Runs a client Actions handler when the camera leaves the near distance again. */
+    public SELF onFar(com.osmig.Jweb.framework.js.Actions.Action action) {
+        if (near == null) near = 3.0;
+        this.farActionId = com.osmig.Jweb.framework.js.ClientActions.register(action.inline());
+        return self();
+    }
+
     // ==================== Serialization ====================
 
     /** Serializes this node (and only the properties that were set). */
@@ -185,6 +268,13 @@ public abstract class ThreeNode<SELF extends ThreeNode<SELF>> {
         if (clickHandlerId != null) map.put("click", clickHandlerId);
         if (clickActionId != null) map.put("clickAct", clickActionId);
         if (clickSwap != null) map.put("swap", Map.of("url", clickSwap[0], "target", clickSwap[1]));
+        if (solid != null) map.put("solid", solid instanceof Double r ? num(r) : Boolean.TRUE);
+        if (link != null) map.put("link", link);
+        if (near != null) map.put("near", num(near));
+        if (nearHandlerId != null) map.put("nearH", nearHandlerId);
+        if (nearActionId != null) map.put("nearAct", nearActionId);
+        if (farHandlerId != null) map.put("farH", farHandlerId);
+        if (farActionId != null) map.put("farAct", farActionId);
         fill(map);
         return map;
     }

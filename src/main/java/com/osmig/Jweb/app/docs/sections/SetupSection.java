@@ -200,13 +200,19 @@ public final class SetupSection {
                 .aria("label", "Copy code to clipboard"), text("Copy")));
     }
 
-    /** Pure HTML dropdown (details/summary) — no script, styled in DocsPage. */
+    /**
+     * Pure HTML dropdown (details/summary) — no script, styled in DocsPage.
+     * Lists the newest versions, plus the selected one when it is older,
+     * so the current entry is always there to be marked.
+     */
     private static Element versionPicker(String version) {
+        java.util.List<String> listed = new java.util.ArrayList<>(DocVersions.recent());
+        if (!listed.contains(version)) listed.add(version);
         return details(attrs().class_("ver-picker"),
             summary(attrs().aria("label", "Change documentation version"),
                 text(version + " ▾")),
             div(attrs().class_("ver-picker-menu"),
-                each(DocVersions.recent(), v ->
+                each(listed, v ->
                     a(attrs().href(DocVersions.href("setup", v))
                         .class_(v.equals(version) ? "ver-picker-item current" : "ver-picker-item"),
                         text(DocVersions.isLatest(v) ? v + " (latest)" : v)))));

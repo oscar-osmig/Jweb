@@ -336,6 +336,31 @@ public class Three {
         return new Model(url);
     }
 
+    // ==================== Places that react ====================
+
+    /**
+     * An invisible floor region that reacts when the camera walks in or out
+     * — {@code zone(-1.6, 14.9, 1.6, 16).link("/")} is the door home,
+     * {@code zone(...).onEnter(e -> ...)} a trigger. Edges are x and z on
+     * the ground; see {@link Zone}. Pair with {@code .near(distance)} on any
+     * node for distance-based reactions and {@code .solid()} for collisions.
+     */
+    public static Zone zone(double minX, double minZ, double maxX, double maxZ) {
+        return new Zone(minX, minZ, maxX, maxZ);
+    }
+
+    // ==================== Sound ====================
+
+    /**
+     * A sound in the scene: {@code sound(url).loop().volume(0.4)} is
+     * ambience; give it a {@code .position(...)} and it plays from there,
+     * louder as the camera nears. Starts on the visitor's first gesture, as
+     * browsers require. See {@link Sound}.
+     */
+    public static Sound sound(String url) {
+        return new Sound(url);
+    }
+
     // ==================== Camera ====================
 
     /** The scene's camera. Without one: positioned at (0, 0, 5), looking at the origin. */

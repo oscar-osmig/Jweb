@@ -57,14 +57,20 @@ class DocVersionsTest {
     }
 
     @Test
-    void versionChipListsAllVersionsAndMarksTheCurrent() {
+    void versionChipListsRecentVersionsAndMarksTheCurrent() {
         String html = SetupSection.render("v2.0.0").toHtml();
         assertTrue(html.contains("ver-picker"), "chip present on the dependency block");
         assertTrue(html.contains("v2.0.0 ▾"), "chip shows the selected version");
         assertTrue(html.contains("v3.0.0 (latest)"), "dropdown labels the latest");
         assertTrue(html.contains("ver-picker-item current"), "current version marked");
         assertTrue(html.contains("href=\"/docs?section=setup\""), "latest entry canonical");
-        assertTrue(html.contains("href=\"/docs?section=setup&amp;v=v2.0.0\""), "old entry carries ?v=");
+        assertTrue(html.contains("href=\"/docs?section=setup&amp;v=v2.0.0\""),
+            "the selected (older) version is listed with ?v= so it can be marked current");
+        // only the newest three are offered otherwise
+        for (String v : DocVersions.recent()) assertTrue(html.contains(">" + v), v + " listed");
+        assertFalse(html.contains("v=v2.1.0"), "versions older than the newest three are not listed");
+        assertTrue(SetupSection.render(DocVersions.latest()).toHtml().contains("v2.2.0"),
+            "the third-newest is still offered from the latest");
     }
 
     // ==================== Gating ====================

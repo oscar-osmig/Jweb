@@ -196,13 +196,18 @@ camera().orbit()
 
 `walk(eyeHeight)` turns the scene into a place. The scene starts framed
 exactly as declared; walking is toggled by any element carrying
-`data-three-walk="<scene id>"` — a plain button, no script:
+`data-three-walk="<scene id>"` — a plain button, no script — or starts by
+itself with `autoStart()`:
 
 ```java
 scene(style().height(px(460)),
     camera().position(0, 2, 7).lookAt(0, 2, 0)
         .walk(1.7)                  // eye height; or walk(eye, speed, run)
         .bounds(-8, -8, 8, 8)       // fenced floor: minX, minZ, maxX, maxZ
+        .autoStart()                // W A S D / arrows start walking, no toggle
+        .clickToMove()              // double-click the ground to glide there
+        .fly(4)                     // hold Space to float, up to 4 units
+        .footsteps()                // synthesized steps; or footsteps(url[, volume])
         .sway(),                    // gentle idle drift while framed
     ...
 ).id("hall")
@@ -211,16 +216,48 @@ button(attrs().data("three-walk", "hall"), text("Walk here"))
 ```
 
 While walking: **W A S D** (and ↑↓) move, **← →** turn, dragging looks
-around, **Shift** runs, **Esc** steps back out to the framed view. The
-scene element, the toggle and `<body>` carry a `three-walking` class, and
-the scene dispatches a bubbling `jweb:three-walk` event with
-`detail.walking` — style the chip's label swap in CSS, or listen if you
-must script. Head-bob and `sway()` are skipped for visitors who prefer
-reduced motion. Programmatic control: `JWebThree.setWalk(id, on)` /
-`JWebThree.walking(id)`.
+around, **Shift** runs, **Esc** steps back out to the framed view.
 
-`bounds(...)` is the honest collision model for a walled room: a rectangle
-the feet can't leave. (Per-object collision is not a thing the DSL does.)
+**Feet on the ground.** The walker's feet follow the surfaces underfoot —
+steps, ramps, walkways, dune slopes. The eye rides at its height above the
+highest upward-facing surface below it: a `terrain()`, stacked boxes, the
+floor of a `model()`, anything the scene draws (surfaces under 50% opacity
+don't count). Stepping in, the eye settles down to its height and the
+gaze levels out. `ground(false)` keeps the eye at a fixed height instead.
+
+**Solid things.** Mark what blocks the walker with `.solid()` — its
+world-space footprint, so a whole `group(...)` is one obstacle — or
+`.solid(radius)` for a round column or trunk. Things below knee height are
+stepped over, things above head height walked under. `bounds(...)` stays
+the outer fence; `radius(r)` is the body's radius (default 0.32).
+
+**Where walking begins.** By default where the framed camera stands,
+facing the way it looks. `spawn(x, z, yawDeg)` places the walker instead
+(0° faces −z) — a visitor coming back through a doorway starts at that
+doorway.
+
+**Other inputs.** `pointerLock()` locks the pointer while walking so the
+mouse alone looks (Esc releases it, clicking re-locks). `touch()` gives
+phones a thumb-stick where the thumb lands on the left half of the scene
+and drag-to-look on the right. `gamepad()`: left stick moves, right stick
+looks, A floats, B runs.
+
+**The page knows where you are.** The scene element, the toggle and
+`<body>` carry `three-walking` while walking, and `three-key-w` / `-a` /
+`-s` / `-d` / `-space` / `-shift` / `-arrowup`… while each key is down — a
+HUD that lights its keys is CSS. The scene element always publishes the
+camera's heading as CSS variables, `--three-yaw` and `--three-pitch`
+(degrees; `0deg` looks down −z), updated whenever it turns or moves:
+
+```css
+.compass .needle { transform: rotate(var(--three-yaw)); }
+```
+
+The scene also dispatches bubbling events: `jweb:three-walk`
+(`detail.walking`) and `jweb:three-look` (`detail.{yaw, pitch, x, y, z,
+walking}`). Head-bob and `sway()` are skipped for visitors who prefer
+reduced motion. From scripts: `JWebThree.setWalk(id, on)`,
+`JWebThree.walking(id)` and `JWebThree.pose(id)`.
 
 ## Scene atmosphere
 
@@ -403,9 +440,10 @@ with no server round-trip (and CSP-safe, like every Action handler):
 sphere().onClick(toggle("info-panel"))          // import static jweb.Js.*
 ```
 
-The handler's `event.value()` (and `dataset.mesh`) carry the node's `name`.
-If several are set on one node: server `onClick` wins, then the Action, then
-`clickSwap`. The cursor becomes a pointer over clickable objects. Clicks on
+The handler's `event.value()` (and `dataset.mesh`) carry the node's `name`,
+and `dataset.pose` where the camera stood (`"x,y,z,yaw"`). If several are
+set on one node: server `onClick` wins, then the Action, then `clickSwap`,
+then `link`. The cursor becomes a pointer over clickable objects. Clicks on
 groups and models hit their whole subtree.
 
 **Hover effects** are declared on the shape and run entirely client-side —
@@ -418,6 +456,64 @@ torusKnot()
     .hoverColor("#f43f5e")       // or a straight color swap (meshes)
     .onClick(show("hint"))
 ```
+
+### Places that react
+
+Three more ways a node answers the visitor — none of them a click:
+
+```java
+// a painting that is a doorway: clicking navigates. <body> gets
+// three-crossing first so CSS can fade the way out; with the Navigation
+// script on the page the hop uses its view transition. A drag that ends
+// on it is not a click.
+plane(2, 3).name("tide").link("/worlds/tide-archive")
+
+// distance: within 3 units the scene element and <body> carry
+// three-near-veil and a jweb:three-near event fires (again on leaving,
+// detail.inside === false) — a veil that brightens as you approach, in CSS
+plane(2, 3).name("veil").near(3)
+
+// …or run handlers on the way in and out
+sphere().name("lamp")
+    .onNear(2.5, e -> tour.set("lamp"))     // server, over the socket
+    .onFar(hide("lamp-caption"))            // or an Action, client-side
+
+// a floor region: the door home, a trigger. Edges are x and z on the
+// ground, any height. Being inside on first render doesn't count as
+// entering, so a link never fires on load.
+zone(-1.6, 14.9, 1.6, 16).name("back-door").link("/")
+zone(-3, -3, 3, 3).name("plinth").onEnter(e -> ...).onLeave(e -> ...)
+```
+
+Handlers get the node's name in `event.value()` and the camera's place in
+`dataset.pose`. Proximity is evaluated whenever the camera moves —
+walking, a camera patch, orbit, `sway()` — with a little hysteresis so
+standing on the line doesn't flicker. Zones draw nothing; they cost
+nothing.
+
+## Sound
+
+```java
+sound("/audio/sea.mp3").loop().volume(0.4)                        // everywhere
+sound("/audio/fountain.mp3").loop().position(4, 1, -6).range(3)   // from the fountain
+sound("/audio/bell.mp3").name("bell").paused()                    // played by a patch
+```
+
+A sound with a `.position(...)` is positional: it plays from there, louder
+as the camera nears; `range(distance)` is where it's at full volume
+(default 4). Browsers start audio only inside a user gesture, so every
+sound waits for the visitor's first click, tap or key press and begins
+then; `paused()` waits for a patch instead. Live, from any server handler:
+
+```java
+Three.patch("hall").node("sea").volume(0.1).tween(800)   // fade the sea
+                   .node("bell").play()                   // ring the bell
+```
+
+`camera().walk(...).footsteps()` adds a synthesized step on every stride —
+a soft scuff and thud, no file — or `footsteps(url[, volume])` plays a
+clip. Steps pause while floating. `JWebThree.mute(id, on)` silences a
+scene's sounds from a script.
 
 ## Live patches
 
@@ -495,7 +591,9 @@ JWebThree.ready('hero', h => {
 
 `JWebThree.THREE` is the bundled three.js itself (`Vector3`, `Color`,
 materials, everything). `setWalk(id, on)` and `walking(id)` control walk
-mode from scripts when a `data-three-walk` element isn't enough.
+mode from scripts when a `data-three-walk` element isn't enough;
+`pose(id)` is where the camera is and looks (`{x, y, z, yaw, pitch,
+walking}`), `mute(id, on)` silences the scene's sounds.
 
 ## Sizing
 
@@ -530,8 +628,9 @@ minimum and a console hint rather than an invisible scene.
 - One camera per scene. Post-processing through the DSL is exactly
   `bloom()`/`toneMapped()` — arbitrary pass chains and custom shaders are
   escape-hatch territory.
-- Walk mode's collision model is `bounds(...)` — a fenced rectangle, not
-  per-object collision.
+- Walk mode's collision model is `bounds(...)` plus `.solid()` footprints
+  (boxes) and `.solid(r)` cylinders — obstacles, not mesh-accurate physics;
+  the walker never climbs a solid, only steps over low ones.
 - Draco/KTX2-compressed assets are not supported (no decoder shipped).
 - `onClick` server handlers and `Three.patch` need the JWeb runtime's
   WebSocket (on by default); `clickSwap` needs only fetch.

@@ -26,6 +26,16 @@ public class Camera extends ThreeNode<Camera> {
     private boolean noPan;
     private double[] distance;
     private double[] polar;
+    private Boolean ground;
+    private Double fly;
+    private boolean clickToMove;
+    private boolean autoStart;
+    private Double radius;
+    private double[] spawn;
+    private boolean pointerLock;
+    private boolean touch;
+    private boolean gamepad;
+    private Map<String, Object> footsteps;
 
     /** Vertical field of view in degrees. three.js default: 50. */
     public Camera fov(double degrees) {
@@ -124,6 +134,124 @@ public class Camera extends ThreeNode<Camera> {
         return this;
     }
 
+    // ==================== The walker's body ====================
+    // Each of these implies walk mode (at the default 1.7 eye height) so a
+    // scene never declares .fly() and wonders why nothing happens.
+
+    /**
+     * Whether the walker's feet follow the surfaces underfoot — steps,
+     * ramps, walkways, dune slopes (on by default: the eye rides at its
+     * height above whatever is below it). {@code ground(false)} keeps the
+     * eye at a fixed height instead.
+     */
+    public Camera ground(boolean on) {
+        impliesWalk();
+        this.ground = on;
+        return this;
+    }
+
+    /**
+     * Lets the walker float: hold Space to rise up to {@code maxHeight}
+     * above the ground, let go to sink back to your feet (Shift hurries the
+     * descent). Footsteps and head-bob pause while airborne.
+     */
+    public Camera fly(double maxHeight) {
+        impliesWalk();
+        this.fly = maxHeight;
+        return this;
+    }
+
+    /** Double-clicking a spot on the ground glides the walker there. */
+    public Camera clickToMove() {
+        impliesWalk();
+        this.clickToMove = true;
+        return this;
+    }
+
+    /**
+     * Pressing W A S D or an arrow key starts walking by itself — no toggle
+     * element needed. Esc still steps back out to the framed view; typing
+     * in an input never triggers it.
+     */
+    public Camera autoStart() {
+        impliesWalk();
+        this.autoStart = true;
+        return this;
+    }
+
+    /** The walker's body radius, for collisions with {@code .solid()} nodes. Default 0.32. */
+    public Camera radius(double radius) {
+        impliesWalk();
+        this.radius = radius;
+        return this;
+    }
+
+    /**
+     * Where walking begins: a point on the ground and a heading in degrees
+     * (0 faces −z, growing counter-clockwise like a node's y rotation).
+     * Without it the walker starts where the framed camera stands, facing
+     * the way it looks — so a visitor returning through a doorway can be
+     * placed at that doorway.
+     */
+    public Camera spawn(double x, double z, double yawDeg) {
+        impliesWalk();
+        this.spawn = new double[]{x, z, yawDeg};
+        return this;
+    }
+
+    /**
+     * Locks the pointer while walking, so moving the mouse alone looks
+     * around (the browser's Esc releases it; clicking the scene re-locks).
+     */
+    public Camera pointerLock() {
+        impliesWalk();
+        this.pointerLock = true;
+        return this;
+    }
+
+    /**
+     * Touch controls: a thumb-stick that appears where the thumb lands on the
+     * left half of the scene moves; dragging on the right half looks.
+     */
+    public Camera touch() {
+        impliesWalk();
+        this.touch = true;
+        return this;
+    }
+
+    /** Gamepad: left stick moves, right stick looks, A floats (with {@link #fly}), B runs. */
+    public Camera gamepad() {
+        impliesWalk();
+        this.gamepad = true;
+        return this;
+    }
+
+    /** Synthesized footsteps on every stride — a soft scuff and thud, no audio file. */
+    public Camera footsteps() {
+        impliesWalk();
+        this.footsteps = new java.util.LinkedHashMap<>();
+        return this;
+    }
+
+    /** Footsteps from a short audio clip, played on every stride. */
+    public Camera footsteps(String url) {
+        return footsteps(url, 0.5);
+    }
+
+    /** Footsteps from a clip at the given volume (0–1). */
+    public Camera footsteps(String url, double volume) {
+        impliesWalk();
+        Map<String, Object> s = new java.util.LinkedHashMap<>();
+        s.put("url", url);
+        s.put("vol", num(volume));
+        this.footsteps = s;
+        return this;
+    }
+
+    private void impliesWalk() {
+        if (walk == null) walk = new double[]{1.7};
+    }
+
     // ==================== Orbit limits ====================
 
     /** Orbit without zooming — the scroll wheel stays with the page. */
@@ -178,5 +306,15 @@ public class Camera extends ThreeNode<Camera> {
         if (noPan) map.put("noPan", true);
         if (distance != null) map.put("dist", vec(distance));
         if (polar != null) map.put("polar", vec(polar));
+        if (ground != null && !ground) map.put("ground", false);
+        if (fly != null) map.put("fly", num(fly));
+        if (clickToMove) map.put("clickMove", true);
+        if (autoStart) map.put("autoStart", true);
+        if (radius != null) map.put("radius", num(radius));
+        if (spawn != null) map.put("spawn", vec(spawn));
+        if (pointerLock) map.put("plock", true);
+        if (touch) map.put("touch", true);
+        if (gamepad) map.put("gamepad", true);
+        if (footsteps != null) map.put("steps", footsteps);
     }
 }

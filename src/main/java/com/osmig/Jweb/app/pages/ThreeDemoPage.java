@@ -105,7 +105,8 @@ public final class ThreeDemoPage {
                 fog("#0c0a09", 14, 34),
                 bloom(0.8, 0.4, 0.8),
                 camera().position(0, 1.9, 7.2).lookAt(0, 1.8, -2.5).fov(56)
-                    .walk(1.6).bounds(-3.3, -5.6, 3.3, 6.6).sway(),
+                    .walk(1.6).bounds(-3.3, -5.6, 3.3, 6.6).sway()
+                    .autoStart().clickToMove().fly(2.5).footsteps(),
                 hemisphereLight("#8a7a68", "#151210"),
                 pointLight(1.2).color("#ffd9a0").position(0, 3.4, 1),
                 pointLight(0.8).color("#ffe0b0").position(0, 3.2, -4.5),
@@ -121,24 +122,46 @@ public final class ThreeDemoPage {
                 arc(1.6, 0.09, 180).color("#8a6f4d").metalness(0.8).roughness(0.4)
                     .position(0, 2.1, -4.5),
                 lathe(0.34, 0, 0.26, 0.12, 0.2, 0.3, 0.2, 2.0, 0.3, 2.15).segments(24)
-                    .color("#4a4038").roughness(0.9).position(-1.6, 0, -4.5),
+                    .color("#4a4038").roughness(0.9).position(-1.6, 0, -4.5).solid(0.4),
                 lathe(0.34, 0, 0.26, 0.12, 0.2, 0.3, 0.2, 2.0, 0.3, 2.15).segments(24)
-                    .color("#4a4038").roughness(0.9).position(1.6, 0, -4.5),
+                    .color("#4a4038").roughness(0.9).position(1.6, 0, -4.5).solid(0.4),
+                // under the arch: a zone that captions itself on the way in and out
+                zone(-1.4, -5.3, 1.4, -3.7).name("arch")
+                    .onEnter(show("arch-caption")).onLeave(hide("arch-caption")),
                 // one tube() is the whole vine over the arch
                 tube(0.035, -1.7, 2.0, -4.4, -0.8, 3.05, -4.6, 0.6, 3.1, -4.4, 1.7, 2.2, -4.5)
                     .color("#3d5c3a").roughness(1),
                 // the lantern: click it and the server re-colors it over the socket
-                cylinder(0.05, 1.1).color("#4a4038").position(0, 0.55, -2.2),
+                cylinder(0.05, 1.1).color("#4a4038").position(0, 0.55, -2.2).solid(0.2),
                 sphere(0.24).color("#ffd9a0").emissive("#e8b36b").roughness(0.6)
                     .position(0, 1.35, -2.2).name("lantern").hoverScale(1.15)
-                    .onClick(ThreeDemoPage::relightLantern),
+                    .onClick(ThreeDemoPage::relightLantern)
+                    .onNear(2.2, show("near-tip")).onFar(hide("near-tip")),
                 pointLight(1.1).color("#e8b36b").position(0, 1.6, -2.2).name("lantern-light"),
                 billboard("the lantern listens — click it").size(0.32)
                     .position(0, 2.15, -2.2).background("rgba(12,10,9,0.8)").color("#e7d6b1"),
                 // dust holding the light: one node, one draw call
                 particles(140).color("#e7d6b1").size(0.02).spread(6, 3.4, 10)
-                    .position(0, 1.9, 0).drift().opacity(0.75)
+                    .position(0, 1.9, 0).drift().opacity(0.75),
+                // a compass in the corner: pure CSS on the scene's --three-yaw
+                div(id("compass"), style().position(absolute).right(px(14)).bottom(px(14))
+                        .width(px(44)).height(px(44)).borderRadius(px(22))
+                        .border(px(2), solid, hex("#e7d6b1")).color(hex("#e7d6b1"))
+                        .display(flex).alignItems(center).justifyContent(center)
+                        .fontSize(px(18)).transform(rotate(var("--three-yaw", deg(0)))),
+                    "▲")
             ).id("walkable"),
+
+            p(id("arch-caption"),
+                style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
+                    .backgroundColor(hex("#fef3c7")).color(hex("#78350f")),
+                "Under the arch. A zone(...).onEnter(show(...)) put this here; "
+                    + "onLeave(hide(...)) takes it away — no script, no round-trip."),
+            p(id("near-tip"),
+                style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
+                    .backgroundColor(hex("#ecfeff")).color(hex("#155e75")),
+                "Near the lantern — onNear(2.2, show(...)) / onFar(hide(...)). "
+                    + "The columns and the lantern post are .solid(): walk into them."),
 
             div(style().marginTop(SP_3).display(flex).gap(SP_2).flexWrap(wrap),
                 button(data("three-walk", "walkable"), chipStyle(),
@@ -151,8 +174,10 @@ public final class ThreeDemoPage {
                     chipStyle(), "Back to the door")),
 
             p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
-                "camera().walk(1.6).bounds(...) hands you your feet — the button is "
-                    + "just data-three-walk=\"walkable\", no script. The floor is "
+                "camera().walk(1.6).bounds(...).autoStart().clickToMove().fly(2.5)"
+                    + ".footsteps() hands you your feet — press W to start, double-click "
+                    + "the floor to glide, hold Space to float, and the corner compass "
+                    + "turns on the scene's --three-yaw variable. The floor is "
                     + "plane().flat().mirror() under a satin overlay, the archway is one arc(), "
                     + "the columns are lathe() profiles, the vine is one tube(), the dust "
                     + "is particles(140).drift(), and bloom() makes the lantern's emissive "
