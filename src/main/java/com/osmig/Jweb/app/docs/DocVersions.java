@@ -28,6 +28,14 @@ public final class DocVersions {
         return ALL;
     }
 
+    /** How many versions the Get Started picker offers. */
+    private static final int RECENT = 3;
+
+    /** The newest {@value #RECENT} versions — what the version picker lists. */
+    public static List<String> recent() {
+        return ALL.subList(0, Math.min(RECENT, ALL.size()));
+    }
+
     public static String latest() {
         return ALL.get(0);
     }

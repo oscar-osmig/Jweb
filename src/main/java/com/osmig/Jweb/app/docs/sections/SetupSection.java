@@ -176,8 +176,8 @@ public final class SetupSection {
 
     /**
      * The Maven snippet with a version chip next to the copy button. The chip
-     * shows the version the docs are rendered for and opens a dropdown of all
-     * versions; choosing one navigates with {@code ?v=}, which re-renders the
+     * shows the version the docs are rendered for and opens a dropdown of the
+     * three newest versions; choosing one navigates with {@code ?v=}, which re-renders the
      * whole docs site — snippet, sidebar and content — for that version.
      */
     private static Element dependencyBlock(String version) {
@@ -206,7 +206,7 @@ public final class SetupSection {
             summary(attrs().aria("label", "Change documentation version"),
                 text(version + " ▾")),
             div(attrs().class_("ver-picker-menu"),
-                each(DocVersions.all(), v ->
+                each(DocVersions.recent(), v ->
                     a(attrs().href(DocVersions.href("setup", v))
                         .class_(v.equals(version) ? "ver-picker-item current" : "ver-picker-item"),
                         text(DocVersions.isLatest(v) ? v + " (latest)" : v)))));
