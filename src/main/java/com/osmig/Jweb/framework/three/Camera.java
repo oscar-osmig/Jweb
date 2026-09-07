@@ -82,9 +82,9 @@ public class Camera extends ThreeNode<Camera> {
     // ==================== Walk mode ====================
 
     /**
-     * First-person walk mode at the given eye height: W A S D / arrow keys
-     * move, dragging looks, Shift runs, Esc steps back out to the framed
-     * view. The scene starts framed (position/lookAt as declared); any
+     * First-person walk mode at the given eye height: W A S D move, the
+     * arrow keys look (← → turn, ↑ ↓ tilt), dragging looks, Shift runs,
+     * Esc steps back out to the framed view. The scene starts framed (position/lookAt as declared); any
      * element with {@code data-three-walk="<scene id>"} toggles walking:
      *
      * <pre>{@code
@@ -200,8 +200,9 @@ public class Camera extends ThreeNode<Camera> {
     }
 
     /**
-     * Locks the pointer while walking, so moving the mouse alone looks
-     * around (the browser's Esc releases it; clicking the scene re-locks).
+     * Locks the pointer while walking, so moving the mouse or trackpad alone
+     * looks around (the browser's Esc releases it; clicking the scene
+     * re-locks). Clicks and double-clicks then aim from the centre of the view.
      */
     public Camera pointerLock() {
         impliesWalk();

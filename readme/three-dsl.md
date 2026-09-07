@@ -294,8 +294,8 @@ scene(style().height(px(460)),
 button(attrs().data("three-walk", "hall"), text("Walk here"))
 ```
 
-While walking: **W A S D** (and ↑↓) move, **← →** turn, dragging looks
-around, **Shift** runs, **Esc** steps back out to the framed view.
+While walking: **W A S D** move, the **arrows** look (← → turn, ↑ ↓ tilt),
+dragging looks around, **Shift** runs, **Esc** steps back out to the framed view.
 
 **Feet on the ground.** The walker's feet follow the surfaces underfoot —
 steps, ramps, walkways, dune slopes. The eye rides at its height above the
@@ -316,7 +316,8 @@ facing the way it looks. `spawn(x, z, yawDeg)` places the walker instead
 doorway.
 
 **Other inputs.** `pointerLock()` locks the pointer while walking so the
-mouse alone looks (Esc releases it, clicking re-locks). `touch()` gives
+mouse or trackpad alone looks (Esc releases it, clicking re-locks) and
+clicks aim from the centre of the view. `touch()` gives
 phones a thumb-stick where the thumb lands on the left half of the scene
 and drag-to-look on the right. `gamepad()`: left stick moves, right stick
 looks, A floats, B runs.

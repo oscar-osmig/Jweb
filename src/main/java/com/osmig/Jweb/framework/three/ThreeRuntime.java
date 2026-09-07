@@ -621,7 +621,9 @@ public final class ThreeRuntime {
 
             function hit(inst,ev){
                 var r=inst.renderer.domElement.getBoundingClientRect();
-                inst.pointer.set(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);
+                // with the pointer locked (pointerLock()) the visitor aims from the centre of the view
+                if(document.pointerLockElement===inst.renderer.domElement)inst.pointer.set(0,0);
+                else inst.pointer.set(((ev.clientX-r.left)/r.width)*2-1,-((ev.clientY-r.top)/r.height)*2+1);
                 inst.ray.setFromCamera(inst.pointer,inst.camera);
                 var hits=inst.ray.intersectObjects(inst.scene.children,true);
                 for(var i=0;i<hits.length;i++){
@@ -1089,11 +1091,14 @@ public final class ThreeRuntime {
             function stepWalk(inst,dt){
                 var w=inst.walk,cam=inst.camera,k=w.keys;
                 var gp=w.gamepad?readGamepad():null;
+                // the arrows look (left/right turn, up/down tilt); W A S D move
                 var turn=(k['arrowleft']?1:0)-(k['arrowright']?1:0);
                 if(gp&&Math.abs(gp.turn)>0.15)turn-=gp.turn;
                 if(turn){w.yaw+=turn*1.9*dt;w.settle=0;}
-                if(gp&&Math.abs(gp.look)>0.15){w.pitch=clampPitch(w.pitch-gp.look*1.2*dt);w.settle=0;}
-                var f=((k['w']||k['arrowup'])?1:0)-((k['s']||k['arrowdown'])?1:0);
+                var tilt=(k['arrowup']?1:0)-(k['arrowdown']?1:0);
+                if(gp&&Math.abs(gp.look)>0.15)tilt-=gp.look;
+                if(tilt){w.pitch=clampPitch(w.pitch+tilt*1.2*dt);w.settle=0;}
+                var f=(k['w']?1:0)-(k['s']?1:0);
                 var s=(k['d']?1:0)-(k['a']?1:0);
                 if(w.stick){f+=w.stick.f;s+=w.stick.s;}
                 if(gp){if(Math.abs(gp.f)>0.15)f+=gp.f;if(Math.abs(gp.s)>0.15)s+=gp.s;}
@@ -1140,8 +1145,8 @@ public final class ThreeRuntime {
                     if(!w.active){if(w.autoStart)setWalk(inst,true);else return;}
                     if(e.target&&e.target.closest&&e.target.closest('a,button,input,label,summary,select,textarea'))return;
                     e.preventDefault();
-                    var r=canvas.getBoundingClientRect();
-                    var v=new THREE.Vector3(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1,0.5);
+                    var r=canvas.getBoundingClientRect(),locked=document.pointerLockElement===canvas;
+                    var v=new THREE.Vector3(locked?0:((e.clientX-r.left)/r.width)*2-1,locked?0:-((e.clientY-r.top)/r.height)*2+1,0.5);
                     v.unproject(inst.camera);
                     var d=v.sub(inst.camera.position).normalize();
                     var cx=w.px,cy=inst.camera.position.y,cz=w.pz,tx,tz;
