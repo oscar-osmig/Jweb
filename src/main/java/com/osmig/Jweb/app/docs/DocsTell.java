@@ -1,5 +1,7 @@
 package com.osmig.Jweb.app.docs;
 
+import jweb.css.Selector;
+import jweb.Action;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;

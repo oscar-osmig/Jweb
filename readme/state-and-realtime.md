@@ -18,7 +18,7 @@ and the interactive UI utilities (transitions, portals, refs, toasts, suspense).
 ```java
 import jweb.state.State;                                // the state value type
 import static jweb.State.*;                             // useState & friends (alias of StateHooks)
-import com.osmig.Jweb.framework.state.StateManager;
+import jweb.StateManager;
 
 // The constructor is internal — create state through the hooks/manager:
 State<Integer> count = useState(0);
@@ -140,7 +140,8 @@ Working server-side primitives for one-way streaming:
 
 ```java
 import jweb.SseEmitter;
-import com.osmig.Jweb.framework.sse.*;      // SseBroadcaster, SseEvent
+import jweb.SseBroadcaster;
+import jweb.SseEvent;
 
 SseBroadcaster broadcaster = new SseBroadcaster();       // 15s heartbeat comments
 SseBroadcaster quiet = new SseBroadcaster(0);            // heartbeat disabled
@@ -178,7 +179,7 @@ Client side, use `sse("/api/v1/events").onMessage(...).build()` from the JS DSL
 ## View Transitions (`transition/`)
 
 ```java
-import com.osmig.Jweb.framework.transition.Transition;
+import jweb.Transition;
 
 // Conditional show/hide with enter animation classes
 Transition.when(isVisible)
@@ -202,7 +203,7 @@ CSS DSL doc).
 Render content into a named outlet elsewhere in the tree (modals, toasts, tooltips):
 
 ```java
-import com.osmig.Jweb.framework.portal.Portal;
+import jweb.Portal;
 
 // In the layout — outlets must render AFTER all Portal.to() calls (put them last in body)
 body(
@@ -243,7 +244,7 @@ inputRef.selector();                                         // document.getElem
 ## Toasts (`ui/Toast`)
 
 ```java
-import com.osmig.Jweb.framework.ui.Toast;
+import jweb.Toast;
 
 // One-time setup in the layout (container + styles + script):
 body(content, Toast.setup())                       // or setup(Position.TOP_RIGHT)

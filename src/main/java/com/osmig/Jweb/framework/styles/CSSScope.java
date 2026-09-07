@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.css.Rule;
 import java.util.ArrayList;
 import java.util.List;
 

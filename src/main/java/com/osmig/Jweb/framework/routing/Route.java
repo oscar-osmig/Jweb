@@ -1,7 +1,8 @@
 package com.osmig.Jweb.framework.routing;
 
+import jweb.RouteHandler;
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 
 import java.util.function.Supplier;
 import java.util.regex.Matcher;

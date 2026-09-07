@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.security;
 
-import com.osmig.Jweb.framework.middleware.Middleware;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Middleware;
+import jweb.Request;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 

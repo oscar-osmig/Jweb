@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.health;
 
 import com.osmig.Jweb.framework.JWeb;
-import com.osmig.Jweb.framework.server.Response;
+import jweb.Response;
 import com.osmig.Jweb.framework.util.Json;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

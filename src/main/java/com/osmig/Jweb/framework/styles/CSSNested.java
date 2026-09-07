@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.css.Selector;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +123,7 @@ public class CSSNested {
      * @param selector the selector builder
      * @return a NestedRule builder
      */
-    public static NestedRule rule(CSS.Selector selector) {
+    public static NestedRule rule(Selector selector) {
         return new NestedRule(selector.build(), null, 0);
     }
 
@@ -210,7 +211,7 @@ public class CSSNested {
          * @param childSelector the selector builder
          * @return the child NestedRule
          */
-        public NestedRule nest(CSS.Selector childSelector) {
+        public NestedRule nest(Selector childSelector) {
             return nest(childSelector.build());
         }
 

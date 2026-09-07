@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.ui;
 
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.events.Event;
+import jweb.Event;
 import com.osmig.Jweb.framework.styles.CSS;
 import com.osmig.Jweb.framework.styles.CSSValue;
 
@@ -792,12 +792,12 @@ public class UI {
         }
 
         /** An Action that opens the modal: {@code button(onClick(UI.Modal.open("confirm")), "Delete")}. */
-        public static com.osmig.Jweb.framework.js.Actions.Action open(String id) {
+        public static jweb.Action open(String id) {
             return () -> "document.getElementById('" + id + "').style.display='flex'";
         }
 
         /** An Action that closes the modal. */
-        public static com.osmig.Jweb.framework.js.Actions.Action close(String id) {
+        public static jweb.Action close(String id) {
             return () -> "document.getElementById('" + id + "').style.display='none'";
         }
 

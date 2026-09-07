@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.security;
 
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 import jakarta.servlet.http.HttpSession;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;

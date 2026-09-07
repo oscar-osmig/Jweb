@@ -1,0 +1,198 @@
+package jweb;
+
+import com.osmig.Jweb.framework.events.DomEvent;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
+
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static jweb.Css.*;
+import static jweb.El.*;
+import static jweb.Js.*;
+import static jweb.Three.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * The short names are the real names. Every type an app author can receive
+ * from a framework call, or must implement, is assignable to its {@code jweb.*}
+ * spelling — so an IDE's auto-import never has to reach for
+ * {@code com.osmig.Jweb.framework.*}. Every assignment here is written with the
+ * fully-qualified {@code jweb.X} on purpose: if the framework ever hands back a
+ * supertype from the long package again, this file stops compiling.
+ *
+ * <p>All four DSL wildcards are imported at once, so the names used here are
+ * also proven unambiguous across {@code El}, {@code Css}, {@code Js} and
+ * {@code Three}.</p>
+ */
+@SuppressWarnings("unused")
+class JwebSurfaceTest {
+
+    // ==================== HTML ====================
+
+    @Test
+    void htmlValueTypesAreJwebTypes() {
+        jweb.Tag t = div(id("x"), "hi");
+        jweb.Attributes a = attrs().id("y");
+        jweb.Attr id = id("z");
+        jweb.Element el = t;
+        jweb.Tag scene = scene(box());
+
+        Consumer<jweb.Event> handler = ev -> {};
+        jweb.Attributes withHandler = onClick(handler);
+        jweb.Event e = DomEvent.builder().type("click").build();
+
+        assertEquals("<div id=\"x\">hi</div>", t.toHtml());
+        assertEquals("id", id.name());
+        assertTrue(div(withHandler).toHtml().contains("click"), div(withHandler).toHtml());
+        assertEquals("click", e.type());
+        assertTrue(scene.toHtml().contains("data-three"));
+    }
+
+    @Test
+    void errorBoundaryAndTransitionAreElements() {
+        jweb.ErrorBoundary eb = jweb.ErrorBoundary.of((Supplier<jweb.Element>) () -> p("x"));
+        jweb.Element tr = jweb.Transition.fade(true, () -> p("y"));
+        jweb.Element outlet = jweb.Portal.outlet("modals");
+        jweb.Element button = jweb.Button.of("Save");
+        assertTrue(eb.toHtml().contains("x"));
+        assertTrue(tr.toHtml().contains("y"));
+        assertNotNull(outlet.toHtml());
+        assertTrue(button.toHtml().contains("Save"));
+    }
+
+    // ==================== JavaScript ====================
+
+    @Test
+    void javascriptValueTypesAreJwebTypes() {
+        jweb.Action act = show("panel");
+        jweb.Val v = v("x").plus(1);
+        jweb.Func f = func("f", "a").ret(v("a"));
+        jweb.js.Stmt s = v("y").assign(2);
+        jweb.Action toast = jweb.Toast.success("Saved");
+        jweb.Action fromFunc = call("init");
+
+        assertTrue(act.build().contains("panel"));
+        assertEquals("(x+1)", v.js());
+        assertTrue(f.toDecl().startsWith("function f(a)"), f.toDecl());
+        assertEquals("y=2", s.js());
+        assertTrue(toast.build().contains("Saved"));
+        assertEquals("init()", fromFunc.build());
+    }
+
+    // ==================== CSS ====================
+
+    @Test
+    void cssValueTypesAreJwebTypes() {
+        jweb.Style<?> st = style().padding(px(4));
+        jweb.CSSValue unit = rem(1);
+        jweb.css.Stylesheet sheet = stylesheet().rule("body", style().margin(zero));
+        jweb.css.MediaQuery mq = media().minWidth(px(768));
+        jweb.css.MediaQuery bp = md();
+        jweb.css.ContainerQuery cq = jweb.css.ContainerQuery.container("card");
+        jweb.css.Keyframes kf = keyframes("spin");
+        jweb.css.Keyframes preset = jweb.css.Keyframes.fadeIn();
+        jweb.css.FontFace ff = jweb.css.FontFace.fontFace("Inter");
+        jweb.css.Supports sp = jweb.css.Supports.supports("display", "grid");
+        jweb.css.Rule rule = jweb.css.Rule.of(".x", style().color("red"));
+        jweb.css.Selector sel = jweb.css.Selectors.cls("card").hover();
+
+        String css = sheet.add(mq.rules(rule)).add(kf.from(style().opacity(0)).to(style().opacity(1)))
+            .add(sp.rules(rule)).add(cq.rule(".x", style().display(block))).build();
+        assertTrue(css.contains("@media"), css);
+        assertTrue(css.contains("@keyframes spin"), css);
+        assertTrue(css.contains("@supports"), css);
+        assertTrue(css.contains("@container"), css);
+        assertEquals(".x{color: red;}", rule.build());
+        assertEquals(".card:hover", sel.toString());
+        assertEquals("1rem", unit.css());
+        assertNotNull(preset.build());
+        assertNotNull(ff.build());
+    }
+
+    // ==================== Three ====================
+
+    @Test
+    void threeNodeTypesAreJwebTypes() {
+        jweb.three.Box b = box(1, 1, 1);
+        jweb.three.Sphere sp = sphere(2);
+        jweb.three.Camera cam = camera().position(0, 1, 4);
+        jweb.three.DirectionalLight light = directionalLight();
+        jweb.three.Group g = group(b, sp);
+        jweb.three.SceneSetting fog = Three.fog("#fff", 1, 40);
+        jweb.three.SceneSetting grid = Three.grid(10, 40);
+        jweb.three.ThreePatch patch = Three.patch("hall").node("x").opacity(0.5);
+
+        assertEquals(40, grid.toMap().get("divisions"));   // an int stays an Integer
+        assertEquals(40L, fog.toMap().get("far"));         // a whole double narrows to a Long
+        assertNotNull(cam.toMap());
+        assertNotNull(light.toMap());
+        assertNotNull(g.toMap());
+        assertNotNull(patch);
+    }
+
+    // ==================== Server ====================
+
+    @Test
+    void serverValueTypesAreJwebTypes() {
+        jweb.Request req = jweb.MockRequest.get("/x").build();
+        jweb.MockRequest mock = jweb.MockRequest.post("/y");
+        jweb.MockSession session = new jweb.MockSession();
+        jweb.TestClient client = jweb.TestClient.localhost(8085).withAuth("t");
+        jweb.Response.ResponseBuilder rb = jweb.Response.ok();
+        ResponseEntity<String> html = jweb.Response.html(p("x"));
+        jweb.Principal principal = jweb.Principal.of("42", "Ada", "admin");
+        jweb.Seo seo = jweb.Seo.of("Title", "Description");
+        jweb.Doc doc = jweb.Doc.of("users").set("name", "Ada");
+        jweb.Streamed streamed = jweb.Streamed.of(() -> p("x"));
+        jweb.BackgroundTask<String> task = new jweb.BackgroundTask<>("job", CompletableFuture.completedFuture("done"));
+        jweb.SseEvent event = jweb.SseEvent.of("tick", "1");
+        jweb.SseBroadcaster broadcaster = new jweb.SseBroadcaster(0);
+        jweb.SseEmitter emitter = jweb.SseEmitter.create(0);
+        jweb.ValidationResult valid = jweb.ValidationResult.valid();
+        jweb.Validator<String> validator = (value, field) -> jweb.ValidationResult.valid();
+        Function<jweb.Request, jweb.UploadedFile> upload = rq -> jweb.FileUpload.getFile(rq, "avatar");
+        Supplier<jweb.FetchResult> fetch = () -> jweb.Fetch.get("http://localhost/x").send();
+
+        assertEquals("/x", req.path());
+        assertEquals("42", principal.getId());
+        assertEquals("Ada", doc.getString("name"));
+        assertEquals("1", event.data());
+        assertTrue(valid.isValid());
+        assertTrue(validator.validate("v", "f").isValid());
+        assertNotNull(html.getBody());
+        assertTrue(jweb.Messages.has("nope") || true);
+        broadcaster.shutdown();
+    }
+
+    // ==================== Wiring: what authors implement ====================
+
+    @Test
+    void overridePointsAreTypedOnJwebTypes() {
+        jweb.Middleware mw = (rq, chain) -> chain.next();
+        jweb.Middleware recommended = jweb.Middlewares.recommended();
+        jweb.RouteHandler handler = rq -> "hi";
+        jweb.JWeb app = jweb.JWeb.create()
+            .use(mw)
+            .get("/x", handler)
+            .get("/y", () -> p("y"))
+            .post("/z", handler)
+            .pages();
+
+        jweb.Template page = new jweb.Template() {
+            @Override public jweb.Element render() { return p("x"); }
+            @Override public Optional<jweb.Element> extraHead() { return Optional.of(p("head")); }
+            @Override public jweb.Action onMount() { return call("init"); }
+            @Override public Optional<jweb.Action> scripts() { return Optional.of(call("more")); }
+            @Override public void beforeRender(jweb.Request request) {}
+        };
+
+        assertTrue(app.getRouter().match("GET", "/x").isPresent());
+        assertTrue(app.getRouter().match("POST", "/z").isPresent());
+        assertEquals("init()", page.onMount().build());
+        assertTrue(page.extraHead().isPresent());
+    }
+}

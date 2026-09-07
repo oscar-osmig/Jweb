@@ -196,7 +196,7 @@ public final class ThreeDemoPage {
         new java.util.concurrent.atomic.AtomicBoolean(false);
 
     /** The lantern's server-side click: re-light the live scene over the socket. */
-    private static void relightLantern(com.osmig.Jweb.framework.events.Event e) {
+    private static void relightLantern(jweb.Event e) {
         boolean cool = !LANTERN_COOL.get();
         LANTERN_COOL.set(cool);
         Three.patch("walkable")

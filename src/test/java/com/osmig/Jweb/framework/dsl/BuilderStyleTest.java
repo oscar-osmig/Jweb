@@ -1,9 +1,9 @@
 package com.osmig.Jweb.framework.dsl;
 
-import com.osmig.Jweb.framework.attributes.Attr;
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Attr;
+import jweb.Attributes;
 import com.osmig.Jweb.framework.elements.El;
-import com.osmig.Jweb.framework.elements.Tag;
+import jweb.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

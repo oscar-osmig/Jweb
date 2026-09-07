@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attributes;
 
 /**
  * HTML5 semantic structure elements: header, footer, nav, main, section, article, aside.

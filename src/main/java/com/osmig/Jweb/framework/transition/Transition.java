@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.transition;
 
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.elements.Tag;
+import jweb.Tag;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VFragment;
 import com.osmig.Jweb.framework.vdom.VNode;
@@ -70,7 +70,7 @@ import java.util.function.Supplier;
  *
  * @see Element
  */
-public final class Transition implements Element {
+public class Transition implements Element {
 
     private final boolean show;
     private Supplier<? extends jweb.Element> content;
@@ -81,7 +81,7 @@ public final class Transition implements Element {
     private int enterDuration = 300;
     private int leaveDuration = 300;
 
-    private Transition(boolean show) {
+    protected Transition(boolean show) {
         this.show = show;
     }
 

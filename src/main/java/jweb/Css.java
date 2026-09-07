@@ -1,8 +1,8 @@
 package jweb;
 
-import com.osmig.Jweb.framework.styles.Keyframes;
-import com.osmig.Jweb.framework.styles.MediaQuery;
-import com.osmig.Jweb.framework.styles.Stylesheet;
+import jweb.css.Keyframes;
+import jweb.css.MediaQuery;
+import jweb.css.Stylesheet;
 import com.osmig.Jweb.framework.styles.ViewTransitions;
 
 /**

@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.db.mongo;
 
+import jweb.Doc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;

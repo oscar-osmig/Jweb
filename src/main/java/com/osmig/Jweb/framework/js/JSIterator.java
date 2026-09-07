@@ -1,7 +1,8 @@
 package com.osmig.Jweb.framework.js;
 
-import com.osmig.Jweb.framework.js.JS.Func;
-import com.osmig.Jweb.framework.js.JS.Val;
+import jweb.js.Stmt;
+import jweb.Func;
+import jweb.Val;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -242,7 +243,7 @@ public class JSIterator {
         }
 
         private void appendStmt(StringBuilder sb, Object s) {
-            if (s instanceof JS.Stmt st) sb.append(st.code).append(";");
+            if (s instanceof Stmt st) sb.append(st.js()).append(";");
             else if (s instanceof Val val) sb.append(val.js()).append(";");
             else if (s instanceof String str) {
                 sb.append(str);
@@ -526,7 +527,7 @@ public class JSIterator {
         }
 
         private void appendStmt(StringBuilder sb, Object s) {
-            if (s instanceof JS.Stmt st) sb.append(st.code).append(";");
+            if (s instanceof Stmt st) sb.append(st.js()).append(";");
             else if (s instanceof Val val) sb.append(val.js()).append(";");
             else if (s instanceof String str) {
                 sb.append(str);

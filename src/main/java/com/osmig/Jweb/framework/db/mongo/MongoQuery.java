@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.db.mongo;
 
+import jweb.Doc;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;

@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.attributes;
 
+import jweb.Attributes;
 /**
  * Static helper for creating Attributes.
  *

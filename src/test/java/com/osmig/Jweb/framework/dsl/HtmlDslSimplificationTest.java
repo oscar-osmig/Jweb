@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.dsl;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Attributes;
 import com.osmig.Jweb.framework.elements.Button;
 import com.osmig.Jweb.framework.elements.Elements;
 import com.osmig.Jweb.framework.elements.FormElements;
@@ -8,7 +8,7 @@ import com.osmig.Jweb.framework.elements.FormEnhancements;
 import com.osmig.Jweb.framework.elements.Input;
 import com.osmig.Jweb.framework.elements.PictureElements;
 import com.osmig.Jweb.framework.elements.PopoverElements;
-import com.osmig.Jweb.framework.elements.Tag;
+import jweb.Tag;
 import com.osmig.Jweb.framework.styles.CSS;
 import org.junit.jupiter.api.Test;
 

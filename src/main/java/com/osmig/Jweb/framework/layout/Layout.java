@@ -1,8 +1,8 @@
 package com.osmig.Jweb.framework.layout;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Attributes;
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.elements.Tag;
+import jweb.Tag;
 import com.osmig.Jweb.framework.styles.CSSValue;
 
 import static com.osmig.Jweb.framework.elements.Elements.*;

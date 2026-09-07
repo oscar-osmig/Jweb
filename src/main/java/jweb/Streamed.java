@@ -1,21 +1,33 @@
 package jweb;
 
+import com.osmig.Jweb.framework.core.Element;
+
 import java.util.function.Supplier;
 
 /**
- * Streaming SSR entry point — flushes the page shell instantly and streams
- * Suspense blocks as their data resolves:
- * {@code app.get("/page", req -> Streamed.of(() -> new BigPage().render()))}.
+ * Marks a page for streaming SSR: the shell is flushed immediately with
+ * loading placeholders where {@code Suspense} blocks sit, and each block's
+ * HTML streams in (and replaces its placeholder) the moment its data is
+ * ready — no JavaScript written, works during page load.
  *
- * <p>Facade for {@link com.osmig.Jweb.framework.async.Streamed} (a record,
- * so it cannot be extended like the other aliases).</p>
+ * <p>The page is a {@code Supplier} so the tree is built inside the
+ * streaming context (the element DSL evaluates eagerly — a pre-built tree
+ * would already have executed its Suspense blocks):</p>
+ *
+ * <pre>
+ * app.get("/dashboard", req -> Streamed.of(() -> new Layout("Dashboard",
+ *     div(
+ *         header(),                                       // flushed instantly
+ *         Suspense.of(() -> reports.slowQuery())          // streams in later
+ *             .loading(() -> spinner("Crunching numbers..."))
+ *             .render(data -> reportTable(data))
+ *     )).render()));
+ * </pre>
  */
-@SuppressWarnings("deprecation")
-public final class Streamed {
+public record Streamed(Supplier<? extends jweb.Element> page) {
 
-    private Streamed() {}
-
-    public static com.osmig.Jweb.framework.async.Streamed of(Supplier<? extends Element> page) {
-        return com.osmig.Jweb.framework.async.Streamed.of(page);
+    /** Wraps a lazily-built page for streaming delivery. */
+    public static Streamed of(Supplier<? extends jweb.Element> page) {
+        return new Streamed(page);
     }
 }

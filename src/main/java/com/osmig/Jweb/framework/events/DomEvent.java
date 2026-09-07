@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.events;
 
+import jweb.Event;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

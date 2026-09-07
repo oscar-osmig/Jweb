@@ -1,10 +1,11 @@
 package com.osmig.Jweb.framework.elements;
 
+import jweb.Tag;
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.events.Event;
+import jweb.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
-import com.osmig.Jweb.framework.js.Actions.Action;
+import jweb.Action;
 import com.osmig.Jweb.framework.vdom.VNode;
 
 import java.util.LinkedHashMap;
@@ -53,7 +54,7 @@ public class Button implements Element {
     /** Anything this builder does not model: attr()/data()/aria()/on* land here. */
     private final Map<String, String> extra = new LinkedHashMap<>();
 
-    private Button() {}
+    protected Button() {}
 
     // ==================== Factory Methods ====================
 

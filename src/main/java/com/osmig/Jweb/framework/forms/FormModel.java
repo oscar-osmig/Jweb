@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.forms;
 
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.events.Event;
+import jweb.Event;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;

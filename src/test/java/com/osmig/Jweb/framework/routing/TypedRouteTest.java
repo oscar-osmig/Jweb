@@ -2,7 +2,7 @@ package com.osmig.Jweb.framework.routing;
 
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.testing.JWebTest;
-import com.osmig.Jweb.framework.testing.MockRequest;
+import jweb.MockRequest;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.routing;
 
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 
 import java.util.UUID;
 

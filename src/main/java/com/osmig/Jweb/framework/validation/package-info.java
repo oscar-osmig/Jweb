@@ -6,8 +6,8 @@
  *
  * <h2>Core Classes</h2>
  * <ul>
- *   <li>{@link com.osmig.Jweb.framework.validation.ValidationResult} - Holds validation errors</li>
- *   <li>{@link com.osmig.Jweb.framework.validation.Validator} - Functional validator interface</li>
+ *   <li>{@link jweb.ValidationResult} - Holds validation errors</li>
+ *   <li>{@link jweb.Validator} - Functional validator interface</li>
  *   <li>{@link com.osmig.Jweb.framework.validation.Validators} - Built-in validator factories</li>
  *   <li>{@link com.osmig.Jweb.framework.validation.FormValidator} - Fluent form validation builder</li>
  * </ul>

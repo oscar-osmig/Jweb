@@ -1,5 +1,7 @@
 package com.osmig.Jweb.framework.validation;
 
+import jweb.Validator;
+import jweb.ValidationResult;
 import java.util.*;
 import java.util.function.Function;
 

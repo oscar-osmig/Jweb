@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.middleware;
 
+import jweb.Middleware;
 import com.osmig.Jweb.framework.security.Csrf;
 import com.osmig.Jweb.framework.security.CsrfException;
 import com.osmig.Jweb.framework.util.Log;
@@ -238,7 +239,7 @@ public class Middlewares {
         };
     }
 
-    private static String getClientId(com.osmig.Jweb.framework.server.Request req) {
+    private static String getClientId(jweb.Request req) {
         // Try X-Forwarded-For header first (for proxies)
         String forwarded = req.header("X-Forwarded-For");
         if (forwarded != null && !forwarded.isEmpty()) {

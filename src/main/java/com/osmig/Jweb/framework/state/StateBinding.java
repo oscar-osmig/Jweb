@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.state;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Attributes;
 
 /**
  * Utility for binding state to DOM elements.

@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.error;
 
-import com.osmig.Jweb.framework.validation.ValidationResult;
+import jweb.ValidationResult;
 import org.springframework.http.HttpStatus;
 
 /**

@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.validation;
 
+import jweb.Validator;
 import java.util.Collection;
 import java.util.regex.Pattern;
 

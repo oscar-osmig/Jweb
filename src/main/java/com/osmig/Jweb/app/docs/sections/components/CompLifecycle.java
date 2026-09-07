@@ -1,5 +1,6 @@
 package com.osmig.Jweb.app.docs.sections.components;
 
+import jweb.Action;
 import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 

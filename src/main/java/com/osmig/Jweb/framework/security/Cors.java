@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.security;
 
-import com.osmig.Jweb.framework.middleware.Middleware;
+import jweb.Middleware;
 import org.springframework.http.ResponseEntity;
 
 import java.time.Duration;

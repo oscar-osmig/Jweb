@@ -935,8 +935,7 @@ public class DashboardScripts {
 ## Level 20: Template Lifecycle Hooks
 
 ```java
-// Request is com.osmig.Jweb.framework.server.Request (kept as a long import
-// on purpose); the title/description/head/script hooks return Optionals.
+// Request is jweb.Request; the title/description/head/script hooks return Optionals.
 public class AdvancedPage implements Template {
     private final UserService userService;
     private User user;

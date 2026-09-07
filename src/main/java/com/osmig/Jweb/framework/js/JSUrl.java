@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.js;
 
-import com.osmig.Jweb.framework.js.JS.Val;
+import jweb.Val;
 
 /**
  * URL and URLSearchParams API for URL manipulation.

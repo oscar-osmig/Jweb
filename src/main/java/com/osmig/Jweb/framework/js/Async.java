@@ -1,5 +1,9 @@
 package com.osmig.Jweb.framework.js;
 
+import jweb.Action;
+import jweb.js.Stmt;
+import jweb.Func;
+import jweb.Val;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -519,8 +523,8 @@ public class Async {
         }
 
         private void appendStmt(StringBuilder sb, Object s) {
-            if (s instanceof Stmt st) sb.append(st.code).append(";");
-            else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
+            if (s instanceof Stmt st) sb.append(st.js()).append(";");
+            else if (s instanceof Action a) sb.append(a.build()).append(";");
             else if (s instanceof Val val) sb.append(val.js()).append(";");
             else if (s instanceof String str) {
                 sb.append(str);

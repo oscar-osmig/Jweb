@@ -1,12 +1,13 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attr;
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attr;
+import jweb.Attributes;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.vdom.VFragment;
 import com.osmig.Jweb.framework.vdom.VNode;
 
-import com.osmig.Jweb.framework.core.ErrorBoundary;
+import jweb.ErrorBoundary;
 
 import java.util.Collection;
 import java.util.List;
@@ -180,69 +181,69 @@ public class Elements {
     // the browser. Both are CSP-safe — see HtmlAttributes.
 
     /** A server-side handler for any event type: {@code on("pointerdown", e -> ...)}. */
-    public static Attributes on(String eventType, java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().on(eventType, handler); }
+    public static Attributes on(String eventType, java.util.function.Consumer<jweb.Event> handler) { return attrs().on(eventType, handler); }
     /** A client-side Action for any event type: {@code on("pointerdown", show("x"))}. */
-    public static Attributes on(String eventType, com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().on(eventType, action); }
+    public static Attributes on(String eventType, jweb.Action action) { return attrs().on(eventType, action); }
 
-    public static Attributes onClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onClick(handler); }
-    public static Attributes onChange(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onChange(handler); }
-    public static Attributes onInput(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onInput(handler); }
-    public static Attributes onSubmit(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onSubmit(handler); }
-    public static Attributes onFocus(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onFocus(handler); }
-    public static Attributes onBlur(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onBlur(handler); }
-    public static Attributes onKeyDown(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onKeyDown(handler); }
-    public static Attributes onKeyUp(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onKeyUp(handler); }
-    public static Attributes onKeyPress(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onKeyPress(handler); }
-    public static Attributes onMouseEnter(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseEnter(handler); }
-    public static Attributes onMouseLeave(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseLeave(handler); }
-    public static Attributes onMouseDown(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseDown(handler); }
-    public static Attributes onMouseUp(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseUp(handler); }
-    public static Attributes onMouseMove(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseMove(handler); }
-    public static Attributes onMouseOver(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseOver(handler); }
-    public static Attributes onMouseOut(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onMouseOut(handler); }
-    public static Attributes onContextMenu(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onContextMenu(handler); }
-    public static Attributes onWheel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onWheel(handler); }
-    public static Attributes onDoubleClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDoubleClick(handler); }
+    public static Attributes onClick(java.util.function.Consumer<jweb.Event> handler) { return attrs().onClick(handler); }
+    public static Attributes onChange(java.util.function.Consumer<jweb.Event> handler) { return attrs().onChange(handler); }
+    public static Attributes onInput(java.util.function.Consumer<jweb.Event> handler) { return attrs().onInput(handler); }
+    public static Attributes onSubmit(java.util.function.Consumer<jweb.Event> handler) { return attrs().onSubmit(handler); }
+    public static Attributes onFocus(java.util.function.Consumer<jweb.Event> handler) { return attrs().onFocus(handler); }
+    public static Attributes onBlur(java.util.function.Consumer<jweb.Event> handler) { return attrs().onBlur(handler); }
+    public static Attributes onKeyDown(java.util.function.Consumer<jweb.Event> handler) { return attrs().onKeyDown(handler); }
+    public static Attributes onKeyUp(java.util.function.Consumer<jweb.Event> handler) { return attrs().onKeyUp(handler); }
+    public static Attributes onKeyPress(java.util.function.Consumer<jweb.Event> handler) { return attrs().onKeyPress(handler); }
+    public static Attributes onMouseEnter(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseEnter(handler); }
+    public static Attributes onMouseLeave(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseLeave(handler); }
+    public static Attributes onMouseDown(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseDown(handler); }
+    public static Attributes onMouseUp(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseUp(handler); }
+    public static Attributes onMouseMove(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseMove(handler); }
+    public static Attributes onMouseOver(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseOver(handler); }
+    public static Attributes onMouseOut(java.util.function.Consumer<jweb.Event> handler) { return attrs().onMouseOut(handler); }
+    public static Attributes onContextMenu(java.util.function.Consumer<jweb.Event> handler) { return attrs().onContextMenu(handler); }
+    public static Attributes onWheel(java.util.function.Consumer<jweb.Event> handler) { return attrs().onWheel(handler); }
+    public static Attributes onDoubleClick(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDoubleClick(handler); }
     /** Alias for {@link #onDoubleClick(java.util.function.Consumer)} matching the DOM event name ({@code dblclick}). */
-    public static Attributes onDblClick(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDblClick(handler); }
-    public static Attributes onDrag(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDrag(handler); }
-    public static Attributes onDragStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragStart(handler); }
-    public static Attributes onDragEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragEnd(handler); }
-    public static Attributes onDragEnter(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragEnter(handler); }
-    public static Attributes onDragLeave(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragLeave(handler); }
-    public static Attributes onDragOver(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDragOver(handler); }
-    public static Attributes onDrop(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onDrop(handler); }
-    public static Attributes onTouchStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchStart(handler); }
-    public static Attributes onTouchMove(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchMove(handler); }
-    public static Attributes onTouchEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchEnd(handler); }
-    public static Attributes onTouchCancel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTouchCancel(handler); }
-    public static Attributes onScroll(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onScroll(handler); }
-    public static Attributes onToggle(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onToggle(handler); }
-    public static Attributes onCancel(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onCancel(handler); }
-    public static Attributes onClose(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onClose(handler); }
-    public static Attributes onAnimationStart(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onAnimationStart(handler); }
-    public static Attributes onAnimationEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onAnimationEnd(handler); }
-    public static Attributes onAnimationIteration(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onAnimationIteration(handler); }
-    public static Attributes onTransitionEnd(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onTransitionEnd(handler); }
-    public static Attributes onLoad(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onLoad(handler); }
-    public static Attributes onError(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onError(handler); }
-    public static Attributes onCopy(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onCopy(handler); }
-    public static Attributes onCut(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onCut(handler); }
-    public static Attributes onPaste(java.util.function.Consumer<com.osmig.Jweb.framework.events.Event> handler) { return attrs().onPaste(handler); }
+    public static Attributes onDblClick(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDblClick(handler); }
+    public static Attributes onDrag(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDrag(handler); }
+    public static Attributes onDragStart(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDragStart(handler); }
+    public static Attributes onDragEnd(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDragEnd(handler); }
+    public static Attributes onDragEnter(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDragEnter(handler); }
+    public static Attributes onDragLeave(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDragLeave(handler); }
+    public static Attributes onDragOver(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDragOver(handler); }
+    public static Attributes onDrop(java.util.function.Consumer<jweb.Event> handler) { return attrs().onDrop(handler); }
+    public static Attributes onTouchStart(java.util.function.Consumer<jweb.Event> handler) { return attrs().onTouchStart(handler); }
+    public static Attributes onTouchMove(java.util.function.Consumer<jweb.Event> handler) { return attrs().onTouchMove(handler); }
+    public static Attributes onTouchEnd(java.util.function.Consumer<jweb.Event> handler) { return attrs().onTouchEnd(handler); }
+    public static Attributes onTouchCancel(java.util.function.Consumer<jweb.Event> handler) { return attrs().onTouchCancel(handler); }
+    public static Attributes onScroll(java.util.function.Consumer<jweb.Event> handler) { return attrs().onScroll(handler); }
+    public static Attributes onToggle(java.util.function.Consumer<jweb.Event> handler) { return attrs().onToggle(handler); }
+    public static Attributes onCancel(java.util.function.Consumer<jweb.Event> handler) { return attrs().onCancel(handler); }
+    public static Attributes onClose(java.util.function.Consumer<jweb.Event> handler) { return attrs().onClose(handler); }
+    public static Attributes onAnimationStart(java.util.function.Consumer<jweb.Event> handler) { return attrs().onAnimationStart(handler); }
+    public static Attributes onAnimationEnd(java.util.function.Consumer<jweb.Event> handler) { return attrs().onAnimationEnd(handler); }
+    public static Attributes onAnimationIteration(java.util.function.Consumer<jweb.Event> handler) { return attrs().onAnimationIteration(handler); }
+    public static Attributes onTransitionEnd(java.util.function.Consumer<jweb.Event> handler) { return attrs().onTransitionEnd(handler); }
+    public static Attributes onLoad(java.util.function.Consumer<jweb.Event> handler) { return attrs().onLoad(handler); }
+    public static Attributes onError(java.util.function.Consumer<jweb.Event> handler) { return attrs().onError(handler); }
+    public static Attributes onCopy(java.util.function.Consumer<jweb.Event> handler) { return attrs().onCopy(handler); }
+    public static Attributes onCut(java.util.function.Consumer<jweb.Event> handler) { return attrs().onCut(handler); }
+    public static Attributes onPaste(java.util.function.Consumer<jweb.Event> handler) { return attrs().onPaste(handler); }
 
-    public static Attributes onClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onClick(action); }
-    public static Attributes onChange(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onChange(action); }
-    public static Attributes onInput(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onInput(action); }
-    public static Attributes onSubmit(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onSubmit(action); }
-    public static Attributes onFocus(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onFocus(action); }
-    public static Attributes onBlur(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onBlur(action); }
-    public static Attributes onKeyDown(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onKeyDown(action); }
-    public static Attributes onKeyUp(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onKeyUp(action); }
-    public static Attributes onMouseEnter(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onMouseEnter(action); }
-    public static Attributes onMouseLeave(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onMouseLeave(action); }
-    public static Attributes onDoubleClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onDoubleClick(action); }
-    /** Alias for {@link #onDoubleClick(com.osmig.Jweb.framework.js.Actions.Action)} matching the DOM event name ({@code dblclick}). */
-    public static Attributes onDblClick(com.osmig.Jweb.framework.js.Actions.Action action) { return attrs().onDblClick(action); }
+    public static Attributes onClick(jweb.Action action) { return attrs().onClick(action); }
+    public static Attributes onChange(jweb.Action action) { return attrs().onChange(action); }
+    public static Attributes onInput(jweb.Action action) { return attrs().onInput(action); }
+    public static Attributes onSubmit(jweb.Action action) { return attrs().onSubmit(action); }
+    public static Attributes onFocus(jweb.Action action) { return attrs().onFocus(action); }
+    public static Attributes onBlur(jweb.Action action) { return attrs().onBlur(action); }
+    public static Attributes onKeyDown(jweb.Action action) { return attrs().onKeyDown(action); }
+    public static Attributes onKeyUp(jweb.Action action) { return attrs().onKeyUp(action); }
+    public static Attributes onMouseEnter(jweb.Action action) { return attrs().onMouseEnter(action); }
+    public static Attributes onMouseLeave(jweb.Action action) { return attrs().onMouseLeave(action); }
+    public static Attributes onDoubleClick(jweb.Action action) { return attrs().onDoubleClick(action); }
+    /** Alias for {@link #onDoubleClick(jweb.Action)} matching the DOM event name ({@code dblclick}). */
+    public static Attributes onDblClick(jweb.Action action) { return attrs().onDblClick(action); }
 
     // ==================== Server-Driven UI as Arguments ====================
 

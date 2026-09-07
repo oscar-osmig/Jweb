@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.http;
 
+import jweb.FetchResult;
 import com.osmig.Jweb.framework.util.Json;
 
 import java.net.URI;
@@ -68,7 +69,7 @@ public class Fetch {
     private String body;
     private Duration timeout = Duration.ofSeconds(30);
 
-    private Fetch(String method, String url) {
+    protected Fetch(String method, String url) {
         this.method = method;
         this.url = url;
     }

@@ -212,7 +212,8 @@ MongoDB auto-connects when `jweb.data.enabled: true` via `JWebConfiguration.mong
 ### CRUD
 
 ```java
-import com.osmig.Jweb.framework.db.mongo.*;
+import jweb.Mongo;
+import jweb.Doc;
 
 // Create
 Doc user = Doc.of("users")
@@ -294,7 +295,7 @@ overloads), `getDateTime` (⚠️ not `getDate`), `getList`, `getDoc`, `get(dott
 
 ```java
 import jweb.Auth;
-import com.osmig.Jweb.framework.security.Principal;
+import jweb.Principal;
 
 // Login — stores principal in session, regenerates the CSRF token
 Auth.login(request, Principal.of("admin", "admin@example.com", "admin"));
@@ -343,7 +344,7 @@ Principal.builder()
 ### JWT Authentication
 
 ```java
-import com.osmig.Jweb.framework.security.Jwt;
+import jweb.Jwt;
 
 Jwt.init("your-256-bit-secret-key-minimum-32-chars");   // or Jwt.init() → env JWT_SECRET
 
@@ -384,7 +385,7 @@ head(..., Csrf.tokenMeta(request))                // <meta name="csrf-token"> fo
 ### Password Hashing (BCrypt)
 
 ```java
-import com.osmig.Jweb.framework.security.Password;
+import jweb.Password;
 
 String hashed = Password.hash("userPassword123");
 boolean ok = Password.verify("userPassword123", hashed);
@@ -582,7 +583,7 @@ Registration reg = FormModel.bindFromParameterMap(Registration.class, req.formPa
 
 ```java
 import jweb.FileUpload;
-import com.osmig.Jweb.framework.upload.UploadedFile;
+import jweb.UploadedFile;
 
 UploadedFile file = FileUpload.getFile(req, "avatar");        // never null (empty wrapper)
 Optional<UploadedFile> f = FileUpload.getFileOptional(req, "avatar");
@@ -618,7 +619,7 @@ uv pip install --python .tools/markitdown/bin/python "markitdown[all]"
 **Java API:**
 
 ```java
-import com.osmig.Jweb.framework.markdown.Markitdown;
+import jweb.Markitdown;
 
 String md = Markitdown.convert(Path.of("report.pdf"));   // from disk
 String md = Markitdown.convert(bytes, "docx");           // in-memory (temp file under the hood)
@@ -652,7 +653,7 @@ for large PDFs.
 
 ```java
 import jweb.I18n;
-import com.osmig.Jweb.framework.i18n.Messages;
+import jweb.Messages;
 
 // Register bundles programmatically (no properties-file auto-loading yet)
 Messages.setDefaultLocale(Locale.ENGLISH);
@@ -676,7 +677,10 @@ String msg2 = Messages.get("no", "greeting", "Ola");
 ## Testing
 
 ```java
-import com.osmig.Jweb.framework.testing.*;
+import jweb.JWebTest;
+import jweb.MockRequest;
+import jweb.Request;
+import jweb.TestClient;
 
 // Unit-test a handler with a mock request
 Request req = MockRequest.get("/users/42").pathParam("id", "42").build();

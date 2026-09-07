@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attributes;
 
 /**
  * Modern HTML5 interactive and semantic elements.

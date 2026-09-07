@@ -67,13 +67,13 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @see Element
  */
-public final class Portal {
+public class Portal {
 
     // Thread-local storage for portal content during a single render
     private static final ThreadLocal<Map<String, List<Element>>> portalContent =
         ThreadLocal.withInitial(ConcurrentHashMap::new);
 
-    private Portal() {}
+    protected Portal() {}
 
     // ==================== Rendering to Portals ====================
 

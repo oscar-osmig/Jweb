@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.security;
 
-import com.osmig.Jweb.framework.middleware.Middleware;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Middleware;
+import jweb.Request;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.http.HttpStatus;
@@ -66,13 +66,13 @@ import java.util.function.Consumer;
  * app.use(Jwt.optional());
  * </pre>
  */
-public final class Jwt {
+public class Jwt {
 
     private static SecretKey secretKey;
     private static final String REQUEST_TOKEN_ATTR = "jwt_token";
     private static final String REQUEST_CLAIMS_ATTR = "jwt_claims";
 
-    private Jwt() {}
+    protected Jwt() {}
 
     // ==================== Initialization ====================
 

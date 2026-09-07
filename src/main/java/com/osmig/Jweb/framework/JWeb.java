@@ -2,13 +2,13 @@ package com.osmig.Jweb.framework;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.core.Page;
-import com.osmig.Jweb.framework.middleware.Middleware;
+import jweb.Middleware;
 import com.osmig.Jweb.framework.middleware.MiddlewareStack;
 import com.osmig.Jweb.framework.routing.PageRegistry;
 import com.osmig.Jweb.framework.routing.Route;
-import com.osmig.Jweb.framework.routing.RouteHandler;
+import jweb.RouteHandler;
 import com.osmig.Jweb.framework.routing.Router;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 import com.osmig.Jweb.framework.template.Template;
 
 import java.util.List;

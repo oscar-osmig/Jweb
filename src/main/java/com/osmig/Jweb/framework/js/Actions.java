@@ -1,5 +1,7 @@
 package com.osmig.Jweb.framework.js;
 
+import jweb.Action;
+import jweb.Val;
 import com.osmig.Jweb.framework.styles.Style;
 
 import java.util.ArrayList;
@@ -161,7 +163,7 @@ public class Actions extends JS {
      * setText("greeting", str("Hi ").plus(variable("name")))
      * </pre>
      */
-    public static Action setText(String elementId, JS.Val expression) {
+    public static Action setText(String elementId, Val expression) {
         return () -> "$_('" + esc(elementId) + "').textContent=" + expression.js();
     }
 
@@ -174,12 +176,12 @@ public class Actions extends JS {
     }
 
     /** Set element text and color from JavaScript expressions. */
-    public static Action setTextAndColor(String elementId, JS.Val textExpr, JS.Val colorExpr) {
+    public static Action setTextAndColor(String elementId, Val textExpr, Val colorExpr) {
         return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent=" + textExpr.js()
                 + ";_e.style.color=" + colorExpr.js() + ";}";
     }
 
-    /** @deprecated Use {@link #setTextAndColor(String, JS.Val, JS.Val)}. */
+    /** @deprecated Use {@link #setTextAndColor(String, Val, Val)}. */
     @Deprecated
     public static Action setTextAndColorExpr(String elementId, String textExpr, String colorExpr) {
         return () -> "{const _e=$_('" + esc(elementId) + "');_e.textContent=" + textExpr + ";_e.style.color=" + colorExpr + ";}";
@@ -565,7 +567,7 @@ public class Actions extends JS {
      * assign("adminKey", str(""))             // adminKey=''
      * </pre>
      */
-    public static Action assign(String varName, JS.Val value) {
+    public static Action assign(String varName, Val value) {
         return () -> varName + "=" + value.js();
     }
 
@@ -574,7 +576,7 @@ public class Actions extends JS {
         return () -> varName + "='" + esc(literal) + "'";
     }
 
-    /** @deprecated Use {@link #assign(String, JS.Val)}. */
+    /** @deprecated Use {@link #assign(String, Val)}. */
     @Deprecated
     public static Action assignVar(String varName, String expression) {
         return () -> varName + "=" + expression;
@@ -594,7 +596,7 @@ public class Actions extends JS {
         return new InputValueGetter(elementId);
     }
 
-    /** @deprecated Use {@link #setText(String, JS.Val)}. */
+    /** @deprecated Use {@link #setText(String, Val)}. */
     @Deprecated
     public static Action setTextExpr(String elementId, String expression) {
         return () -> "$_('" + esc(elementId) + "').textContent=" + expression;
@@ -674,48 +676,12 @@ public class Actions extends JS {
 
     // ==================== Utilities ====================
 
-    static String esc(String s) {
+    public static String esc(String s) {
         return s == null ? "" : s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n");
     }
 
     // ==================== Core Interfaces ====================
 
-    /**
-     * Represents a buildable JavaScript action.
-     *
-     * <p>Actions can be used in two ways:</p>
-     * <ol>
-     *   <li>With ScriptBuilder for &lt;script&gt; blocks: {@code script().add(onClick("btn").does(show("panel")))}</li>
-     *   <li>Inline with event attributes: {@code attrs().onClick(show("panel"))}</li>
-     * </ol>
-     */
-    @FunctionalInterface
-    public interface Action {
-        /**
-         * Builds the JavaScript code for this action.
-         * @return the JavaScript code string
-         */
-        String build();
-
-        /**
-         * Returns the action as an inline JavaScript string for use in event attributes.
-         * Can be used directly with onclick, onsubmit, etc.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * // Using with attrs()
-         * button(attrs().set("onclick", show("panel").inline()), "Show Panel")
-         *
-         * // Or use the convenience method
-         * button(attrs().onClick(show("panel")), "Show Panel")
-         * </pre>
-         *
-         * @return the JavaScript code string suitable for inline event handlers
-         */
-        default String inline() {
-            return build();
-        }
-    }
 
     /** Represents a value that can come from response or be literal. */
     public interface Value {
@@ -1962,13 +1928,13 @@ public class Actions extends JS {
          * @param jsExpr the JavaScript expression producing JSON
          * @return this builder
          */
-        public FetchBuilder json(JS.Val jsExpr) {
+        public FetchBuilder json(Val jsExpr) {
             this.body = jsExpr.js();
             this.contentType = "application/json";
             return this;
         }
 
-        /** @deprecated Use {@link #json(JS.Val)}. */
+        /** @deprecated Use {@link #json(Val)}. */
         @Deprecated
         public FetchBuilder jsonExpr(String jsExpr) {
             this.body = jsExpr;
@@ -2029,12 +1995,12 @@ public class Actions extends JS {
          * @param valueExpr the JavaScript expression for the value
          * @return this builder
          */
-        public FetchBuilder header(String name, JS.Val valueExpr) {
+        public FetchBuilder header(String name, Val valueExpr) {
             headers.add("'" + esc(name) + "':" + valueExpr.js());
             return this;
         }
 
-        /** @deprecated Use {@link #header(String, JS.Val)}. */
+        /** @deprecated Use {@link #header(String, Val)}. */
         @Deprecated
         public FetchBuilder headerExpr(String name, String valueExpr) {
             headers.add("'" + esc(name) + "':" + valueExpr);
@@ -2057,11 +2023,11 @@ public class Actions extends JS {
          * @param tokenExpr the JavaScript expression for the token
          * @return this builder
          */
-        public FetchBuilder bearer(JS.Val tokenExpr) {
+        public FetchBuilder bearer(Val tokenExpr) {
             return header("Authorization", JS.expr("'Bearer '+(" + tokenExpr.js() + ")"));
         }
 
-        /** @deprecated Use {@link #bearer(JS.Val)}. */
+        /** @deprecated Use {@link #bearer(Val)}. */
         @Deprecated
         public FetchBuilder bearerExpr(String tokenExpr) {
             return header("Authorization", JS.expr("'Bearer '+(" + tokenExpr + ")"));
@@ -2311,12 +2277,12 @@ public class Actions extends JS {
         /**
          * Sets text content from expression.
          */
-        public DOMQuery setText(JS.Val expr) {
+        public DOMQuery setText(Val expr) {
             operations.add(".textContent=" + expr.js());
             return this;
         }
 
-        /** @deprecated Use {@link #setText(JS.Val)}. */
+        /** @deprecated Use {@link #setText(Val)}. */
         @Deprecated
         public DOMQuery setTextExpr(String expr) {
             operations.add(".textContent=" + expr);
@@ -2334,12 +2300,12 @@ public class Actions extends JS {
         /**
          * Sets inner HTML from expression.
          */
-        public DOMQuery setHtml(JS.Val expr) {
+        public DOMQuery setHtml(Val expr) {
             operations.add(".innerHTML=" + expr.js());
             return this;
         }
 
-        /** @deprecated Use {@link #setHtml(JS.Val)}. */
+        /** @deprecated Use {@link #setHtml(Val)}. */
         @Deprecated
         public DOMQuery setHtmlExpr(String expr) {
             operations.add(".innerHTML=" + expr);

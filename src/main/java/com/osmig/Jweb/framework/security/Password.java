@@ -30,12 +30,12 @@ import java.security.SecureRandom;
  * Password.setStrength(14);  // Higher = more secure but slower
  * </pre>
  */
-public final class Password {
+public class Password {
 
     private static int strength = 12;  // BCrypt work factor (log rounds)
     private static PasswordEncoder encoder = new BCryptPasswordEncoder(strength);
 
-    private Password() {}
+    protected Password() {}
 
     // ==================== Main Operations ====================
 

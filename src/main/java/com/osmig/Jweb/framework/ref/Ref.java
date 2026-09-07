@@ -1,8 +1,8 @@
 package com.osmig.Jweb.framework.ref;
 
-import com.osmig.Jweb.framework.js.Actions.Action;
+import jweb.Action;
 import com.osmig.Jweb.framework.js.JS;
-import com.osmig.Jweb.framework.js.JS.Val;
+import jweb.Val;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * {@link #get(String)} is a JS expression ({@link Val}) for reading a
  * property, so it composes with the rest of the JS DSL.</p>
  *
- * @see com.osmig.Jweb.framework.attributes.Attributes#ref(Ref)
+ * @see jweb.Attributes#ref(Ref)
  */
 public final class Ref {
 

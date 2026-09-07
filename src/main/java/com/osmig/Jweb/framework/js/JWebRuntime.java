@@ -38,8 +38,8 @@ public final class JWebRuntime {
         String script = resolvedScript;
         if (script == null) {
             script = RUNTIME_SCRIPT
-                .replace("__THREE_BUNDLE_V__", com.osmig.Jweb.framework.three.ThreeAssets.bundleVersion())
-                .replace("__THREE_RUNTIME_V__", com.osmig.Jweb.framework.three.ThreeRuntime.version());
+                .replace("__THREE_BUNDLE_V__", jweb.three.ThreeAssets.bundleVersion())
+                .replace("__THREE_RUNTIME_V__", jweb.three.ThreeRuntime.version());
             resolvedScript = script;
         }
         return script;

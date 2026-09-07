@@ -24,7 +24,7 @@ import java.util.function.BiConsumer;
  *   <li>Provides access to all states for serialization</li>
  * </ul>
  */
-public final class StateManager {
+public class StateManager {
 
     private static final AtomicLong idCounter = new AtomicLong(0);
 
@@ -56,7 +56,7 @@ public final class StateManager {
         );
     }
 
-    private StateManager() {
+    protected StateManager() {
         // Static utility class
     }
 

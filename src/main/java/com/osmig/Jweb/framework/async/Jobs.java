@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.async;
 
+import jweb.BackgroundTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -37,7 +37,7 @@ public class DetailsHelper {
      * @param detailsId the ID of the details element
      * @return an Action: JavaScript code to open the details
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action open(String detailsId) {
+    public static jweb.Action open(String detailsId) {
         return () -> String.format("document.getElementById('%s').open=true", escapeId(detailsId));
     }
 
@@ -47,7 +47,7 @@ public class DetailsHelper {
      * @param detailsId the ID of the details element
      * @return an Action: JavaScript code to close the details
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action close(String detailsId) {
+    public static jweb.Action close(String detailsId) {
         return () -> String.format("document.getElementById('%s').open=false", escapeId(detailsId));
     }
 
@@ -57,7 +57,7 @@ public class DetailsHelper {
      * @param detailsId the ID of the details element
      * @return an Action: JavaScript code to toggle the details
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action toggle(String detailsId) {
+    public static jweb.Action toggle(String detailsId) {
         return () -> String.format(
             "(function(d){d.open=!d.open})(document.getElementById('%s'))",
             escapeId(detailsId)
@@ -70,7 +70,7 @@ public class DetailsHelper {
      * @param detailsId the ID of the details element
      * @return an Action: JavaScript expression that evaluates to true if details is open
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action isOpen(String detailsId) {
+    public static jweb.Action isOpen(String detailsId) {
         return () -> String.format("document.getElementById('%s').open", escapeId(detailsId));
     }
 
@@ -82,7 +82,7 @@ public class DetailsHelper {
      * @param groupName the name attribute value shared by accordion items
      * @return an Action: JavaScript code to implement exclusive accordion behavior
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action openExclusive(String detailsId, String groupName) {
+    public static jweb.Action openExclusive(String detailsId, String groupName) {
         return () -> String.format(
             "(function(){document.querySelectorAll('details[name=\"%s\"]').forEach(d=>d.open=false);" +
             "document.getElementById('%s').open=true})()",
@@ -97,7 +97,7 @@ public class DetailsHelper {
      * @param groupName the name attribute value shared by accordion items
      * @return an Action: JavaScript code to close all details in the group
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action closeAll(String groupName) {
+    public static jweb.Action closeAll(String groupName) {
         return () -> String.format(
             "document.querySelectorAll('details[name=\"%s\"]').forEach(d=>d.open=false)",
             escapeName(groupName)
@@ -111,7 +111,7 @@ public class DetailsHelper {
      * @param groupName the name attribute value shared by accordion items
      * @return an Action: JavaScript code to open all details in the group
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action openAll(String groupName) {
+    public static jweb.Action openAll(String groupName) {
         return () -> String.format(
             "document.querySelectorAll('details[name=\"%s\"]').forEach(d=>d.open=true)",
             escapeName(groupName)
@@ -124,7 +124,7 @@ public class DetailsHelper {
      * @param selector CSS selector for details elements
      * @return an Action: JavaScript code to close all matching details
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action closeAllBySelector(String selector) {
+    public static jweb.Action closeAllBySelector(String selector) {
         return () -> String.format(
             "document.querySelectorAll('%s').forEach(d=>d.open=false)",
             escapeSelector(selector)
@@ -137,7 +137,7 @@ public class DetailsHelper {
      * @param selector CSS selector for details elements
      * @return an Action: JavaScript code to open all matching details
      */
-    public static com.osmig.Jweb.framework.js.Actions.Action openAllBySelector(String selector) {
+    public static jweb.Action openAllBySelector(String selector) {
         return () -> String.format(
             "document.querySelectorAll('%s').forEach(d=>d.open=true)",
             escapeSelector(selector)

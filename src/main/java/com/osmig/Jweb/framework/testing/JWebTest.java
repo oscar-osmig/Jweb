@@ -1,9 +1,10 @@
 package com.osmig.Jweb.framework.testing;
 
+import jweb.MockRequest;
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.routing.RouteHandler;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.RouteHandler;
+import jweb.Request;
 import com.osmig.Jweb.framework.util.Json;
 import org.springframework.http.ResponseEntity;
 

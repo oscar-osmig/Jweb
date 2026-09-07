@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.dsl;
 
+import jweb.Func;
 import org.junit.jupiter.api.Test;
 
 import static jweb.Js.*;

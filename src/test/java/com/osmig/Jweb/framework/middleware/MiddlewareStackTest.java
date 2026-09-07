@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.middleware;
 
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 

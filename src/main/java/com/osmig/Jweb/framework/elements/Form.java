@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.elements;
 
+import jweb.Tag;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.vdom.VNode;
 

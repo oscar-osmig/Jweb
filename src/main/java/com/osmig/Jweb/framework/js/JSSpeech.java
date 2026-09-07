@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.js;
 
-import com.osmig.Jweb.framework.js.JS.Val;
-import com.osmig.Jweb.framework.js.JS.Func;
+import jweb.Val;
+import jweb.Func;
 
 /**
  * Web Speech API DSL for speech synthesis (text-to-speech) and

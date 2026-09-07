@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.testing;
 
+import jweb.MockRequest;
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.template.Template;

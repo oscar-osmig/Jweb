@@ -3,7 +3,7 @@ package com.osmig.Jweb.framework.security;
 import com.osmig.Jweb.framework.middleware.MiddlewareStack;
 import com.osmig.Jweb.framework.middleware.Middlewares;
 import com.osmig.Jweb.framework.server.JWebController;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VText;
 import org.junit.jupiter.api.AfterEach;

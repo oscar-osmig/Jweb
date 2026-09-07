@@ -1,8 +1,8 @@
 package com.osmig.Jweb.framework.template;
 
 import com.osmig.Jweb.framework.core.Element;
-import com.osmig.Jweb.framework.js.Actions.Action;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Action;
+import jweb.Request;
 import com.osmig.Jweb.framework.vdom.VNode;
 
 import java.util.Optional;
@@ -202,7 +202,7 @@ public interface Template extends Element {
      *
      * @return head elements, or empty for none
      */
-    default Optional<Element> extraHead() {
+    default Optional<jweb.Element> extraHead() {
         return Optional.empty();
     }
 

@@ -127,7 +127,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         // Execute the handler (context-scoped first, then global fallback).
         // Three.patch(...) calls made inside it collect on this thread and
         // ride back on this session.
-        com.osmig.Jweb.framework.three.ThreePatchQueue.open();
+        jweb.three.ThreePatchQueue.open();
         boolean executed = contextId != null
                 ? EventRegistry.execute(contextId, handlerId, event)
                 : EventRegistry.execute(handlerId, event);
@@ -164,7 +164,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
 
         // Clear thread-local context
         StateManager.clearContext();
-        com.osmig.Jweb.framework.three.ThreePatchQueue.close();
+        jweb.three.ThreePatchQueue.close();
     }
 
     /**
@@ -172,7 +172,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
      * handler that just ran — one message per patch, before the handled ack.
      */
     private void sendThreePatches(WebSocketSession session) throws IOException {
-        for (var patch : com.osmig.Jweb.framework.three.ThreePatchQueue.drain()) {
+        for (var patch : jweb.three.ThreePatchQueue.drain()) {
             sendMessage(session, new ThreePatchResponse(
                     patch.sceneId(), patch.nodeMaps(), patch.cameraMap(),
                     patch.addMaps(), patch.removeNames()));
@@ -242,7 +242,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         }
 
         StateManager.setContext(context);
-        com.osmig.Jweb.framework.three.ThreePatchQueue.open();
+        jweb.three.ThreePatchQueue.open();
         try {
             state.set(msg.getValue());
             sendThreePatches(session);
@@ -258,7 +258,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             }
         } finally {
             StateManager.clearContext();
-            com.osmig.Jweb.framework.three.ThreePatchQueue.close();
+            jweb.three.ThreePatchQueue.close();
         }
     }
 

@@ -2,8 +2,9 @@ package com.osmig.Jweb.app;
 
 import jweb.JWeb;
 import jweb.JWebRoutes;
+import jweb.Middlewares;
 import jweb.OpenApi;
-import com.osmig.Jweb.framework.routing.RouteHandler;
+import jweb.RouteHandler;
 import jweb.Csrf;
 import jweb.Response;
 import com.osmig.Jweb.app.api.AdminApi;
@@ -65,11 +66,11 @@ public class Routes implements JWebRoutes {
     @Override
     public void configure(JWeb app) {
         // Production baseline: security headers, request ids, compression
-        app.use(com.osmig.Jweb.framework.middleware.Middlewares.recommended());
+        app.use(Middlewares.recommended());
 
         // The contact form writes to the message store — cap per-IP submissions
         app.use("/contact/submit",
-            com.osmig.Jweb.framework.middleware.Middlewares.rateLimit(5, 60_000));
+            Middlewares.rateLimit(5, 60_000));
 
         // Page routes
         app.layout(Layout.class)
@@ -177,7 +178,7 @@ public class Routes implements JWebRoutes {
 
         // Streaming SSR demo: the shell flushes instantly, both blocks
         // stream in as their (deliberately slow) data resolves
-        app.get("/demo/streaming", ctx -> com.osmig.Jweb.framework.async.Streamed.of(
+        app.get("/demo/streaming", ctx -> jweb.Streamed.of(
             () -> new Layout("Streaming Demo", DemoStreamingPage.content()).render()));
 
         // Fragment for the demo's swap block — carries its own Actions-DSL

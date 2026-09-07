@@ -1,7 +1,8 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attr;
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attr;
+import jweb.Attributes;
 
 /**
  * Modern form enhancement elements including datalist, optgroup,

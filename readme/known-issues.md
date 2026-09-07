@@ -89,6 +89,28 @@ The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2h
   implement where a rename would break override/lambda matching. Handlers infer
   `req` without any import; use `var` for the rest.
 
+2026-09-07 — the short names are the real names:
+
+- Rule: every type an app author can name has a `jweb.*` spelling that IS the type the
+  framework returns or accepts — if IntelliJ auto-imports something starting with `com.osmig`,
+  the job is not done. The "still intentionally long" list above is gone: `Request`, `Response`,
+  `Principal`, `UploadedFile`, `ValidationResult`, `Validator`, `Doc`, `RouteHandler`,
+  `Middleware`, `Tag`, `Attributes`, `Attr`, `Event`, `Seo`, `Streamed`, `BackgroundTask`,
+  `SseEvent`, `SseBroadcaster`, `Messages`, `FetchResult`, `ErrorBoundary`, `MockRequest`,
+  `MockSession`, `TestClient` moved into `jweb`; `Stylesheet`, `MediaQuery`, `ContainerQuery`, `Keyframes`,
+  `FontFace`, `Supports` into `jweb.css`; the whole Three package into `jweb.three` with
+  `jweb.Three` as the real facade. Nested names were hoisted: `JS.Val` → `jweb.Val`,
+  `JS.Func` → `jweb.Func`, `JS.Stmt` → `jweb.js.Stmt`, `Actions.Action` → `jweb.Action`,
+  `Stylesheet.Rule` / `MediaQuery.Rule` / `styles.Rule` → `jweb.css.Rule`, `CSS.Selector` →
+  `jweb.css.Selector` — the nested originals are deleted (a nested alias would shadow the
+  short name inside every subclass). `Template.extraHead()` returns `Optional<jweb.Element>`.
+- The old FQNs stay as `@Deprecated` subtype aliases (statics and `new` keep working); records
+  (`Attr`, `Streamed`, `SseEvent`, `Rule`) keep only their static factories under the old name,
+  and the Three node types have no aliases at all. Full table: `dsl-simplification-3.md`.
+- Guards: `jweb.JwebSurfaceTest` (compile-time assignments from real framework calls under all
+  four wildcard imports) and `jweb.NoLongImportsTest` (no `com.osmig…` framework names in the
+  demo app, its doc samples, the readme set, or resources — allow-list inside the test).
+
 Fixed 2026-08-31 — Actions-DSL event handlers are CSP-safe:
 
 - ✅ `attrs().onClick(show("panel"))`, `Button.onClick(Actions.reload())` and every other

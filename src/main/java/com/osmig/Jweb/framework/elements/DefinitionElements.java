@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attributes;
 
 /**
  * Definition list elements for term-definition pairs.

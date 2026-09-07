@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.middleware;
 
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Request;
 
 /**
  * Represents the continuation of the middleware chain.

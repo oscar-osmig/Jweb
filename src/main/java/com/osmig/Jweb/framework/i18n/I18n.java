@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.i18n;
 
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Messages;
+import jweb.Request;
 
 import java.util.List;
 import java.util.Locale;
@@ -115,7 +116,7 @@ public class I18n {
      *
      * @return the middleware
      */
-    public static com.osmig.Jweb.framework.middleware.Middleware middleware() {
+    public static jweb.Middleware middleware() {
         return (req, chain) -> {
             Locale locale = getLocale(req);
             setCurrent(locale);

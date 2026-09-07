@@ -1,16 +1,10 @@
 package com.osmig.Jweb.framework.routing;
 
-import com.osmig.Jweb.framework.server.Request;
-
 /**
- * Functional interface for route handlers.
- *
- * Handlers receive a Request and return:
- * - An Element (rendered to HTML)
- * - A String (sent as-is)
- * - An Object (serialized to JSON)
+ * @deprecated Moved to {@link jweb.RouteHandler} — same type, shorter import. This name is a
+ *             compatibility alias only; framework calls return {@code jweb.RouteHandler}.
  */
+@Deprecated
 @FunctionalInterface
-public interface RouteHandler {
-    Object handle(Request request);
+public interface RouteHandler extends jweb.RouteHandler {
 }

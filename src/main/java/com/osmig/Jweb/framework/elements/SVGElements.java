@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attr;
+import jweb.Tag;
+import jweb.Attr;
 
 /**
  * SVG element factory methods for type-safe SVG creation.

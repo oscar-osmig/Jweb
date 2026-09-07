@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attributes;
 
 /**
  * HTML table elements: table, thead, tbody, tfoot, tr, th, td, caption, colgroup, col.

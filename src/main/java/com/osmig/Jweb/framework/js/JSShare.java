@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.js;
 
-import com.osmig.Jweb.framework.js.JS.Val;
-import com.osmig.Jweb.framework.js.JS.Func;
+import jweb.Val;
+import jweb.Func;
 
 /**
  * Web Share API for native sharing functionality.

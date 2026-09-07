@@ -3,7 +3,7 @@ package com.osmig.Jweb.app.api;
 import jweb.api.GET;
 import jweb.api.POST;
 import jweb.api.REST;
-import com.osmig.Jweb.framework.markdown.Markitdown;
+import jweb.Markitdown;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;

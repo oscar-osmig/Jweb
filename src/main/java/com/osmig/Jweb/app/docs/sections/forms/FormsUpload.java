@@ -12,7 +12,7 @@ public final class FormsUpload {
             para("Handle file uploads with validation and storage."),
             codeBlock("""
 import jweb.FileUpload;
-import com.osmig.Jweb.framework.upload.UploadedFile;
+import jweb.UploadedFile;
 
 app.post("/upload", req -> {
     UploadedFile file = FileUpload.getFile(req, "document");

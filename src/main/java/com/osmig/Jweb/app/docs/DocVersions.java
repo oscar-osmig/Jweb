@@ -76,8 +76,8 @@ public final class DocVersions {
         // version with them so since()/before() branch correctly there too.
         // Registration is sound lazily: any thread with a version context has
         // loaded this class, so the propagator exists before it could matter.
-        com.osmig.Jweb.framework.async.RenderContexts.register(
-            new com.osmig.Jweb.framework.async.RenderContexts.Propagator() {
+        jweb.RenderContexts.register(
+            new jweb.RenderContexts.Propagator() {
                 @Override public Object capture() { return RENDERING.get(); }
                 @Override public void restore(Object snapshot) {
                     if (snapshot != null) RENDERING.set((String) snapshot);

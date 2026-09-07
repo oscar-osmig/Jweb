@@ -1,6 +1,5 @@
 package jweb.css;
 
-import com.osmig.Jweb.framework.styles.CSS.Selector;
 
 /**
  * The CSS selector builder — for composing a selector rather than writing it:

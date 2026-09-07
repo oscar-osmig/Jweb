@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.css.ContainerQuery;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

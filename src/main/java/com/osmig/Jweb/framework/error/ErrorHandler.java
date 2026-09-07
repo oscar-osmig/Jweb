@@ -2,7 +2,7 @@ package com.osmig.Jweb.framework.error;
 
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.util.Json;
-import com.osmig.Jweb.framework.validation.ValidationResult;
+import jweb.ValidationResult;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -244,7 +244,7 @@ public final class ErrorHandler {
     /**
      * Creates a middleware that handles exceptions and converts them to responses.
      */
-    public static com.osmig.Jweb.framework.middleware.Middleware errorHandling() {
+    public static jweb.Middleware errorHandling() {
         return (req, chain) -> {
             try {
                 return chain.next();
@@ -259,7 +259,7 @@ public final class ErrorHandler {
     /**
      * Creates a middleware with custom error page rendering.
      */
-    public static com.osmig.Jweb.framework.middleware.Middleware errorHandling(
+    public static jweb.Middleware errorHandling(
             Function<JWebException, Element> customErrorPage) {
         return (req, chain) -> {
             try {

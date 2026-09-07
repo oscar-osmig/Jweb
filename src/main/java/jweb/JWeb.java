@@ -1,11 +1,8 @@
 package jweb;
 
-import com.osmig.Jweb.framework.middleware.Middleware;
 import com.osmig.Jweb.framework.core.Page;
 import com.osmig.Jweb.framework.routing.Route;
-import com.osmig.Jweb.framework.routing.RouteHandler;
 import com.osmig.Jweb.framework.routing.TypedRoute;
-import com.osmig.Jweb.framework.server.Request;
 import com.osmig.Jweb.framework.template.Template;
 
 import java.util.List;

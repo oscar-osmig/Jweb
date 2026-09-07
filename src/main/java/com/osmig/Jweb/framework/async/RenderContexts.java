@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  * context — registers a {@link Propagator} once, typically from a static
  * initializer, and every async render path picks it up from then on.</p>
  */
-public final class RenderContexts {
+public class RenderContexts {
 
     /** One ThreadLocal-backed context that must survive the async thread hop. */
     public interface Propagator {
@@ -61,7 +61,7 @@ public final class RenderContexts {
         });
     }
 
-    private RenderContexts() {}
+    protected RenderContexts() {}
 
     /** Adds a context to carry across every async render from now on. */
     public static void register(Propagator propagator) {

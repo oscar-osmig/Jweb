@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.css.Selector;
 /**
  * CSS selector builders for modern and complex selectors.
  *
@@ -47,7 +48,7 @@ public class Selectors {
      *
      * Example: has(cls("icon")) -> :has(.icon)
      */
-    public static String has(CSS.Selector selector) {
+    public static String has(Selector selector) {
         return ":has(" + selector.build() + ")";
     }
 
@@ -65,7 +66,7 @@ public class Selectors {
      *
      * Example: has(cls("icon"), cls("badge")) -> :has(.icon, .badge)
      */
-    public static String has(CSS.Selector... selectors) {
+    public static String has(Selector... selectors) {
         if (selectors.length == 0) {
             throw new IllegalArgumentException("At least one selector required");
         }
@@ -96,7 +97,7 @@ public class Selectors {
      *
      * Example: is(tag("h1"), tag("h2"), tag("h3")) -> :is(h1, h2, h3)
      */
-    public static String is(CSS.Selector... selectors) {
+    public static String is(Selector... selectors) {
         if (selectors.length == 0) {
             throw new IllegalArgumentException("At least one selector required");
         }
@@ -125,7 +126,7 @@ public class Selectors {
      *
      * Example: where(tag("article"), tag("section")) -> :where(article, section)
      */
-    public static String where(CSS.Selector... selectors) {
+    public static String where(Selector... selectors) {
         if (selectors.length == 0) {
             throw new IllegalArgumentException("At least one selector required");
         }
@@ -154,7 +155,7 @@ public class Selectors {
      *
      * Example: not(cls("disabled")) -> :not(.disabled)
      */
-    public static String not(CSS.Selector selector) {
+    public static String not(Selector selector) {
         return ":not(" + selector.build() + ")";
     }
 
@@ -172,7 +173,7 @@ public class Selectors {
      *
      * Example: not(cls("disabled"), cls("hidden")) -> :not(.disabled, .hidden)
      */
-    public static String not(CSS.Selector... selectors) {
+    public static String not(Selector... selectors) {
         if (selectors.length == 0) {
             throw new IllegalArgumentException("At least one selector required");
         }

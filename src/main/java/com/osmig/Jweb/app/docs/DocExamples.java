@@ -1343,7 +1343,7 @@ OpenApi.create()
     // ==================== Security Section ====================
 
     public static final String SECURITY_PASSWORD = """
-import com.osmig.Jweb.framework.security.Password;
+import jweb.Password;
 
 // Hash a password (BCrypt)
 String hashed = Password.hash("user-password");

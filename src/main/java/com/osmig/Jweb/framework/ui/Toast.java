@@ -37,9 +37,9 @@ import static com.osmig.Jweb.framework.styles.CSSColors.*;
  * Toast.initial(Type.SUCCESS, "Welcome back!")
  * </pre>
  */
-public final class Toast {
+public class Toast {
 
-    private Toast() {}
+    protected Toast() {}
 
     // ==================== Types ====================
 
@@ -214,22 +214,22 @@ public final class Toast {
     //   button(attrs().onClick(Toast.success("Saved!")), text("Save"))
 
     /** Action that shows a success toast. */
-    public static com.osmig.Jweb.framework.js.Actions.Action success(String message) {
+    public static jweb.Action success(String message) {
         return () -> showJs("success", message);
     }
 
     /** Action that shows an error toast. */
-    public static com.osmig.Jweb.framework.js.Actions.Action error(String message) {
+    public static jweb.Action error(String message) {
         return () -> showJs("error", message);
     }
 
     /** Action that shows a warning toast. */
-    public static com.osmig.Jweb.framework.js.Actions.Action warning(String message) {
+    public static jweb.Action warning(String message) {
         return () -> showJs("warning", message);
     }
 
     /** Action that shows an info toast. */
-    public static com.osmig.Jweb.framework.js.Actions.Action info(String message) {
+    public static jweb.Action info(String message) {
         return () -> showJs("info", message);
     }
 
@@ -384,13 +384,13 @@ public final class Toast {
         public Builder duration(int ms) { this.duration = ms; return this; }
         public Builder persistent() { this.duration = 0; return this; }
         /** An action button on the toast: {@code .action("Reload", reload())}. */
-        public Builder action(String label, com.osmig.Jweb.framework.js.Actions.Action onClick) {
+        public Builder action(String label, jweb.Action onClick) {
             this.actionLabel = label;
             this.actionJs = onClick.build();
             return this;
         }
 
-        /** @deprecated Pass an {@code Action} — {@link #action(String, com.osmig.Jweb.framework.js.Actions.Action)}. */
+        /** @deprecated Pass an {@code Action} — {@link #action(String, jweb.Action)}. */
         @Deprecated
         public Builder action(String label, String onClickJs) {
             this.actionLabel = label;

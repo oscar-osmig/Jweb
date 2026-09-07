@@ -1,8 +1,8 @@
 package com.osmig.Jweb.framework.metrics;
 
 import com.osmig.Jweb.framework.JWeb;
-import com.osmig.Jweb.framework.middleware.Middleware;
-import com.osmig.Jweb.framework.server.Response;
+import jweb.Middleware;
+import jweb.Response;
 
 import java.time.Instant;
 import java.util.*;

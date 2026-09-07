@@ -77,8 +77,8 @@
  * <ul>
  *   <li>{@link com.osmig.Jweb.framework.elements.Elements} - HTML element factories</li>
  *   <li>{@link com.osmig.Jweb.framework.elements.SVGElements} - SVG element factories</li>
- *   <li>{@link com.osmig.Jweb.framework.elements.Tag} - HTML tag builder</li>
- *   <li>{@link com.osmig.Jweb.framework.attributes.Attributes} - Attribute builder</li>
+ *   <li>{@link jweb.Tag} - HTML tag builder</li>
+ *   <li>{@link jweb.Attributes} - Attribute builder</li>
  * </ul>
  *
  * <h3>Styles (CSS DSL)</h3>
@@ -94,8 +94,8 @@
  * <ul>
  *   <li>{@link com.osmig.Jweb.framework.js.JS} - JavaScript builder</li>
  *   <li>{@link com.osmig.Jweb.framework.js.JS.Script} - Top-level script builder</li>
- *   <li>{@link com.osmig.Jweb.framework.js.JS.Func} - Function builder</li>
- *   <li>{@link com.osmig.Jweb.framework.js.JS.Val} - Value/expression builder</li>
+ *   <li>{@link jweb.Func} - Function builder</li>
+ *   <li>{@link jweb.Val} - Value/expression builder</li>
  *   <li>{@link com.osmig.Jweb.framework.js.JS.El} - DOM element accessor</li>
  * </ul>
  *

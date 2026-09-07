@@ -1,7 +1,8 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attr;
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attr;
+import jweb.Attributes;
 
 /**
  * Responsive image elements using the picture element and source sets.

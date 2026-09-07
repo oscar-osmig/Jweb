@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.server;
 
+import jweb.Request;
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.core.RawContent;
@@ -136,7 +137,7 @@ public class JWebController {
             }
 
             // Streaming SSR: flush the shell now, stream Suspense blocks as they resolve
-            if (result instanceof com.osmig.Jweb.framework.async.Streamed streamed) {
+            if (result instanceof jweb.Streamed streamed) {
                 streamResponse(streamed, context, request, servletResponse);
                 return null;   // response already written and committed
             }
@@ -345,12 +346,12 @@ public class JWebController {
     // ==================== Streaming SSR ====================
 
     /**
-     * Renders a {@link com.osmig.Jweb.framework.async.Streamed} page: the
+     * Renders a {@link jweb.Streamed} page: the
      * shell (with placeholders) flushes immediately; each Suspense block's
      * HTML is written as a chunk the moment its data resolves, replacing its
      * placeholder via a tiny inline script.
      */
-    private void streamResponse(com.osmig.Jweb.framework.async.Streamed streamed,
+    private void streamResponse(jweb.Streamed streamed,
                                 StateManager.StateContext context, Request request,
                                 HttpServletResponse servletResponse) throws java.io.IOException {
         var streaming = com.osmig.Jweb.framework.async.StreamingContext.open();

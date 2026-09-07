@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.validation;
 
+import jweb.Validator;
 /**
  * Built-in validators for numeric values.
  * <pre>

@@ -1,7 +1,8 @@
 package com.osmig.Jweb.framework.elements;
 
-import com.osmig.Jweb.framework.attributes.Attr;
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Tag;
+import jweb.Attr;
+import jweb.Attributes;
 
 /**
  * HTML Popover API elements and attributes.
@@ -191,17 +192,17 @@ public class PopoverElements {
     // Actions — plug into any handler: button(onClick(showPopover("tips")), "Tips")
 
     /** An Action that shows the popover ({@code showPopover()}). */
-    public static com.osmig.Jweb.framework.js.Actions.Action showPopover(String id) {
+    public static jweb.Action showPopover(String id) {
         return () -> "document.getElementById('" + id + "').showPopover()";
     }
 
     /** An Action that hides the popover ({@code hidePopover()}). */
-    public static com.osmig.Jweb.framework.js.Actions.Action hidePopover(String id) {
+    public static jweb.Action hidePopover(String id) {
         return () -> "document.getElementById('" + id + "').hidePopover()";
     }
 
     /** An Action that toggles the popover ({@code togglePopover()}). */
-    public static com.osmig.Jweb.framework.js.Actions.Action togglePopover(String id) {
+    public static jweb.Action togglePopover(String id) {
         return () -> "document.getElementById('" + id + "').togglePopover()";
     }
 }

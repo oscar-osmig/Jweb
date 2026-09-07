@@ -1,5 +1,10 @@
 package com.osmig.Jweb.framework.js;
 
+import jweb.Action;
+import jweb.Func;
+import jweb.Val;
+import jweb.js.Stmt;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -154,7 +159,7 @@ public class JS extends Events {
 
         /** Adds a property with a computed key. */
         public ObjectBuilder computedProp(Val keyExpr, Object value) {
-            props.add("[" + keyExpr.code + "]:" + toJs(value));
+            props.add("[" + keyExpr.js() + "]:" + toJs(value));
             return this;
         }
 
@@ -172,7 +177,7 @@ public class JS extends Events {
 
         /** Spreads another object's properties. */
         public ObjectBuilder spread(Val obj) {
-            props.add("..." + obj.code);
+            props.add("..." + obj.js());
             return this;
         }
 
@@ -236,90 +241,90 @@ public class JS extends Events {
 
     // ==================== Math ====================
 
-    public static Val floor(Val val) { return new Val("Math.floor(" + val.code + ")"); }
-    public static Val ceil(Val val) { return new Val("Math.ceil(" + val.code + ")"); }
-    public static Val round(Val val) { return new Val("Math.round(" + val.code + ")"); }
-    public static Val abs(Val val) { return new Val("Math.abs(" + val.code + ")"); }
+    public static Val floor(Val val) { return new Val("Math.floor(" + val.js() + ")"); }
+    public static Val ceil(Val val) { return new Val("Math.ceil(" + val.js() + ")"); }
+    public static Val round(Val val) { return new Val("Math.round(" + val.js() + ")"); }
+    public static Val abs(Val val) { return new Val("Math.abs(" + val.js() + ")"); }
     public static Val random() { return new Val("Math.random()"); }
 
     // ==================== Number Parsing & Checking ====================
 
     /** Parses integer: parseInt(value) */
-    public static Val parseInt(Val value) { return new Val("parseInt(" + value.code + ")"); }
+    public static Val parseInt(Val value) { return new Val("parseInt(" + value.js() + ")"); }
 
     /** Parses integer with radix: parseInt(value, radix) */
-    public static Val parseInt(Val value, int radix) { return new Val("parseInt(" + value.code + "," + radix + ")"); }
+    public static Val parseInt(Val value, int radix) { return new Val("parseInt(" + value.js() + "," + radix + ")"); }
 
     /** Parses float: parseFloat(value) */
-    public static Val parseFloat(Val value) { return new Val("parseFloat(" + value.code + ")"); }
+    public static Val parseFloat(Val value) { return new Val("parseFloat(" + value.js() + ")"); }
 
     /** Checks if NaN: isNaN(value) */
-    public static Val isNaN(Val value) { return new Val("isNaN(" + value.code + ")"); }
+    public static Val isNaN(Val value) { return new Val("isNaN(" + value.js() + ")"); }
 
     /** Checks if finite: isFinite(value) */
-    public static Val isFinite(Val value) { return new Val("isFinite(" + value.code + ")"); }
+    public static Val isFinite(Val value) { return new Val("isFinite(" + value.js() + ")"); }
 
     /** Number.isNaN - strict NaN check */
-    public static Val numberIsNaN(Val value) { return new Val("Number.isNaN(" + value.code + ")"); }
+    public static Val numberIsNaN(Val value) { return new Val("Number.isNaN(" + value.js() + ")"); }
 
     /** Number.isFinite - strict finite check */
-    public static Val numberIsFinite(Val value) { return new Val("Number.isFinite(" + value.code + ")"); }
+    public static Val numberIsFinite(Val value) { return new Val("Number.isFinite(" + value.js() + ")"); }
 
     /** Number.isInteger - checks if integer */
-    public static Val numberIsInteger(Val value) { return new Val("Number.isInteger(" + value.code + ")"); }
+    public static Val numberIsInteger(Val value) { return new Val("Number.isInteger(" + value.js() + ")"); }
 
     /** Number.isSafeInteger - checks if safe integer */
-    public static Val numberIsSafeInteger(Val value) { return new Val("Number.isSafeInteger(" + value.code + ")"); }
+    public static Val numberIsSafeInteger(Val value) { return new Val("Number.isSafeInteger(" + value.js() + ")"); }
 
     // ==================== Object Static Methods ====================
 
     /** Object.assign: Object.assign(target, ...sources) */
     public static Val objectAssign(Val target, Val... sources) {
-        StringBuilder sb = new StringBuilder("Object.assign(" + target.code);
-        for (Val source : sources) sb.append(",").append(source.code);
+        StringBuilder sb = new StringBuilder("Object.assign(" + target.js());
+        for (Val source : sources) sb.append(",").append(source.js());
         return new Val(sb.append(")").toString());
     }
 
     /** Object.freeze: Object.freeze(obj) */
-    public static Val objectFreeze(Val obj) { return new Val("Object.freeze(" + obj.code + ")"); }
+    public static Val objectFreeze(Val obj) { return new Val("Object.freeze(" + obj.js() + ")"); }
 
     /** Object.seal: Object.seal(obj) */
-    public static Val objectSeal(Val obj) { return new Val("Object.seal(" + obj.code + ")"); }
+    public static Val objectSeal(Val obj) { return new Val("Object.seal(" + obj.js() + ")"); }
 
     /** Object.is: Object.is(val1, val2) */
-    public static Val objectIs(Val val1, Val val2) { return new Val("Object.is(" + val1.code + "," + val2.code + ")"); }
+    public static Val objectIs(Val val1, Val val2) { return new Val("Object.is(" + val1.js() + "," + val2.js() + ")"); }
 
     /** Object.create: Object.create(proto) */
-    public static Val objectCreate(Val proto) { return new Val("Object.create(" + proto.code + ")"); }
+    public static Val objectCreate(Val proto) { return new Val("Object.create(" + proto.js() + ")"); }
 
     /** Object.getOwnPropertyNames: Object.getOwnPropertyNames(obj) */
-    public static Val objectGetOwnPropertyNames(Val obj) { return new Val("Object.getOwnPropertyNames(" + obj.code + ")"); }
+    public static Val objectGetOwnPropertyNames(Val obj) { return new Val("Object.getOwnPropertyNames(" + obj.js() + ")"); }
 
     /** Object.getPrototypeOf: Object.getPrototypeOf(obj) */
-    public static Val objectGetPrototypeOf(Val obj) { return new Val("Object.getPrototypeOf(" + obj.code + ")"); }
+    public static Val objectGetPrototypeOf(Val obj) { return new Val("Object.getPrototypeOf(" + obj.js() + ")"); }
 
     /** Object.setPrototypeOf: Object.setPrototypeOf(obj, proto) */
-    public static Val objectSetPrototypeOf(Val obj, Val proto) { return new Val("Object.setPrototypeOf(" + obj.code + "," + proto.code + ")"); }
+    public static Val objectSetPrototypeOf(Val obj, Val proto) { return new Val("Object.setPrototypeOf(" + obj.js() + "," + proto.js() + ")"); }
 
     /** Object.isFrozen: Object.isFrozen(obj) */
-    public static Val objectIsFrozen(Val obj) { return new Val("Object.isFrozen(" + obj.code + ")"); }
+    public static Val objectIsFrozen(Val obj) { return new Val("Object.isFrozen(" + obj.js() + ")"); }
 
     /** Object.isSealed: Object.isSealed(obj) */
-    public static Val objectIsSealed(Val obj) { return new Val("Object.isSealed(" + obj.code + ")"); }
+    public static Val objectIsSealed(Val obj) { return new Val("Object.isSealed(" + obj.js() + ")"); }
 
     /** Object.fromEntries: Object.fromEntries(entries) */
-    public static Val objectFromEntries(Val entries) { return new Val("Object.fromEntries(" + entries.code + ")"); }
+    public static Val objectFromEntries(Val entries) { return new Val("Object.fromEntries(" + entries.js() + ")"); }
 
     // ==================== Array Static Methods ====================
 
     /** Array.from: Array.from(arrayLike) */
-    public static Val arrayFrom(Val arrayLike) { return new Val("Array.from(" + arrayLike.code + ")"); }
+    public static Val arrayFrom(Val arrayLike) { return new Val("Array.from(" + arrayLike.js() + ")"); }
 
     /** Array.from with mapper: Array.from(arrayLike, mapFn) */
-    public static Val arrayFrom(Val arrayLike, Func mapper) { return new Val("Array.from(" + arrayLike.code + "," + mapper.toExpr() + ")"); }
+    public static Val arrayFrom(Val arrayLike, Func mapper) { return new Val("Array.from(" + arrayLike.js() + "," + mapper.toExpr() + ")"); }
 
     /** Array.isArray: Array.isArray(value) */
-    public static Val arrayIsArray(Val value) { return new Val("Array.isArray(" + value.code + ")"); }
+    public static Val arrayIsArray(Val value) { return new Val("Array.isArray(" + value.js() + ")"); }
 
     /** Array.of: Array.of(...items) */
     public static Val arrayOf(Object... items) {
@@ -351,11 +356,11 @@ public class JS extends Events {
     }
 
     public static Val clearInterval(Val id) {
-        return new Val("clearInterval(" + id.code + ")");
+        return new Val("clearInterval(" + id.js() + ")");
     }
 
     public static Val clearTimeout(Val id) {
-        return new Val("clearTimeout(" + id.code + ")");
+        return new Val("clearTimeout(" + id.js() + ")");
     }
 
     // ==================== Statements ====================
@@ -384,13 +389,13 @@ public class JS extends Events {
 
     // ==================== Utilities ====================
 
-    static String esc(String s) {
+    public static String esc(String s) {
         return s == null ? "" : s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n");
     }
 
-    static String toJs(Object o) {
+    public static String toJs(Object o) {
         if (o == null) return "null";
-        if (o instanceof Val val) return val.code;
+        if (o instanceof Val val) return val.js();
         if (o instanceof Func f) return f.toExpr();
         if (o instanceof Integer i) return i.toString();
         if (o instanceof Double d) return d.toString();
@@ -463,394 +468,6 @@ public class JS extends Events {
         }
     }
 
-    // ==================== Function ====================
-
-    public static class Func {
-        private final String name;
-        private final String[] params;
-        private final List<String> body = new ArrayList<>();
-
-        Func(String name, String... params) {
-            this.name = name;
-            this.params = params;
-        }
-
-        public Func var_(String name, Object value) {
-            body.add("var " + name + "=" + toJs(value));
-            return this;
-        }
-
-        public Func let(String name, Object value) {
-            body.add("let " + name + "=" + toJs(value));
-            return this;
-        }
-
-        public Func set(String name, Object value) {
-            body.add(name + "=" + toJs(value));
-            return this;
-        }
-
-        public Func set(Val target, Object value) {
-            body.add(target.code + "=" + toJs(value));
-            return this;
-        }
-
-        public Func inc(String name) {
-            body.add(name + "++");
-            return this;
-        }
-
-        public Func dec(String name) {
-            body.add(name + "--");
-            return this;
-        }
-
-        public Func call(String fn, Object... args) {
-            body.add(JS.call(fn, args).code);
-            return this;
-        }
-
-        public Func log(Object... args) {
-            body.add(JS.call("console.log", args).code);
-            return this;
-        }
-
-        /**
-         * An if statement with its body inline; {@link #elif} and
-         * {@link #else_} extend it, and nothing closes it:
-         *
-         * <pre>
-         * .if_(v("x").gt(10), call("big"))
-         * .elif(v("x").gt(5), call("mid"))
-         * .else_(call("small"))
-         * </pre>
-         */
-        public Func if_(Val condition, Object... thenStmts) {
-            StringBuilder sb = new StringBuilder("if(").append(condition.code).append("){");
-            for (Object s : thenStmts) appendStmt(sb, s);
-            sb.append("}");
-            body.add(sb.toString());
-            return this;
-        }
-
-        /** An {@code else if} branch on the preceding {@link #if_(Val, Object...)}. */
-        public Func elif(Val condition, Object... stmts) {
-            return branch("else if(" + condition.code + ")", stmts);
-        }
-
-        /** The {@code else} branch on the preceding {@link #if_(Val, Object...)}. */
-        public Func else_(Object... stmts) {
-            return branch("else", stmts);
-        }
-
-        private Func branch(String head, Object... stmts) {
-            if (body.isEmpty() || !body.get(body.size() - 1).startsWith("if(")) {
-                throw new IllegalStateException(head + " must directly follow if_(condition, ...) or elif(...)");
-            }
-            StringBuilder sb = new StringBuilder(body.remove(body.size() - 1)).append(head).append("{");
-            for (Object s : stmts) appendStmt(sb, s);
-            sb.append("}");
-            body.add(sb.toString());
-            return this;
-        }
-
-        /** Start an if/elif/else chain: if_(condition).then(...).elif(cond2).then(...).else_(...).end() */
-        public IfBuilder if_(Val condition) {
-            return new IfBuilder(this, condition);
-        }
-
-        /** {@code return} — matches the {@code if_}/{@code while_} keyword convention. */
-        public Func return_() {
-            body.add("return");
-            return this;
-        }
-
-        /** {@code return <value>} */
-        public Func return_(Object value) {
-            body.add("return " + toJs(value));
-            return this;
-        }
-
-        /** @deprecated Use {@link #return_()}. */
-        @Deprecated
-        public Func ret() {
-            return return_();
-        }
-
-        /** @deprecated Use {@link #return_(Object)}. */
-        @Deprecated
-        public Func ret(Object value) {
-            return return_(value);
-        }
-
-        /**
-         * Adds raw JavaScript code.
-         * @deprecated Use {@link #unsafeRaw(String)} to make the escape explicit
-         */
-        @Deprecated
-        public Func raw(String js) {
-            body.add(js);
-            return this;
-        }
-
-        /**
-         * Adds raw JavaScript code (unsafe - no validation).
-         * Use this when the DSL doesn't support a specific construct.
-         *
-         * @param js the raw JavaScript code
-         * @return this function for chaining
-         */
-        public Func unsafeRaw(String js) {
-            body.add(js);
-            return this;
-        }
-
-        // ==================== Loops ====================
-
-        /**
-         * Creates a for loop.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .for_("i", 0, variable("items").dot("length"))
-         *         .body(
-         *             call("console.log", variable("items").at(variable("i")))
-         *         )
-         *     .endFor()
-         * </pre>
-         *
-         * @param varName the loop variable name
-         * @param start the starting value
-         * @param endCondition the end condition (loop while varName < endCondition)
-         * @return a ForBuilder to continue building the loop
-         */
-        public ForBuilder for_(String varName, int start, Val endCondition) {
-            return new ForBuilder(this, varName, start, endCondition);
-        }
-
-        /**
-         * Creates a for loop with custom condition and increment.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .forLoop("let i=0", variable("i").lt(10), "i++")
-         *         .body(call("process", variable("i")))
-         *     .endFor()
-         * </pre>
-         *
-         * @param init the initialization statement
-         * @param condition the loop condition
-         * @param update the update statement
-         * @return a ForBuilder to continue building the loop
-         */
-        public ForBuilder forLoop(String init, Val condition, String update) {
-            return new ForBuilder(this, init, condition, update);
-        }
-
-        /**
-         * Creates a for...of loop (iterates over iterable values).
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .forOf("item", variable("items"))
-         *         .body(call("console.log", variable("item")))
-         *     .endFor()
-         * </pre>
-         *
-         * @param varName the variable name for each item
-         * @param iterable the iterable to loop over
-         * @return a ForBuilder to continue building the loop
-         */
-        public ForBuilder forOf(String varName, Val iterable) {
-            return new ForBuilder(this, "const " + varName + " of " + iterable.code);
-        }
-
-        /**
-         * Creates a for...in loop (iterates over object keys).
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .forIn("key", variable("obj"))
-         *         .body(call("console.log", variable("key")))
-         *     .endFor()
-         * </pre>
-         *
-         * @param varName the variable name for each key
-         * @param object the object to iterate over
-         * @return a ForBuilder to continue building the loop
-         */
-        public ForBuilder forIn(String varName, Val object) {
-            return new ForBuilder(this, "const " + varName + " in " + object.code);
-        }
-
-        /**
-         * Creates a while loop.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .while_(variable("count").lt(10))
-         *         .body(
-         *             "count++"
-         *         )
-         *     .endWhile()
-         * </pre>
-         *
-         * @param condition the loop condition
-         * @return a WhileBuilder to continue building the loop
-         */
-        public WhileBuilder while_(Val condition) {
-            return new WhileBuilder(this, condition);
-        }
-
-        /**
-         * Creates a do...while loop.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .doWhile()
-         *         .body("count++")
-         *     .while_(variable("count").lt(10))
-         * </pre>
-         *
-         * @return a DoWhileBuilder to continue building the loop
-         */
-        public DoWhileBuilder doWhile() {
-            return new DoWhileBuilder(this);
-        }
-
-        // ==================== Loops (one-call form) ====================
-        // Same loops as above, with the body passed inline — no matching
-        // end-call to remember, and the nesting reads like the JS it emits.
-
-        /**
-         * {@code for (let i = 0; i < n; i++) { ... }} in one call.
-         *
-         * <pre>
-         * func("render")
-         *     .for_("i", 0, variable("items").length(),
-         *         call("draw", variable("items").at(variable("i"))))
-         * </pre>
-         */
-        public Func for_(String varName, int start, Val endCondition, Object... body) {
-            return block("for(let " + varName + "=" + start + ";" + varName + "<"
-                    + endCondition.code + ";" + varName + "++)", body);
-        }
-
-        /** {@code for (const x of iterable) { ... }} in one call. */
-        public Func forOf(String varName, Val iterable, Object... body) {
-            return block("for(const " + varName + " of " + iterable.code + ")", body);
-        }
-
-        /** {@code for (const k in object) { ... }} in one call. */
-        public Func forIn(String varName, Val object, Object... body) {
-            return block("for(const " + varName + " in " + object.code + ")", body);
-        }
-
-        /** {@code while (cond) { ... }} in one call. */
-        public Func while_(Val condition, Object... body) {
-            return block("while(" + condition.code + ")", body);
-        }
-
-        /** {@code do { ... } while (cond)} in one call. */
-        public Func doWhile(Val condition, Object... body) {
-            StringBuilder sb = new StringBuilder("do{");
-            for (Object s : body) appendStmt(sb, s);
-            sb.append("}while(").append(condition.code).append(")");
-            this.body.add(sb.toString());
-            return this;
-        }
-
-        /** Emits {@code <header>{ <body> }} and appends it to this function. */
-        private Func block(String header, Object[] stmts) {
-            StringBuilder sb = new StringBuilder(header).append("{");
-            for (Object s : stmts) appendStmt(sb, s);
-            sb.append("}");
-            body.add(sb.toString());
-            return this;
-        }
-
-        // ==================== Try/Catch ====================
-
-        /**
-         * Creates a try/catch block.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .try_()
-         *         .body(call("riskyOperation"))
-         *     .catch_("e")
-         *         .body(call("console.error", variable("e")))
-         *     .endTry()
-         * </pre>
-         *
-         * @return a TryBuilder to continue building the try/catch
-         */
-        public TryBuilder try_() {
-            return new TryBuilder(this);
-        }
-
-        // ==================== Switch ====================
-
-        /**
-         * Creates a switch statement.
-         *
-         * <p>Example:</p>
-         * <pre>
-         * func("example")
-         *     .switch_(variable("action"))
-         *         .case_("add").then(call("add"), "break")
-         *         .case_("remove").then(call("remove"), "break")
-         *         .default_().then(call("noop"))
-         *     .endSwitch()
-         * </pre>
-         *
-         * @param value the value to switch on
-         * @return a SwitchBuilder to continue building the switch
-         */
-        public SwitchBuilder switch_(Val value) {
-            return new SwitchBuilder(this, value);
-        }
-
-        /** Renders this function as an expression: {@code function(a){...}} */
-        public String toExpr() {
-            StringBuilder sb = new StringBuilder("function(");
-            sb.append(String.join(",", params)).append("){");
-            for (String s : body) {
-                sb.append(s);
-                if (!s.endsWith("}")) sb.append(";");
-            }
-            return sb.append("}").toString();
-        }
-
-        /** Renders this function as a declaration: {@code function name(a){...}} */
-        public String toDecl() {
-            StringBuilder sb = new StringBuilder("function ");
-            if (name != null) sb.append(name);
-            sb.append("(").append(String.join(",", params)).append("){");
-            for (String s : body) {
-                sb.append(s);
-                if (!s.endsWith("}")) sb.append(";");
-            }
-            return sb.append("}").toString();
-        }
-
-        private void appendStmt(StringBuilder sb, Object s) {
-            if (s instanceof Stmt st) sb.append(st.code).append(";");
-            else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
-            else if (s instanceof Val val) sb.append(val.code).append(";");
-            else if (s instanceof String str) {
-                sb.append(str);
-                if (!str.endsWith(";") && !str.endsWith("}")) sb.append(";");
-            }
-        }
-    }
 
     // ==================== If/Elif/Else Builder ====================
 
@@ -872,9 +489,9 @@ public class JS extends Events {
         private final StringBuilder sb = new StringBuilder();
         private boolean needsThen = true;
 
-        IfBuilder(Func parent, Val condition) {
+        public IfBuilder(Func parent, Val condition) {
             this.parent = parent;
-            sb.append("if(").append(condition.code).append(")");
+            sb.append("if(").append(condition.js()).append(")");
         }
 
         /** Statements to execute if condition is true */
@@ -890,7 +507,7 @@ public class JS extends Events {
         /** Add an else-if branch */
         public IfBuilder elif(Val condition) {
             if (needsThen) throw new IllegalStateException("then() must be called before elif()");
-            sb.append("else if(").append(condition.code).append(")");
+            sb.append("else if(").append(condition.js()).append(")");
             needsThen = true;
             return this;
         }
@@ -901,21 +518,21 @@ public class JS extends Events {
             sb.append("else{");
             for (Object s : stmts) appendStmt(sb, s);
             sb.append("}");
-            parent.body.add(sb.toString());
+            parent.raw(sb.toString());
             return parent;
         }
 
         /** Finish the chain without an else branch */
         public Func end() {
             if (needsThen) throw new IllegalStateException("then() must be called before end()");
-            parent.body.add(sb.toString());
+            parent.raw(sb.toString());
             return parent;
         }
 
         private void appendStmt(StringBuilder sb, Object s) {
-            if (s instanceof Stmt st) sb.append(st.code).append(";");
-            else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
-            else if (s instanceof Val val) sb.append(val.code).append(";");
+            if (s instanceof Stmt st) sb.append(st.js()).append(";");
+            else if (s instanceof Action a) sb.append(a.build()).append(";");
+            else if (s instanceof Val val) sb.append(val.js()).append(";");
             else if (s instanceof String str) {
                 sb.append(str);
                 if (!str.endsWith(";") && !str.endsWith("}")) sb.append(";");
@@ -934,19 +551,19 @@ public class JS extends Events {
         private final List<String> bodyStmts = new ArrayList<>();
 
         // Standard for loop: for(let i=start; i<end; i++)
-        ForBuilder(Func parent, String varName, int start, Val endCondition) {
+        public ForBuilder(Func parent, String varName, int start, Val endCondition) {
             this.parent = parent;
-            this.header = "for(let " + varName + "=" + start + ";" + varName + "<" + endCondition.code + ";" + varName + "++)";
+            this.header = "for(let " + varName + "=" + start + ";" + varName + "<" + endCondition.js() + ";" + varName + "++)";
         }
 
         // Custom for loop: for(init; condition; update)
-        ForBuilder(Func parent, String init, Val condition, String update) {
+        public ForBuilder(Func parent, String init, Val condition, String update) {
             this.parent = parent;
-            this.header = "for(" + init + ";" + condition.code + ";" + update + ")";
+            this.header = "for(" + init + ";" + condition.js() + ";" + update + ")";
         }
 
         // For...of / For...in loop: for(const x of/in y)
-        ForBuilder(Func parent, String iteratorClause) {
+        public ForBuilder(Func parent, String iteratorClause) {
             this.parent = parent;
             this.header = "for(" + iteratorClause + ")";
         }
@@ -954,9 +571,9 @@ public class JS extends Events {
         /** Adds statements to the loop body. */
         public ForBuilder body(Object... stmts) {
             for (Object s : stmts) {
-                if (s instanceof Stmt st) bodyStmts.add(st.code);
-                else if (s instanceof Actions.Action a) bodyStmts.add(a.build());
-                else if (s instanceof Val val) bodyStmts.add(val.code);
+                if (s instanceof Stmt st) bodyStmts.add(st.js());
+                else if (s instanceof Action a) bodyStmts.add(a.build());
+                else if (s instanceof Val val) bodyStmts.add(val.js());
                 else if (s instanceof String str) bodyStmts.add(str);
             }
             return this;
@@ -970,7 +587,7 @@ public class JS extends Events {
                 if (!stmt.endsWith(";") && !stmt.endsWith("}")) sb.append(";");
             }
             sb.append("}");
-            parent.body.add(sb.toString());
+            parent.raw(sb.toString());
             return parent;
         }
     }
@@ -985,7 +602,7 @@ public class JS extends Events {
         private final Val condition;
         private final List<String> bodyStmts = new ArrayList<>();
 
-        WhileBuilder(Func parent, Val condition) {
+        public WhileBuilder(Func parent, Val condition) {
             this.parent = parent;
             this.condition = condition;
         }
@@ -993,9 +610,9 @@ public class JS extends Events {
         /** Adds statements to the loop body. */
         public WhileBuilder body(Object... stmts) {
             for (Object s : stmts) {
-                if (s instanceof Stmt st) bodyStmts.add(st.code);
-                else if (s instanceof Actions.Action a) bodyStmts.add(a.build());
-                else if (s instanceof Val val) bodyStmts.add(val.code);
+                if (s instanceof Stmt st) bodyStmts.add(st.js());
+                else if (s instanceof Action a) bodyStmts.add(a.build());
+                else if (s instanceof Val val) bodyStmts.add(val.js());
                 else if (s instanceof String str) bodyStmts.add(str);
             }
             return this;
@@ -1003,13 +620,13 @@ public class JS extends Events {
 
         /** Ends the while loop and returns to the parent function. */
         public Func endWhile() {
-            StringBuilder sb = new StringBuilder("while(").append(condition.code).append("){");
+            StringBuilder sb = new StringBuilder("while(").append(condition.js()).append("){");
             for (String stmt : bodyStmts) {
                 sb.append(stmt);
                 if (!stmt.endsWith(";") && !stmt.endsWith("}")) sb.append(";");
             }
             sb.append("}");
-            parent.body.add(sb.toString());
+            parent.raw(sb.toString());
             return parent;
         }
     }
@@ -1023,16 +640,16 @@ public class JS extends Events {
         private final Func parent;
         private final List<String> bodyStmts = new ArrayList<>();
 
-        DoWhileBuilder(Func parent) {
+        public DoWhileBuilder(Func parent) {
             this.parent = parent;
         }
 
         /** Adds statements to the loop body. */
         public DoWhileBuilder body(Object... stmts) {
             for (Object s : stmts) {
-                if (s instanceof Stmt st) bodyStmts.add(st.code);
-                else if (s instanceof Actions.Action a) bodyStmts.add(a.build());
-                else if (s instanceof Val val) bodyStmts.add(val.code);
+                if (s instanceof Stmt st) bodyStmts.add(st.js());
+                else if (s instanceof Action a) bodyStmts.add(a.build());
+                else if (s instanceof Val val) bodyStmts.add(val.js());
                 else if (s instanceof String str) bodyStmts.add(str);
             }
             return this;
@@ -1045,8 +662,8 @@ public class JS extends Events {
                 sb.append(stmt);
                 if (!stmt.endsWith(";") && !stmt.endsWith("}")) sb.append(";");
             }
-            sb.append("}while(").append(condition.code).append(")");
-            parent.body.add(sb.toString());
+            sb.append("}while(").append(condition.js()).append(")");
+            parent.raw(sb.toString());
             return parent;
         }
     }
@@ -1063,16 +680,16 @@ public class JS extends Events {
         private final List<String> catchStmts = new ArrayList<>();
         private final List<String> finallyStmts = new ArrayList<>();
 
-        TryBuilder(Func parent) {
+        public TryBuilder(Func parent) {
             this.parent = parent;
         }
 
         /** Adds statements to the try block. */
         public TryBuilder body(Object... stmts) {
             for (Object s : stmts) {
-                if (s instanceof Stmt st) tryStmts.add(st.code);
-                else if (s instanceof Actions.Action a) tryStmts.add(a.build());
-                else if (s instanceof Val val) tryStmts.add(val.code);
+                if (s instanceof Stmt st) tryStmts.add(st.js());
+                else if (s instanceof Action a) tryStmts.add(a.build());
+                else if (s instanceof Val val) tryStmts.add(val.js());
                 else if (s instanceof String str) tryStmts.add(str);
             }
             return this;
@@ -1097,9 +714,9 @@ public class JS extends Events {
         public Func catch_(String varName, Object... body) {
             this.catchVar = varName;
             for (Object s : body) {
-                if (s instanceof Stmt st) catchStmts.add(st.code);
-                else if (s instanceof Actions.Action a) catchStmts.add(a.build());
-                else if (s instanceof Val val) catchStmts.add(val.code);
+                if (s instanceof Stmt st) catchStmts.add(st.js());
+                else if (s instanceof Action a) catchStmts.add(a.build());
+                else if (s instanceof Val val) catchStmts.add(val.js());
                 else if (s instanceof String str) catchStmts.add(str);
             }
             return endTry();
@@ -1132,7 +749,7 @@ public class JS extends Events {
                 sb.append("}");
             }
 
-            parent.body.add(sb.toString());
+            parent.raw(sb.toString());
             return parent;
         }
 
@@ -1147,9 +764,9 @@ public class JS extends Events {
             /** Adds statements to the catch block. */
             public CatchBuilder body(Object... stmts) {
                 for (Object s : stmts) {
-                    if (s instanceof Stmt st) parent.catchStmts.add(st.code);
-                    else if (s instanceof Actions.Action a) parent.catchStmts.add(a.build());
-                    else if (s instanceof Val val) parent.catchStmts.add(val.code);
+                    if (s instanceof Stmt st) parent.catchStmts.add(st.js());
+                    else if (s instanceof Action a) parent.catchStmts.add(a.build());
+                    else if (s instanceof Val val) parent.catchStmts.add(val.js());
                     else if (s instanceof String str) parent.catchStmts.add(str);
                 }
                 return this;
@@ -1177,9 +794,9 @@ public class JS extends Events {
             /** Adds statements to the finally block. */
             public FinallyBuilder body(Object... stmts) {
                 for (Object s : stmts) {
-                    if (s instanceof Stmt st) parent.finallyStmts.add(st.code);
-                    else if (s instanceof Actions.Action a) parent.finallyStmts.add(a.build());
-                    else if (s instanceof Val val) parent.finallyStmts.add(val.code);
+                    if (s instanceof Stmt st) parent.finallyStmts.add(st.js());
+                    else if (s instanceof Action a) parent.finallyStmts.add(a.build());
+                    else if (s instanceof Val val) parent.finallyStmts.add(val.js());
                     else if (s instanceof String str) parent.finallyStmts.add(str);
                 }
                 return this;
@@ -1202,7 +819,7 @@ public class JS extends Events {
         private final Val value;
         private final List<String> cases = new ArrayList<>();
 
-        SwitchBuilder(Func parent, Val value) {
+        public SwitchBuilder(Func parent, Val value) {
             this.parent = parent;
             this.value = value;
         }
@@ -1239,12 +856,12 @@ public class JS extends Events {
 
         /** Ends the switch statement. */
         public Func endSwitch() {
-            StringBuilder sb = new StringBuilder("switch(").append(value.code).append("){");
+            StringBuilder sb = new StringBuilder("switch(").append(value.js()).append("){");
             for (String c : cases) {
                 sb.append(c);
             }
             sb.append("}");
-            parent.body.add(sb.toString());
+            parent.raw(sb.toString());
             return parent;
         }
 
@@ -1267,9 +884,9 @@ public class JS extends Events {
                     sb.append("default:");
                 }
                 for (Object s : stmts) {
-                    if (s instanceof Stmt st) sb.append(st.code).append(";");
-                    else if (s instanceof Actions.Action a) sb.append(a.build()).append(";");
-                    else if (s instanceof Val val) sb.append(val.code).append(";");
+                    if (s instanceof Stmt st) sb.append(st.js()).append(";");
+                    else if (s instanceof Action a) sb.append(a.build()).append(";");
+                    else if (s instanceof Val val) sb.append(val.js()).append(";");
                     else if (s instanceof String str) {
                         sb.append(str);
                         if (!str.endsWith(";") && !str.endsWith("}")) sb.append(";");
@@ -1281,635 +898,6 @@ public class JS extends Events {
         }
     }
 
-    // ==================== Value ====================
-
-    public static class Val {
-        final String code;
-
-        Val(String code) { this.code = code; }
-
-        public String js() { return code; }
-
-        public Val dot(String prop) { return new Val(code + "." + prop); }
-        public Val at(int index) { return new Val(code + "[" + index + "]"); }
-        public Val at(Val key) { return new Val(code + "[" + key.code + "]"); }
-
-        /**
-         * Access a nested property path in a single call.
-         * Simplifies: variable("e").dot("target").dot("result")
-         * To: variable("e").path("target.result")
-         *
-         * @param dotPath the dot-separated property path (e.g., "target.result")
-         * @return a Val representing the nested property access
-         */
-        public Val path(String dotPath) {
-            return new Val(code + "." + dotPath);
-        }
-
-        /**
-         * Shorthand for dot().invoke() - calls a method on this value.
-         * Simplifies: variable("response").dot("json").invoke()
-         * To: variable("response").call("json")
-         *
-         * @param method the method name to call
-         * @param args optional arguments to pass to the method
-         * @return a Val representing the method call
-         */
-        public Val call(String method, Object... args) {
-            StringBuilder sb = new StringBuilder(code).append(".").append(method).append("(");
-            for (int i = 0; i < args.length; i++) {
-                if (i > 0) sb.append(",");
-                sb.append(toJs(args[i]));
-            }
-            return new Val(sb.append(")").toString());
-        }
-
-        // Common method shortcuts
-        /** Shorthand for .call("json") - common for fetch responses */
-        public Val json() { return call("json"); }
-        /** Shorthand for .call("text") - common for fetch responses */
-        public Val text() { return call("text"); }
-        /** Shorthand for .call("blob") - common for fetch responses */
-        public Val blob() { return call("blob"); }
-        /** Shorthand for .call("arrayBuffer") - common for fetch responses */
-        public Val arrayBuffer() { return call("arrayBuffer"); }
-        /** Shorthand for .call("formData") - common for fetch responses */
-        public Val formData() { return call("formData"); }
-        /** Shorthand for .call("clone") - clones a Response or Request */
-        public Val clone() { return call("clone"); }
-
-        public Val invoke(Object... args) {
-            StringBuilder sb = new StringBuilder(code).append("(");
-            for (int i = 0; i < args.length; i++) {
-                if (i > 0) sb.append(",");
-                sb.append(toJs(args[i]));
-            }
-            return new Val(sb.append(")").toString());
-        }
-
-        public Val plus(Object o) { return new Val("(" + code + "+" + toJs(o) + ")"); }
-        public Val minus(Object o) { return new Val("(" + code + "-" + toJs(o) + ")"); }
-        public Val times(Object o) { return new Val("(" + code + "*" + toJs(o) + ")"); }
-        public Val div(Object o) { return new Val("(" + code + "/" + toJs(o) + ")"); }
-        public Val mod(Object o) { return new Val("(" + code + "%" + toJs(o) + ")"); }
-
-        public Val eq(Object o) { return new Val("(" + code + "===" + toJs(o) + ")"); }
-        public Val neq(Object o) { return new Val("(" + code + "!==" + toJs(o) + ")"); }
-        public Val gt(Object o) { return new Val("(" + code + ">" + toJs(o) + ")"); }
-        public Val gte(Object o) { return new Val("(" + code + ">=" + toJs(o) + ")"); }
-        public Val lt(Object o) { return new Val("(" + code + "<" + toJs(o) + ")"); }
-        public Val lte(Object o) { return new Val("(" + code + "<=" + toJs(o) + ")"); }
-
-        public Val and(Val o) { return new Val("(" + code + "&&" + o.code + ")"); }
-        public Val or(Val o) { return new Val("(" + code + "||" + o.code + ")"); }
-        public Val not() { return new Val("(!" + code + ")"); }
-        public Val ternary(Object ifTrue, Object ifFalse) {
-            return new Val("(" + code + "?" + toJs(ifTrue) + ":" + toJs(ifFalse) + ")");
-        }
-
-        // ==================== String Methods ====================
-
-        public Val padStart(int len, String pad) {
-            return new Val("String(" + code + ").padStart(" + len + ",'" + esc(pad) + "')");
-        }
-        public Val padEnd(int len, String pad) {
-            return new Val("String(" + code + ").padEnd(" + len + ",'" + esc(pad) + "')");
-        }
-        public Val length() { return new Val(code + ".length"); }
-        public Val trim() { return new Val(code + ".trim()"); }
-        public Val toLowerCase() { return new Val(code + ".toLowerCase()"); }
-        public Val toUpperCase() { return new Val(code + ".toUpperCase()"); }
-
-        /** Gets substring: str.substring(start, end) */
-        public Val substring(int start, int end) {
-            return new Val(code + ".substring(" + start + "," + end + ")");
-        }
-
-        /** Gets substring from start: str.substring(start) */
-        public Val substring(int start) {
-            return new Val(code + ".substring(" + start + ")");
-        }
-
-        /** Gets character at index: str.charAt(index) */
-        public Val charAt(int index) {
-            return new Val(code + ".charAt(" + index + ")");
-        }
-
-        /** Finds index of substring: str.indexOf(search) */
-        public Val indexOf(String search) {
-            return new Val(code + ".indexOf('" + esc(search) + "')");
-        }
-
-        /** Finds last index of substring: str.lastIndexOf(search) */
-        public Val lastIndexOf(String search) {
-            return new Val(code + ".lastIndexOf('" + esc(search) + "')");
-        }
-
-        /** Splits string: str.split(separator) */
-        public Val split(String separator) {
-            return new Val(code + ".split('" + esc(separator) + "')");
-        }
-
-        /** Replaces first occurrence: str.replace(search, replacement) */
-        public Val replace(String search, String replacement) {
-            return new Val(code + ".replace('" + esc(search) + "','" + esc(replacement) + "')");
-        }
-
-        /** Replaces all occurrences: str.replaceAll(search, replacement) */
-        public Val replaceAll(String search, String replacement) {
-            return new Val(code + ".replaceAll('" + esc(search) + "','" + esc(replacement) + "')");
-        }
-
-        /** Checks if string starts with prefix: str.startsWith(prefix) */
-        public Val startsWith(String prefix) {
-            return new Val(code + ".startsWith('" + esc(prefix) + "')");
-        }
-
-        /** Checks if string ends with suffix: str.endsWith(suffix) */
-        public Val endsWith(String suffix) {
-            return new Val(code + ".endsWith('" + esc(suffix) + "')");
-        }
-
-        /** Checks if string includes substring: str.includes(search) */
-        public Val includes(String search) {
-            return new Val(code + ".includes('" + esc(search) + "')");
-        }
-
-        /** Repeats string n times: str.repeat(count) */
-        public Val repeat(int count) {
-            return new Val(code + ".repeat(" + count + ")");
-        }
-
-        /** Repeats string n times: str.repeat(count) */
-        public Val repeat(Val count) {
-            return new Val(code + ".repeat(" + count.code + ")");
-        }
-
-        /** @deprecated Use {@link #slice(int, int)} — it emits exactly the same {@code .slice()} call. */
-        @Deprecated
-        public Val sliceStr(int start, int end) {
-            return slice(start, end);
-        }
-
-        /** @deprecated Use {@link #slice(int)} — it emits exactly the same {@code .slice()} call. */
-        @Deprecated
-        public Val sliceStr(int start) {
-            return slice(start);
-        }
-
-        /** Searches for regex: str.search(regex) */
-        public Val search(Val regex) {
-            return new Val(code + ".search(" + regex.code + ")");
-        }
-
-        /** Matches against regex: str.match(regex) */
-        public Val match(Val regex) {
-            return new Val(code + ".match(" + regex.code + ")");
-        }
-
-        /** Matches all against regex: str.matchAll(regex) */
-        public Val matchAll(Val regex) {
-            return new Val(code + ".matchAll(" + regex.code + ")");
-        }
-
-        /** Normalizes Unicode: str.normalize() */
-        public Val normalize() {
-            return new Val(code + ".normalize()");
-        }
-
-        /** Normalizes Unicode with form: str.normalize(form) */
-        public Val normalize(String form) {
-            return new Val(code + ".normalize('" + esc(form) + "')");
-        }
-
-        /** Trims start of string: str.trimStart() */
-        public Val trimStart() {
-            return new Val(code + ".trimStart()");
-        }
-
-        /** Trims end of string: str.trimEnd() */
-        public Val trimEnd() {
-            return new Val(code + ".trimEnd()");
-        }
-
-        /** Locale compare: str.localeCompare(other) */
-        public Val localeCompare(Val other) {
-            return new Val(code + ".localeCompare(" + other.code + ")");
-        }
-
-        /** Locale compare: str.localeCompare(other) */
-        public Val localeCompare(String other) {
-            return new Val(code + ".localeCompare('" + esc(other) + "')");
-        }
-
-        /** Dynamic padStart: str.padStart(len, pad) */
-        public Val padStart(Val len, String pad) {
-            return new Val("String(" + code + ").padStart(" + len.code + ",'" + esc(pad) + "')");
-        }
-
-        /** Dynamic padEnd: str.padEnd(len, pad) */
-        public Val padEnd(Val len, String pad) {
-            return new Val("String(" + code + ").padEnd(" + len.code + ",'" + esc(pad) + "')");
-        }
-
-        // ==================== Array Methods ====================
-
-        /**
-         * Filters array elements: arr.filter(callback)
-         *
-         * <p>Example:</p>
-         * <pre>
-         * variable("items").filter(callback("x").ret(variable("x").gt(5)))
-         * // Output: items.filter(function(x){return (x>5);})
-         * </pre>
-         */
-        public Val filter(Func predicate) {
-            return new Val(code + ".filter(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Maps array elements: arr.map(callback)
-         *
-         * <p>Example:</p>
-         * <pre>
-         * variable("items").map(callback("x").ret(variable("x").times(2)))
-         * // Output: items.map(function(x){return (x*2);})
-         * </pre>
-         */
-        public Val map(Func transformer) {
-            return new Val(code + ".map(" + transformer.toExpr() + ")");
-        }
-
-        /**
-         * Iterates over array: arr.forEach(callback)
-         *
-         * <p>Example:</p>
-         * <pre>
-         * variable("items").forEach(callback("item").call("process", variable("item")))
-         * </pre>
-         */
-        public Val forEach(Func action) {
-            return new Val(code + ".forEach(" + action.toExpr() + ")");
-        }
-
-        /**
-         * Finds first matching element: arr.find(callback)
-         */
-        public Val find(Func predicate) {
-            return new Val(code + ".find(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Finds index of first matching element: arr.findIndex(callback)
-         */
-        public Val findIndex(Func predicate) {
-            return new Val(code + ".findIndex(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Checks if any element matches: arr.some(callback)
-         */
-        public Val some(Func predicate) {
-            return new Val(code + ".some(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Checks if all elements match: arr.every(callback)
-         */
-        public Val every(Func predicate) {
-            return new Val(code + ".every(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Reduces array to single value: arr.reduce(callback, initialValue)
-         */
-        public Val reduce(Func reducer, Object initialValue) {
-            return new Val(code + ".reduce(" + reducer.toExpr() + "," + toJs(initialValue) + ")");
-        }
-
-        /**
-         * Reduces array to single value: arr.reduce(callback)
-         */
-        public Val reduce(Func reducer) {
-            return new Val(code + ".reduce(" + reducer.toExpr() + ")");
-        }
-
-        /**
-         * Gets slice of array: arr.slice(start, end)
-         */
-        public Val slice(int start, int end) {
-            return new Val(code + ".slice(" + start + "," + end + ")");
-        }
-
-        /**
-         * Gets slice of array from start: arr.slice(start)
-         */
-        public Val slice(int start) {
-            return new Val(code + ".slice(" + start + ")");
-        }
-
-        /**
-         * Concatenates arrays: arr.concat(other)
-         */
-        public Val concat(Val other) {
-            return new Val(code + ".concat(" + other.code + ")");
-        }
-
-        /**
-         * Joins array to string: arr.join(separator)
-         */
-        public Val join(String separator) {
-            return new Val(code + ".join('" + esc(separator) + "')");
-        }
-
-        /**
-         * Reverses array: arr.reverse()
-         */
-        public Val reverse() {
-            return new Val(code + ".reverse()");
-        }
-
-        /**
-         * Sorts array: arr.sort()
-         */
-        public Val sort() {
-            return new Val(code + ".sort()");
-        }
-
-        /**
-         * Sorts array with comparator: arr.sort(comparator)
-         */
-        public Val sort(Func comparator) {
-            return new Val(code + ".sort(" + comparator.toExpr() + ")");
-        }
-
-        /**
-         * Checks if array includes value: arr.includes(value)
-         */
-        public Val includes(Val value) {
-            return new Val(code + ".includes(" + value.code + ")");
-        }
-
-        /**
-         * Gets first element: arr[0]
-         */
-        public Val first() {
-            return new Val(code + "[0]");
-        }
-
-        /**
-         * Gets last element: arr[arr.length-1]
-         */
-        public Val last() {
-            return new Val(code + "[" + code + ".length-1]");
-        }
-
-        /**
-         * Pushes element to array: arr.push(value)
-         */
-        public Val push(Object value) {
-            return new Val(code + ".push(" + toJs(value) + ")");
-        }
-
-        /**
-         * Pops element from array: arr.pop()
-         */
-        public Val pop() {
-            return new Val(code + ".pop()");
-        }
-
-        /**
-         * Shifts element from array: arr.shift()
-         */
-        public Val shift() {
-            return new Val(code + ".shift()");
-        }
-
-        /**
-         * Unshifts element to array: arr.unshift(value)
-         */
-        public Val unshift(Object value) {
-            return new Val(code + ".unshift(" + toJs(value) + ")");
-        }
-
-        /**
-         * Flattens nested arrays: arr.flat(depth)
-         */
-        public Val flat() {
-            return new Val(code + ".flat()");
-        }
-
-        /**
-         * Flattens nested arrays: arr.flat(depth)
-         */
-        public Val flat(int depth) {
-            return new Val(code + ".flat(" + depth + ")");
-        }
-
-        /**
-         * Maps and flattens: arr.flatMap(callback)
-         */
-        public Val flatMap(Func mapper) {
-            return new Val(code + ".flatMap(" + mapper.toExpr() + ")");
-        }
-
-        /**
-         * Gets element at index with negative support: arr.at(index)
-         */
-        public Val atIndex(int index) {
-            return new Val(code + ".at(" + index + ")");
-        }
-
-        /**
-         * Gets element at index with negative support: arr.at(index)
-         */
-        public Val atIndex(Val index) {
-            return new Val(code + ".at(" + index.code + ")");
-        }
-
-        /**
-         * Fills array with value: arr.fill(value)
-         */
-        public Val fill(Object value) {
-            return new Val(code + ".fill(" + toJs(value) + ")");
-        }
-
-        /**
-         * Fills array with value from start to end: arr.fill(value, start, end)
-         */
-        public Val fill(Object value, int start, int end) {
-            return new Val(code + ".fill(" + toJs(value) + "," + start + "," + end + ")");
-        }
-
-        /**
-         * Copies array section within itself: arr.copyWithin(target, start, end)
-         */
-        public Val copyWithin(int target, int start) {
-            return new Val(code + ".copyWithin(" + target + "," + start + ")");
-        }
-
-        /**
-         * Copies array section within itself: arr.copyWithin(target, start, end)
-         */
-        public Val copyWithin(int target, int start, int end) {
-            return new Val(code + ".copyWithin(" + target + "," + start + "," + end + ")");
-        }
-
-        /**
-         * Adds/removes elements: arr.splice(start, deleteCount, ...items)
-         */
-        public Val splice(int start, int deleteCount, Object... items) {
-            StringBuilder sb = new StringBuilder(code + ".splice(" + start + "," + deleteCount);
-            for (Object item : items) {
-                sb.append(",").append(toJs(item));
-            }
-            return new Val(sb.append(")").toString());
-        }
-
-        /**
-         * Finds last matching element: arr.findLast(callback)
-         */
-        public Val findLast(Func predicate) {
-            return new Val(code + ".findLast(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Finds index of last matching element: arr.findLastIndex(callback)
-         */
-        public Val findLastIndex(Func predicate) {
-            return new Val(code + ".findLastIndex(" + predicate.toExpr() + ")");
-        }
-
-        /**
-         * Creates array without mutating: arr.toSorted(comparator)
-         */
-        public Val toSorted() {
-            return new Val(code + ".toSorted()");
-        }
-
-        /**
-         * Creates array without mutating: arr.toSorted(comparator)
-         */
-        public Val toSorted(Func comparator) {
-            return new Val(code + ".toSorted(" + comparator.toExpr() + ")");
-        }
-
-        /**
-         * Creates reversed array without mutating: arr.toReversed()
-         */
-        public Val toReversed() {
-            return new Val(code + ".toReversed()");
-        }
-
-        /**
-         * Finds indexOf: {@code arr.indexOf(value)} — same platform method as
-         * {@link #indexOf(String)}, overloaded on the argument type.
-         */
-        public Val indexOf(Val value) {
-            return new Val(code + ".indexOf(" + value.code + ")");
-        }
-
-        /** @deprecated Use {@link #indexOf(Val)}. */
-        @Deprecated
-        public Val indexOfVal(Val value) {
-            return indexOf(value);
-        }
-
-        // ==================== Object Methods ====================
-
-        /**
-         * Gets object keys: Object.keys(obj)
-         */
-        public Val keys() {
-            return new Val("Object.keys(" + code + ")");
-        }
-
-        /**
-         * Gets object values: Object.values(obj)
-         */
-        public Val values() {
-            return new Val("Object.values(" + code + ")");
-        }
-
-        /**
-         * Gets object entries: Object.entries(obj)
-         */
-        public Val entries() {
-            return new Val("Object.entries(" + code + ")");
-        }
-
-        /**
-         * Checks if object has own property: obj.hasOwnProperty(key)
-         */
-        public Val hasOwnProperty(String key) {
-            return new Val(code + ".hasOwnProperty('" + esc(key) + "')");
-        }
-
-        /**
-         * Checks if object has own property with dynamic key: obj.hasOwnProperty(key)
-         */
-        public Val hasOwnProperty(Val key) {
-            return new Val(code + ".hasOwnProperty(" + key.code + ")");
-        }
-
-        // ==================== Number Formatting ====================
-
-        /** Formats to fixed decimal places: num.toFixed(digits) */
-        public Val toFixed(int digits) {
-            return new Val(code + ".toFixed(" + digits + ")");
-        }
-
-        /** Formats to exponential notation: num.toExponential(digits) */
-        public Val toExponential(int digits) {
-            return new Val(code + ".toExponential(" + digits + ")");
-        }
-
-        /** Formats to precision: num.toPrecision(precision) */
-        public Val toPrecision(int precision) {
-            return new Val(code + ".toPrecision(" + precision + ")");
-        }
-
-        /** Converts to string with radix: num.toString(radix) */
-        public Val toStringRadix(int radix) {
-            return new Val(code + ".toString(" + radix + ")");
-        }
-
-        // ==================== Type Checking ====================
-
-        /**
-         * Gets typeof: typeof value
-         */
-        public Val typeof() {
-            return new Val("typeof " + code);
-        }
-
-        /**
-         * Checks instanceof: value instanceof Type
-         */
-        public Val instanceof_(String type) {
-            return new Val("(" + code + " instanceof " + type + ")");
-        }
-
-        // ==================== Assignment ====================
-
-        /** Assignment statement: variable("x").assign(5) -> x=5 */
-        public Stmt assign(Object value) { return new Stmt(code + "=" + toJs(value)); }
-
-        /** Compound assignment: variable("x").addAssign(5) -> x+=5 */
-        public Stmt addAssign(Object value) { return new Stmt(code + "+=" + toJs(value)); }
-
-        /** Compound assignment: variable("x").subAssign(5) -> x-=5 */
-        public Stmt subAssign(Object value) { return new Stmt(code + "-=" + toJs(value)); }
-
-        /** Compound assignment: variable("x").mulAssign(5) -> x*=5 */
-        public Stmt mulAssign(Object value) { return new Stmt(code + "*=" + toJs(value)); }
-
-        /** Compound assignment: variable("x").divAssign(5) -> x/=5 */
-        public Stmt divAssign(Object value) { return new Stmt(code + "/=" + toJs(value)); }
-
-        @Override
-        public String toString() { return code; }
-    }
 
     // ==================== Element ====================
 
@@ -1940,7 +928,7 @@ public class JS extends Events {
 
         /** Sets textContent from expression: elem.textContent = expr */
         public El setText(Val expr) {
-            return new El(code + ".textContent=" + expr.code);
+            return new El(code + ".textContent=" + expr.js());
         }
 
         /** Gets value (for inputs): elem.value */
@@ -1953,7 +941,7 @@ public class JS extends Events {
 
         /** Sets value from expression: elem.value = expr */
         public El setValue(Val expr) {
-            return new El(code + ".value=" + expr.code);
+            return new El(code + ".value=" + expr.js());
         }
 
         /** Gets innerHTML: elem.innerHTML */
@@ -1966,7 +954,7 @@ public class JS extends Events {
 
         /** Sets innerHTML from expression: elem.innerHTML = expr */
         public El setHtml(Val expr) {
-            return new El(code + ".innerHTML=" + expr.code);
+            return new El(code + ".innerHTML=" + expr.js());
         }
 
         // ==================== CSS Classes ====================
@@ -1988,7 +976,7 @@ public class JS extends Events {
 
         /** Toggles a CSS class based on condition: elem.classList.toggle('className', force) */
         public El toggleClass(String className, Val force) {
-            return new El(code + ".classList.toggle('" + esc(className) + "'," + force.code + ")");
+            return new El(code + ".classList.toggle('" + esc(className) + "'," + force.js() + ")");
         }
 
         /** Checks if element has class: elem.classList.contains('className') */
@@ -2015,7 +1003,7 @@ public class JS extends Events {
 
         /** Sets an attribute from expression: elem.setAttribute('name', expr) */
         public El setAttribute(String name, Val value) {
-            return new El(code + ".setAttribute('" + esc(name) + "'," + value.code + ")");
+            return new El(code + ".setAttribute('" + esc(name) + "'," + value.js() + ")");
         }
 
         /** Removes an attribute: elem.removeAttribute('name') */
@@ -2042,7 +1030,7 @@ public class JS extends Events {
 
         /** Sets a data attribute from expression: elem.dataset.name = expr */
         public El setData(String name, Val value) {
-            return new El(code + ".dataset." + name + "=" + value.code);
+            return new El(code + ".dataset." + name + "=" + value.js());
         }
 
         // ==================== Inline Styles ====================
@@ -2059,7 +1047,7 @@ public class JS extends Events {
 
         /** Sets a style property from expression: elem.style.property = expr */
         public El setStyle(String property, Val value) {
-            return new El(code + ".style." + property + "=" + value.code);
+            return new El(code + ".style." + property + "=" + value.js());
         }
 
         /** Gets computed style: getComputedStyle(elem).property */
@@ -2086,19 +1074,19 @@ public class JS extends Events {
 
         /** Toggles visibility based on condition */
         public El visible(Val condition) {
-            return new El(code + ".style.display=" + condition.code + "?'':'none'");
+            return new El(code + ".style.display=" + condition.js() + "?'':'none'");
         }
 
         // ==================== DOM Manipulation ====================
 
         /** Appends a child element: elem.appendChild(child) */
         public El appendChild(Val child) {
-            return new El(code + ".appendChild(" + child.code + ")");
+            return new El(code + ".appendChild(" + child.js() + ")");
         }
 
         /** Removes a child element: elem.removeChild(child) */
         public El removeChild(Val child) {
-            return new El(code + ".removeChild(" + child.code + ")");
+            return new El(code + ".removeChild(" + child.js() + ")");
         }
 
         /** Removes this element from DOM: elem.remove() */
@@ -2108,12 +1096,12 @@ public class JS extends Events {
 
         /** Inserts before another element: elem.insertBefore(newNode, refNode) */
         public El insertBefore(Val newNode, Val refNode) {
-            return new El(code + ".insertBefore(" + newNode.code + "," + refNode.code + ")");
+            return new El(code + ".insertBefore(" + newNode.js() + "," + refNode.js() + ")");
         }
 
         /** Replaces a child element: elem.replaceChild(newChild, oldChild) */
         public El replaceChild(Val newChild, Val oldChild) {
-            return new El(code + ".replaceChild(" + newChild.code + "," + oldChild.code + ")");
+            return new El(code + ".replaceChild(" + newChild.js() + "," + oldChild.js() + ")");
         }
 
         /** Clones element: elem.cloneNode(deep) */
@@ -2204,7 +1192,7 @@ public class JS extends Events {
 
         /** Removes event listener: elem.removeEventListener(type, handler) */
         public El removeEventListener(String type, Val handler) {
-            return new El(code + ".removeEventListener('" + esc(type) + "'," + handler.code + ")");
+            return new El(code + ".removeEventListener('" + esc(type) + "'," + handler.js() + ")");
         }
 
         /** Dispatches a custom event: elem.dispatchEvent(new Event(type)) */
@@ -2270,15 +1258,4 @@ public class JS extends Events {
         }
     }
 
-    // ==================== Statement ====================
-
-    public static class Stmt {
-        final String code;
-        Stmt(String code) { this.code = code; }
-
-        /** The generated JavaScript — same accessor as {@link Val#js()}. */
-        public String js() { return code; }
-
-        @Override public String toString() { return code; }
-    }
 }

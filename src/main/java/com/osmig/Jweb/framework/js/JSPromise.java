@@ -3,8 +3,8 @@ package com.osmig.Jweb.framework.js;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.osmig.Jweb.framework.js.JS.Val;
-import com.osmig.Jweb.framework.js.JS.Func;
+import jweb.Val;
+import jweb.Func;
 
 /**
  * Promise utilities for advanced async patterns.

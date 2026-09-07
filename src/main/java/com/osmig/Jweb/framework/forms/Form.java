@@ -1,10 +1,10 @@
 package com.osmig.Jweb.framework.forms;
 
-import com.osmig.Jweb.framework.attributes.Attributes;
+import jweb.Attributes;
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.elements.Elements;
-import com.osmig.Jweb.framework.elements.Tag;
-import com.osmig.Jweb.framework.events.Event;
+import jweb.Tag;
+import jweb.Event;
 import com.osmig.Jweb.framework.styles.CSSValue;
 import com.osmig.Jweb.framework.styles.Style;
 

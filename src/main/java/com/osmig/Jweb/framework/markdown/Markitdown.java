@@ -20,12 +20,12 @@ import java.util.concurrent.TimeUnit;
  * String md = Markitdown.convert(uploadedBytes, "docx");
  * </pre>
  */
-public final class Markitdown {
+public class Markitdown {
 
     private static volatile String command = ".tools/markitdown/bin/markitdown";
     private static volatile long timeoutSeconds = 120;
 
-    private Markitdown() {}
+    protected Markitdown() {}
 
     /** Overrides the markitdown executable path. Blank values are ignored. */
     public static void setCommand(String cmd) {

@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.js;
 
-import com.osmig.Jweb.framework.js.JS.Val;
+import jweb.Val;
 
 /**
  * Extended Math operations for JavaScript DSL.

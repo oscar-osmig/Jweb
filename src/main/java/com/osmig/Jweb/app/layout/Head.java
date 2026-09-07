@@ -22,7 +22,7 @@ public class Head implements Template {
         return head(
             metaCharset(),
             metaViewport(),
-            com.osmig.Jweb.framework.seo.Seo
+            jweb.Seo
                 .of(pageTitle, "Build complete web applications entirely in Java — "
                     + "type-safe components, fluent DSL, zero frontend tooling.")
                 .siteName("JWeb")

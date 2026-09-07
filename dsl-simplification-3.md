@@ -113,6 +113,77 @@ An `Action` is a statement anywhere a statement goes: `.if_(cond, toggle("panel"
 (`rotation(-90, 0, 0)`, named). Under `jweb.Js.*`, `patch(url)` is HTTP PATCH, so the
 live-scene patch stays qualified: `Three.patch(sceneId)`.
 
+## Short names are the real names
+
+The 2026-09-07 rule: **every type an app author can name has a `jweb.*` spelling that IS the
+type the framework returns or accepts.** The check is what the IDE auto-imports when you write
+`X x = someJwebCall();` — if it starts with `com.osmig`, the job was not done. Until now many
+`jweb.*` names were sub-type shells (a protected constructor over the framework class): fine for
+statics, but `jweb.css.Stylesheet s = stylesheet()` did not compile because the framework
+returned the supertype. The real classes now live under `jweb`; the old fully-qualified names
+remain as `@Deprecated` aliases so existing source keeps compiling.
+
+| Before | After | Old name is now |
+|---|---|---|
+| `com.osmig.Jweb.framework.elements.Tag` | `jweb.Tag` | subclass alias (all constructors) |
+| `com.osmig.Jweb.framework.attributes.Attributes` | `jweb.Attributes` | subclass alias |
+| `com.osmig.Jweb.framework.attributes.Attr` | `jweb.Attr` (record) | static factories only — not usable as a type |
+| `com.osmig.Jweb.framework.events.Event` | `jweb.Event` | sub-interface alias |
+| `com.osmig.Jweb.framework.js.Actions.Action` | `jweb.Action` | **deleted** (nested) |
+| `com.osmig.Jweb.framework.js.JS.Val` | `jweb.Val` | **deleted** (nested) |
+| `com.osmig.Jweb.framework.js.JS.Func` | `jweb.Func` | **deleted** (nested) |
+| `com.osmig.Jweb.framework.js.JS.Stmt` | `jweb.js.Stmt` | **deleted** (nested) |
+| `com.osmig.Jweb.framework.server.Request` | `jweb.Request` | subclass alias |
+| `com.osmig.Jweb.framework.server.Response` | `jweb.Response` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.security.Principal` | `jweb.Principal` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.upload.UploadedFile` | `jweb.UploadedFile` | subclass alias |
+| `com.osmig.Jweb.framework.middleware.Middleware` | `jweb.Middleware` | sub-interface alias |
+| `com.osmig.Jweb.framework.routing.RouteHandler` | `jweb.RouteHandler` | sub-interface alias |
+| `com.osmig.Jweb.framework.seo.Seo` | `jweb.Seo` (`Seo.of(title, description)` works) | subclass alias |
+| `com.osmig.Jweb.framework.db.mongo.Doc` | `jweb.Doc` | subclass alias |
+| `com.osmig.Jweb.framework.async.Streamed` | `jweb.Streamed` (record) | `of(...)` only |
+| `com.osmig.Jweb.framework.async.BackgroundTask` | `jweb.BackgroundTask` | subclass alias |
+| `com.osmig.Jweb.framework.sse.SseEvent` | `jweb.SseEvent` (record) | static factories only |
+| `com.osmig.Jweb.framework.sse.SseBroadcaster` | `jweb.SseBroadcaster` | subclass alias |
+| `com.osmig.Jweb.framework.i18n.Messages` | `jweb.Messages` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.http.FetchResult` | `jweb.FetchResult` | subclass alias |
+| `com.osmig.Jweb.framework.validation.ValidationResult` | `jweb.ValidationResult` | subclass alias |
+| `com.osmig.Jweb.framework.validation.Validator` | `jweb.Validator` | sub-interface alias |
+| `com.osmig.Jweb.framework.core.ErrorBoundary` | `jweb.ErrorBoundary` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.testing.MockRequest` | `jweb.MockRequest` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.testing.MockSession` | `jweb.MockSession` | subclass alias |
+| `com.osmig.Jweb.framework.testing.TestClient` | `jweb.TestClient` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.styles.Stylesheet` | `jweb.css.Stylesheet` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.styles.Stylesheet.Rule` | `jweb.css.Rule` (record, `build()`) | **deleted** (nested) |
+| `com.osmig.Jweb.framework.styles.MediaQuery` | `jweb.css.MediaQuery` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.styles.MediaQuery.Rule` | `jweb.css.Rule` | **deleted** (nested; `Supports.makeRule` and the `rules(MediaQuery.Rule...)` overloads went with it) |
+| `com.osmig.Jweb.framework.styles.Rule` | `jweb.css.Rule` | `of(...)` only |
+| `com.osmig.Jweb.framework.styles.CSS.Selector` | `jweb.css.Selector` | **deleted** (nested) |
+| `com.osmig.Jweb.framework.styles.ContainerQuery` | `jweb.css.ContainerQuery` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.styles.Keyframes` | `jweb.css.Keyframes` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.styles.FontFace` | `jweb.css.FontFace` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.styles.Supports` | `jweb.css.Supports` | subclass alias (statics) |
+| `com.osmig.Jweb.framework.three.Three` | `jweb.Three` (the real facade) | subclass alias (statics) |
+| `com.osmig.Jweb.framework.three.*` (every node, `ThreePatch`, `ThreeRuntime`, `ThreeAssets`, `SceneSetting`) | `jweb.three.*` | **no alias** — never a documented import |
+
+Also in this pass:
+
+- `Template.extraHead()` returns `Optional<jweb.Element>` (was the legacy `core.Element`, which
+  forced a long import into every override).
+- New shells for the modules the gallery imports: `jweb.Password`, `jweb.Jwt`, `jweb.Toast`,
+  `jweb.Transition`, `jweb.Portal`, `jweb.Markitdown`, `jweb.Fetch`, `jweb.StateManager`,
+  `jweb.RenderContexts`, `jweb.Button`. Their statics return `jweb` value
+  types (`Toast.success(...)` is a `jweb.Action`, `Fetch.get(url).send()` a `jweb.FetchResult`).
+- `JS.esc(String)` and `JS.toJs(Object)` became public (the hoisted `Val`/`Func` need them),
+  so they now appear under `import static jweb.Js.*`.
+- `SceneSetting.put(key, value)` and the node constructors are public — the facade lives in
+  another package now. Whole-valued doubles still serialize narrowed (`40`, not `40.0`).
+- Guards: `jweb.JwebSurfaceTest` and `jweb.NoLongImportsTest` (see `readme/known-issues.md`).
+
+**Migration:** a subclass alias keeps `OldName.staticCall()` and `new OldName(...)` compiling,
+but `OldName x = frameworkCall()` no longer does — the framework returns the `jweb` type.
+Swap the import; the simple name is unchanged for everything except the hoisted nested types.
+
 ---
 
 ## Breaking — and NOT compile errors

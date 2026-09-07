@@ -1,6 +1,6 @@
 package com.osmig.Jweb.framework.dsl;
 
-import com.osmig.Jweb.framework.attributes.Attr;
+import jweb.Attr;
 import com.osmig.Jweb.framework.elements.El;
 import com.osmig.Jweb.framework.elements.PopoverElements;
 import com.osmig.Jweb.framework.styles.Style;
@@ -237,7 +237,7 @@ class DslFixesTest {
         var page = com.osmig.Jweb.framework.routing.Query.of("page", Integer.class).orElse(1);
         var user = com.osmig.Jweb.framework.routing.Query.of("userId", Long.class).required();
 
-        var req = new com.osmig.Jweb.framework.server.Request(
+        var req = new jweb.Request(
             new org.springframework.mock.web.MockHttpServletRequest("GET", "/x"));
         assertEquals(1, page.from(req));                       // absent → default
         assertThrows(com.osmig.Jweb.framework.routing.TypedRoute.RouteParamException.class,
@@ -246,18 +246,18 @@ class DslFixesTest {
         var mock = new org.springframework.mock.web.MockHttpServletRequest("GET", "/x");
         mock.setParameter("page", "7");
         mock.setParameter("userId", "42");
-        var req2 = new com.osmig.Jweb.framework.server.Request(mock);
+        var req2 = new jweb.Request(mock);
         assertEquals(7, page.from(req2));
         assertEquals(42L, user.from(req2));
 
         var bad = new org.springframework.mock.web.MockHttpServletRequest("GET", "/x");
         bad.setParameter("page", "not-a-number");
-        assertEquals(1, page.from(new com.osmig.Jweb.framework.server.Request(bad)));  // invalid → default
+        assertEquals(1, page.from(new jweb.Request(bad)));  // invalid → default
     }
 
     @Test
     void seoBuilderRendersFullHeadBlock() {
-        String html = com.osmig.Jweb.framework.seo.Seo
+        String html = jweb.Seo
             .of("JWeb", "Java web framework")
             .url("https://jweb.dev/")
             .image("https://jweb.dev/og.png")

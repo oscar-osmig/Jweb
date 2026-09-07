@@ -1,8 +1,8 @@
 package com.osmig.Jweb.framework.dsl;
 
-import com.osmig.Jweb.framework.attributes.Attr;
+import jweb.Attr;
 import com.osmig.Jweb.framework.elements.PopoverElements;
-import com.osmig.Jweb.framework.elements.Tag;
+import jweb.Tag;
 import com.osmig.Jweb.framework.ref.Ref;
 import com.osmig.Jweb.framework.template.Template;
 import com.osmig.Jweb.framework.ui.Toast;
@@ -143,7 +143,7 @@ class DslPass3Test {
     void templateHooksReturnActions() {
         Template page = new Template() {
             @Override public Element render() { return p("x"); }
-            @Override public com.osmig.Jweb.framework.js.Actions.Action onMount() { return call("initCharts"); }
+            @Override public jweb.Action onMount() { return call("initCharts"); }
         };
         assertEquals("initCharts()", page.onMount().build());
         assertNull(page.onUnmount());

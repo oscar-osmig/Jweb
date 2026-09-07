@@ -1,5 +1,11 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.css.Supports;
+import jweb.css.Keyframes;
+import jweb.css.ContainerQuery;
+import jweb.css.MediaQuery;
+import jweb.css.Stylesheet;
+import jweb.css.Rule;
 import org.junit.jupiter.api.Test;
 
 import static com.osmig.Jweb.framework.styles.CSS.rule;

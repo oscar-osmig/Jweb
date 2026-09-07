@@ -51,14 +51,14 @@ public class JWebAssetsController {
         return ResponseEntity.ok()
                 .cacheControl(IMMUTABLE)
                 .contentType(MediaType.parseMediaType("application/javascript;charset=UTF-8"))
-                .body(com.osmig.Jweb.framework.three.ThreeAssets.bundleBytes());
+                .body(jweb.three.ThreeAssets.bundleBytes());
     }
 
     /** The scene-graph interpreter; requested with {@code ?v=<content hash>}. */
     @GetMapping("/jweb/three-runtime.js")
     @ResponseBody
     public ResponseEntity<String> threeRuntime() {
-        return js(com.osmig.Jweb.framework.three.ThreeRuntime.getScript());
+        return js(jweb.three.ThreeRuntime.getScript());
     }
 
     private ResponseEntity<String> js(String script) {

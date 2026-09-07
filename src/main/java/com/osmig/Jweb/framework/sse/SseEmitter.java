@@ -1,5 +1,6 @@
 package com.osmig.Jweb.framework.sse;
 
+import jweb.SseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

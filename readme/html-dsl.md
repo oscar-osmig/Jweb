@@ -196,7 +196,7 @@ Beyond `input(type("email"), name("email"), ...)`, dedicated builders exist:
 
 ```java
 import jweb.Input;
-import com.osmig.Jweb.framework.elements.Button;
+import jweb.Button;
 import com.osmig.Jweb.framework.elements.Form;   // the small elements/Form builder
                                                  // (jweb.Form is the richer forms/Form)
 
@@ -408,7 +408,7 @@ errorBoundary(() -> riskyComponent.render(),
               error -> p("Error: " + error.getMessage()))
 tryCatch(() -> riskyComponent.render())   // silent empty fallback
 
-import com.osmig.Jweb.framework.core.ErrorBoundary;
+import jweb.ErrorBoundary;
 ErrorBoundary.of(() -> riskyComponent.render())
     .fallback(err -> div(class_("error"), p(err.getMessage())))
     .onError(err -> Log.framework().error("render failed", err));

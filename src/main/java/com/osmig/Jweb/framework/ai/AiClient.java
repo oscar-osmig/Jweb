@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.ai;
 
 import com.osmig.Jweb.framework.http.Fetch;
-import com.osmig.Jweb.framework.http.FetchResult;
+import jweb.FetchResult;
 
 import java.time.Duration;
 import java.util.ArrayList;

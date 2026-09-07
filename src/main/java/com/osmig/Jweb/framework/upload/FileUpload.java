@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.upload;
 
-import com.osmig.Jweb.framework.server.Request;
+import jweb.UploadedFile;
+import jweb.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;

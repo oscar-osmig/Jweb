@@ -1,9 +1,9 @@
 package com.osmig.Jweb.app.api;
 
-import com.osmig.Jweb.framework.db.mongo.Doc;
+import jweb.Doc;
 import jweb.Auth;
-import com.osmig.Jweb.framework.security.Principal;
-import com.osmig.Jweb.framework.server.Request;
+import jweb.Principal;
+import jweb.Request;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

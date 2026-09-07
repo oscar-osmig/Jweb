@@ -1,7 +1,5 @@
 package jweb;
 
-import com.osmig.Jweb.framework.attributes.Attr;
-import com.osmig.Jweb.framework.elements.Tag;
 
 /**
  * The HTML DSL — every element, attribute helper, event handler, typed input,

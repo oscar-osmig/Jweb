@@ -1,9 +1,10 @@
 package com.osmig.Jweb.framework.attributes;
 
-import com.osmig.Jweb.framework.events.Event;
+import jweb.Attributes;
+import jweb.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
-import com.osmig.Jweb.framework.js.Actions.Action;
+import jweb.Action;
 import com.osmig.Jweb.framework.ref.Ref;
 import com.osmig.Jweb.framework.transition.TransitionBuilder;
 import com.osmig.Jweb.framework.transition.TransitionBuilder.TransitionReceiver;
@@ -48,7 +49,7 @@ import java.util.function.UnaryOperator;
  *
  * @param <SELF> the implementing builder's own type, for correctly-typed chaining
  * @see Attributes
- * @see com.osmig.Jweb.framework.elements.Tag
+ * @see jweb.Tag
  */
 public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends TransitionReceiver {
 

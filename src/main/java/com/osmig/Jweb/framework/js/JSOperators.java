@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.js;
 
-import com.osmig.Jweb.framework.js.JS.Val;
-import com.osmig.Jweb.framework.js.JS.Stmt;
+import jweb.Val;
+import jweb.js.Stmt;
 
 /**
  * Modern JavaScript operators: optional chaining, nullish coalescing, logical assignment.
