@@ -2,7 +2,7 @@ package com.osmig.Jweb.app.api;
 
 import jweb.Doc;
 import jweb.Mongo;
-import org.springframework.stereotype.Component;
+import jweb.api.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;

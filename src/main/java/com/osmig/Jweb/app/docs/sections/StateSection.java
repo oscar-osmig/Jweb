@@ -28,6 +28,7 @@ import static jweb.State.*;
 
             StateBasics.render(),
             StateUpdates.render(),
+            StateLive.render(),
             StateObjects.render(),
             StateLists.render(),
             StateAdvanced.render()

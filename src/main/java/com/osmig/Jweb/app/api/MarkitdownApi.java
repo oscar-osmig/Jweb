@@ -1,12 +1,12 @@
 package com.osmig.Jweb.app.api;
 
+import jweb.Markitdown;
+import jweb.UploadedFile;
 import jweb.api.GET;
 import jweb.api.POST;
 import jweb.api.REST;
-import jweb.Markitdown;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
+import jweb.api.Upload;
+import jweb.api.Value;
 
 import java.io.IOException;
 import java.util.Map;
@@ -29,18 +29,18 @@ public class MarkitdownApi {
 
     /** Converts an uploaded document (PDF, Word, Excel, HTML, ...) to Markdown. */
     @POST("/convert")
-    public Map<String, Object> convert(@RequestParam("file") MultipartFile file) {
+    public Map<String, Object> convert(@Upload("file") UploadedFile file) {
         if (file.isEmpty()) {
             return Map.of("error", "No file uploaded");
         }
-        String extension = extensionOf(file.getOriginalFilename());
-        if (extension == null) {
+        String extension = file.getExtension();
+        if (extension.isEmpty()) {
             return Map.of("error", "File must have an extension (e.g. .pdf, .docx)");
         }
         try {
             String markdown = Markitdown.convert(file.getBytes(), extension);
             return Map.of(
-                "filename", file.getOriginalFilename(),
+                "filename", file.getFilename(),
                 "markdown", markdown
             );
         } catch (Markitdown.MarkitdownException e) {
@@ -48,12 +48,5 @@ public class MarkitdownApi {
         } catch (IOException e) {
             return Map.of("error", "Could not read uploaded file");
         }
-    }
-
-    private static String extensionOf(String filename) {
-        if (filename == null) return null;
-        int dot = filename.lastIndexOf('.');
-        if (dot < 0 || dot == filename.length() - 1) return null;
-        return filename.substring(dot + 1);
     }
 }

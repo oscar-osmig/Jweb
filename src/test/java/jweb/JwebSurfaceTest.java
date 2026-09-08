@@ -188,7 +188,16 @@ class JwebSurfaceTest {
         jweb.TestClient client = jweb.TestClient.localhost(8085).withAuth("t");
         jweb.Response.ResponseBuilder rb = jweb.Response.ok();
         ResponseEntity<String> html = jweb.Response.html(p("x"));
+        jweb.Response.Redirect redirect = jweb.Response.redirect("/x").anchor("top");
         jweb.Principal principal = jweb.Principal.of("42", "Ada", "admin");
+        jweb.Session sess = jweb.Session.of(req);
+        jweb.Guard guard = rq -> rq.principal() == null ? jweb.Response.unauthorized() : null;
+        jweb.ActionHandler<String> action = (rq, s) -> s;
+        jweb.BindException bind = new jweb.BindException("f", "f is required");
+        jweb.Attributes bound = bind(new jweb.state.State<>("s", 1));
+        jweb.state.State<Integer> st = jweb.State.useState(0);
+        jweb.Element region = jweb.State.live(st, n -> p("n=" + n));
+        jweb.Attributes attr = jweb.State.bindAttr(st, "disabled");
         jweb.Seo seo = jweb.Seo.of("Title", "Description");
         jweb.Doc doc = jweb.Doc.of("users").set("name", "Ada");
         jweb.Streamed streamed = jweb.Streamed.of(() -> p("x"));
@@ -202,6 +211,14 @@ class JwebSurfaceTest {
         Supplier<jweb.FetchResult> fetch = () -> jweb.Fetch.get("http://localhost/x").send();
 
         assertEquals("/x", req.path());
+        assertEquals("/x#top", redirect.location());
+        assertEquals("f", bind.field());
+        assertEquals("<span data-state-bind=\"s\">1</span>", span(bound).toHtml());
+        assertTrue(region.toHtml().contains("data-live"));
+        assertNotNull(attr.toMap().get("data-state-attr"));
+        assertFalse(sess.exists());
+        assertNotNull(guard);
+        assertEquals("v", action.handle(req, "v"));
         assertEquals("42", principal.getId());
         assertEquals("Ada", doc.getString("name"));
         assertEquals("1", event.data());
@@ -219,15 +236,21 @@ class JwebSurfaceTest {
         jweb.Middleware mw = (rq, chain) -> chain.next();
         jweb.Middleware recommended = jweb.Middlewares.recommended();
         jweb.RouteHandler handler = rq -> "hi";
+        record Pref(Optional<String> theme) {}
         jweb.JWeb app = jweb.JWeb.create()
             .use(mw)
+            .guard("/admin/**", rq -> null)
+            .guard("/admin/**", jweb.Auth.requireLogin("/admin/login"))
             .get("/x", handler)
             .get("/y", () -> p("y"))
             .post("/z", handler)
-            .pages();
+            .action("/act/pref", Pref.class, (rq, pref) -> jweb.Response.redirectBack(rq))
+            .pages("/users/:id", PageWithParams.class);
 
         jweb.Template page = new jweb.Template() {
             @Override public jweb.Element render() { return p("x"); }
+            @Override public String pageTitle() { return "Title"; }
+            @Override public String description() { return "Desc"; }
             @Override public Optional<jweb.Element> extraHead() { return Optional.of(p("head")); }
             @Override public jweb.Action onMount() { return call("init"); }
             @Override public Optional<jweb.Action> scripts() { return Optional.of(call("more")); }
@@ -236,7 +259,16 @@ class JwebSurfaceTest {
 
         assertTrue(app.getRouter().match("GET", "/x").isPresent());
         assertTrue(app.getRouter().match("POST", "/z").isPresent());
+        assertTrue(app.getRouter().match("POST", "/act/pref").isPresent());
+        assertTrue(app.getPageRegistry().match("/users/7").isPresent());
+        assertEquals(2, app.getGuards().size());
         assertEquals("init()", page.onMount().build());
+        assertEquals("Title", page.pageTitle());
+        assertEquals("Desc", page.description());
         assertTrue(page.extraHead().isPresent());
+    }
+
+    public static class PageWithParams implements jweb.Template {
+        @Override public jweb.Element render() { return p("user " + pathParam("id")); }
     }
 }

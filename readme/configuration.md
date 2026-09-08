@@ -295,7 +295,7 @@ app/
 The suite (107 tests across 14 classes, no MongoDB required) covers Route matching and 405
 semantics (`RouterTest`), middleware ordering/glob scoping/queued headers
 (`MiddlewareStackTest`), the reactive-state loop — context lifetime, scoped handlers,
-`useComponent` (`StateLoopTest`) — Mongo `Schema` validation (`SchemaValidationTest`), the
+live regions (`StateLoopTest`, `LiveRegionTest`) — Mongo `Schema` validation (`SchemaValidationTest`), the
 DSL fixes (`DslFixesTest`), page routes end-to-end through `JWebController`
 (`JWebTestPageRouteTest`), the AI module (`AiModuleTest`), streaming SSR (`StreamingTest`),
 typed routes (`TypedRouteTest`), CSP nonces (`CspNonceTest`), sandbox hardening

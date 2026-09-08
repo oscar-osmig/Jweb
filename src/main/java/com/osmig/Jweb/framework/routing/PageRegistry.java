@@ -13,14 +13,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
- * Registry for page routes with O(1) lookup.
+ * Registry for page routes. Plain paths resolve by O(1) lookup; paths with
+ * {@code :param} segments or a {@code *} wildcard are matched in
+ * registration order after the exact ones.
  */
 public class PageRegistry {
 
     private final List<PageRoute> routes = new ArrayList<>();
     // O(1) lookup index for exact path matches
     private final Map<String, PageRoute> routeIndex = new HashMap<>();
+    // Parameterised routes, matched in order when no exact route hits
+    private final List<PatternRoute> patternRoutes = new ArrayList<>();
     private Class<? extends Template> defaultLayout;
+
+    private record PatternRoute(PathPattern pattern, PageRoute route) {}
 
     // Cache constructor references to avoid reflection overhead per request
     private static final Map<Class<?>, Constructor<?>> constructorCache = new ConcurrentHashMap<>();
@@ -37,7 +43,7 @@ public class PageRegistry {
             if (route.layoutClass() == null) {
                 PageRoute updated = new PageRoute(route.path(), route.title(), route.pageSupplier(), layoutClass);
                 routes.set(i, updated);
-                routeIndex.put(updated.path(), updated);
+                index(updated);
             }
         }
     }
@@ -109,17 +115,47 @@ public class PageRegistry {
 
     private void addRoute(PageRoute route) {
         routes.add(route);
-        routeIndex.put(route.path(), route);
+        index(route);
+    }
+
+    private void index(PageRoute route) {
+        if (route.isPattern()) {
+            patternRoutes.removeIf(p -> p.route().path().equals(route.path()));
+            patternRoutes.add(new PatternRoute(PathPattern.compile(route.path()), route));
+        } else {
+            routeIndex.put(route.path(), route);
+        }
     }
 
     /**
-     * Finds a route by exact path match in O(1) time.
+     * Finds a route by exact path match in O(1) time — parameterised routes
+     * are not consulted; use {@link #match(String)} for dispatch.
      *
      * @param path the path to match
      * @return the matching route, or empty if not found
      */
     public Optional<PageRoute> findByPath(String path) {
         return Optional.ofNullable(routeIndex.get(path));
+    }
+
+    /**
+     * Resolves a request path to a page route: the exact index first, then
+     * the parameterised routes in registration order.
+     *
+     * @param path the request path
+     * @return the route and its captured parameters, or empty
+     */
+    public Optional<PageRoute.Match> match(String path) {
+        PageRoute exact = routeIndex.get(path);
+        if (exact != null) {
+            return Optional.of(new PageRoute.Match(exact, Map.of()));
+        }
+        for (PatternRoute candidate : patternRoutes) {
+            if (candidate.pattern().matches(path)) {
+                return Optional.of(new PageRoute.Match(candidate.route(), candidate.pattern().extract(path)));
+            }
+        }
+        return Optional.empty();
     }
 
     private String extractTitle(String path) {
@@ -131,7 +167,7 @@ public class PageRegistry {
         if (name.contains("/")) {
             name = name.substring(name.lastIndexOf("/") + 1);
         }
-        if (name.isEmpty()) return "Home";
+        if (name.isEmpty() || name.startsWith(":") || name.equals("*")) return "Page";
         // Capitalize first letter
         return name.substring(0, 1).toUpperCase() + name.substring(1);
     }
@@ -143,5 +179,6 @@ public class PageRegistry {
     public void clear() {
         routes.clear();
         routeIndex.clear();
+        patternRoutes.clear();
     }
 }

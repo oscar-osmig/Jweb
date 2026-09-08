@@ -1,13 +1,11 @@
 package com.osmig.Jweb.framework.routing;
 
 import jweb.RouteHandler;
-import com.osmig.Jweb.framework.core.Element;
 import jweb.Request;
 
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a route mapping a URL pattern to a handler.
@@ -16,62 +14,30 @@ public class Route {
 
     private final String method;
     private final String path;
-    private final Pattern pattern;
-    private final List<String> paramNames;
+    private final PathPattern pattern;
     private final RouteHandler handler;
 
     public Route(String method, String path, RouteHandler handler) {
         this.method = method.toUpperCase();
         this.path = path;
         this.handler = handler;
-        this.paramNames = new ArrayList<>();
-        this.pattern = compilePath(path);
-    }
-
-    private Pattern compilePath(String path) {
-        StringBuilder regex = new StringBuilder("^");
-        String[] segments = path.split("/");
-
-        for (String segment : segments) {
-            if (segment.isEmpty()) continue;
-            regex.append("/");
-            if (segment.startsWith(":")) {
-                String paramName = segment.substring(1);
-                paramNames.add(paramName);
-                regex.append("([^/]+)");
-            } else if (segment.equals("*")) {
-                regex.append(".*");
-            } else {
-                regex.append(Pattern.quote(segment));
-            }
-        }
-
-        regex.append("/?$");
-        return Pattern.compile(regex.toString());
+        this.pattern = PathPattern.compile(path);
     }
 
     public boolean matches(String method, String path) {
         if (!this.method.equals(method.toUpperCase())) {
             return false;
         }
-        return pattern.matcher(path).matches();
+        return pattern.matches(path);
     }
 
     /** True when the path matches regardless of HTTP method (used for 405s). */
     public boolean matchesPath(String path) {
-        return pattern.matcher(path).matches();
+        return pattern.matches(path);
     }
 
     public Map<String, String> extractParams(String path) {
-        Map<String, String> params = new HashMap<>();
-        Matcher matcher = pattern.matcher(path);
-
-        if (matcher.matches()) {
-            for (int i = 0; i < paramNames.size(); i++) {
-                params.put(paramNames.get(i), matcher.group(i + 1));
-            }
-        }
-        return params;
+        return pattern.extract(path);
     }
 
     public Object handle(Request request) {
@@ -81,7 +47,7 @@ public class Route {
     public String getMethod() { return method; }
     public String getPath() { return path; }
     public RouteHandler getHandler() { return handler; }
-    public List<String> getParamNames() { return Collections.unmodifiableList(paramNames); }
+    public List<String> getParamNames() { return pattern.paramNames(); }
 
     public static Route get(String path, Supplier<? extends jweb.Element> elementSupplier) {
         return new Route("GET", path, req -> elementSupplier.get());

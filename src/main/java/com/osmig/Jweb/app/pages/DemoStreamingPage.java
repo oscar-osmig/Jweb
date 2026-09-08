@@ -4,10 +4,13 @@ import jweb.Suspense;
 import jweb.Element;
 import jweb.state.State;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static jweb.El.*;
 import static jweb.Css.*;
 import static jweb.Js.*;
-import static jweb.State.useState;
+import static jweb.State.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 /** Streaming SSR demo: slow data blocks — one of them reactive — stream in after the shell. */
@@ -86,9 +89,14 @@ public final class DemoStreamingPage {
 
     /**
      * Reactive state born inside a streamed block: the counter's state and
-     * click handler are created on the block's render thread after the shell
-     * (and its hydration data) already flushed — the chunk carries the state,
-     * and the handler is scoped to the page's context.
+     * click handlers are created on the block's render thread after the
+     * shell (and its hydration data) already flushed — the chunk carries the
+     * state, and the handlers are scoped to the page's context.
+     *
+     * <p>Three bindings, no client code: {@code bind} patches the count's
+     * text, {@code bindAttr} keeps Reset disabled until there is something
+     * to reset, and {@code live} re-renders the click log on the server and
+     * morphs it into place.</p>
      */
     private static Element statefulBlock() {
         return div(style().marginTop(SP_6),
@@ -101,11 +109,26 @@ public final class DemoStreamingPage {
             .loading(() -> p(style().color(TEXT_LIGHT), "Loading..."))
             .render(data -> {
                 State<Integer> clicks = useState(0);
+                State<Boolean> untouched = useComputed(() -> clicks.get() == 0, clicks);
+                State<List<String>> log = useState(new ArrayList<>());
                 return div(
                     style().padding(SP_3).borderRadius(ROUNDED)
                            .backgroundColor(hex("#eef2ff")).color(hex("#3730a3")),
-                    p("Clicks: ", span(bind(clicks), clicks.get())),
-                    button(onClick(e -> clicks.update(n -> n + 1)), buttonStyle(), "Click me"),
+                    p("Clicks: ", span(id("click-count"), bind(clicks))),
+                    button(id("click-me"), onClick(e -> {
+                        clicks.update(n -> n + 1);
+                        log.mutate(l -> l.add("Click " + clicks.get() + " at " + java.time.LocalTime.now().withNano(0)));
+                    }), buttonStyle(), "Click me"),
+                    button(id("click-reset"), bindAttr(untouched, "disabled"), onClick(e -> {
+                        clicks.set(0);
+                        log.set(new ArrayList<>());
+                    }), buttonStyle().marginLeft(SP_2), "Reset"),
+                    // The log is a live region: re-rendered on the server
+                    // from the list, morphed into the DOM on every change
+                    live(log, entries -> entries.isEmpty()
+                        ? p(id("click-log"), style().marginTop(SP_2).color(TEXT_LIGHT), "No clicks yet.")
+                        : ul(id("click-log"), style().marginTop(SP_2),
+                            each(entries, entry -> li(entry)))),
                     // Actions-DSL handler born on the block's render thread:
                     // its definition rides the chunk's script, late
                     button(id("late-action"), onClick(toggle("late-note")),

@@ -32,8 +32,10 @@ public final class RoutingSection {
             RoutingBasics.render(),
             RoutingParams.render(),
             typedRoutes(),
+            RoutingActions.render(),
             RoutingMethods.render(),
             RoutingResponses.render(),
+            RoutingGuards.render(),
             RoutingMiddleware.render()
         );
     }

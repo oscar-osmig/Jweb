@@ -1,18 +1,27 @@
 package com.osmig.Jweb.framework.state;
 
+import jweb.Attributes;
+
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 /**
- * Static hook methods for state management.
+ * The state hooks — {@code useState}, {@code live} and friends. Import them
+ * statically through the short name:
  *
- * <p>Import statically for clean syntax:</p>
- * <pre>
- * import static com.osmig.Jweb.framework.state.StateHooks.*;
+ * <pre>{@code
+ * import static jweb.State.*;
  *
- * public class MyPage implements Template {
- *     private final State&lt;Integer&gt; count = useState(0);
- *     private final State&lt;String&gt; name = useState("Guest");
- *     private final State&lt;Boolean&gt; visible = useState(true);
- * }
- * </pre>
+ * State<Integer> count = useState(0);
+ * State<List<String>> items = useState(new ArrayList<>());
+ *
+ * div(
+ *     p("Count: ", span(bind(count))),                       // bind: El
+ *     live(items, list -> ul(each(list, i -> li(i)))),        // live: State
+ *     button(bindAttr(busy, "disabled"), onClick(e -> ...), "Add")
+ * )
+ * }</pre>
  *
  * @deprecated Replaced by {@code jweb.State} — shorter import, same API. Existing code keeps working.
  */
@@ -82,7 +91,7 @@ public class StateHooks {
      * @return a new computed State instance
      */
     @SafeVarargs
-    public static <T> jweb.state.State<T> useComputed(java.util.function.Supplier<T> computation, State<?>... dependencies) {
+    public static <T> jweb.state.State<T> useComputed(Supplier<T> computation, State<?>... dependencies) {
         jweb.state.State<T> computed = StateManager.createState(computation.get());
 
         // Subscribe to all dependencies
@@ -116,44 +125,90 @@ public class StateHooks {
         effect.run();
     }
 
+    // ==================== Live regions ====================
+
     /**
-     * Declares a reactive region of the page. The body is re-rendered on the
-     * server whenever state changes during an event, and the resulting HTML is
-     * patched into the DOM (matched by the given element ID).
+     * A region of the page rendered from a state's value, re-rendered on the
+     * server whenever that state changes and morphed into the DOM — lists,
+     * conditionals and attributes stay in sync without any client code:
      *
-     * <p>Example:</p>
-     * <pre>
-     * State&lt;Integer&gt; count = useState(0);
-     * ...
-     * useComponent("counter", () -&gt; div(
-     *     text("Count: " + count.get()),
-     *     button(attrs().onClick(e -&gt; count.set(count.get() + 1)), text("+"))
-     * ))
-     * </pre>
+     * <pre>{@code
+     * State<List<String>> items = useState(new ArrayList<>());
      *
-     * @param componentId the DOM id for the wrapper element (must be unique per page)
-     * @param body supplies the region's content; called on every (re-)render
-     * @return the wrapper element to place in the page
+     * live(items, list -> ul(each(list, i -> li(i))))
+     * live(user, u -> u == null ? a(href("/login"), "Sign in") : span("Hi " + u.name()))
+     * }</pre>
+     *
+     * <p>The body receives the current value and returns any element; the
+     * root element carries a {@code data-live} attribute the runtime targets.
+     * Unchanged nodes are kept, so focus, scroll position and typed input
+     * survive the update. Event handlers inside the body are re-registered
+     * on each render, exactly like the initial one.</p>
+     *
+     * @param state the state the region depends on
+     * @param body  renders the region from the state's value
+     * @param <A>   the state's value type
+     * @return the region, to place in the page like any element
      */
+    public static <A> jweb.Element live(State<A> state,
+                                        Function<? super A, ? extends jweb.Element> body) {
+        return LiveRegion.of(() -> body.apply(state.get()), state);
+    }
+
+    /**
+     * A live region over two states — re-rendered when either changes.
+     *
+     * <pre>{@code
+     * live(todos, filter, (list, f) -> ul(each(visible(list, f), t -> li(t.text()))))
+     * }</pre>
+     */
+    public static <A, B> jweb.Element live(State<A> a, State<B> b,
+                                           BiFunction<? super A, ? super B, ? extends jweb.Element> body) {
+        return LiveRegion.of(() -> body.apply(a.get(), b.get()), a, b);
+    }
+
+    /**
+     * A live region over any number of states: the body reads them itself
+     * with {@code get()}, and re-renders when any listed state changes (or,
+     * with none listed, on every change in the page).
+     *
+     * <pre>{@code
+     * live(() -> p(first.get() + " " + last.get()), first, last)
+     * }</pre>
+     */
+    public static jweb.Element live(Supplier<? extends jweb.Element> body, State<?>... dependencies) {
+        return LiveRegion.of(body, dependencies);
+    }
+
+    // ==================== Attribute and class bindings ====================
+
+    /**
+     * Binds an attribute's presence to a state's truthiness — see
+     * {@link StateBinding#bindAttr}. {@code bind}/{@code bindInput} for the
+     * text and value live in {@code jweb.El}.
+     */
+    public static Attributes bindAttr(State<?> state, String attribute) {
+        return StateBinding.bindAttr(state, attribute);
+    }
+
+    /** Binds a class's presence to a state's truthiness — see {@link StateBinding#bindClass}. */
+    public static Attributes bindClass(State<?> state, String className) {
+        return StateBinding.bindClass(state, className);
+    }
+
+    // ==================== Legacy ====================
+
+    /**
+     * The pre-3.0 reactive region: a {@code <div id=...>} wrapper whose body
+     * re-renders on every state change.
+     *
+     * @deprecated Use {@link #live(State, Function)} — no wrapper, no id to
+     *             invent, and it re-renders only when its own state changes.
+     */
+    @Deprecated
     public static com.osmig.Jweb.framework.core.Element useComponent(
-            String componentId, java.util.function.Supplier<? extends jweb.Element> body) {
-        StateManager.StateContext context = StateManager.getContext();
-        if (context != null) {
-            context.registerComponent(componentId, () -> renderComponent(componentId, body));
-        }
-        return () -> wrapperVNode(componentId, body);
-    }
-
-    private static com.osmig.Jweb.framework.vdom.VElement wrapperVNode(
-            String componentId, java.util.function.Supplier<? extends jweb.Element> body) {
-        return com.osmig.Jweb.framework.vdom.VElement.of(
-                "div",
-                java.util.Map.of("id", componentId),
-                java.util.List.of(body.get().toVNode()));
-    }
-
-    private static String renderComponent(
-            String componentId, java.util.function.Supplier<? extends jweb.Element> body) {
-        return wrapperVNode(componentId, body).toHtml();
+            String componentId, Supplier<? extends jweb.Element> body) {
+        LiveRegion region = LiveRegion.withId(componentId, body);
+        return region::toVNode;
     }
 }

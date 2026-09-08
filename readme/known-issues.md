@@ -18,8 +18,20 @@ By design (know them, don't "fix" them):
 - **Paths starting with `/api/v` are hard-excluded from the JWeb router** (reserved for Spring
   MVC `@REST` controllers). `app.get("/api/v1/x", ...)` will never be reached — keep REST
   controllers under `/api/v*` and router/page routes elsewhere.
-- **Page routes are exact-match only** — no `:param` support (use Router routes for that).
-  They are GET/HEAD-only (other methods get a 405).
+- **Page routes are GET/HEAD-only** (other methods get a 405). Since 3.0 they take
+  `:param` segments and a `*` wildcard (`app.pages("/users/:id", UserPage.class)`); exact
+  paths still resolve by lookup and win over patterns.
+- **Guards cover everything under a prefix — pages, router routes and `@REST`
+  controllers** (`app.guard("/admin/**", ...)`), but **middleware still does not apply to
+  `@REST` controllers**: `app.use(...)` runs only for what `JWebController` dispatches.
+- **`Template.session()` / `Template.pathParam()` read the request in flight.** They work
+  while a page route or router handler renders (streamed blocks included), not from a bare
+  `toHtml()` in a test or inside a WebSocket event handler — capture what a handler needs
+  at render time.
+- **`Template.title()` cannot exist** — a method named `title` on `Template` would shadow the
+  `title(...)` element factory inside every Template (a class member shadows a static import
+  by simple name, whatever the arity). The plain-String metadata hooks are therefore
+  `pageTitle()` and `description()`.
 - **The four DSL wildcards coexist** (`jweb.El.*`, `jweb.Css.*`, `jweb.Js.*`,
   `jweb.Three.*`) — since 3.0 no call is ambiguous across them, and a scratch file that
   compiles the common calls under all four imports is the check to re-run when adding a
@@ -49,6 +61,28 @@ By design (know them, don't "fix" them):
   built-in (`framework/ai`: `AI.ask/chat/agent`, zero extra dependencies, any
   OpenAI-compatible endpoint). Don't uncomment them unless you actually want the Spring AI
   stack as an alternative.
+
+## The handler capability model
+
+Server event handlers (`onClick(e -> ...)`) are not routes: nothing maps a URL to them. Each
+registration mints an unguessable id (`h_<n>_<random hex>`), the element carries it, and the
+browser sends it back over the WebSocket with the page's context id (`ctx_<uuid>`, also
+unguessable). Holding an id **is** the permission to run that handler — a capability — so
+the rules are:
+
+- A handler registered during a page render belongs to that page's context and is evicted
+  with it (5 minutes idle, or the context's explicit clear).
+- A message that names a context is resolved **in that context only**. There is no fallback
+  to the global registry: a handler id from another page, or one minted outside any render,
+  never runs on a foreign context. A message for a context that no longer exists is logged
+  and dropped (`context_expired` — the page should reload).
+- The global registry serves only messages that name no context at all: handlers minted
+  outside any request (static export, bare `toHtml()`), which are the author's to expose.
+- Guards and middleware do not run for WebSocket messages — the `/jweb` upgrade returns from
+  `JWebController` before the stack. That is by design: the page already passed its guards
+  when it rendered, and the handler cannot be reached without the ids that render produced.
+  What a handler may do is decided when it is written; check the principal at render time
+  and render nothing for those who may not act.
 
 ## 2026-08-29 — short-import surface (`jweb.*`)
 
@@ -163,9 +197,10 @@ works end-to-end:
 - Render contexts survive the request: the controller only detaches the ThreadLocal; the
   registry entry lives until the TTL reaper collects it (5 min idle, refreshed on every
   WebSocket access via `touch()`).
-- `useComponent(id, () -> element)` (in `StateHooks`) registers a reactive region: it renders
-  a `<div id=...>` wrapper and re-renders on the server when state changes during an event,
-  patched into the DOM via `domUpdate`.
+- `live(state, s -> element)` (in `jweb.State`) registers a reactive region: its root gets a
+  `data-live` attribute and re-renders on the server when its state changes during an event,
+  morphed into the DOM via `domUpdate`. (`useComponent(id, supplier)` is its deprecated
+  ancestor.)
 - `JWeb.setState()` is now a real protocol message (`setState`) handled by the server;
   `initState` reads the page's actual context (not a dead ThreadLocal); the client populates
   `dataset` (so `Event.data(name)` works), handles `initState`/`eventHandled`/`pong`, and
@@ -266,7 +301,7 @@ works end-to-end:
 - Inert `.gitignore` rules for tracked docs replaced with an explanatory note.
 - The test suite runs without MongoDB (`jweb.data.enabled=false` for `contextLoads`), and
   covers Route matching, middleware ordering/scoping/headers, the state loop
-  (context lifetime, scoped handlers, `useComponent`), Schema validation, and the DSL fixes
+  (context lifetime, scoped handlers, live regions), Schema validation, and the DSL fixes
   (the full suite now stands at 107 tests, including the AI module and
   `LegacyImportsCompatTest`).
 

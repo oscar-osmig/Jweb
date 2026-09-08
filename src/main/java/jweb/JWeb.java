@@ -73,6 +73,40 @@ public class JWeb extends com.osmig.Jweb.framework.JWeb {
         return this;
     }
 
+    // ==================== Guards ====================
+
+    @Override
+    public JWeb guard(String pathPattern, Guard guard) {
+        super.guard(pathPattern, guard);
+        return this;
+    }
+
+    @Override
+    public JWeb guard(String pathPattern, Middleware middleware) {
+        super.guard(pathPattern, middleware);
+        return this;
+    }
+
+    // ==================== Action routes ====================
+
+    @Override
+    public <T> JWeb action(String path, Class<T> type, ActionHandler<T> handler) {
+        super.action(path, type, handler);
+        return this;
+    }
+
+    @Override
+    public <T> JWeb get(String path, Class<T> type, ActionHandler<T> handler) {
+        super.get(path, type, handler);
+        return this;
+    }
+
+    @Override
+    public <T> JWeb post(String path, Class<T> type, ActionHandler<T> handler) {
+        super.post(path, type, handler);
+        return this;
+    }
+
     // ==================== Routes ====================
 
     @Override

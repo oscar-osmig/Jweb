@@ -1,16 +1,13 @@
 package com.osmig.Jweb.app.api;
 
+import jweb.Request;
 import jweb.api.*;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Example REST API using simplified JWeb annotations.
+ * Example REST API: JWeb's own annotations end to end — no Spring import.
  */
 @REST("/api/v1/example")
 public class ExampleApi {
@@ -24,38 +21,38 @@ public class ExampleApi {
     }
 
     @GET("/{id}")
-    public Map<String, Object> getById(@PathVariable int id) {
+    public Map<String, Object> getById(@Param int id) {
         return Map.of("id", id, "name", "Item " + id);
     }
 
     @GET("/search")
     public Map<String, Object> search(
-            @RequestParam("q") String query,
-            @RequestParam(value = "limit", defaultValue = "10") int limit) {
+            @Query("q") String query,
+            @Query(value = "limit", defaultValue = "10") int limit) {
         return Map.of("query", query, "limit", limit, "results", List.of());
     }
 
     @POST
-    public Map<String, Object> create(@RequestBody Map<String, Object> data) {
+    public Map<String, Object> create(@Body Map<String, Object> data) {
         return Map.of("created", true, "data", data);
     }
 
     @UPDATE("/{id}")
-    public Map<String, Object> update(@PathVariable int id, @RequestBody Map<String, Object> data) {
+    public Map<String, Object> update(@Param int id, @Body Map<String, Object> data) {
         return Map.of("updated", true, "id", id, "data", data);
     }
 
     @DEL("/{id}")
-    public Map<String, Object> delete(@PathVariable int id) {
+    public Map<String, Object> delete(@Param int id) {
         return Map.of("deleted", true, "id", id);
     }
 
     @GET("/info")
-    public Map<String, Object> getInfo(HttpServletRequest request) {
+    public Map<String, Object> getInfo(Request request) {
         return Map.of(
-            "path", request.getRequestURI(),
-            "method", request.getMethod(),
-            "ip", request.getRemoteAddr()
+            "path", request.path(),
+            "method", request.method(),
+            "ip", request.ip()
         );
     }
 }

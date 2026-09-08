@@ -40,6 +40,7 @@ public class JWebController {
     private final Router router;
     private final MiddlewareStack middlewareStack;
     private final PageRegistry pageRegistry;
+    private final com.osmig.Jweb.framework.routing.Guards guards;
 
     // Cache control for navigation responses (short cache for dynamic content)
     private static final CacheControl NAVIGATION_CACHE = CacheControl
@@ -64,6 +65,7 @@ public class JWebController {
         this.router = jweb.getRouter();
         this.middlewareStack = jweb.getMiddlewareStack();
         this.pageRegistry = jweb.getPageRegistry();
+        this.guards = jweb.getGuards();
     }
 
     @RequestMapping(value = "/**")
@@ -87,7 +89,7 @@ public class JWebController {
         com.osmig.Jweb.framework.security.CspNonce.begin();
 
         // Try page routes (GET/HEAD only — pages are documents)
-        Optional<PageRoute> pageMatch = matchPageRoute(path);
+        Optional<PageRoute.Match> pageMatch = pageRegistry.match(path);
         if (pageMatch.isPresent()) {
             if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
                 return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
@@ -111,11 +113,12 @@ public class JWebController {
 
             // 404s still run through middleware (logging, headers, metrics)
             Request request = new Request(servletRequest);
+            CurrentRequest.set(request);
             try {
                 Object result = middlewareStack.execute(request, () -> handleNotFound(path));
                 return applyQueuedHeaders(processResult(result, null, request), request);
             } catch (Exception e) {
-                return handleError(e);
+                return handleError(e, request);
             } finally {
                 clearThreadLocals();
             }
@@ -123,11 +126,16 @@ public class JWebController {
 
         // Create state context for this request
         StateManager.StateContext context = StateManager.createContext();
+        Request request = new Request(servletRequest);
+        CurrentRequest.set(request);
         try {
-            Request request = new Request(servletRequest);
-
-            // Execute through middleware stack
-            Object result = middlewareStack.execute(request, () -> match.get().handle(request));
+            // Execute through middleware stack; the guards sit between the
+            // stack and the handler, so headers/logging see every request
+            // and a guard's answer still gets them
+            Object result = middlewareStack.execute(request, () -> {
+                Object guarded = guards.check(request);
+                return guarded != null ? guarded : match.get().handle(request);
+            });
 
             // SSE emitters stream through Spring MVC directly
             if (result instanceof org.springframework.web.servlet.mvc.method.annotation.SseEmitter emitter) {
@@ -145,7 +153,7 @@ public class JWebController {
 
             return applyQueuedHeaders(processResult(result, context, request), request);
         } catch (Exception e) {
-            return handleError(e);
+            return handleError(e, request);
         } finally {
             // Detach from this thread only. The context stays registered so
             // browser events (WebSocket) can reference it; the TTL reaper in
@@ -155,12 +163,13 @@ public class JWebController {
         }
     }
 
-    /** Clears per-request thread-locals (DI context, portals, locale, CSP nonce) after a render. */
+    /** Clears per-request thread-locals (DI context, portals, locale, CSP nonce, request) after a render. */
     private void clearThreadLocals() {
         com.osmig.Jweb.framework.context.Context.clear();
         com.osmig.Jweb.framework.portal.Portal.clear();
         com.osmig.Jweb.framework.i18n.I18n.clearCurrent();
         com.osmig.Jweb.framework.security.CspNonce.clear();
+        CurrentRequest.clear();
     }
 
     /** Adds middleware-queued headers to the response (existing headers win). */
@@ -518,7 +527,7 @@ public class JWebController {
             .body(ErrorPage.render404(path).toHtml());
     }
 
-    private ResponseEntity<String> handleError(Exception e) {
+    private ResponseEntity<String> handleError(Exception e, Request request) {
         // The error page renders outside the request's render context on
         // purpose: error responses ship without the runtime and without the
         // queued CSP header, so the serializer's CSP rewrite of raw on*
@@ -526,11 +535,26 @@ public class JWebController {
         // ever delivers). The request's finally clears again — harmless.
         StateManager.clearContext();
 
+        String path = request != null ? request.path() : "";
+        String accept = request != null ? request.header("Accept") : null;
+
         // Bad typed-route parameters are client errors, not server errors
         if (e instanceof com.osmig.Jweb.framework.routing.TypedRoute.RouteParamException) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .contentType(MediaType.TEXT_HTML)
                 .body(ErrorPage.render404(e.getMessage()).toHtml());
+        }
+        // A record that would not bind (req.bind(...)): 400 with the message
+        if (e instanceof jweb.BindException bind) {
+            return com.osmig.Jweb.framework.error.ErrorHandler.toResponse(
+                com.osmig.Jweb.framework.error.JWebException.badRequest(bind.getMessage()), path, accept);
+        }
+        // Framework exceptions carry their status (Auth.requireRole → 401/403, ...)
+        if (e instanceof com.osmig.Jweb.framework.error.JWebException jweb) {
+            if (jweb.getStatusCode() >= 500) {
+                com.osmig.Jweb.framework.util.Log.error("Unhandled error while handling request: {}", e.getMessage(), e);
+            }
+            return com.osmig.Jweb.framework.error.ErrorHandler.toResponse(jweb, path, accept);
         }
         com.osmig.Jweb.framework.util.Log.error("Unhandled error while handling request: {}", e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -540,20 +564,21 @@ public class JWebController {
 
     // ==================== Page Route Matching ====================
 
-    private Optional<PageRoute> matchPageRoute(String path) {
-        // O(1) HashMap lookup instead of O(n) linear scan
-        return pageRegistry.findByPath(path);
-    }
-
-    private ResponseEntity<String> handlePageRoute(PageRoute route, HttpServletRequest servletRequest) {
+    private ResponseEntity<String> handlePageRoute(PageRoute.Match match, HttpServletRequest servletRequest) {
+        PageRoute route = match.route();
         StateManager.StateContext context = StateManager.createContext();
+        Request request = new Request(servletRequest);
+        request.setPathParams(match.params());
+        CurrentRequest.set(request);
         try {
-            Request request = new Request(servletRequest);
-
             // Page routes run through the middleware stack like every other
-            // route, so auth/CSRF/headers/logging apply to them too.
+            // route, so auth/CSRF/headers/logging apply to them too; guards
+            // answer before the page is even instantiated.
             Template[] pageHolder = new Template[1];
-            Object result = middlewareStack.execute(request, () -> renderPage(route, request, pageHolder));
+            Object result = middlewareStack.execute(request, () -> {
+                Object guarded = guards.check(request);
+                return guarded != null ? guarded : renderPage(route, request, pageHolder);
+            });
 
             // Middleware may short-circuit (auth redirect, rate limit, ...)
             if (!(result instanceof Element element)) {
@@ -577,7 +602,7 @@ public class JWebController {
                 .contentType(MediaType.TEXT_HTML)
                 .body(html), request);
         } catch (Exception e) {
-            return handleError(e);
+            return handleError(e, request);
         } finally {
             // Detach from this thread only — see handleRequest
             StateManager.clearContext();
@@ -597,7 +622,8 @@ public class JWebController {
         page.beforeRender(request);
         com.osmig.Jweb.framework.styles.PageStyles.collect(page);
         var content = page.render();
-        String title = page.pageTitle().orElse(route.title());
+        String pageTitle = page.pageTitle();
+        String title = pageTitle != null ? pageTitle : route.title();
         var result = route.layoutClass() != null
             ? wrapInLayout(route.layoutClass(), title, content)
             : content;
@@ -618,14 +644,14 @@ public class JWebController {
     }
 
     /**
-     * Injects the template's pageTitle/metaDescription/extraHead into the
+     * Injects the template's pageTitle/description/extraHead into the
      * head, and scripts/onMount/onUnmount before the closing body tag.
      */
     private String applyTemplateExtras(String html, Template page) {
         // Title: replace the existing <title> or add one to the head
-        Optional<String> pageTitle = page.pageTitle();
-        if (pageTitle.isPresent()) {
-            String escaped = escapeHtmlText(pageTitle.get());
+        String pageTitle = page.pageTitle();
+        if (pageTitle != null) {
+            String escaped = escapeHtmlText(pageTitle);
             int start = html.indexOf("<title>");
             int end = html.indexOf("</title>");
             if (start >= 0 && end > start) {
@@ -636,10 +662,12 @@ public class JWebController {
         }
 
         StringBuilder headExtras = new StringBuilder();
-        page.metaDescription().ifPresent(desc -> headExtras
-            .append("<meta name=\"description\" content=\"")
-            .append(escapeHtmlAttribute(desc))
-            .append("\">"));
+        String description = page.description();
+        if (description != null) {
+            headExtras.append("<meta name=\"description\" content=\"")
+                .append(escapeHtmlAttribute(description))
+                .append("\">");
+        }
         page.extraHead().ifPresent(extra -> headExtras.append(extra.toHtml()));
         if (headExtras.length() > 0) {
             html = injectBefore(html, "</head>", headExtras.toString());

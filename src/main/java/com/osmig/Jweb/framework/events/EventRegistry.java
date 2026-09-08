@@ -86,22 +86,19 @@ public final class EventRegistry {
     }
 
     /**
-     * Gets a handler by ID for a specific session.
+     * Gets a handler by ID within one context — and only there. Handler ids
+     * are capabilities: a message that names a context may run nothing but
+     * that context's handlers, so there is no fallback to the global
+     * registry (which serves renders that had no context at all).
      *
-     * @param sessionId the session ID
+     * @param sessionId the context (session) ID
      * @param handlerId the handler ID
-     * @return the handler, or null if not found
+     * @return the handler, or null if the context has no such handler
      */
     public static EventHandler get(String sessionId, String handlerId) {
+        if (sessionId == null) return null;
         Map<String, EventHandler> handlers = sessionHandlers.get(sessionId);
-        if (handlers != null) {
-            EventHandler handler = handlers.get(handlerId);
-            if (handler != null) {
-                return handler;
-            }
-        }
-        // Fall back to global handlers
-        return globalHandlers.get(handlerId);
+        return handlers == null ? null : handlers.get(handlerId);
     }
 
     /**
@@ -121,12 +118,13 @@ public final class EventRegistry {
     }
 
     /**
-     * Executes a handler for a specific session.
+     * Executes a handler within one context — no global fallback (see
+     * {@link #get(String, String)}).
      *
-     * @param sessionId the session ID
+     * @param sessionId the context (session) ID
      * @param handlerId the handler ID
      * @param event the event to process
-     * @return true if handler was found and executed
+     * @return true if handler was found in that context and executed
      */
     public static boolean execute(String sessionId, String handlerId, Event event) {
         EventHandler handler = get(sessionId, handlerId);

@@ -13,11 +13,14 @@ import static com.osmig.Jweb.app.forms.FormComponents.*;
 /** Admin login page with gradient-bordered card. */
 public class AdminLoginPage implements Template {
     private final String error;
+    private final String notice;
     private final CsrfToken csrfToken;
 
-    public AdminLoginPage(CsrfToken csrfToken) { this(null, csrfToken); }
-    public AdminLoginPage(String error, CsrfToken csrfToken) {
+    public AdminLoginPage(CsrfToken csrfToken) { this(null, null, csrfToken); }
+    public AdminLoginPage(String error, CsrfToken csrfToken) { this(error, null, csrfToken); }
+    public AdminLoginPage(String error, String notice, CsrfToken csrfToken) {
         this.error = error;
+        this.notice = notice;
         this.csrfToken = csrfToken;
     }
 
@@ -49,6 +52,7 @@ public class AdminLoginPage implements Template {
                         .fontSize(TEXT_SM).color(TEXT_LIGHT)
                         .textAlign(center).marginBottom(SP_6),
                     text("Enter your credentials to access the dashboard")),
+                noticeMessage(),
                 errorMessage(),
                 form(attrs().action("/only-admin/log/in").method("post"),
                     stack(SP_4),
@@ -77,6 +81,17 @@ public class AdminLoginPage implements Template {
                 .backgroundColor(hex("#fee2e2")).color(hex("#991b1b"))
                 .fontSize(TEXT_SM).textAlign(center),
             text(error)
+        );
+    }
+
+    /** A one-shot session flash ("You have been signed out."). */
+    private Element noticeMessage() {
+        if (notice == null) return text("");
+        return div(id("login-notice"), style()
+                .padding(SP_3).borderRadius(ROUNDED).marginBottom(SP_4)
+                .backgroundColor(hex("#dcfce7")).color(hex("#166534"))
+                .fontSize(TEXT_SM).textAlign(center),
+            text(notice)
         );
     }
 }

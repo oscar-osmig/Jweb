@@ -308,6 +308,40 @@ Also in this pass:
 but `OldName x = frameworkCall()` no longer does — the framework returns the `jweb` type.
 Swap the import; the simple name is unchanged for everything except the hoisted nested types.
 
+## State, sessions, routing, API
+
+The 2026-09-07 batch over what a page author needs from the server side, and what Spring
+should not leak into author code.
+
+| Was | Now |
+|---|---|
+| `span(bind(clicks), clicks.get())` — the value written twice | `span(bind(clicks))` — `bind` renders the value when it is the element's only content (the two-argument form still works, once) |
+| `input(bindInput(name))` rendered no value | renders `value=` (a Boolean state checks a checkbox) |
+| no attribute or class reactivity | `bindAttr(state, "disabled")`, `bindClass(state, "on")` (in `jweb.State`) |
+| `useComponent("id", () -> element)` — a `<div id>` wrapper re-rendered on every change, documented nowhere | `live(state, s -> element)`, `live(a, b, (x, y) -> ...)`, `live(() -> ..., deps...)` — the root gets `data-live`, re-renders only for its own states, and is **morphed** in (focus/scroll/input kept); `useComponent` stays as a deprecated alias |
+| `items.update(l -> { l.add(x); return l; })` — same instance, `equals` true, no notification | notifies; plus `items.mutate(l -> l.add(x))` |
+| `Visit.of(req)` hand-rolled over `req.session().getAttribute` | `Session.of(Visit.class, req)`, `Session.of(req).get/put/find/flash`, `session()` inside a Template |
+| `Optional<String> pageTitle()` / `metaDescription()` | `String pageTitle()` / `String description()` (null = default); `metaDescription()` stays deprecated and feeds `description()` |
+| page routes exact-match only | `app.pages("/users/:id", UserPage.class)`; `pathParam("id")` / `params()` / `beforeRender(req)` |
+| `if (!isAuthenticated(ctx)) return Response.redirect(...)` per route | `app.guard("/admin/**", Auth.requireLogin("/admin/login"))` — pages, router routes and `@REST` alike |
+| `read query param → validate against a Set<String> → mutate → redirect` per route | `app.action("/act/x", Rec.class, (req, rec) -> ...)` with enums by name, `Optional<T>`, `@Range`/`@Length`/`@Pattern`; 400 with a message on failure |
+| `Response.redirect(cond ? "/a#x" : "/a#y")` | `Response.redirect("/a").anchor(cond ? "x" : "y")`, `Response.redirectBack(req)` |
+| `Response.html(HttpStatus.INTERNAL_SERVER_ERROR, page)` | `Response.html(500, page)`, `json(201, body)`, `status(304).header(..).build()`, `.contentType("text/markdown")`, `tooManyRequests()`, `error(418, "...")` — the `HttpStatus` overloads are deprecated |
+| `@PathVariable`, `@RequestParam`, `@RequestBody`, `HttpServletRequest`, `MultipartFile`, `@Component`, `@Value` in a `@REST` class | `@Param`, `@Query`, `@Body`, `jweb.Request`, `@Upload` → `UploadedFile`, `jweb.api.Component`, `jweb.api.Value` |
+| a WebSocket event could fall back to the global handler registry | a message that names a context runs only that context's handlers; unknown context → logged and dropped |
+| a guard/middleware throwing `JWebException` (401/403) rendered a 500 page | answers with its own status |
+
+**Breaking:** `Template.pageTitle()` now returns `String` — an `Optional<String>` override
+fails to compile (drop the `Optional.of`). `EventRegistry.get(sessionId, id)` /
+`execute(sessionId, ...)` no longer fall back to the global registry. Everything else is
+additive or deprecated-with-delegation. `Response.redirect(...)` returns `Response.Redirect`,
+a `ResponseEntity<Void>` — existing declarations keep compiling.
+
+**Why not `Template.title()`:** a method named `title` on `Template` would shadow the
+`title(...)` element factory inside every Template class (a member shadows a static import
+by simple name, whatever the arity) — `head(title("x"))` would stop compiling. So the plain
+hooks are `pageTitle()` and `description()`.
+
 ---
 
 ## Breaking — and NOT compile errors
@@ -340,6 +374,11 @@ These still compile and now mean something else. Search for them:
 11. **A page that swaps and pushes history** reloads instead of doing nothing when the user
    goes back past the first swap: that entry is the document as the server first sent it,
    and nothing in the page remembers what that was.
+12. **`span(bind(state))` renders the value** (it used to render an empty element that the
+   runtime filled in later). Code that wrote the value next to it, `span(bind(s), s.get())`,
+   renders exactly as before.
+13. **`state.update(l -> { l.add(x); return l; })` now notifies** — regions and bindings
+   re-render where they silently did nothing.
 
 Everything else is a compile error with an obvious fix, or a deprecation warning:
 deleted `abbr(text, title)` / `blockquote(cite, …)` / `datalist(id, …)` / `optgroup(label, …)`,

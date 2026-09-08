@@ -321,13 +321,18 @@ public class Tag implements Element, HtmlAttributes<Tag> {
 
     public static List<VNode> toVNodes(Object... children) {
         List<VNode> nodes = new ArrayList<>();
+        // bind(state) is an attribute that also carries default content: the
+        // state's value fills the element when nothing else was given
+        jweb.state.Bound bound = null;
         for (Object child : children) {
             if (child == null) continue;
+            if (child instanceof jweb.state.Bound b) { if (bound == null) bound = b; continue; }
             if (isAttributeItem(child)) continue;
 
             Iterable<?> group = asGroup(child);
             if (group != null) {
                 for (Object item : group) {
+                    if (item instanceof jweb.state.Bound b) { if (bound == null) bound = b; continue; }
                     if (!isAttributeItem(item)) {
                         nodes.add(toVNode(item));
                     }
@@ -336,6 +341,7 @@ public class Tag implements Element, HtmlAttributes<Tag> {
                 nodes.add(toVNode(child));
             }
         }
+        if (nodes.isEmpty() && bound != null) nodes.add(bound.valueNode());
         return nodes;
     }
 

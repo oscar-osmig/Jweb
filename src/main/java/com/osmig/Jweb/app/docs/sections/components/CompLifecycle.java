@@ -41,17 +41,20 @@ public class UserPage implements Template {
 }"""),
 
             h3Title("Page Title & Meta"),
-            para("Dynamic page title and SEO metadata."),
+            para("Dynamic page title and SEO metadata — plain Strings, null for the default."),
             codeBlock("""
 @Override
-public Optional<String> pageTitle() {
-    return Optional.of(product.getName() + " | Store");
+public String pageTitle() {
+    return product.getName() + " | Store";
 }
 
 @Override
-public Optional<String> metaDescription() {
-    return Optional.of(product.getDescription().substring(0, 150));
+public String description() {
+    return product.getDescription().substring(0, 150);
 }"""),
+            before("v3.0.0",
+                para("Before 3.0 these returned Optional<String> (pageTitle() / metaDescription()); " +
+                     "an Optional metaDescription() override still feeds description().")),
 
             h3Title("Extra Head Elements"),
             para("Add custom elements to the HTML head."),

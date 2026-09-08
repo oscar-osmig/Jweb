@@ -9,8 +9,11 @@ public final class RoutingBasics {
     public static Element render() {
         return section(
             h3Title("Page Routes"),
-            para("Register page classes that implement Template interface."),
+            para("Register page classes that implement Template interface. A path may carry " +
+                 ":param segments and a * wildcard."),
             codeBlock("""
+import jweb.api.Component;
+
 @Component
 public class Routes implements JWebRoutes {
     public void configure(JWeb app) {
@@ -18,8 +21,22 @@ public class Routes implements JWebRoutes {
             "/", HomePage.class,
             "/about", AboutPage.class,
             "/contact", ContactPage.class,
-            "/pricing", PricingPage.class
+            "/users/:id", UserPage.class,
+            "/docs/*", DocsPage.class
         );
+    }
+}
+
+// The page reads its params in beforeRender, or through pathParam()
+public class UserPage implements Template {
+    private User user;
+
+    public void beforeRender(Request req) {
+        user = users.find(req.requireParamLong("id"));
+    }
+
+    public Element render() {
+        return div(h1(user.name()), p("Profile " + pathParam("id")));
     }
 }"""),
 

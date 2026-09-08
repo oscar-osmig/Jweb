@@ -7,6 +7,8 @@ import jweb.CsrfToken;
 import jweb.Template;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -16,12 +18,31 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 
 /** Admin messages dashboard showing contact form submissions. */
 public class AdminMessagesPage implements Template {
+
+    /** The list order — bound by name from {@code ?order=oldest}. */
+    public enum Order {
+        NEWEST, OLDEST;
+
+        /** The store hands out newest-first; reorder and cap here. */
+        public List<Doc> apply(List<Doc> newestFirst, int limit) {
+            List<Doc> ordered = new ArrayList<>(newestFirst);
+            if (this == OLDEST) Collections.reverse(ordered);
+            return ordered.size() > limit ? List.copyOf(ordered.subList(0, limit)) : ordered;
+        }
+    }
+
     private final List<Doc> messages;
     private final CsrfToken csrfToken;
+    private final Order order;
 
     public AdminMessagesPage(List<Doc> messages, CsrfToken csrfToken) {
+        this(messages, csrfToken, Order.NEWEST);
+    }
+
+    public AdminMessagesPage(List<Doc> messages, CsrfToken csrfToken, Order order) {
         this.messages = messages;
         this.csrfToken = csrfToken;
+        this.order = order;
     }
 
     @Override
@@ -41,10 +62,23 @@ public class AdminMessagesPage implements Template {
                 h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
                     text("Messages")),
                 p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_1),
-                    text(messages.size() + " submission" + (messages.size() != 1 ? "s" : "")))
+                    text(messages.size() + " submission" + (messages.size() != 1 ? "s" : "")),
+                    text(" · "),
+                    orderLink(Order.NEWEST, "newest first"),
+                    text(" · "),
+                    orderLink(Order.OLDEST, "oldest first"))
             ),
             logoutButton()
         );
+    }
+
+    /** The order links: the active one is plain text, the other a link into the typed query. */
+    private Element orderLink(Order target, String label) {
+        if (target == order) {
+            return span(style().fontWeight(600).color(TEXT), label);
+        }
+        return a(href("/only-admin/messages?order=" + target.name().toLowerCase()),
+            style().color(PRIMARY), label);
     }
 
     // Logout is a POST (with CSRF token) so a cross-site link can't trigger it

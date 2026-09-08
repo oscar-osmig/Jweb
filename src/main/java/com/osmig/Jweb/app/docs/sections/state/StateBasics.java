@@ -18,7 +18,7 @@ public class Counter implements Template {
 
     public Element render() {
         return div(
-            h1("Count: " + count.get()),
+            h1("Count: ", span(bind(count))),      // bind renders the value and keeps it current
             button(onClick(e -> count.set(count.get() + 1)), "Increment"),
             button(onClick(e -> count.set(count.get() - 1)), "Decrement")
         );

@@ -196,6 +196,7 @@ public class OpenApi {
      */
     public OpenApi scan(String packageName) {
         var scanner = new org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new org.springframework.core.type.filter.AnnotationTypeFilter(jweb.api.REST.class));
         scanner.addIncludeFilter(new org.springframework.core.type.filter.AnnotationTypeFilter(
             com.osmig.Jweb.framework.api.REST.class));
         for (var candidate : scanner.findCandidateComponents(packageName)) {
@@ -346,6 +347,10 @@ public class OpenApi {
     }
 
     private String getBasePath(Class<?> apiClass) {
+        jweb.api.REST jrest = apiClass.getAnnotation(jweb.api.REST.class);
+        if (jrest != null && jrest.value().length > 0) {
+            return jrest.value()[0];
+        }
         REST rest = apiClass.getAnnotation(REST.class);
         if (rest != null && rest.value().length > 0) {
             return rest.value()[0];
@@ -358,7 +363,19 @@ public class OpenApi {
     }
 
     private MethodInfo getMethodInfo(Method method) {
-        // Check for JWeb annotations first
+        // The jweb.api spellings (what app code writes since the short-import pass)
+        jweb.api.GET jget = method.getAnnotation(jweb.api.GET.class);
+        if (jget != null) return new MethodInfo("GET", jget.value().length > 0 ? jget.value()[0] : "");
+        jweb.api.POST jpost = method.getAnnotation(jweb.api.POST.class);
+        if (jpost != null) return new MethodInfo("POST", jpost.value().length > 0 ? jpost.value()[0] : "");
+        jweb.api.UPDATE jupdate = method.getAnnotation(jweb.api.UPDATE.class);
+        if (jupdate != null) return new MethodInfo("PUT", jupdate.value().length > 0 ? jupdate.value()[0] : "");
+        jweb.api.PATCH jpatch = method.getAnnotation(jweb.api.PATCH.class);
+        if (jpatch != null) return new MethodInfo("PATCH", jpatch.value().length > 0 ? jpatch.value()[0] : "");
+        jweb.api.DEL jdel = method.getAnnotation(jweb.api.DEL.class);
+        if (jdel != null) return new MethodInfo("DELETE", jdel.value().length > 0 ? jdel.value()[0] : "");
+
+        // The legacy framework spellings
         GET get = method.getAnnotation(GET.class);
         if (get != null) return new MethodInfo("GET", get.value().length > 0 ? get.value()[0] : "");
 
@@ -474,6 +491,29 @@ public class OpenApi {
                 paramSpec = buildParam(name, "header", param.getType(), rh.required());
             }
 
+            // The jweb.api spellings of the same three
+            jweb.api.Param jp = param.getAnnotation(jweb.api.Param.class);
+            if (jp != null) {
+                String name = jp.value().isEmpty() ? param.getName() : jp.value();
+                paramSpec = buildParam(name, "path", param.getType(), true);
+                pathParams.remove(name);
+            }
+            jweb.api.Query jq = param.getAnnotation(jweb.api.Query.class);
+            if (jq != null) {
+                String name = jq.value().isEmpty() ? param.getName() : jq.value();
+                boolean optional = !jq.defaultValue().isEmpty() || !jq.required()
+                    || param.getType() == java.util.Optional.class || param.getType() == List.class;
+                paramSpec = buildParam(name, "query", param.getType(), !optional);
+                if (!jq.defaultValue().isEmpty()) {
+                    paramSpec.put("default", jq.defaultValue());
+                }
+            }
+            jweb.api.Header jh = param.getAnnotation(jweb.api.Header.class);
+            if (jh != null) {
+                String name = jh.value().isEmpty() ? param.getName() : jh.value();
+                paramSpec = buildParam(name, "header", param.getType(), jh.required() && jh.defaultValue().isEmpty());
+            }
+
             if (paramSpec != null) {
                 parameters.add(paramSpec);
             }
@@ -518,7 +558,8 @@ public class OpenApi {
 
     private Map<String, Object> buildRequestBody(Method method, ApiDoc doc) {
         for (Parameter param : method.getParameters()) {
-            if (param.getAnnotation(RequestBody.class) != null) {
+            if (param.getAnnotation(RequestBody.class) != null
+                    || param.getAnnotation(jweb.api.Body.class) != null) {
                 Map<String, Object> requestBody = new LinkedHashMap<>();
                 requestBody.put("required", true);
 

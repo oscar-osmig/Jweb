@@ -81,16 +81,28 @@ public class JWebTest {
         Request request = mockRequest.build();
         String path = request.path();
         String method = request.method();
+        com.osmig.Jweb.framework.server.CurrentRequest.set(request);
+        try {
+            return dispatch(app, request, path, method);
+        } finally {
+            com.osmig.Jweb.framework.server.CurrentRequest.clear();
+        }
+    }
 
-        // Page routes first, mirroring JWebController's dispatch order
-        var pageMatch = app.getPageRegistry().findByPath(path);
+    private static TestResult dispatch(JWeb app, Request request, String path, String method) {
+        // Page routes first, mirroring JWebController's dispatch order —
+        // patterned paths, guards and all
+        var pageMatch = app.getPageRegistry().match(path);
         if (pageMatch.isPresent()) {
             if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
                 return new TestResult(405, null, "Method not allowed: " + method + " " + path);
             }
             try {
-                var route = pageMatch.get();
+                var route = pageMatch.get().route();
+                request.setPathParams(pageMatch.get().params());
                 Object result = app.getMiddlewareStack().execute(request, () -> {
+                    Object guarded = app.getGuards().check(request);
+                    if (guarded != null) return guarded;
                     var page = route.pageSupplier().get();
                     page.beforeRender(request);
                     var content = page.render();
@@ -112,7 +124,10 @@ public class JWebTest {
         }
 
         try {
-            Object result = app.getMiddlewareStack().execute(request, () -> match.get().handle(request));
+            Object result = app.getMiddlewareStack().execute(request, () -> {
+                Object guarded = app.getGuards().check(request);
+                return guarded != null ? guarded : match.get().handle(request);
+            });
             return TestResult.from(result);
         } catch (Exception e) {
             return new TestResult(500, null, e.getMessage());

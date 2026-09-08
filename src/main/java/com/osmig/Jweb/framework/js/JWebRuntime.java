@@ -97,6 +97,7 @@ public final class JWebRuntime {
                 this.initServerEvents();
                 this.initThree();
                 this.flushReady();
+                this.initLive();
             },
 
             flushReady:function(){
@@ -113,6 +114,71 @@ public final class JWebRuntime {
 
             runBehavior:function(f){
                 try{f();}catch(err){console.error('[JWeb] behavior failed:',err);}
+            },
+
+            initLive:function(){
+                // ===== The live-region protocol lives in this one function =====
+                // (1) Attribute and class bindings — data-state-attr="name=stateId"
+                //     and data-state-class="cls=stateId" (bindAttr/bindClass on the
+                //     server): applied from the hydrated state now, and for the
+                //     changed state on every jweb:stateChange afterwards. Truthiness
+                //     mirrors StateBinding.truthy: false/null/''/0/[] clear.
+                // (2) Live regions — a domUpdate patch whose id names a [data-live]
+                //     element (live(state, s -> ...) on the server) is morphed into
+                //     that element in place, so unchanged nodes, focus, scroll and
+                //     typed input survive; other patches keep the by-id outerHTML
+                //     path. Installed as a decorator around handleDomUpdate so the
+                //     protocol has a single home.
+                var self=this;
+                var truthy=function(v){
+                    return !(v===false||v===null||v===undefined||v===''||v===0||(Array.isArray(v)&&v.length===0));
+                };
+                var split=function(spec){var i=spec.lastIndexOf('=');return [spec.slice(0,i),spec.slice(i+1)];};
+                var apply=function(root,stateId){
+                    var sel=stateId
+                        ?'[data-state-attr$="='+stateId+'"],[data-state-class$="='+stateId+'"]'
+                        :'[data-state-attr],[data-state-class]';
+                    root.querySelectorAll(sel).forEach(function(el){
+                        var a=el.getAttribute('data-state-attr');
+                        if(a){
+                            var p=split(a),name=p[0],v=self.state[p[1]];
+                            if(!stateId||p[1]===stateId){
+                                if(truthy(v))el.setAttribute(name,v===true?'':String(v));
+                                else el.removeAttribute(name);
+                                if(name==='value'&&'value' in el)el.value=truthy(v)?String(v):'';
+                                if(name==='checked'&&'checked' in el)el.checked=truthy(v);
+                            }
+                        }
+                        var c=el.getAttribute('data-state-class');
+                        if(c){
+                            var q=split(c),cv=self.state[q[1]];
+                            if(!stateId||q[1]===stateId){
+                                if(truthy(cv))el.classList.add(q[0]);else el.classList.remove(q[0]);
+                            }
+                        }
+                    });
+                };
+                apply(document,null);
+                document.addEventListener('jweb:stateChange',function(e){apply(document,e.detail.stateId);});
+                var base=this.handleDomUpdate;
+                this.handleDomUpdate=function(msg){
+                    if(msg.updates&&Array.isArray(msg.updates)){
+                        var rest=[];
+                        msg.updates.forEach(function(u){
+                            var live=document.querySelector('[data-live="'+u.id+'"]');
+                            if(!live){rest.push(u);return;}
+                            var tpl=document.createElement('template');
+                            tpl.innerHTML=u.html;
+                            var next=tpl.content.firstElementChild;
+                            var node=next?self.morphNode(live,next):null;
+                            if(!next)live.outerHTML=u.html;
+                            apply(node||document,null);
+                            document.dispatchEvent(new CustomEvent('jweb:liveUpdate',{detail:{id:u.id}}));
+                        });
+                        msg.updates=rest;
+                    }
+                    base.call(self,msg);
+                };
             },
 
             initServerEvents:function(){

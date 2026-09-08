@@ -1,5 +1,6 @@
 package com.osmig.Jweb.app;
 
+import jweb.Auth;
 import jweb.JWeb;
 import jweb.JWebRoutes;
 import jweb.Middlewares;
@@ -7,6 +8,9 @@ import jweb.OpenApi;
 import jweb.RouteHandler;
 import jweb.Csrf;
 import jweb.Response;
+import jweb.Session;
+import jweb.api.Component;
+import jweb.api.Range;
 import com.osmig.Jweb.app.api.AdminApi;
 import com.osmig.Jweb.app.api.ContactApi;
 import com.osmig.Jweb.app.api.ExampleApi;
@@ -22,12 +26,8 @@ import com.osmig.Jweb.app.pages.admin.AdminMessagesPage;
 import com.osmig.Jweb.app.docs.DocsPage;
 import com.osmig.Jweb.app.docs.DocContent;
 import com.osmig.Jweb.app.docs.DocsTell;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 /**
  * Application routes - page routing and structure only.
@@ -41,15 +41,20 @@ public class Routes implements JWebRoutes {
      * em dashes and arrows; paired with Content-Disposition so opening
      * /docs/tell in a browser saves a .md file.
      */
-    private static final MediaType MARKDOWN =
-        new MediaType("text", "markdown", StandardCharsets.UTF_8);
+    private static final String MARKDOWN = "text/markdown; charset=UTF-8";
 
     /**
      * The unknown-topic reply. Stays text/plain and inline — an error listing
      * the valid ids is meant to be read in the tab, not downloaded.
      */
-    private static final MediaType PLAIN_TEXT =
-        new MediaType("text", "plain", StandardCharsets.UTF_8);
+    private static final String PLAIN_TEXT = "text/plain; charset=UTF-8";
+
+    /** The admin login form — both fields optional so a blank submit gets the form back, not a 400. */
+    public record Login(Optional<String> email, Optional<String> token) {}
+
+    /** The admin messages view: {@code ?order=oldest&limit=20}, enum by name, bounded. */
+    public record MessagesView(Optional<AdminMessagesPage.Order> order,
+                               @Range(min = 1, max = 500) Optional<Integer> limit) {}
 
     private final AdminApi adminApi;
     private final com.osmig.Jweb.app.api.MessageStore messageStore;
@@ -130,7 +135,7 @@ public class Routes implements JWebRoutes {
                     known.append("  ").append(t.id()).append(" — ").append(t.title()).append('\n');
                 }
                 known.append("\nOmit ?topic= for the whole documentation set.\n");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                return Response.status(404)
                     .contentType(PLAIN_TEXT)
                     .body(known.toString());
             }
@@ -142,8 +147,8 @@ public class Routes implements JWebRoutes {
             String etag = DocsTell.etag(topic);
             String ifNoneMatch = ctx.header("If-None-Match");
             if (etag != null && ifNoneMatch != null && ifNoneMatch.contains(etag)) {
-                return ResponseEntity.status(HttpStatus.NOT_MODIFIED)
-                    .eTag(etag)
+                return Response.status(304)
+                    .header("ETag", etag)
                     .header("Cache-Control", "no-cache")
                     .build();
             }
@@ -193,22 +198,30 @@ public class Routes implements JWebRoutes {
         app.get("/demo/three/pick", ctx ->
             ThreeDemoPage.pickFragment(ctx.query("shape")));
 
-        // Admin login page
+        // ==================== Admin ====================
+
+        // One guard covers everything under /only-admin: anonymous visitors
+        // are sent to the login page, which the guard itself lets through.
+        app.guard("/only-admin/**", Auth.requireLogin("/only-admin/log/in"));
+
+        // Admin login page (a signed-in admin skips it); the sign-out notice
+        // is a flash message — written by logout, read once here
         app.get("/only-admin/log/in", ctx -> {
             if (adminApi.isAuthenticated(ctx)) {
                 return Response.redirect("/only-admin/messages");
             }
+            String notice = Session.of(ctx).flash("notice");
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(Csrf.getOrCreateToken(ctx))
+                new AdminLoginPage(null, notice, Csrf.getOrCreateToken(ctx))
             ));
         });
 
-        // Admin login handler
-        app.post("/only-admin/log/in", (RouteHandler) ctx -> {
+        // Admin login handler: the form binds to the Login record
+        app.post("/only-admin/log/in", Login.class, (ctx, login) -> {
             String error;
             if (!Csrf.isValid(ctx)) {
                 error = "Your session expired — please try again.";
-            } else if (adminApi.login(ctx, ctx.formParam("email"), ctx.formParam("token"))) {
+            } else if (adminApi.login(ctx, login.email().orElse(null), login.token().orElse(null))) {
                 return Response.redirect("/only-admin/messages");
             } else {
                 error = adminApi.isConfigured()
@@ -220,13 +233,13 @@ public class Routes implements JWebRoutes {
             ));
         });
 
-        // Admin messages page
-        app.get("/only-admin/messages", ctx -> {
-            if (!adminApi.isAuthenticated(ctx)) {
-                return Response.redirect("/only-admin/log/in");
-            }
+        // Admin messages page: ?order=newest|oldest (enum by name) and
+        // ?limit=n (1..500) bind to MessagesView — out of range is a 400
+        app.get("/only-admin/messages", MessagesView.class, (ctx, view) -> {
+            var order = view.order().orElse(AdminMessagesPage.Order.NEWEST);
+            var messages = order.apply(adminApi.getMessages(), view.limit().orElse(Integer.MAX_VALUE));
             return Response.html(new Layout("Messages - Admin",
-                new AdminMessagesPage(adminApi.getMessages(), Csrf.getOrCreateToken(ctx))
+                new AdminMessagesPage(messages, Csrf.getOrCreateToken(ctx), order)
             ));
         });
 
@@ -234,8 +247,9 @@ public class Routes implements JWebRoutes {
         app.post("/only-admin/logout", (RouteHandler) ctx -> {
             if (Csrf.isValid(ctx)) {
                 adminApi.logout(ctx);
+                Session.of(ctx).flash("notice", "You have been signed out.");
             }
-            return Response.redirect("/");
+            return Response.redirect("/only-admin/log/in");
         });
 
         // API documentation

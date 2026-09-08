@@ -1,7 +1,6 @@
 package com.osmig.Jweb.app.api;
 
 import jweb.api.*;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.Map;
 
@@ -16,7 +15,7 @@ public class ContactApi {
     }
 
     @POST
-    public Map<String, Object> submit(@RequestBody Map<String, String> data) {
+    public Map<String, Object> submit(@Body Map<String, String> data) {
         String name = data.get("name");
         String email = data.get("email");
         String message = data.get("message");

@@ -101,9 +101,16 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         StateManager.StateContext context = null;
         if (contextId != null) {
             context = StateManager.getContextById(contextId);
-            if (context != null) {
-                StateManager.setContext(context);
+            if (context == null) {
+                // The page's context was reaped (or never existed): its
+                // handlers are gone with it. Never fall through to the
+                // global registry — log and drop.
+                Log.warn("Dropping event {} for unknown context {}", handlerId, contextId);
+                sendMessage(session, new ErrorResponse(
+                    "This page's session expired — reload to continue", "context_expired"));
+                return;
             }
+            StateManager.setContext(context);
         }
 
         // Build event from message
@@ -124,47 +131,59 @@ public class JWebSocketHandler extends TextWebSocketHandler {
                 .dataset(msg.getDataset())
                 .build();
 
-        // Execute the handler (context-scoped first, then global fallback).
+        // Execute the handler. A message that names a context resolves the
+        // handler in that context ONLY; the global registry serves just the
+        // messages that name none (handlers minted outside any render).
         // Three.patch(...) calls made inside it collect on this thread and
         // ride back on this session.
         jweb.three.ThreePatchQueue.open();
-        boolean executed = contextId != null
-                ? EventRegistry.execute(contextId, handlerId, event)
-                : EventRegistry.execute(handlerId, event);
+        try {
+            boolean executed = contextId != null
+                    ? EventRegistry.execute(contextId, handlerId, event)
+                    : EventRegistry.execute(handlerId, event);
 
-        if (executed) {
-            sendThreePatches(session);
-            // Check for state changes
-            if (context == null) {
-                context = StateManager.getContext();
-            }
-
-            if (context != null) {
-                var changedStates = context.getChangedStates();
-                if (!changedStates.isEmpty()) {
-                    // Send state updates
-                    List<StateData> stateDataList = new ArrayList<>();
-                    for (State<?> state : changedStates) {
-                        stateDataList.add(new StateData(state.getId(), state.get()));
-                    }
-                    sendMessage(session, new StateUpdateResponse(stateDataList));
-
-                    // Re-render components and send DOM updates
-                    sendDomUpdates(session, context);
-
-                    context.clearChangedStates();
+            if (executed) {
+                sendThreePatches(session);
+                // Check for state changes
+                if (context == null) {
+                    context = StateManager.getContext();
                 }
+
+                if (context != null) {
+                    flushStateChanges(session, context);
+                }
+
+                // Send success response
+                sendMessage(session, new EventHandledResponse(handlerId, event.isDefaultPrevented()));
+            } else {
+                Log.warn("Dropping event for handler {} — not registered in context {}", handlerId, contextId);
+                sendMessage(session, new ErrorResponse("Handler not found: " + handlerId));
             }
-
-            // Send success response
-            sendMessage(session, new EventHandledResponse(handlerId, event.isDefaultPrevented()));
-        } else {
-            sendMessage(session, new ErrorResponse("Handler not found: " + handlerId));
+        } finally {
+            // Clear thread-local context
+            StateManager.clearContext();
+            jweb.three.ThreePatchQueue.close();
         }
+    }
 
-        // Clear thread-local context
-        StateManager.clearContext();
-        jweb.three.ThreePatchQueue.close();
+    /**
+     * After a handler ran: pushes the changed states, re-renders the live
+     * regions that read them, and clears the change set.
+     */
+    private void flushStateChanges(WebSocketSession session, StateManager.StateContext context) throws IOException {
+        var changedStates = context.getChangedStates();
+        if (changedStates.isEmpty()) {
+            return;
+        }
+        List<StateData> stateDataList = new ArrayList<>();
+        java.util.Set<String> changedIds = new java.util.HashSet<>();
+        for (State<?> state : changedStates) {
+            stateDataList.add(new StateData(state.getId(), state.get()));
+            changedIds.add(state.getId());
+        }
+        sendMessage(session, new StateUpdateResponse(stateDataList));
+        sendDomUpdates(session, context, changedIds);
+        context.clearChangedStates();
     }
 
     /**
@@ -180,9 +199,11 @@ public class JWebSocketHandler extends TextWebSocketHandler {
     }
 
     /**
-     * Re-renders components and sends DOM updates to the client.
+     * Re-renders the live regions affected by the changed states and sends
+     * their HTML as DOM patches (the runtime morphs each into place).
      */
-    private void sendDomUpdates(WebSocketSession session, StateManager.StateContext context) throws IOException {
+    private void sendDomUpdates(WebSocketSession session, StateManager.StateContext context,
+                                java.util.Set<String> changedStateIds) throws IOException {
         var components = context.getComponents();
         if (components.isEmpty()) {
             return;
@@ -190,14 +211,17 @@ public class JWebSocketHandler extends TextWebSocketHandler {
 
         List<DomPatch> patches = new ArrayList<>();
         for (var entry : components.entrySet()) {
-            String componentId = entry.getKey();
             var component = entry.getValue();
+            if (!component.affectedBy(changedStateIds)) continue;
             String newHtml = component.render();
             // A re-render can be the first to need a stylesheet or a
             // generated class rule; the patch carries the CSS it introduced
             // (a <style> set through innerHTML applies).
             String css = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
-            patches.add(new DomPatch(componentId, css + newHtml));
+            patches.add(new DomPatch(entry.getKey(), css + newHtml));
+        }
+        if (patches.isEmpty()) {
+            return;
         }
 
         // Re-renders can mint Actions-DSL handlers the page has never seen
@@ -250,16 +274,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         try {
             state.set(msg.getValue());
             sendThreePatches(session);
-            var changedStates = context.getChangedStates();
-            if (!changedStates.isEmpty()) {
-                List<StateData> stateDataList = new ArrayList<>();
-                for (State<?> changed : changedStates) {
-                    stateDataList.add(new StateData(changed.getId(), changed.get()));
-                }
-                sendMessage(session, new StateUpdateResponse(stateDataList));
-                sendDomUpdates(session, context);
-                context.clearChangedStates();
-            }
+            flushStateChanges(session, context);
         } finally {
             StateManager.clearContext();
             jweb.three.ThreePatchQueue.close();

@@ -955,16 +955,16 @@ public class AdvancedPage implements Template {
         userService.markNotificationsSeen(user.getId());
     }
 
-    // Page title for <title> tag (merged in by layouts)
+    // Page title for <title> tag (merged in by layouts); null keeps the default
     @Override
-    public Optional<String> pageTitle() {
-        return Optional.of(user != null ? "Dashboard - " + user.getName() : "Dashboard");
+    public String pageTitle() {
+        return user != null ? "Dashboard - " + user.getName() : "Dashboard";
     }
 
-    // Meta description for SEO
+    // Meta description for SEO; null emits none
     @Override
-    public Optional<String> metaDescription() {
-        return Optional.of("Your personal dashboard with " + notifications.size() + " notifications");
+    public String description() {
+        return "Your personal dashboard with " + notifications.size() + " notifications";
     }
 
     // Additional head elements

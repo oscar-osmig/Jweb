@@ -57,7 +57,8 @@ public class Header implements Template {
     }
 }"""),
 
-            docTip("State changes trigger automatic re-renders via WebSocket.")
+            docTip("State changes travel over the WebSocket: bound text, attributes and classes are " +
+                   "patched, and live(...) regions are re-rendered on the server and morphed in.")
         );
     }
 }

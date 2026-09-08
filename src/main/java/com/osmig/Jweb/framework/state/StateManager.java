@@ -243,6 +243,7 @@ public class StateManager {
         // the request thread drains for the shell or a chunk.
         private final Map<String, String> clientActions = new LinkedHashMap<>();
         private final Set<String> sentClientActions = new HashSet<>();
+        private final java.util.concurrent.atomic.AtomicInteger liveIds = new java.util.concurrent.atomic.AtomicInteger();
         private final String sessionId;
         private final long createdAt;
         private volatile long lastAccessedAt;
@@ -287,6 +288,11 @@ public class StateManager {
          */
         public void registerComponent(String componentId, RenderableComponent component) {
             components.put(componentId, component);
+        }
+
+        /** The next live-region id in this context ({@code live_1}, {@code live_2}, ...). */
+        public String nextLiveId() {
+            return "live_" + liveIds.incrementAndGet();
         }
 
         /**

@@ -69,7 +69,9 @@ public class State<T> {
     }
 
     /**
-     * Updates the state based on the current value.
+     * Updates the state based on the current value. Returning the same
+     * instance (a list mutated in place) counts as a change — the value was
+     * updated, even if {@code equals} can no longer tell.
      *
      * <p>Example:</p>
      * <pre>
@@ -80,7 +82,29 @@ public class State<T> {
      * @param updater function that takes the current value and returns the new value
      */
     public void update(UnaryOperator<T> updater) {
-        set(updater.apply(value));
+        T next = updater.apply(value);
+        if (next == value && next != null) {
+            changed(value, next);
+        } else {
+            set(next);
+        }
+    }
+
+    /**
+     * Mutates the value in place and notifies — for collections and other
+     * mutable holders: {@code items.mutate(l -> l.add("New item"))}.
+     *
+     * @param mutation what to do to the current value
+     */
+    public void mutate(Consumer<T> mutation) {
+        mutation.accept(value);
+        changed(value, value);
+    }
+
+    private void changed(T oldValue, T newValue) {
+        dirty = true;
+        notifySubscribers();
+        StateManager.onStateChange(this, oldValue, newValue);
     }
 
     /**

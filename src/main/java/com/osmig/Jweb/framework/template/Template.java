@@ -185,28 +185,48 @@ public interface Template extends Element {
     }
 
     /**
-     * Returns the page title for this template.
-     * Used by layouts to set the document title.
+     * The document title — set on the {@code <title>} tag and handed to the
+     * layout. Null (the default) keeps the route's or layout's own title.
      *
      * <p>Example:</p>
      * <pre>
      * &#64;Override
-     * public Optional&lt;String&gt; pageTitle() {
-     *     return Optional.of("User Profile - " + user.getName());
+     * public String pageTitle() {
+     *     return "User Profile - " + user.getName();
      * }
      * </pre>
      *
-     * @return the page title, or empty to use default
+     * @return the page title, or null for the default
      */
-    default Optional<String> pageTitle() {
-        return Optional.empty();
+    default String pageTitle() {
+        return null;
+    }
+
+    /**
+     * The {@code <meta name="description">} for SEO. Null (the default)
+     * emits none.
+     *
+     * <pre>
+     * &#64;Override
+     * public String description() {
+     *     return product.getDescription();
+     * }
+     * </pre>
+     *
+     * @return the meta description, or null to skip
+     */
+    default String description() {
+        return metaDescription().orElse(null);
     }
 
     /**
      * Returns meta description for SEO.
      *
      * @return the meta description, or empty to skip
+     * @deprecated Override {@link #description()} — a plain String, null to
+     *             skip. An existing override of this method keeps working.
      */
+    @Deprecated
     default Optional<String> metaDescription() {
         return Optional.empty();
     }
@@ -270,5 +290,37 @@ public interface Template extends Element {
      */
     default int cacheDuration() {
         return 0;
+    }
+
+    // ==================== The request in flight ====================
+
+    /**
+     * The visitor's session, without a {@code Request} in hand — available
+     * while this template renders for a page route or router handler
+     * (streamed blocks included):
+     *
+     * <pre>
+     * Visit visit = session().of(Visit.class);
+     * String notice = session().flash("notice");
+     * </pre>
+     *
+     * @throws IllegalStateException when rendered outside a request
+     */
+    default jweb.Session session() {
+        return jweb.Session.current();
+    }
+
+    /**
+     * The path parameters of the page route that rendered this template
+     * ({@code app.pages("/users/:id", UserPage.class)}) — empty outside one.
+     */
+    default java.util.Map<String, String> params() {
+        Request request = com.osmig.Jweb.framework.server.CurrentRequest.get();
+        return request == null ? java.util.Map.of() : request.getPathParams();
+    }
+
+    /** One path parameter of the page route, or null. */
+    default String pathParam(String name) {
+        return params().get(name);
     }
 }

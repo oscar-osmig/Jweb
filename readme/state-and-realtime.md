@@ -5,11 +5,11 @@
 This document covers reactive state, server-side events, hydration, WebSocket/SSE transport,
 and the interactive UI utilities (transitions, portals, refs, toasts, suspense).
 
-> ✅ **As of 2026-08-09 the reactive round-trip works end-to-end**: the client runtime is
-> auto-injected into rendered pages (disable with `jweb.runtime.enabled: false`), render
-> contexts survive until a TTL reaper collects them (5 min idle, refreshed by WebSocket
-> activity), and `useComponent(...)` regions re-render on the server and patch into the DOM.
-> See [Known Issues](./known-issues.md) for the full fix list.
+> ✅ **The reactive round-trip works end-to-end**: the client runtime is auto-injected into
+> rendered pages (disable with `jweb.runtime.enabled: false`), render contexts survive until a
+> TTL reaper collects them (5 min idle, refreshed by WebSocket activity), and `live(...)`
+> regions re-render on the server and morph into the DOM. See
+> [Known Issues](./known-issues.md) for the sharp edges.
 
 ## Reactive State
 
@@ -34,7 +34,8 @@ State<Integer> named = StateManager.createState("cart-count", 0);
 ```java
 count.get();                 // read
 count.set(5);                // write (no-op if value unchanged); marks dirty; notifies
-count.update(n -> n + 1);    // transform
+count.update(n -> n + 1);    // transform — returning the same instance (a list you added to) still notifies
+items.mutate(l -> l.add(x)); // mutate in place and notify
 count.subscribe(v -> Log.framework().info("count is now {}", v));
 count.getId();               // "state_<n>" — used by client bindings
 count.toJson();              // {"id":"state_1","value":5}
@@ -59,21 +60,60 @@ serializes changed state into the hydration payload, then detaches the ThreadLoc
 registry entry survives so WebSocket events can restore it. Contexts idle longer than
 5 minutes are reaped by a background cleanup task (WebSocket activity refreshes the TTL).
 
-### Binding state to elements (client contract)
+### Binding state to elements
 
-The client runtime patches elements by attribute:
+Four element arguments keep the DOM in step with state, with no client code written.
+`bind`/`bindInput` live in `jweb.El`; `bindAttr`/`bindClass`/`live` in `jweb.State` — the two
+wildcards coexist.
+
+```java
+import static jweb.El.*;
+import static jweb.State.*;
+
+// Text: bind renders the value AND patches it on every change
+p("Clicks: ", span(bind(clicks)))               // <span data-state-bind="state_1">0</span>
+span(bind(clicks), "Total: " + clicks.get())    // other content? then bind is just the attribute
+
+// Input: value (or checked) rendered, and every keystroke sent back — two-way
+input(type("text"), bindInput(name))
+
+// Attribute and class, by truthiness (true / non-zero / non-empty set it; false / 0 / "" / null clear it)
+button(bindAttr(saving, "disabled"), onClick(e -> save()), "Save")
+li(bindClass(active, "on"), class_("tab"), "Home")   // put bindClass before class_(...)
+
+// A region: re-rendered on the server from the state, morphed into the page
+live(items, list -> ul(each(list, i -> li(i))))
+live(user, u -> u == null ? a(href("/login"), "Sign in") : span("Hi " + u.name()))
+live(todos, filter, (list, f) -> ul(each(visible(list, f), t -> li(t.text()))))
+live(() -> p(first.get() + " " + last.get()), first, last)   // any number of states
+```
+
+**Live regions** are the answer to lists, conditionals and anything structural: the body
+receives the current value and returns any element; its root gets a `data-live="live_N"`
+attribute. When an event changes one of the region's states, the server re-renders the body
+and ships the HTML as a `domUpdate` patch; the runtime **morphs** it into the existing element
+— unchanged nodes stay, so focus, scroll position and typed input survive. A region only
+re-renders for the states it was given (none listed = every change). Handlers inside the body
+are re-registered on each render, like the first one. `useComponent(id, supplier)` is the
+deprecated pre-3.0 form (a `<div id>` wrapper that re-renders on any change).
+
+The client contract, for reference:
 
 | Attribute | Behavior on state change |
 |-----------|--------------------------|
-| `data-state="state_1"` / `data-state-bind="state_1"` | text/value updated |
+| `data-state-bind="state_1"` (also legacy `data-state`) | text or value updated |
+| `data-state-input="true"` + `data-state-bind` | input sends `setState` on every change |
+| `data-state-attr="disabled=state_1"` | attribute set while truthy, removed otherwise |
+| `data-state-class="on=state_1"` | class added while truthy, removed otherwise |
+| `data-live="live_1"` | element morphed with the server's re-render |
 | `data-state-text="on:off"` | picks text by truthiness |
 | `data-state-toggle="state_1"` | toggles the `toggle-on` class |
 
 `bind(state)` / `bindInput(state)` (in `jweb.El`) are element arguments carrying
-`data-state-bind`, so a live counter is one line:
+`data-state-bind`; `bind(state)` renders the value itself, so a live counter is one line:
 
 ```java
-p("Clicks: ", span(bind(clicks), clicks.get()))
+p("Clicks: ", span(bind(clicks)))
 button(onClick(e -> clicks.update(n -> n + 1)), "Click me")
 ```
 
@@ -87,6 +127,10 @@ syncState(clicks)                                     // a Val — JWeb.getState
 button(onClick(setText("total", syncState(clicks).plus(1))), "+1")
 onStateChange(clicks, callback("now", "before").log(v("now")))   // an Action
 ```
+
+Events: `jweb:stateChange` fires on every state patch, `jweb:liveUpdate` after a region morphs.
+The whole protocol lives in one runtime function (`initLive`) and one server class
+(`StateBinding` + `LiveRegion`).
 
 ## Server-Side Events (`events/`)
 
@@ -105,7 +149,12 @@ button(onClick(e -> count.update(n -> n + 1)), "Increment")
   are always prevented client-side before sending.
 - Registration is **context-scoped when a render context is active** (the normal case):
   handlers get unguessable IDs (`h_<n>_<random>`), live in the context's namespace, and are
-  evicted when the context dies. Outside a render they fall back to the global registry.
+  evicted when the context dies. Outside a render they register globally (static export).
+- **Handler ids are capabilities.** A WebSocket message that names a context can only run
+  that context's handlers — there is no fallback to the global registry — and a message for
+  a context that no longer exists is logged and dropped (the client sees a
+  `context_expired` error and should reload). Only messages that name no context reach the
+  global registry. See [Known Issues](./known-issues.md#the-handler-capability-model).
 - The client populates `formData` for submits and `dataset` for every event
   (`Event.data("userId")` reads `data-user-id`).
 
@@ -140,8 +189,54 @@ manually, e.g. for pages rendered outside the controller).
   - server → client: `connected`, `stateUpdate` (`[{id,value}]`), `domUpdate`
     (`[{id,html}]`), `eventHandled`, `initState`, `pong`, `error`
 - On an `event` message the handler restores the `StateContext` by contextId, executes the
-  registered handler, collects `getChangedStates()`, and pushes `stateUpdate` (+`domUpdate` for
-  registered `RenderableComponent`s) back.
+  registered handler (in that context only), collects `getChangedStates()`, and pushes
+  `stateUpdate` back, followed by one `domUpdate` carrying the re-rendered HTML of every
+  `live` region that depends on a changed state (`[{id:"live_1",html:"..."}]`; the runtime
+  morphs each into its `data-live` element).
+
+## Session
+
+`jweb.Session` is the visitor's session — typed, null-safe, with one-shot flash messages —
+so nothing hand-rolls `getAttribute`/`instanceof`/`setAttribute` again:
+
+```java
+import jweb.Session;
+
+// A per-visitor object, created on first use through its no-arg constructor
+Visit visit = Session.of(Visit.class, req);
+visit.entered = true;
+Session.of(Visit.class, req, () -> new Visit(defaults));   // or with a factory
+
+// Keyed values
+Session session = Session.of(req);
+session.put("theme", "dark");
+String theme = session.get("theme", String.class);          // null when absent
+String theme = session.get("theme", String.class, "light"); // with a default
+Optional<Cart> cart = session.find(Cart.class);
+session.remove("theme"); session.has(Cart.class);
+
+// Flash — written now, read once on the next page
+session.flash("notice", "Saved!");
+String notice = session.flash("notice");                    // then it is gone
+
+// Lifetime
+session.exists(); session.id(); session.end();              // end() = logout's invalidate
+
+// Inside a page, without a Request parameter (page routes, router handlers, streamed blocks)
+public Element render() {
+    Visit visit = session().of(Visit.class);
+    ...
+}
+```
+
+**Lifetime:** the session is the servlet container's — created on the first write (reads never
+create one), carried by the `JSESSIONID` cookie (HttpOnly, SameSite=Lax; set
+`SESSION_COOKIE_SECURE=true` behind HTTPS), expired after the idle timeout
+(`server.servlet.session.timeout`, 30 minutes by default), ended by `session.end()` /
+`Auth.logout`. Values live in server memory: keep them small; a typed value whose class
+changed shape across a deploy simply starts fresh. `Template.session()` and `Session.current()`
+read the request in flight, so they are not available inside WebSocket event handlers —
+capture what a handler needs at render time.
 
 ## Server-Sent Events (`sse/`)
 

@@ -454,6 +454,41 @@ public class Request {
         servletRequest.getSession(true).setAttribute(name, value);
     }
 
+    // === Who is asking ===
+
+    /**
+     * The authenticated principal, or null — what {@code Auth.login} stored
+     * in the session (or a middleware attached to this request).
+     *
+     * <pre>{@code
+     * app.guard("/admin/**", req -> req.principal() != null ? null : Response.redirect("/login"));
+     * }</pre>
+     */
+    @SuppressWarnings("deprecation")
+    public Principal principal() {
+        return com.osmig.Jweb.framework.security.Auth.getPrincipal(this);
+    }
+
+    // === Typed parameters ===
+
+    /**
+     * Binds the query/form parameters to a record, one component per
+     * parameter of the same name — enums by name, numbers parsed,
+     * {@code Optional<T>} for optional ones, {@code @Range}/{@code @Length}/
+     * {@code @Pattern} validated. See {@code app.action} for the route form.
+     *
+     * <pre>{@code
+     * record Search(String q, @Range(min = 1, max = 100) Optional<Integer> limit) {}
+     * Search search = req.bind(Search.class);
+     * }</pre>
+     *
+     * @throws BindException when a parameter is missing or invalid (the
+     *         framework answers it with a 400 when it escapes the handler)
+     */
+    public <T> T bind(Class<T> type) {
+        return com.osmig.Jweb.framework.routing.RecordBinder.bind(type, this);
+    }
+
     // === Request Attributes ===
 
     /**

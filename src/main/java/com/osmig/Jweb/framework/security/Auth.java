@@ -165,6 +165,32 @@ public class Auth {
         return principal != null && principal.hasAnyRole(roles);
     }
 
+    // ========== Guard Factories ==========
+
+    /**
+     * A guard that sends anonymous visitors to the login page and lets the
+     * login page itself through — for {@code app.guard(prefix, ...)}:
+     *
+     * <pre>
+     * app.guard("/admin/**", Auth.requireLogin("/admin/login"));
+     * </pre>
+     *
+     * <p>{@code requireRole(...)}, {@code requireAnyRole(...)} and the other
+     * middleware factories work as guards too: {@code app.guard("/admin/**",
+     * Auth.requireRole("admin"))}.</p>
+     *
+     * @param loginUrl where to redirect when there is no principal
+     * @return the guard
+     */
+    public static jweb.Guard requireLogin(String loginUrl) {
+        String loginPath = loginUrl.contains("?") ? loginUrl.substring(0, loginUrl.indexOf('?')) : loginUrl;
+        return request -> {
+            if (isAuthenticated(request)) return null;
+            if (request.path().equals(loginPath)) return null;
+            return jweb.Response.redirect(loginUrl);
+        };
+    }
+
     // ========== Middleware Factories ==========
 
     /**

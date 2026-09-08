@@ -224,6 +224,8 @@ class DslPass3Test {
 
         jweb.state.State<Integer> clicks = new jweb.state.State<>("s1", 3);
         assertEquals("<span data-state-bind=\"s1\">3</span>", span(bind(clicks), clicks.get()).toHtml());
+        // 3.0: bind alone renders the value — the explicit form above keeps working
+        assertEquals("<span data-state-bind=\"s1\">3</span>", span(bind(clicks)).toHtml());
     }
 
     // ==================== everything that emits JS is an Action ====================

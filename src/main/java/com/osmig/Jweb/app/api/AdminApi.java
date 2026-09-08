@@ -4,8 +4,8 @@ import jweb.Doc;
 import jweb.Auth;
 import jweb.Principal;
 import jweb.Request;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import jweb.api.Component;
+import jweb.api.Value;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

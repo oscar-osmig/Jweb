@@ -103,55 +103,154 @@ Zero dependencies (ImageIO). Use directly in the DSL:
 img("/jweb/img?src=/static/hero.jpg&w=800")
 ```
 
-## REST API (`@REST` controllers)
+## Page routes with parameters
 
-JWeb provides meta-annotations over Spring MVC for cleaner syntax:
-
-| JWeb Annotation | Maps To | Purpose |
-|-----------------|---------|---------|
-| `@REST("/path")` | `@RestController` + `@RequestMapping` | Class-level controller with base path |
-| `@GET` / `@GET("/{id}")` | `@RequestMapping(method=GET)` | GET endpoint |
-| `@POST` | `@RequestMapping(method=POST)` | POST endpoint |
-| `@UPDATE("/{id}")` | `@RequestMapping(method=PUT)` | PUT endpoint |
-| `@PATCH("/{id}")` | `@RequestMapping(method=PATCH)` | PATCH endpoint |
-| `@DEL("/{id}")` | `@RequestMapping(method=DELETE)` | DELETE endpoint |
+`app.pages(...)` paths take `:param` segments and a `*` wildcard, like router routes. Exact
+paths still resolve by lookup and win over patterns. The page reads its parameters in
+`beforeRender(req)` or through the `pathParam(name)` / `params()` accessors:
 
 ```java
-@REST("/api/v1/users")
-public class UserApi {
+app.layout(Layout.class).pages(
+    "/", HomePage.class,
+    "/users/:id", UserPage.class,
+    "/posts/:category/:slug", PostPage.class,
+    "/docs/*", DocsPage.class);
 
-    @GET
-    public List<User> getAll() { return userService.findAll(); }
+public class UserPage implements Template {
+    private User user;
 
-    @GET("/{id}")
-    public User getById(@PathVariable String id) { return userService.findById(id); }
-
-    @POST
-    public ResponseEntity<User> create(@RequestBody User user) {
-        return ResponseEntity.status(201).body(userService.save(user));
-    }
-
-    @UPDATE("/{id}")
-    public User update(@PathVariable String id, @RequestBody User user) {
-        return userService.update(id, user);
-    }
-
-    @DEL("/{id}")
-    public void delete(@PathVariable String id) { userService.delete(id); }
+    @Override public void beforeRender(Request req) { user = users.find(req.requireParamLong("id")); }
+    @Override public Element render() { return div(h1(user.name()), p("id " + pathParam("id"))); }
+    @Override public String pageTitle() { return user.name(); }      // plain String, null = default
+    @Override public String description() { return user.bio(); }     // <meta name="description">
+    @Override public boolean cacheable() { return false; }
 }
 ```
 
-How it works — and what that implies:
+(`title()` is not the hook's name on purpose: a `Template.title()` would shadow the
+`title(...)` element factory inside every Template.)
 
-- Registration is **pure Spring**: `@REST` is meta-annotated `@RestController`, so component
-  scanning registers it. No `Routes` edit is needed for the endpoint to work.
-- Standard Spring parameter annotations apply (`@PathVariable`, `@RequestParam`,
-  `@RequestBody`, `HttpServletRequest`).
+## Guards
+
+A guard runs in front of every route under a path pattern — page routes, router routes
+**and `@REST` controllers** — after the middleware stack and before the handler. It returns
+`null` to pass, or the response to send instead; guards run in registration order and the
+first answer wins.
+
+```java
+app.guard("/admin/**", req -> req.principal() != null ? null : Response.redirect("/admin/login"));
+app.guard("/admin/**", Auth.requireLogin("/admin/login"));   // the same as sugar; the login page passes
+app.guard("/admin/**", Auth.requireRole("admin"));            // any Middleware: its response or 401/403 answers
+app.guard("/api/v1/admin/**", Jwt.protect());
+```
+
+Patterns follow `app.use(path, ...)`: a plain prefix, `/prefix/**`, or a glob with `*` in one
+segment. `req.principal()` is what `Auth.login` stored. A `JWebException` thrown by a guard or
+middleware now answers with its own status (401/403/...) instead of a 500 page.
+
+## Action routes — typed parameters
+
+A mutation reachable from a link **or** a form: `app.action` registers GET and POST, and binds
+the query/form parameters to a record before the handler runs. `app.get(path, Type.class, ...)`
+and `app.post(...)` do the same for one method; `req.bind(Type.class)` does it by hand.
+
+```java
+import jweb.api.Range;
+
+enum Setting { EBB, SLACK, FLOOD }
+record Vane(@Range(min = 1, max = 3) int n, Setting set) {}
+record Pref(Optional<Setting> sound, Optional<Boolean> motion) {}
+
+app.action("/act/tide/vane", Vane.class, (req, vane) -> {      // GET /act/tide/vane?n=2&set=flood
+    Visit v = Session.of(Visit.class, req);
+    v.vanes.put(vane.n(), vane.set());
+    return Response.redirect("/worlds/tide-archive").anchor(v.vanesAligned() ? "content" : "chamber");
+});
+
+app.action("/act/pref", Pref.class, (req, pref) -> {
+    pref.sound().ifPresent(s -> Session.of(Visit.class, req).soundOn = s != Setting.EBB);
+    return Response.redirectBack(req);                            // the Referer (same site), or "/"
+});
+```
+
+Binding rules: `String`, the primitives and boxes, `UUID`, enums (by name, case-insensitive),
+`Optional<T>` (optional), `List<T>` (every value of that name). Everything not Optional is
+required — a primitive `boolean` reads `false` when absent (an unchecked checkbox). `@Range`,
+`@Length`, `@Pattern` (all in `jweb.api`) validate; a record's compact constructor may throw
+`IllegalArgumentException` too. Any failure is a **400 with a message naming the component**
+(an HTML page for browsers, JSON for `Accept: application/json`) — never an exception page.
+
+## REST API (`@REST` controllers)
+
+A controller is `jweb.*` and `java.*` only. `@REST` is a meta-annotated `@RestController`,
+so component scanning registers it; the parameter annotations are resolved by JWeb's own
+argument resolver (Spring's `@RequestParam` & co. target parameters only and cannot be
+meta-annotated, so they are re-implemented, not aliased):
+
+| Annotation | Purpose |
+|------------|---------|
+| `@REST("/api/v1/x")` | Controller with base path (must start with `/api/v`) |
+| `@GET` `@POST` `@UPDATE` `@PATCH` `@DEL` | One per method; `@GET("/{id}")` adds a path |
+| `@Param` | Path placeholder `{id}` → int, long, String, UUID, enum... (name = the parameter's) |
+| `@Query` | Query/form parameter; `value`, `defaultValue`, `required`; `Optional<T>`, `List<T>` |
+| `@Body` | JSON body → record, POJO, `Map`, `List` (a `String` gets the raw text) |
+| `@Header`, `@Cookie` | A header / cookie value, same options as `@Query` |
+| `@Upload("file")` | Multipart file → `jweb.UploadedFile` (never null — `isEmpty()`), or `List<UploadedFile>` |
+| `jweb.Request` | A bare `Request` parameter is injected (path params included) |
+| `@Component`, `@Value` | `jweb.api` spellings of the Spring stereotypes for your stores and config values |
+
+```java
+import jweb.Request;
+import jweb.api.*;
+
+@REST("/api/v1/users")
+public class UserApi {
+
+    private final UserStore users;
+    public UserApi(UserStore users) { this.users = users; }        // @Component injected
+
+    @GET
+    public List<User> getAll() { return users.findAll(); }
+
+    @GET("/{id}")
+    public User getById(@Param long id) { return users.find(id); }
+
+    @GET("/search")
+    public List<User> search(@Query String q, @Query(value = "limit", defaultValue = "10") int limit) { ... }
+
+    @POST
+    public Object create(@Body User user) {
+        return Response.created("/api/v1/users/" + users.save(user), user);   // 201 + Location
+    }
+
+    @UPDATE("/{id}")
+    public User update(@Param long id, @Body User user) { return users.update(id, user); }
+
+    @DEL("/{id}")
+    public Object delete(@Param long id) { users.delete(id); return Response.noContent(); }
+
+    @POST("/{id}/avatar")
+    public Map<String, Object> avatar(@Param long id, @Upload("file") UploadedFile file) { ... }
+
+    @GET("/whoami")
+    public Map<String, Object> whoami(Request req) { return Map.of("ip", req.ip()); }
+}
+```
+
+Missing or malformed input answers **400 with a message naming the parameter**. Statuses come
+from `Response` — `serverError()`, `status(int)`, `unauthorized()`, `forbidden()`,
+`tooManyRequests()`, `noContent()`, `created(location[, body])`, `error(code, message)`,
+`html(code, element)`, `json(code, body)`, `redirect(url).anchor(..)`, `redirectBack(req)` —
+so no `HttpStatus` import is ever needed.
+
+What that implies:
+
 - **Put controllers under `/api/v*`** — `JWebController` explicitly bypasses those paths so
   Spring MVC can serve them. (A JWeb router route under `/api/v1/...` would silently never fire.)
-- **JWeb middleware does not apply to `@REST` controllers** (`app.use(...)`, `Jwt.protect()`,
-  etc. run only on JWeb-router routes). Secure REST endpoints with Spring mechanisms, or do the
-  check inside the method.
+- **Guards apply** (`app.guard("/api/v1/admin/**", ...)`); **middleware does not**
+  (`app.use(...)` runs only for what `JWebController` dispatches).
+- The Spring spellings (`@PathVariable`, `@RequestBody`, `HttpServletRequest`, ...) still work
+  in a controller; they are just no longer needed.
 
 ---
 
@@ -318,15 +417,19 @@ Auth.hasAnyRole(request, "user", "admin");
 Auth.logout(request);                              // invalidates the session
 ```
 
-**Middleware factories** (apply to JWeb-router routes AND page routes — everything JWeb
-dispatches runs through the middleware stack):
+**Guards and middleware factories** — as a guard they also cover `@REST` controllers under
+the prefix; as middleware they apply to JWeb-router routes and page routes:
 
 ```java
+app.guard("/admin/**", Auth.requireLogin("/admin/login"));   // 302 → /admin/login; the login page passes
+app.guard("/admin/**", Auth.requireRole("admin"));           // 401 then 403
+app.guard("/api/v1/admin/**", Auth.requireAnyRole("user", "admin"));
+
 app.use("/dashboard", Auth.requireAuth());            // 401 via JWebException
 app.use("/dashboard", Auth.requireAuth("/login"));    // 302 → /login?redirect=<path>
-app.use("/admin", Auth.requireRole("admin"));         // 401 then 403
-app.use("/api", Auth.requireAnyRole("user", "admin"));
 app.use("/super", Auth.requireAllRoles("admin", "superadmin"));
+
+Principal who = req.principal();                      // null when anonymous
 ```
 
 > `Auth.customAuth(fn)` and `Auth.bearerAuth(fn)` take `Function<Request, Principal>` /
@@ -456,7 +559,7 @@ in-memory, single-use, 10-minute expiry (not cluster-safe). No PKCE yet.
 ### Real-World Example: Admin Authentication (from the sample app)
 
 ```java
-// AdminApi.java — session-based admin auth with env config
+// AdminApi.java — session-based admin auth with env config (jweb.api.Component / Value)
 @Component
 public class AdminApi {
 
@@ -485,24 +588,42 @@ public class AdminApi {
     public List<Doc> getMessages() { return Mongo.find("contacts").orderByDesc("_id").toList(); }
 }
 
-// Routes.java — protected admin routes (auth checked in-handler; path-scoped
-// middleware like app.use("/only-admin", Auth.requireAuth("/only-admin/log/in"))
-// would work too, now that page routes run through the stack)
-app.get("/only-admin/messages", ctx -> {
-    if (!adminApi.isAuthenticated(ctx)) {
-        return Response.redirect("/only-admin/log/in");
-    }
-    return Response.html(new Layout("Messages",
-        new AdminMessagesPage(adminApi.getMessages()).render()
-    ).render());
+// Routes.java — one guard protects everything under /only-admin (the login page passes),
+// the login form binds to a record, the messages view binds its query, logout leaves a flash
+public record Login(Optional<String> email, Optional<String> token) {}
+public record MessagesView(Optional<AdminMessagesPage.Order> order,
+                           @Range(min = 1, max = 500) Optional<Integer> limit) {}
+
+app.guard("/only-admin/**", Auth.requireLogin("/only-admin/log/in"));
+
+app.get("/only-admin/log/in", ctx -> {
+    if (adminApi.isAuthenticated(ctx)) return Response.redirect("/only-admin/messages");
+    String notice = Session.of(ctx).flash("notice");              // "You have been signed out."
+    return Response.html(new Layout("Admin Login",
+        new AdminLoginPage(null, notice, Csrf.getOrCreateToken(ctx)).render()).render());
 });
 
-app.post("/only-admin/log/in", (RouteHandler) ctx -> {   // cast disambiguates the overload
-    if (adminApi.login(ctx, ctx.formParam("email"), ctx.formParam("token"))) {
+app.post("/only-admin/log/in", Login.class, (ctx, login) -> {
+    if (Csrf.isValid(ctx) && adminApi.login(ctx, login.email().orElse(null), login.token().orElse(null))) {
         return Response.redirect("/only-admin/messages");
     }
     return Response.html(new Layout("Admin Login",
-        new AdminLoginPage("Invalid email or token").render()).render());
+        new AdminLoginPage("Invalid email or token", Csrf.getOrCreateToken(ctx)).render()).render());
+});
+
+app.get("/only-admin/messages", MessagesView.class, (ctx, view) -> {   // ?order=oldest&limit=20
+    var order = view.order().orElse(AdminMessagesPage.Order.NEWEST);
+    var messages = order.apply(adminApi.getMessages(), view.limit().orElse(Integer.MAX_VALUE));
+    return Response.html(new Layout("Messages - Admin",
+        new AdminMessagesPage(messages, Csrf.getOrCreateToken(ctx), order).render()).render());
+});
+
+app.post("/only-admin/logout", (RouteHandler) ctx -> {
+    if (Csrf.isValid(ctx)) {
+        adminApi.logout(ctx);
+        Session.of(ctx).flash("notice", "You have been signed out.");
+    }
+    return Response.redirect("/only-admin/log/in");
 });
 ```
 
