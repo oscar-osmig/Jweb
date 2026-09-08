@@ -77,7 +77,16 @@ p("Clicks: ", span(bind(clicks), clicks.get()))
 button(onClick(e -> clicks.update(n -> n + 1)), "Click me")
 ```
 
-A `jweb:stateChange` CustomEvent fires on every patch.
+A `jweb:stateChange` CustomEvent fires on every patch. The JS DSL reads the client's copy
+of a state and listens for those patches without touching the event by hand:
+
+```java
+import static jweb.Js.*;
+
+syncState(clicks)                                     // a Val — JWeb.getState('state_1')
+button(onClick(setText("total", syncState(clicks).plus(1))), "+1")
+onStateChange(clicks, callback("now", "before").log(v("now")))   // an Action
+```
 
 ## Server-Side Events (`events/`)
 

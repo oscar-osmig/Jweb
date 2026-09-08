@@ -96,6 +96,23 @@ public final class JWebRuntime {
                 this.initSwaps();
                 this.initServerEvents();
                 this.initThree();
+                this.flushReady();
+            },
+
+            flushReady:function(){
+                // Behaviors (scrollSpy, splitPane, ...) install from inline
+                // scripts that parse BEFORE this runtime does, so they queue
+                // themselves on window.__JWEB_READY__. Draining swaps the array
+                // for a shim whose push() runs immediately, so a behavior
+                // arriving later (a swapped fragment, a streamed chunk) still
+                // installs at once.
+                var q=window.__JWEB_READY__;
+                window.__JWEB_READY__={push:function(f){JWeb.runBehavior(f);}};
+                if(q&&q.length)q.forEach(this.runBehavior);
+            },
+
+            runBehavior:function(f){
+                try{f();}catch(err){console.error('[JWeb] behavior failed:',err);}
             },
 
             initServerEvents:function(){
@@ -239,9 +256,45 @@ public final class JWebRuntime {
                 });
                 window.addEventListener('popstate',function(e){
                     if(e.state&&e.state.jwebSwap){
-                        self.swap(e.state.jwebSwap.url,null,{target:e.state.jwebSwap.target,noPush:true});
+                        var s=e.state.jwebSwap;
+                        self.swap(s.url,null,{target:s.target,mode:s.mode,cache:s.cache,noPush:true});
+                        return;
                     }
+                    // Back past the first swap: this entry is the document as
+                    // the server first sent it, and nothing here remembers what
+                    // that was. Its own rendering of the URL is the truth.
+                    if(self.swapped)location.reload();
                 });
+            },
+
+            // Whether a swap has pushed history in this document
+            swapped:false,
+
+            // ==================== swap cache ====================
+            // One TTL store shared by swap() and prefetch(): a link warmed on
+            // hover is already in it when the click arrives.
+            swapCache:{},
+            swapPending:{},
+
+            cachedHtml:function(url,ttl){
+                if(!ttl)return null;
+                var e=this.swapCache[url];
+                return e&&Date.now()-e.time<ttl?e.html:null;
+            },
+
+            storeHtml:function(url,html,ttl){
+                if(ttl)this.swapCache[url]={html:html,time:Date.now()};
+            },
+
+            prefetchUrl:function(url,ttl){
+                ttl=ttl||300000;
+                if(!url||this.cachedHtml(url,ttl)!==null||this.swapPending[url])return;
+                var self=this;
+                this.swapPending[url]=true;
+                fetch(url,{credentials:'same-origin'})
+                    .then(function(r){return r.text()})
+                    .then(function(html){self.storeHtml(url,html,ttl);delete self.swapPending[url];})
+                    .catch(function(){delete self.swapPending[url];});
             },
 
             swap:function(url,el,opts){
@@ -249,12 +302,11 @@ public final class JWebRuntime {
                 var target=opts.target||(el&&el.getAttribute('data-swap-target'));
                 var targetEl=target?document.querySelector(target):null;
                 if(!targetEl){console.warn('[JWeb] swap target not found:',target);return;}
-                var mode=(el&&el.getAttribute('data-swap-mode'))||'inner';
-                var push=!opts.noPush&&el&&el.getAttribute('data-swap-push');
+                var mode=opts.mode||(el&&el.getAttribute('data-swap-mode'))||'inner';
+                var push=opts.noPush?null:(opts.push||(el&&el.getAttribute('data-swap-push')));
+                var ttl=opts.cache||(el&&parseInt(el.getAttribute('data-swap-cache')||'0',10))||0;
                 var self=this;
-                fetch(url,{method:opts.method||'GET',body:opts.body,credentials:'same-origin'})
-                    .then(function(r){return r.text()})
-                    .then(function(html){
+                var render=function(html){
                         // Run + strip the fragment's action-definition
                         // scripts first: innerHTML never executes scripts,
                         // and the fragment's data-jweb-act handlers are dead
@@ -271,6 +323,12 @@ public final class JWebRuntime {
                             else{targetEl.innerHTML=html;}
                             document.dispatchEvent(new CustomEvent('jweb:swap',{detail:{url:url,target:target}}));
                         };
+                        // History first: a jweb:swap listener (activeLink, an
+                        // analytics hook) must see the URL the swap navigated to.
+                        if(push){
+                            history.pushState({jwebSwap:{url:url,target:target,mode:mode,cache:ttl}},'',push);
+                            self.swapped=true;
+                        }
                         if(document.startViewTransition&&document.visibilityState==='visible'){
                             // A skipped transition (hidden tab, debugger
                             // capture, concurrent transition) rejects
@@ -289,8 +347,12 @@ public final class JWebRuntime {
                             }
                         }
                         else{apply();}
-                        if(push){history.pushState({jwebSwap:{url:url,target:target}},'',push);}
-                    })
+                };
+                var hit=this.cachedHtml(url,ttl);
+                if(hit!==null){render(hit);return;}
+                fetch(url,{method:opts.method||'GET',body:opts.body,credentials:'same-origin'})
+                    .then(function(r){return r.text()})
+                    .then(function(html){self.storeHtml(url,html,ttl);render(html);})
                     .catch(function(err){console.error('[JWeb] swap failed:',err);});
             },
 
@@ -566,6 +628,347 @@ public final class JWebRuntime {
                 while(from.childNodes.length>toKids.length){
                     from.removeChild(from.lastChild);
                 }
+            },
+
+            // ==================== behaviors ====================
+            // Everything below backs a Tier-1 verb in the JS DSL
+            // (jweb.Js.copy/scrollSpy/navigate/prefetch/splitPane/lineGutter/
+            // resizeToContent/onStateChange). Keeping the bodies here means the
+            // generated page code is one call, and the fallbacks live in one place.
+
+            nearest:function(el,sel){
+                // The match closest to el: its own subtree first, then each
+                // ancestor's, then the document.
+                var n=el;
+                while(n&&n.querySelector){
+                    var m=n.querySelector(sel);
+                    if(m)return m;
+                    n=n.parentElement;
+                }
+                return document.querySelector(sel);
+            },
+
+            copyText:function(text,el,opts){
+                opts=opts||{};
+                var self=this;
+                var done=function(ok){self.copyDone(el,ok,opts);};
+                if(navigator.clipboard&&navigator.clipboard.writeText){
+                    navigator.clipboard.writeText(text).then(
+                        function(){done(true);},
+                        function(){done(self.copyLegacy(text));});
+                }else{done(this.copyLegacy(text));}
+            },
+
+            copyLegacy:function(text){
+                // execCommand fallback for contexts without navigator.clipboard
+                // (http origins, older browsers, permission denied).
+                var ta=document.createElement('textarea');
+                ta.value=text;
+                ta.setAttribute('readonly','');
+                ta.style.position='fixed';
+                ta.style.opacity='0';
+                document.body.appendChild(ta);
+                ta.select();
+                var ok=false;
+                try{ok=document.execCommand('copy');}catch(err){}
+                document.body.removeChild(ta);
+                return ok;
+            },
+
+            copyDone:function(el,ok,opts){
+                if(!el||!opts.text)return;
+                if(el.__copyPrev===undefined)el.__copyPrev=el.textContent;
+                var prev=el.__copyPrev;
+                el.textContent=ok?opts.text:(opts.failText||'Copy failed');
+                if(opts.className)el.classList.toggle(opts.className,ok);
+                if(el.__copyTimer)clearTimeout(el.__copyTimer);
+                el.__copyTimer=setTimeout(function(){
+                    el.textContent=prev;
+                    if(opts.className)el.classList.remove(opts.className);
+                    el.__copyPrev=undefined;
+                },opts.ms||1600);
+            },
+
+            scrollSpy:function(o){
+                var nav=document.querySelector(o.nav);
+                if(!nav)return;
+                var content=o.container?document.querySelector(o.container):null;
+                var host=o.host?document.querySelector(o.host):nav.parentElement;
+                var linkSel=o.linkClass?'.'+o.linkClass:'a';
+                var items=[],lock=false,settle=null;
+                var top=function(){return content?content.scrollTop:(window.pageYOffset||0);};
+                var box=function(){
+                    return content?content.getBoundingClientRect()
+                                  :{top:0,height:window.innerHeight};
+                };
+                var mark=function(i){
+                    var links=nav.querySelectorAll(linkSel);
+                    for(var k=0;k<links.length;k++)links[k].classList.remove(o.active);
+                    var a=links[i];
+                    if(a){
+                        a.classList.add(o.active);
+                        a.scrollIntoView({behavior:'smooth',block:'nearest'});
+                    }
+                };
+                var release=function(){
+                    // Let the smooth scroll settle before the spy takes over
+                    // again, so it cannot fight the link the user just clicked.
+                    var last=top();
+                    clearInterval(settle);
+                    settle=setInterval(function(){
+                        if(top()===last){clearInterval(settle);lock=false;}
+                        last=top();
+                    },120);
+                };
+                var spy=function(){
+                    if(lock||!items.length)return;
+                    var view=content||document.scrollingElement||document.documentElement;
+                    if(top()+view.clientHeight>=view.scrollHeight-4){
+                        mark(items.length-1);
+                        return;
+                    }
+                    var b=box();
+                    var line=o.offset!=null?o.offset:Math.min(b.height*0.25,160);
+                    var idx=0;
+                    for(var i=0;i<items.length;i++){
+                        if(items[i].getBoundingClientRect().top-b.top<=line)idx=i;
+                        else break;
+                    }
+                    mark(idx);
+                };
+                var build=function(){
+                    items=Array.prototype.slice.call((content||document).querySelectorAll(o.headings));
+                    if(host&&o.hostClass)host.classList.toggle(o.hostClass,items.length>0);
+                    nav.textContent='';
+                    if(!items.length)return;
+                    var frag=document.createDocumentFragment();
+                    items.forEach(function(h,i){
+                        if(!h.id)h.id='section-'+i;
+                        var a=document.createElement('a');
+                        a.href='#'+h.id;
+                        a.textContent=h.textContent;
+                        if(o.linkClass)a.className=o.linkClass;
+                        a.dataset.index=i;
+                        a.dataset.level=h.tagName.replace('H','');
+                        a.addEventListener('click',function(e){
+                            e.preventDefault();
+                            lock=true;
+                            var offset=h.getBoundingClientRect().top-box().top-(o.scrollMargin||0);
+                            (content||window).scrollBy({top:offset,behavior:'smooth'});
+                            history.pushState(null,'','#'+h.id);
+                            mark(i);
+                            release();
+                        });
+                        frag.appendChild(a);
+                    });
+                    nav.appendChild(frag);
+                    spy();
+                };
+                (content||window).addEventListener('scroll',spy,{passive:true});
+                // Rebuild whenever the spied content is replaced — by a JWeb
+                // swap, or by anything else that rewrites its children.
+                document.addEventListener('jweb:swap',function(){lock=false;build();});
+                if(content)new MutationObserver(function(){lock=false;build();})
+                    .observe(content,{childList:true});
+                build();
+            },
+
+            activeLink:function(o){
+                var apply=function(){
+                    var here=location.href;
+                    document.querySelectorAll(o.selector).forEach(function(a){
+                        a.classList.toggle(o.active,a.href===here);
+                    });
+                };
+                document.addEventListener('jweb:swap',apply);
+                window.addEventListener('popstate',function(){setTimeout(apply,0);});
+            },
+
+            prefetchOn:function(o){
+                var scope=o.scope?document.querySelector(o.scope):document;
+                if(!scope)return;
+                var self=this;
+                var urlOf=o.url||function(t){
+                    return t.getAttribute('data-prefetch')
+                        ||t.getAttribute('data-swap-get')
+                        ||t.getAttribute('href');
+                };
+                if(o.visible&&window.IntersectionObserver){
+                    var io=new IntersectionObserver(function(entries){
+                        entries.forEach(function(en){
+                            if(!en.isIntersecting)return;
+                            io.unobserve(en.target);
+                            self.prefetchUrl(urlOf(en.target),o.ttl);
+                        });
+                    });
+                    var arm=function(){
+                        scope.querySelectorAll(o.selector).forEach(function(el){io.observe(el);});
+                    };
+                    arm();
+                    document.addEventListener('jweb:swap',arm);
+                    return;
+                }
+                var timer=null;
+                scope.addEventListener('mouseover',function(e){
+                    var t=e.target.closest?e.target.closest(o.selector):null;
+                    if(!t)return;
+                    if(timer)clearTimeout(timer);
+                    timer=setTimeout(function(){self.prefetchUrl(urlOf(t),o.ttl);},o.delay||60);
+                });
+                scope.addEventListener('mouseout',function(){
+                    if(timer){clearTimeout(timer);timer=null;}
+                });
+                scope.addEventListener('focusin',function(e){
+                    var t=e.target.closest?e.target.closest(o.selector):null;
+                    if(t)self.prefetchUrl(urlOf(t),o.ttl);
+                });
+            },
+
+            splitPane:function(o){
+                var handle=document.querySelector(o.handle);
+                var left=document.querySelector(o.left);
+                if(!handle||!left)return;
+                var box=o.container?document.querySelector(o.container):handle.parentElement;
+                if(!box)return;
+                var lo=o.minPercent!=null?o.minPercent:10;
+                var hi=o.maxPercent!=null?o.maxPercent:90;
+                var apply=function(pct){
+                    pct=Math.max(lo,Math.min(hi,pct));
+                    left.style.flex='0 0 '+pct+'%';
+                    return pct;
+                };
+                if(o.persist){
+                    var saved=null;
+                    try{saved=localStorage.getItem(o.persist);}catch(err){}
+                    if(saved)apply(parseFloat(saved));
+                }
+                handle.addEventListener('mousedown',function(e){
+                    e.preventDefault();
+                    box.classList.add('dragging');
+                    handle.classList.add('dragging');
+                    var at=null;
+                    var move=function(ev){
+                        var r=box.getBoundingClientRect();
+                        var x=ev.clientX-r.left;
+                        if(o.min!=null)x=Math.max(x,o.min);
+                        if(o.max!=null)x=Math.min(x,o.max);
+                        at=apply(x/r.width*100);
+                    };
+                    var up=function(){
+                        box.classList.remove('dragging');
+                        handle.classList.remove('dragging');
+                        document.removeEventListener('mousemove',move);
+                        document.removeEventListener('mouseup',up);
+                        if(o.persist&&at!=null){
+                            try{localStorage.setItem(o.persist,String(at));}catch(err){}
+                        }
+                    };
+                    document.addEventListener('mousemove',move);
+                    document.addEventListener('mouseup',up);
+                });
+            },
+
+            gutters:{},
+
+            lineGutter:function(o){
+                var ta=document.querySelector(o.textarea);
+                var ln=document.querySelector(o.gutter);
+                if(!ta||!ln)return;
+                var mi=o.mirror?document.querySelector(o.mirror):null;
+                if(!mi){
+                    // No mirror in the markup: build one that copies the
+                    // textarea's text metrics, so wrapped lines still measure.
+                    mi=document.createElement('div');
+                    mi.setAttribute('aria-hidden','true');
+                    mi.style.cssText='position:absolute;top:0;left:-10000px;visibility:hidden;'
+                        +'pointer-events:none;white-space:pre-wrap;overflow-wrap:break-word';
+                    var cs=getComputedStyle(ta);
+                    ['fontSize','fontFamily','fontWeight','lineHeight','letterSpacing','tabSize']
+                        .forEach(function(p){mi.style[p]=cs[p];});
+                    (ta.parentElement||document.body).appendChild(mi);
+                }
+                this.gutters[o.textarea]={ta:ta,ln:ln,mi:mi,err:0,cls:o.errorClass||'errline'};
+                var self=this;
+                ta.addEventListener('scroll',function(){ln.scrollTop=ta.scrollTop;});
+                ta.addEventListener('input',function(){self.relineGutter(o.textarea);});
+                if(window.ResizeObserver){
+                    // One observer covers every width change — a split-pane
+                    // drag, a collapsed sidebar, a window resize.
+                    var t=null;
+                    new ResizeObserver(function(){
+                        if(t)clearTimeout(t);
+                        t=setTimeout(function(){self.relineGutter(o.textarea);},120);
+                    }).observe(ta);
+                }
+                this.relineGutter(o.textarea);
+            },
+
+            relineGutter:function(sel){
+                var g=this.gutters[sel];
+                if(!g)return;
+                var cs=getComputedStyle(g.ta);
+                g.mi.style.width=(g.ta.clientWidth
+                    -parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight))+'px';
+                var ls=g.ta.value.split('\\n');
+                g.mi.textContent='';
+                for(var i=0;i<ls.length;i++){
+                    var d=document.createElement('div');
+                    d.textContent=ls[i]===''?'\\u00a0':ls[i];
+                    g.mi.appendChild(d);
+                }
+                var frag=document.createDocumentFragment();
+                for(var j=0;j<ls.length;j++){
+                    var n=document.createElement('div');
+                    n.textContent=j+1;
+                    n.style.height=g.mi.children[j].offsetHeight+'px';
+                    frag.appendChild(n);
+                }
+                g.ln.textContent='';
+                g.ln.appendChild(frag);
+                this.markGutter(g);
+                g.ln.scrollTop=g.ta.scrollTop;
+            },
+
+            markLine:function(sel,line){
+                var g=this.gutters[sel];
+                if(!g)return;
+                g.err=line||0;
+                this.markGutter(g);
+            },
+
+            markGutter:function(g){
+                Array.prototype.forEach.call(g.ln.children,function(n,i){
+                    n.className=(i+1===g.err)?g.cls:'';
+                });
+            },
+
+            resizeToContent:function(sel){
+                var fit=function(el){
+                    el.style.height='auto';
+                    el.style.height=el.scrollHeight+'px';
+                };
+                document.querySelectorAll(sel).forEach(function(el){
+                    el.addEventListener('input',function(){fit(el);});
+                    fit(el);
+                });
+            },
+
+            onState:function(stateId,fn){
+                document.addEventListener('jweb:stateChange',function(e){
+                    if(e.detail&&e.detail.stateId===stateId)fn(e.detail.newValue,e.detail.oldValue);
+                });
+            },
+
+            insertText:function(el,txt){
+                // execCommand keeps the browser's own undo stack; the manual
+                // splice is the fallback where it is unsupported.
+                var ok=false;
+                try{el.focus();ok=document.execCommand('insertText',false,txt);}catch(err){}
+                if(ok)return;
+                var s=el.selectionStart,e=el.selectionEnd;
+                el.value=el.value.slice(0,s)+txt+el.value.slice(e);
+                el.selectionStart=el.selectionEnd=s+txt.length;
+                el.dispatchEvent(new Event('input',{bubbles:true}));
             },
 
             getState:function(stateId){

@@ -16,15 +16,14 @@ public final class JSNewAPIs {
             codeBlock("""
 import static jweb.js.JSIndexedDB.*;
 
-// Open a database (creates if not exists)
+// Open a database (creates if not exists). onUpgrade takes a lambda:
+// the database is the parameter, the store work is the return value.
 openDB("myApp", 1)
-    .onUpgrade(callback("db").raw(
-        createStore(v("db"), "users")
-            .keyPath("id").autoIncrement()
-            .index("email", "email")
-            .uniqueIndex("username", "username")
-            .build().js()
-    ))
+    .onUpgrade(db -> createStore(db, "users")
+        .keyPath("id").autoIncrement()
+        .index("email", "email")
+        .uniqueIndex("username", "username")
+        .build())
     .onSuccess(callback("db").log(str("DB opened")))
     .build()
 

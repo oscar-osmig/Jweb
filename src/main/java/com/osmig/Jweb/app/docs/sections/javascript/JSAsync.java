@@ -80,15 +80,14 @@ asyncFunc("showWithDelay")
         setText("status", "Ready!")
     )
 
-// Debounced search
+// Debounced search - if_(condition, return_()) is the early-return
+// guard, and it is a statement like any other
 asyncFunc("search")
     .params("query")
     .does(
         assign("searchQuery", "query"),
-        sleep(300)
-    )
-    .raw("if(searchQuery !== query) return;")
-    .does(
+        sleep(300),
+        if_(v("searchQuery").neq(v("query")), return_()),
         await(fetch("/api/search?q=").appendVar("query")
             .ok(call("showResults", "_data")))
     )"""),

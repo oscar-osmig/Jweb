@@ -138,6 +138,32 @@ public class JSIndexedDB {
         }
 
         /**
+         * The version-change hook, typed: the lambda receives the database and
+         * returns the store work to run against it.
+         *
+         * <pre>{@code
+         * openDB("myApp", 1)
+         *     .onUpgrade(db -> createStore(db, "users")
+         *         .keyPath("id").autoIncrement()
+         *         .index("email", "email")
+         *         .build())
+         *     .build()
+         * }</pre>
+         *
+         * <p>Return a {@code Val} (what {@code createStore(...).build()} is),
+         * an {@code Action}, or {@code actions().does(...)} for several
+         * statements. The old {@code callback("db").unsafeRaw(...)} form still
+         * works, but this one names the parameter for you.</p>
+         *
+         * @param body the store work, given the database
+         * @return this builder
+         */
+        public OpenDBBuilder onUpgrade(java.util.function.Function<Val, Object> body) {
+            this.onUpgrade = new Func(null, "db").does(body.apply(new Val("db"))).toExpr();
+            return this;
+        }
+
+        /**
          * Called when database is successfully opened.
          *
          * @param handler callback receiving the database

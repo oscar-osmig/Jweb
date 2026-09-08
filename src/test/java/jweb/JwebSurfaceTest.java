@@ -83,6 +83,43 @@ class JwebSurfaceTest {
         assertEquals("init()", fromFunc.build());
     }
 
+    @Test
+    void behaviorTypesAreJwebTypes() {
+        jweb.js.Copy literal = copy("npm i jweb").feedback("Copied!", 1200);
+        jweb.js.Copy nearest = copyFrom("pre").trigger(v("t")).feedbackClass("copied");
+        jweb.js.Navigate nav = navigate("/docs/content?section=state")
+            .target(".docs-content").push("/docs?section=state").cache(1000);
+        jweb.js.Prefetch warm = prefetch(".nav-link").within("nav").delay(50).onHover();
+        jweb.js.ActiveLink current = activeLink(".nav-link").activeClass("active");
+        jweb.js.ScrollSpy spy = scrollSpy("#toc", "h2, h3").within(".content").offset(80);
+        jweb.js.SplitPane split = splitPane("#handle", "#left").minPercent(20).persist("split");
+        jweb.js.LineGutter gutter = lineGutter("#editor", "#lines").mirror("#mirror");
+        jweb.js.CustomElement custom = customElement("user-card").shadow().template(p("hi"));
+        jweb.js.Behavior installed = spy;
+        jweb.js.Manifest manifest = jweb.js.Pwa.manifest("Demo").display("standalone");
+        jweb.Element manifestLink = jweb.js.Pwa.link();
+        jweb.Action worker = jweb.js.Pwa.registerServiceWorker("/sw.js");
+        jweb.Val clientState = syncState("s1");
+        jweb.js.Stmt guard = if_(v("x").gt(1), return_());
+        jweb.js.Stmt stop = preventDefault();
+
+        assertTrue(literal.build().contains("JWeb.copyText"));
+        assertTrue(nearest.build().contains("JWeb.nearest(t,'pre')"));
+        assertTrue(nav.build().contains("JWeb.swap"));
+        assertTrue(warm.build().contains("JWeb.prefetchOn"), warm.build());
+        assertTrue(current.build().contains("JWeb.activeLink"));
+        assertTrue(installed.build().startsWith("(window.__JWEB_READY__"), installed.build());
+        assertTrue(split.build().contains("JWeb.splitPane"));
+        assertTrue(gutter.build().contains("JWeb.lineGutter"));
+        assertTrue(custom.build().contains("customElements.define('user-card'"));
+        assertTrue(worker.build().contains("serviceWorker"));
+        assertTrue(manifest.json().contains("\"display\":\"standalone\""));
+        assertTrue(manifestLink.toHtml().contains("rel=\"manifest\""), manifestLink.toHtml());
+        assertEquals("JWeb.getState('s1')", clientState.js());
+        assertEquals("if((x>1)){return;}", guard.js());
+        assertEquals("e.preventDefault()", stop.js());
+    }
+
     // ==================== CSS ====================
 
     @Test

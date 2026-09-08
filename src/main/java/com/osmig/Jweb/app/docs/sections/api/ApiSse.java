@@ -43,18 +43,20 @@ emitter.send(SseEvent.create()
     .build());"""),
 
             h3Title("Client JavaScript"),
+            para("The sse(...) builder is the EventSource client — on(name, ...) "
+                 + "for named events, onMessage(...) for unnamed ones."),
             codeBlock("""
-// Using Actions DSL
-script()
-    .raw(\"\"\"
-        const es = new EventSource('/events');
-        es.addEventListener('notification', (e) => {
-            const data = JSON.parse(e.data);
-            showNotification(data);
-        });
-        es.onerror = () => console.log('Connection lost');
-    \"\"\")
-    .build();"""),
+import static jweb.Js.*;
+import static jweb.js.JSJson.parse;
+
+inlineScript(actions().does(
+    sse("/events")
+        .on("notification", callback("e")
+            .var_("data", parse(v("e").dot("data")))
+            .call("showNotification", v("data")))
+        .onError(callback().log("Connection lost"))
+        .toVal()
+).build())"""),
 
             h3Title("Broadcasting"),
             codeBlock("""

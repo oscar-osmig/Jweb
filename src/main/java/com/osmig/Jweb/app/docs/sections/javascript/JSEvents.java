@@ -1,6 +1,5 @@
 package com.osmig.Jweb.app.docs.sections.javascript;
 
-import jweb.Val;
 import jweb.Element;
 import static com.osmig.Jweb.app.docs.DocComponents.*;
 
@@ -27,35 +26,24 @@ delegate("todo-list", "click", "li")
             h3Title("Debouncing"),
             para("Delay execution until user stops typing/scrolling."),
             codeBlock("""
-// Build a debounced handler body (runs 300ms after the last event)
-Val debounced = debounce("searchTimer", 300).wrap(
-    callback().call("runSearch")
-);
-
-// Attach it inside an input listener
+// debounce(ms, handler) is a self-contained function expression -
+// no timer variable to name, and it attaches like any listener
 byId("search-input").addEventListener("input",
-    callback("e").raw(debounced.js())
+    debounce(300, callback("e").call("runSearch"))
 )"""),
 
             h3Title("Throttling"),
             para("Limit execution frequency."),
             codeBlock("""
-// Throttled handler body - runs at most every 100ms
-Val throttled = throttle("scrollLast", 100).wrap(
-    callback().call("updateScrollPosition")
-);
-
+// Runs at most every 100ms
 byId("feed").addEventListener("scroll",
-    callback("e").raw(throttled.js())
+    throttle(100, callback("e").call("updateScrollPosition"))
 )"""),
 
             h3Title("Keyboard Events"),
             codeBlock("""
-// Key combinations
-onKeyCombo("ctrl+s", callback("e")
-    .raw("e.preventDefault()")
-    .call("save")
-)
+// Key combinations - onKeyCombo prevents the browser default for you
+onKeyCombo("ctrl+s", callback("e").call("save"))
 
 onKeyCombo("ctrl+shift+p", callback("e")
     .call("openCommandPalette")
@@ -101,10 +89,11 @@ sse("/api/notifications")
     )
     .build()
 
-// With open handler
+// Named server events - SseEvent.of("notification", data)
 sse("/api/events")
     .onOpen(callback().log("Connected"))
-    .onMessage(handler)
+    .on("notification", callback("e")
+        .call("showNotification", v("e").dot("data")))
     .build()"""),
 
             h3Title("Custom Events"),
@@ -123,11 +112,14 @@ onCustomEvent(byId("item-list"), "item-selected", callback("e")
 
             h3Title("Event Utilities"),
             codeBlock("""
-// Prevent default behavior
-preventDefault(v("event"))
+// Inside any callback, the event is named e - these are statements
+// on it, so they go straight into does(...)
+callback("e").does(preventDefault(), call("save"))
+callback("e").does(stopPropagation())
 
-// Stop propagation
-stopPropagation(v("event"))
+// Or, on an event you hold as an expression
+preventDefault(v("someEvent"))
+stopPropagation(v("someEvent"))
 
 // Once - remove after first call
 once(byId("button"), "click", callback()

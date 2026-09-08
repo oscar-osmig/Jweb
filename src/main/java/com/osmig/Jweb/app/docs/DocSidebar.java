@@ -62,10 +62,9 @@ public class DocSidebar implements Template {
     /**
      * Link to the plain-text documentation dump that AI assistants ground on.
      *
-     * <p>It deliberately does NOT carry {@code .docs-nav-link}: DocsNavScript
-     * delegates clicks on that class to
-     * {@code e.preventDefault(); loadSection(t.dataset.section)}, which would
-     * swallow the navigation and call {@code loadSection(undefined)}.
+     * <p>It deliberately carries neither {@code .docs-nav-link} nor any
+     * {@code data-swap-*}: this is a real navigation to a download, not a
+     * section swap, and the runtime's swap delegation would swallow it.
      *
      * <p>No {@code target="_blank"}: the endpoint replies with
      * Content-Disposition attachment, so the click starts a download without
@@ -110,18 +109,27 @@ public class DocSidebar implements Template {
             nav(class_("docs-nav-links"), fragment(links)));
     }
 
+    /**
+     * A section link. The {@code data-swap-*} attributes are the whole of the
+     * client-side navigation: the runtime fetches the fragment, fills
+     * {@code .docs-content}, pushes the history entry (version param included)
+     * and restores it on back. {@link DocsNavScript} only adds hover
+     * prefetching and the active-link marking on top.
+     *
+     * <p>Presentation is class rules in {@code DocsPage.docsStyles()} — an
+     * inline style would outrank {@code .docs-nav-link.active}, so the marking
+     * could never take effect after a swap.</p>
+     */
     private Element link(String id, String label) {
         // Sections that don't exist in the viewed version stay out of the nav
         if (!DocVersions.sectionAvailable(id, version)) return null;
-        boolean isActive = id.equals(active);
-        return a(attrs().href(DocVersions.href(id, version))
+        String href = DocVersions.href(id, version);
+        return a(attrs().href(href)
             .data("section", id)
-            .class_(isActive ? "docs-nav-link active" : "docs-nav-link")
-            .style()
-                .padding(SP_2, SP_3).borderRadius(ROUNDED).fontSize(TEXT_SM)
-                .color(isActive ? PRIMARY : TEXT_LIGHT).fontWeight(isActive ? 600 : 400)
-                .backgroundColor(isActive ? hex("#eef2ff") : transparent)
-                .textDecoration(none).transition(all, s(0.15), ease)
-            .done(), text(label));
+            .swap(DocsNavScript.contentHref(id, version), ".docs-content")
+            .swapPush(href)
+            .data("swap-cache", String.valueOf(DocsNavScript.TTL))
+            .class_(id.equals(active) ? "docs-nav-link active" : "docs-nav-link"),
+            text(label));
     }
 }

@@ -109,6 +109,56 @@ class DslPass3Test {
             style().interpolateSize(allowKeywords).build());
     }
 
+    /**
+     * The behavior verbs and the ten re-exported browser modules join the same
+     * four-wildcard import, so every name here has to stay unambiguous against
+     * {@code El}, {@code Css} and {@code Three}.
+     */
+    @Test
+    void behaviorsAndModulesJoinTheFourImports() {
+        Object copied = copy("x").feedback("Copied!");
+        Object fromEl = copyFrom("pre");
+        Object nav = navigate("/x").target("#main").prefetch();
+        Object warm = prefetch(".link").onVisible();
+        Object marked = activeLink(".link");
+        Object spy = scrollSpy("#toc", "h2").within(".content");
+        Object pane = splitPane("#g", "#l").min(120);
+        Object gutter = lineGutter("#e", "#l");
+        Object grow = resizeToContent("textarea");
+        Object element = customElement("x-card").shadow();
+        Object stmt = if_(v("a"), preventDefault(), stopPropagation(), return_());
+        Object stateRead = syncState("s1");
+        Object stateWatch = onStateChange("s1", callback("now").log(v("now")));
+
+        // re-exported module statics, under all four wildcards
+        Object clip = writeText("hi");
+        Object store = local();
+        Object history = replaceState("/x");
+        Object params = queryParamsObject();
+        Object fd = formData();
+        Object frames = raf(callback("t").log(v("t")));
+        Object db = openDB("app", 1);
+        Object watch = intersection();
+
+        assertNotNull(copied); assertNotNull(fromEl); assertNotNull(nav);
+        assertNotNull(warm); assertNotNull(marked); assertNotNull(spy);
+        assertNotNull(pane); assertNotNull(gutter); assertNotNull(grow);
+        assertNotNull(element); assertNotNull(stmt); assertNotNull(stateRead);
+        assertNotNull(stateWatch); assertNotNull(clip); assertNotNull(store);
+        assertNotNull(history); assertNotNull(params); assertNotNull(fd);
+        assertNotNull(frames); assertNotNull(db); assertNotNull(watch);
+    }
+
+    /** Any action is a statement in any builder body, through {@code does(...)}. */
+    @Test
+    void doesTakesActionsValsAndStatements() {
+        assertEquals("function(e){e.preventDefault();toggleit();}",
+            callback("e").does(preventDefault(), call("toggleit")).toExpr());
+        assertEquals("(function(){JWeb.resizeToContent('textarea');})()",
+            actions().does(resizeToContent("textarea")).build());
+        assertEquals("(function(){var n=1;})()", iife().var_("n", 1).build());
+    }
+
     @Test
     void spanWithAStringIsTheElementEvenWithCssImported() {
         assertEquals("<span>x</span>", span("x").toHtml());

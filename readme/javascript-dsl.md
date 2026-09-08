@@ -2,8 +2,8 @@
 
 # JavaScript DSL
 
-43 modules, ~23,000 lines, generating client-side JavaScript from type-safe Java. One
-import, two layers:
+45 modules, ~25,000 lines, generating client-side JavaScript from type-safe Java. One
+import, three layers:
 
 ```java
 import static jweb.Js.*;
@@ -12,12 +12,28 @@ import static jweb.Js.*;
 - **Actions** — the page-level layer: form/click handlers, fetch chains, DOM actions,
   message boxes. Everything here is an `Action`, and an `Action` plugs into any element
   handler. This is what pages normally use.
+- **Behaviors** — client work that installs itself and keeps running: copy buttons, a
+  scroll spy, client-side navigation with prefetching, a split pane, a line gutter. Also
+  Actions, so they attach the same way.
 - **Expressions and statements** — values (`v`, `str`, `obj`), functions, control flow,
   DOM access. Use it when an Action doesn't cover the shape you need.
 
 `jweb.Actions` is the same surface under its old name (importing both is harmless). Every
 browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) keeps its own
 import and lives at `jweb.js.*` — e.g. `import static jweb.js.JSClipboard.*;`.
+
+**The ten most-used modules need no second import.** `JSClipboard`, `JSObservers`,
+`JSStorage`, `JSHistory`, `JSUrl`, `JSFormData`, `JSAnimation`, `JSWebAnimations`,
+`JSMedia` and `JSIndexedDB` are re-exported from `jweb.Js`, so `local()`, `cookie("theme")`,
+`replaceState("/x")`, `openDB("app", 1)`, `intersection()`, `raf(...)` and `writeText(...)`
+are all one import away. Eleven names stay module-only, because forwarding them would
+capture a call that means something else: `get`, `delete`, `pushState`, `onPopState` and
+`eventKey` (the Actions layer owns those); `animate`, `currentTime`, `currentUrl`,
+`disconnect`, `getQueryParam`, `pause`, `play`, `playbackRate`, `setCurrentTime`,
+`setPlaybackRate` and `toObject` (two of the ten declare each); and `audio`, `video`,
+`src`, `href`, `url`, `search`, `duration`, `onAnimationEnd`, `onCancel`,
+`onTransitionEnd` (the HTML or CSS DSL owns those under the four-wildcard import). Import
+the module for those.
 
 Where the two layers shared a name, the page-level `Action` form owns it: `fetch("/url")`
 is the `.ok(...)/.fail(...)` builder, `call("fn")` and `sleep(ms)` are Actions. The
@@ -31,7 +47,7 @@ and `delay(ms)`.
 | | `script()` | `actions()` |
 |---|---|---|
 | Output | bare statements | wrapped in an IIFE `(function(){...})()` |
-| Accepts | `var_/let/const_`, `Func`, `AsyncFunc`, raw | handlers (`onSubmit`/`onClick`/...), `state()`, `onLoad()`, raw |
+| Accepts | `does(...)`, `var_/let/const_`, `Func`, `AsyncFunc` | `does(...)`, handlers (`onSubmit`/`onClick`/...), `state()`, `onLoad()` |
 
 `actions()` is itself an `Action`, so a whole script can be returned from a Template's
 `scripts()` hook. The DOM query builders are `dom(selector)` / `domAll(selector)`.
@@ -48,17 +64,116 @@ button(onClick(Toast.success("Saved!")), "Save")      // typed Toast actions
 button(onClick(inputRef.focus()), "Focus")            // Ref methods are Actions
 ```
 
-## Handlers take a `Func`
+## Handlers take a `Func`, and `does(...)` fills it
 
-Every `onXxx(...)` in the browser-API modules takes a `Func`. Some also accept a raw
-JavaScript `String`, but that form hides which parameter name the generated function
-uses, so prefer the explicit escape hatch when you need raw JS:
+Every `onXxx(...)` in the browser-API modules takes a `Func`. `does(...)` is how any
+DSL value becomes a statement in one — an `Action`, a `Val`, a `Stmt` or a nested
+`Func`, in order:
 
 ```java
-callback("e").unsafeRaw("console.log(e.detail)")   // function(e){console.log(e.detail)}
+callback("e", "t").does(
+    preventDefault(),                                  // a statement on the event
+    copyFrom("pre").trigger(v("t")).feedback("Copied!"),  // an Action
+    v("count").addAssign(1))                           // an assignment
 ```
 
-That way the parameter name is written where the code that uses it is written.
+The same `does(...)` is on `actions()`, `script()`, `iife()`, `guard()` and
+`asyncFunc()`, so a whole page script never needs a JavaScript string.
+
+Statements that used to need raw JS:
+
+```java
+preventDefault(); stopPropagation(); stopImmediatePropagation()  // on the callback's event, named e
+return_(); return_(value)                                        // early return
+if_(v("stale").eq(true), return_())                              // a guard, anywhere a statement goes
+```
+
+### The escape hatch
+
+`unsafeRaw(String)` still exists on `Func`, `script()`, `iife()` and `guard()`, and
+`raw(String)` on `actions()`. It is the last resort — for a construct the DSL has no verb
+for. The framework's own pages use it nowhere; if you reach for it, the shape you need is
+probably a missing verb worth adding.
+
+## Behaviors
+
+A behavior is client work that installs itself once and keeps running. Each is an
+`Action`, so it attaches to an element or goes on the page through `actions().does(...)`;
+the implementation lives in the client runtime, so the generated code is one call.
+
+```java
+// Clipboard — navigator.clipboard with the execCommand fallback built in
+button(onClick(copy("npm i jweb").feedback("Copied!")), "Copy")
+button(onClick(copyFrom("pre")                 // the nearest <pre>: this element's
+        .feedback("Copied!", 1600)             // subtree, then each ancestor's
+        .feedbackClass("copied")
+        .failText("Copy failed")),
+    "Copy")
+
+// Client-side navigation — the runtime's swap(), as an action
+navigate("/docs/content?section=state")
+    .target(".docs-content").push("/docs?section=state").cache(300_000)
+
+// …and the two things swap markup cannot say
+prefetch(".docs-nav-link").within(".docs-sidebar").delay(50).cache(300_000)
+prefetch(".card a").onVisible()
+activeLink(".docs-nav-link")                   // marks the link for the current URL
+onPopState(callback("e").log(v("e").dot("state")))
+
+// An "on this page" rail that follows the reader and survives swaps
+scrollSpy("#toc", "h2, h3")
+    .within(".docs-content").linkClass("toc-link")
+    .activeClass("active").hasHeadingsClass("has-headings").scrollMargin(24)
+
+// Editors
+lineGutter("#editor", "#lines").mirror("#mirror").errorClass("errline")
+splitPane("#gutter", "#code").container("#split").minPercent(20).maxPercent(80).persist("split")
+resizeToContent("textarea.grow")
+relineGutter("#editor"); markLine("#editor", v("n")); insertText("#editor", "    ")
+
+// The client's copy of a server State
+syncState(count)                               // a Val — JWeb.getState('<id>')
+onStateChange(count, callback("now", "before").log(v("now")))
+```
+
+`prefetch(...)` and `navigate(...).cache(ttl)` share one store, so a link warmed on hover
+swaps without a round trip. `prefetch` takes the URL from `data-prefetch`, else
+`data-swap-get`, else `href` — links already marked up with `swap(...)` need no extra
+attribute. Behaviors queue themselves on the runtime instead of running inline (a page's
+own scripts parse first); anything queued later, from a swapped fragment, installs at once.
+
+Scroll-spy links carry `data-level` (2 for an `h2`, 3 for an `h3`) and `data-index`, so
+indentation and size are CSS rather than inline styles.
+
+## Web Components and PWAs
+
+```java
+customElement("user-card")
+    .observedAttributes("name")
+    .shadow()                                  // or .shadow("closed")
+    .template(div(class_("card"), slot()))     // written into the shadow on connect
+    .connected(callback().log("mounted"))
+    .disconnected(callback().log("gone"))
+    .attributeChanged(callback("name", "oldValue", "newValue")
+        .does(dom(".card").setText(v("newValue"))))
+
+attachShadow(v("host")); shadowRoot(v("host"))
+assignSlot(v("child"), "footer"); assignedElements(v("slot"))
+onSlotChange(v("slot"), callback("e").log("changed"))
+```
+
+```java
+import jweb.js.Manifest;
+import static jweb.js.Pwa.*;
+
+Manifest APP = manifest("JWeb Demo").shortName("JWeb")
+    .display("standalone").startUrl("/").themeColor("#4f46e5")
+    .icon("/icon-192.png", "192x192");
+
+serve(app, APP);                               // on the JWeb: GET /manifest.webmanifest
+head(title("JWeb"), link())                    // <link rel="manifest">
+registerServiceWorker("/sw.js")                // an Action
+```
 
 ## The standard form-submission pattern
 
@@ -157,13 +272,18 @@ tryCatch().try_(a).catch_(b)                 // optional .finally_(c); '_err' in
 // Response status handling
 responseError("status-box").on401(...).on403(...).on404(...).on500(...).otherwise(...)
 
-// Modals & templates
+// Modals
 showModal("dialog-id"); hideModal("dialog-id")
 alertModal("modal-overlay", "modal-body").success("Approved!")
-renderList("list").from("items")             // items = JS array variable
-    .using(template("item")
-        .div().text(field("name")).end()
-        .build())
+// (the client template engine — renderList/template/field — was deleted in 3.0:
+//  render the list on the server and swap the fragment in)
+
+// Behaviors (see above)
+copy(text) / copyFrom(selector); navigate(url); prefetch(selector); activeLink(selector)
+scrollSpy(nav, headings); splitPane(handle, left); lineGutter(textarea, gutter)
+relineGutter(textarea); markLine(textarea, line); resizeToContent(textarea)
+insertText(selector, text); syncState(state); onStateChange(state, callback)
+customElement(name); attachShadow(el); assignSlot(el, name)
 
 // Async
 asyncBlock(await(get("/api/a").ok(...)), await(get("/api/b").ok(...)))
@@ -312,22 +432,28 @@ dispatchCustomEvent(v("document"), "cart:updated", obj("count", 3))
 onCustomEvent(v("document"), "cart:updated",
     callback("e").log(eventDetail(v("e"))))
 
-// Client-side SSE
+// Client-side SSE — on(name, ...) for named events, onMessage for unnamed
 sse("/events")
     .onMessage(callback("e").log(v("e").dot("data")))
+    .on("notification", callback("e").call("showNotification", v("e").dot("data")))
     .onError(callback().log("SSE error"))
     .build()
 ```
 
-## Full module inventory (43)
+## Full module inventory (45)
+
+Everything from `Actions` down to `Modules` is reachable from `import static jweb.Js.*`.
 
 | Module | Purpose |
 |--------|---------|
-| `Actions` | High-level UI DSL — handlers, fetch, DOM actions, templates (main entry) |
+| `Actions` | High-level UI DSL — handlers, fetch, DOM actions, messages (main entry) |
+| `Modules` | Re-exports the ten most-used browser modules, so one import covers them |
+| `Behaviors` | copy/navigate/prefetch/activeLink/scrollSpy/splitPane/lineGutter/syncState, Web Components, `if_`/`preventDefault` statements |
 | `JS` | Core expressions/statements — Val/El/Func/Script |
 | `Async` | Fetch builder, async funcs, await, promise combinators |
 | `Events` | Delegation, debounce/throttle, key combos, touch/swipe, custom events, SSE client |
 | `Runtime` | IIFE, run-once guard, TTL cache, memoize patterns |
+| `Pwa` | Web app manifest, `<link rel="manifest">`, its route, service-worker registration (`jweb.js.Pwa`) |
 | `JWebRuntime` | The reactive-state client runtime (auto-injected into rendered pages; opt out with `jweb.runtime.enabled: false`) |
 | `JSAbort` | AbortController/AbortSignal (timeout/any/onAbort) |
 | `JSAnimation` | requestAnimationFrame loops, CSS transition/animation helpers, lerp/easing |
@@ -375,9 +501,13 @@ sse("/events")
 import static jweb.js.JSIndexedDB.*;
 import static jweb.Js.*;
 
+// onUpgrade takes a lambda: the database is the parameter, the store
+// work is the return value
 openDB("myApp", 1)
-    .onUpgrade(callback("db")
-        .unsafeRaw("db.createObjectStore('users',{keyPath:'id'})"))
+    .onUpgrade(db -> createStore(db, "users")
+        .keyPath("id").autoIncrement()
+        .index("email", "email")
+        .build())
     .onSuccess(callback("db").log("Database opened"))
     .build();
 

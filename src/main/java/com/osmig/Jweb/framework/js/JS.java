@@ -393,6 +393,30 @@ public class JS extends Events {
         return s == null ? "" : s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n");
     }
 
+    /**
+     * Renders one statement for a builder body — the single place that knows
+     * how each DSL value becomes a statement. A {@link Stmt}, {@link Action},
+     * {@link Val} or String is emitted as-is and terminated; a {@link Func}
+     * becomes a function declaration. This is what {@code does(...)} takes,
+     * on every builder that has it.
+     *
+     * @param o the statement value
+     * @return the JavaScript, ending in {@code ;}
+     */
+    public static String toStatement(Object o) {
+        if (o == null) return "";
+        String js = o instanceof Stmt st ? st.js()
+            : o instanceof Action a ? a.build()
+            : o instanceof Val v ? v.js()
+            : o instanceof Func f ? f.toDecl()
+            : String.valueOf(o);
+        if (js.isEmpty()) return "";
+        // Always terminate: an expression ending in "}" ("x=y||{}") would
+        // otherwise merge with the next statement. A ";" after a block is a
+        // harmless empty statement.
+        return js.endsWith(";") ? js : js + ";";
+    }
+
     public static String toJs(Object o) {
         if (o == null) return "null";
         if (o instanceof Val val) return val.js();
@@ -431,6 +455,15 @@ public class JS extends Events {
 
         public Script add(Async.AsyncFunc fn) {
             parts.add(fn.toDecl());
+            return this;
+        }
+
+        /**
+         * Statements, in order — an {@link Action}, {@link Val}, {@link Stmt}
+         * or {@link Func} each. The typed alternative to {@code unsafeRaw}.
+         */
+        public Script does(Object... statements) {
+            for (Object s : statements) parts.add(toStatement(s));
             return this;
         }
 
@@ -1184,6 +1217,18 @@ public class JS extends Events {
         }
 
         // ==================== Events ====================
+
+        /**
+         * Adds an event listener whose handler is an expression — what
+         * {@code debounce(ms, ...)} and {@code throttle(ms, ...)} return:
+         *
+         * <pre>
+         * byId("search").addEventListener("input", debounce(300, callback("e").call("runSearch")))
+         * </pre>
+         */
+        public El addEventListener(String type, Val handler) {
+            return new El(code + ".addEventListener('" + esc(type) + "'," + handler.js() + ")");
+        }
 
         /** Adds event listener: elem.addEventListener(type, handler) */
         public El addEventListener(String type, Func handler) {

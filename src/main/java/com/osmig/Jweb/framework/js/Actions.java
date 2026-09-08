@@ -39,7 +39,7 @@ import java.util.Map;
  * @deprecated Replaced by {@code jweb.Actions} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class Actions extends JS {
+public class Actions extends Modules {
 
     protected Actions() {}
 
@@ -2651,13 +2651,23 @@ public class Actions extends JS {
             return this;
         }
 
-        /** Add actions to the function body. */
-        public AsyncFuncBuilder does(Action... actions) {
-            for (Action a : actions) body.add(a.build());
+        /** Add early-return guard condition, as an expression. */
+        public AsyncFuncBuilder guard(jweb.Val condition) {
+            this.guard = condition.js();
             return this;
         }
 
-        /** Add raw JS to the function body. */
+        /**
+         * Statements, in order — an {@link Action}, {@link jweb.Val},
+         * {@link jweb.js.Stmt} or {@link Func} each, so {@code if_(cond,
+         * return_())} guards mid-body without raw JavaScript.
+         */
+        public AsyncFuncBuilder does(Object... statements) {
+            for (Object s : statements) body.add(JS.toStatement(s));
+            return this;
+        }
+
+        /** Add raw JS to the function body — the last resort; prefer {@link #does}. */
         public AsyncFuncBuilder raw(String js) {
             body.add(js);
             return this;
@@ -3503,7 +3513,27 @@ public class Actions extends JS {
             return this;
         }
 
-        /** Add raw JavaScript (escape hatch). */
+        /**
+         * Statements, in order — an {@link Action}, {@link jweb.Val},
+         * {@link jweb.js.Stmt} or {@link Func} each. The typed alternative to
+         * {@link #raw(String)}, and how behaviors go on a page:
+         *
+         * <pre>{@code
+         * inlineScript(actions()
+         *     .does(scrollSpy("#toc", "h2, h3"),
+         *           prefetch(".nav-link"))
+         *     .build())
+         * }</pre>
+         */
+        public ScriptBuilder does(Object... statements) {
+            for (Object s : statements) parts.add(JS.toStatement(s));
+            return this;
+        }
+
+        /**
+         * Adds raw JavaScript — the last resort, when no verb covers the shape.
+         * Everything the DSL can express should go through {@link #does(Object...)}.
+         */
         public ScriptBuilder raw(String js) {
             parts.add(js);
             return this;

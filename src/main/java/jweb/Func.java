@@ -75,6 +75,25 @@ public class Func {
         return this;
     }
 
+    /**
+     * Statements, in order — an {@link Action}, {@link Val}, {@link Stmt} or
+     * nested {@link Func} each. This is what makes any action a statement
+     * inside a callback, and the typed alternative to {@link #unsafeRaw}:
+     *
+     * <pre>{@code
+     * callback("e", "t").does(
+     *     preventDefault(),
+     *     copyFrom("pre").trigger(v("t")).feedback("Copied!"))
+     * }</pre>
+     */
+    public Func does(Object... statements) {
+        for (Object s : statements) {
+            String js = JS.toStatement(s);
+            if (!js.isEmpty()) body.add(js);
+        }
+        return this;
+    }
+
     public Func log(Object... args) {
         body.add(JS.call("console.log", args).js());
         return this;
@@ -389,7 +408,7 @@ public class Func {
         sb.append(String.join(",", params)).append("){");
         for (String s : body) {
             sb.append(s);
-            if (!s.endsWith("}")) sb.append(";");
+            if (!s.endsWith("}") && !s.endsWith(";")) sb.append(";");
         }
         return sb.append("}").toString();
     }
@@ -401,7 +420,7 @@ public class Func {
         sb.append("(").append(String.join(",", params)).append("){");
         for (String s : body) {
             sb.append(s);
-            if (!s.endsWith("}")) sb.append(";");
+            if (!s.endsWith("}") && !s.endsWith(";")) sb.append(";");
         }
         return sb.append("}").toString();
     }

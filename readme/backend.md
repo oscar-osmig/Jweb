@@ -25,7 +25,14 @@ form(swapForm("/comments", "#comment-list"),
 `swapOuter(url, sel)` replaces the target element itself; `swapMorph(url, sel)` **morphs
 the target in place** — unchanged nodes are kept, so focus, scroll position and in-progress
 input survive the update (best for lists/forms that refresh under the user). Back/forward
-re-swap via history state; a `jweb:swap` event fires after each swap.
+re-swap via history state; a `jweb:swap` event fires after each swap, with the address bar
+already showing the URL the swap navigated to. Going back *past* the first swap reloads:
+that history entry is the document as the server first sent it.
+
+`data-swap-cache="<ms>"` (or `navigate(url).cache(ms)` in the JS DSL) reuses a fetched
+fragment for that long, out of the same store
+[`prefetch(selector)`](./javascript-dsl.md#behaviors) warms on hover — so a link the
+pointer has rested on swaps with no round trip.
 
 ## Streaming SSR
 

@@ -230,9 +230,26 @@ public class Events extends Runtime {
         private String onMessageCode;
         private String onErrorCode;
         private String onOpenCode;
+        private final java.util.LinkedHashMap<String, String> named = new java.util.LinkedHashMap<>();
 
         SSE(String url) {
             this.url = url;
+        }
+
+        /**
+         * Listens for a named server event — what
+         * {@code SseEvent.of("notification", data)} sends. Unnamed events go
+         * to {@link #onMessage(Func)}.
+         *
+         * <pre>
+         * sse("/events")
+         *     .on("notification", callback("e").call("showNotification", v("e").dot("data")))
+         *     .build()
+         * </pre>
+         */
+        public SSE on(String eventName, Func handler) {
+            named.put(eventName, handler.toExpr());
+            return this;
         }
 
         /** Set onMessage with Func */
@@ -299,6 +316,9 @@ public class Events extends Runtime {
             } else if (onOpenCode != null) {
                 sb.append("es.onopen=function(e){").append(onOpenCode).append("};");
             }
+
+            named.forEach((name, fn) -> sb.append("es.addEventListener('")
+                .append(JS.esc(name)).append("',").append(fn).append(");"));
 
             return new Val(sb.append("return es}())").toString());
         }

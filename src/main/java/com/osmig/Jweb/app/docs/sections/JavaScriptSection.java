@@ -77,6 +77,7 @@ callback("item")
 
             JSCore.render(),
             JSActions.render(),
+            JSBehaviors.render(),
             JSEvents.render(),
             JSAsync.render(),
             JSBrowserAPIs.render(),

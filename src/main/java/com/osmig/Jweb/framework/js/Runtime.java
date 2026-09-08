@@ -32,8 +32,17 @@ public class Runtime extends Async {
 
     // ==================== IIFE ====================
 
-    public static class IIFE {
+    public static class IIFE implements jweb.Action {
         private final List<String> parts = new ArrayList<>();
+
+        /**
+         * Statements, in order — an {@code Action}, {@code Val}, {@code Stmt}
+         * or {@code Func} each. The typed alternative to {@code unsafeRaw}.
+         */
+        public IIFE does(Object... statements) {
+            for (Object s : statements) parts.add(JS.toStatement(s));
+            return this;
+        }
 
         public IIFE var_(String name, Object value) {
             parts.add("var " + name + "=" + JS.toJs(value));
@@ -91,11 +100,20 @@ public class Runtime extends Async {
 
     // ==================== Guard ====================
 
-    public static class Guard {
+    public static class Guard implements jweb.Action {
         private final String varName;
         private final List<String> parts = new ArrayList<>();
 
         Guard(String varName) { this.varName = varName; }
+
+        /**
+         * Statements, in order — an {@code Action}, {@code Val}, {@code Stmt}
+         * or {@code Func} each. The typed alternative to {@code unsafeRaw}.
+         */
+        public Guard does(Object... statements) {
+            for (Object s : statements) parts.add(JS.toStatement(s));
+            return this;
+        }
 
         public Guard var_(String name, Object value) {
             parts.add("var " + name + "=" + JS.toJs(value));

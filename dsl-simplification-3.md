@@ -175,6 +175,58 @@ pre-joined string, use the `Style` method", which stopped being true.
 
 An `Action` is a statement anywhere a statement goes: `.if_(cond, toggle("panel"))` works.
 
+### Behaviors — the JavaScript our own app could not write in the DSL
+
+The framework's own pages carried ~520 lines of raw JavaScript in Java strings: an SPA
+content swap with its own fetch/cache/popstate code, a scrollspy, a copy button with an
+`execCommand` fallback, a line gutter and a split-pane drag. All of it is verbs now, and
+the four scripts are pure DSL (a test fails if `unsafeRaw` or `.raw(` reappears in them).
+
+| Was | Now |
+|---|---|
+| `iife().unsafeRaw(guard("x").unsafeRaw(js).build())` — raw JS strings in every script | `actions().does(guard("x").does(behavior, behavior))` — `does(Object...)` takes an `Action`, `Val`, `Stmt` or `Func` |
+| a hand-written copy button + `legacyCopy` textarea fallback | `copy(text)` / `copyFrom(selector)` with `.feedback(text, ms)`, `.feedbackClass`, `.failText`, `.trigger(el)` |
+| 80 lines of scrollspy (activation line, click lock, MutationObserver) | `scrollSpy(nav, headings)` with `.within`, `.linkClass`, `.activeClass`, `.hasHeadingsClass`, `.host`, `.offset`, `.scrollMargin` |
+| a private fetch + TTL cache + `pushState` + popstate reimplementation of `swap()` | `swap(...)`/`swapPush(...)` markup, plus `navigate(url)` (`.target/.push/.morph/.replace/.cache/.prefetch`), `prefetch(selector)` (`.within/.onHover/.onVisible/.delay/.cache/.url`), `activeLink(selector)`, `onPopState(Func)` |
+| a drag handler and a wrapped-line gutter in strings | `splitPane(handle, left)` (`.container/.min/.max/.minPercent/.maxPercent/.persist`), `lineGutter(textarea, gutter)` (`.mirror/.errorClass`) + `relineGutter`, `markLine`, `resizeToContent`, `insertText` |
+| no Java-side reader of client state (`JWeb.getState` existed, nothing called it) | `syncState(state)` → a `Val`; `onStateChange(state, callback)` → an `Action` |
+| `.raw("if(x !== y) return;")` for an early return | `if_(condition, return_())` — a `Stmt`, anywhere a statement goes |
+| `callback("e").raw("e.preventDefault()")` | `callback("e").does(preventDefault())`; also `stopPropagation()`, `stopImmediatePropagation()` |
+| `.onUpgrade(callback("db").raw(createStore(v("db"), …).build().js()))` | `.onUpgrade(db -> createStore(db, "users").keyPath("id").build())` |
+| no Web Components, no shadow DOM, no PWA manifest | `customElement(name)` (`observedAttributes/shadow/template/connected/disconnected/attributeChanged/adopted/extendsTag`), `attachShadow`, `shadowRoot`, `assignSlot`, `assignedSlot`, `assignedElements`, `assignedNodes`, `onSlotChange`; `jweb.js.Pwa` — `manifest(...)`, `link()`, `serve(app, manifest)`, `registerServiceWorker(url)` |
+| `document.createElement` / `document.activeElement` / template parsing by hand | `createElement(tag)`, `activeElement()`, `parseHtml(html)` |
+| `sse(url)` had no named-event listener | `.on(eventName, callback)` |
+| `byId(x).addEventListener(type, callback("e").raw(debounced.js()))` | `byId(x).addEventListener(type, debounce(300, callback("e")…))` — the `Val` overload |
+
+New builder types, all `jweb.js.*` and all `Action`s: `Behavior`, `Copy`, `Navigate`,
+`Prefetch`, `ActiveLink`, `ScrollSpy`, `SplitPane`, `LineGutter`, `CustomElement`,
+`Manifest`, `Pwa`.
+
+The client runtime grew the implementations (`JWeb.copyText/scrollSpy/prefetchOn/
+activeLink/splitPane/lineGutter/resizeToContent/insertText/onState/nearest/parseHtml`) plus
+a ready queue behaviors install through, and `swap()` gained `opts.push`, `opts.mode`, a
+shared TTL cache (`data-swap-cache`), and a `pushState`-before-dispatch order so a
+`jweb:swap` listener sees the URL it navigated to.
+
+### The ten most-used browser modules under `jweb.Js.*`
+
+`JSClipboard`, `JSObservers`, `JSStorage`, `JSHistory`, `JSUrl`, `JSFormData`,
+`JSAnimation`, `JSWebAnimations`, `JSMedia` and `JSIndexedDB` are re-exported from
+`jweb.Js`, so `local()`, `cookie("theme")`, `replaceState("/x")`, `openDB("app", 1)`,
+`intersection()` and `writeText(...)` need no second import. Their own imports still work
+and are unchanged.
+
+**Nothing was renamed.** Where forwarding a name would have captured a call that means
+something else, the name stays module-only instead: `get`, `delete`, `pushState`,
+`onPopState`, `eventKey` (the Actions layer owns those); `animate`, `currentTime`,
+`currentUrl`, `disconnect`, `getQueryParam`, `pause`, `play`, `playbackRate`,
+`setCurrentTime`, `setPlaybackRate`, `toObject` (two of the ten declare each); `audio`,
+`video`, `src`, `href`, `url`, `search`, `duration`, `onAnimationEnd`, `onCancel`,
+`onTransitionEnd` (the HTML or CSS DSL owns those under the four-wildcard import).
+Renaming any of them would have broken a module's own readable API to buy an alias.
+`JsModuleFacadeTest` fails if a module grows a static the facade does not forward, or if
+an excluded name has no collision to justify it.
+
 ## Async
 
 `Suspense.of(() -> …)` — only the `Callable` overload exists, so the cast is gone.
@@ -278,6 +330,16 @@ These still compile and now mean something else. Search for them:
 8. **`style().prop(textWrapBalance())`** — the single-argument `prop(String)` that split a
    `"property:value"` string still exists, but the modules no longer return one, so this
    is now a compile error. → `style().apply(textWrapBalance())`.
+9. **`asyncFunc(...).does(...)`** takes `Object...` rather than `Action...`. Every call
+   still compiles; only passing an `Action[]` array as the single argument changes meaning
+   (it becomes one `Object` argument). Pass the actions, not an array.
+10. **A `Val` handed to `El.addEventListener(type, ...)`** now binds the new `Val` overload
+   (the listener expression) instead of failing to compile. That is the point —
+   `debounce(300, …)` attaches directly — but a `Val` you meant as something else no
+   longer errors.
+11. **A page that swaps and pushes history** reloads instead of doing nothing when the user
+   goes back past the first swap: that entry is the document as the server first sent it,
+   and nothing in the page remembers what that was.
 
 Everything else is a compile error with an obvious fix, or a deprecation warning:
 deleted `abbr(text, title)` / `blockquote(cite, …)` / `datalist(id, …)` / `optgroup(label, …)`,
