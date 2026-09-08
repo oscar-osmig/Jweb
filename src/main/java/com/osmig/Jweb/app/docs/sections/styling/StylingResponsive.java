@@ -9,7 +9,23 @@ public final class StylingResponsive {
     public static Element render() {
         return section(
             h3Title("Media Queries"),
-            para("Create responsive designs that adapt to screen sizes."),
+            para("Create responsive designs that adapt to screen sizes. A breakpoint "
+                 + "can hang off an inline style with at(), or carry its own rules in a "
+                 + "stylesheet."),
+
+            codeBlock("""
+// On an inline style — the breakpoint gets a generated class,
+// the plain declarations stay inline
+h1(style()
+        .fontSize(rem(1.9))
+        .at(md(), style().fontSize(rem(2.5)))
+        .at(xl(), style().fontSize(rem(3))),
+    "Java Web Framework")
+
+// Often no breakpoint is needed at all
+h1(style().fontSize(clamp(rem(1.9), vw(6.5), rem(2.5))), "Java Web Framework")
+div(autoGrid(px(240), SP_4), cards)      // as many columns as fit
+div(container(px(1200)).padding(SP_8, GUTTER), content)"""),
 
             codeBlock("""
 // Basic breakpoint

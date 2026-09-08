@@ -26,7 +26,7 @@ public class ContactPage implements Template {
 
     @Override
     public Element render() {
-        return div(style().maxWidth(px(500)).margin(zero, auto)
+        return div(container(px(500))
                 .padding(clamp(rem(2), vw(8), rem(4)), GUTTER),
             h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT), "Get in Touch"),
             p(style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.7),
@@ -34,7 +34,7 @@ public class ContactPage implements Template {
             form(id("contact-form"),
                  action("/contact/submit"), method("post"),          // no-JS fallback
                  swapForm("/contact/submit", "#form-status"),         // progressive swap
-                 style().marginTop(SP_8).display(flex).flexDirection(column).gap(SP_4),
+                 stack(SP_4).marginTop(SP_8),
                 Csrf.tokenField(csrfToken),
                 field("Name", "name", "text", "Your name"),
                 field("Email", "email", "email", "you@example.com"),

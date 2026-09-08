@@ -147,7 +147,7 @@ public final class ThreeDemoPage {
                 div(id("compass"), style().position(absolute).right(px(14)).bottom(px(14))
                         .width(px(44)).height(px(44)).borderRadius(px(22))
                         .border(px(2), solid, hex("#e7d6b1")).color(hex("#e7d6b1"))
-                        .display(flex).alignItems(center).justifyContent(center)
+                        .apply(center())
                         .fontSize(px(18)).transform(rotate(var("--three-yaw", deg(0)))),
                     "▲")
             ).id("walkable"),
@@ -163,7 +163,7 @@ public final class ThreeDemoPage {
                 "Near the lantern — onNear(2.2, show(...)) / onFar(hide(...)). "
                     + "The columns and the lantern post are .solid(): walk into them."),
 
-            div(style().marginTop(SP_3).display(flex).gap(SP_2).flexWrap(wrap),
+            div(cluster(SP_2).marginTop(SP_3),
                 button(data("three-walk", "walkable"), chipStyle(),
                     "🚶 Walk here — W A S D, drag to look, Esc to step out"),
                 button(onClick(e -> Three.patch("walkable").camera()

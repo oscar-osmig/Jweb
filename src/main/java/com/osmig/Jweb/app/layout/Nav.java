@@ -14,18 +14,15 @@ public class Nav implements Template {
 
     @Override
     public Element render() {
-        return nav(style()
+        return nav(cluster(SP_2)
+                .justifyContent(spaceBetween)
                 .position(sticky).top(zero).zIndex(1000)
                 .apply(brandFlow())
-                .padding(rem(0.75), GUTTER)
-                .display(flex).flexWrap(wrap).rowGap(SP_2)
-                .alignItems(center).justifyContent(spaceBetween),
+                .padding(rem(0.75), GUTTER),
             a(href("/"), style()
                 .color(white).fontSize(rem(1.25)).fontWeight(700)
                 .textDecoration(none), "JWeb"),
-            div(style()
-                    .display(flex).flexWrap(wrap).alignItems(center)
-                    .gap(clamp(SP_3, vw(3), rem(1.5))),
+            div(cluster(clamp(SP_3, vw(3), rem(1.5))),
                 link("/docs", "Documentation"),
                 link("/sandbox", "Sandbox"),
                 link("/about", "About"),

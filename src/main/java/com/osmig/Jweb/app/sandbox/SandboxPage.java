@@ -29,7 +29,6 @@ public class SandboxPage implements Template {
         SandboxFile f = SandboxFiles.byId(file);
         Result r = f.mode() == Mode.DSL ? SandboxDsl.run(f.source()) : null;
         return div(class_("sandbox-layout"),
-            style(sandboxStyles()),
             tree(f.id()),
             div(class_("sandbox-panes"),
                 div(attrs().id("sandbox-dynbar").class_("sandbox-knobs"),
@@ -117,7 +116,12 @@ public class SandboxPage implements Template {
 
     // ==================== styles ====================
 
-    private String sandboxStyles() {
+    /**
+     * The sandbox's own stylesheet — collected by the render and emitted in
+     * {@code <head>} with the rest of the page's CSS.
+     */
+    @Override
+    public jweb.css.Stylesheet styles() {
         return stylesheet()
             .rule(".sandbox-layout", style()
                 .display(flex).height(percent(100)).minHeight(num(0)))
@@ -323,7 +327,6 @@ public class SandboxPage implements Template {
                 .at(25, style().prop("transform", "translateX(-5px)"))
                 .at(50, style().prop("transform", "translateX(5px)"))
                 .at(75, style().prop("transform", "translateX(-3px)"))
-                .at(100, style().prop("transform", "translateX(0)")))
-            .build();
+                .at(100, style().prop("transform", "translateX(0)")));
     }
 }

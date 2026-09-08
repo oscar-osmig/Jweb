@@ -35,8 +35,7 @@ public class AdminMessagesPage implements Template {
     }
 
     private Element topBar() {
-        return div(style()
-                .display(flex).justifyContent(spaceBetween).alignItems(center)
+        return div(row().justifyContent(spaceBetween)
                 .marginBottom(SP_8),
             div(
                 h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
@@ -54,7 +53,7 @@ public class AdminMessagesPage implements Template {
                 .style().margin(zero).done(),
             Csrf.tokenField(csrfToken),
             button(attrs().type("submit").title("Logout").style()
-                    .display(flex).alignItems(center).justifyContent(center)
+                    .apply(center())
                     .width(px(40)).height(px(40))
                     .backgroundColor(transparent).border(none).cursor(pointer)
                     .borderRadius(ROUNDED).color(TEXT_LIGHT)
@@ -102,8 +101,7 @@ public class AdminMessagesPage implements Template {
             div(style()
                     .position(relative).zIndex(1).padding(SP_6),
                 // Header row: name + date
-                div(style()
-                        .display(flex).justifyContent(spaceBetween).alignItems(center)
+                div(row().justifyContent(spaceBetween)
                         .marginBottom(SP_3),
                     span(style()
                             .fontSize(TEXT_LG).fontWeight(600).color(TEXT),

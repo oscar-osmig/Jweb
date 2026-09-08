@@ -77,17 +77,22 @@ public class DocSidebar implements Template {
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), text("For AI")),
+            // The hover state rides the inline style: this link is outside the
+            // section nav, so DocsNavScript's delegated mouseover styling never
+            // reaches it, and it needs a real :hover rule.
             a(attrs().href("/docs/tell")
-                .class_("docs-tell-link")
                 .title("Downloads every guide and reference topic as one markdown "
-                       + "file, for an AI assistant to use as a source")
-                .style()
+                       + "file, for an AI assistant to use as a source"),
+                style()
                     .display(block)
                     .padding(SP_2, SP_3).borderRadius(ROUNDED)
                     .border(px(1), dashed, BORDER)
                     .fontSize(TEXT_SM).color(TEXT_LIGHT)
                     .textDecoration(none).transition(all, s(0.15), ease)
-                .done(),
+                    .hover(style()
+                        .color(PRIMARY)
+                        .borderColor(PRIMARY)
+                        .backgroundColor(hex("#eef2ff"))),
                 span(style().display(block), text("Download all docs (.md)")),
                 span(style()
                         .display(block).marginTop(px(2))

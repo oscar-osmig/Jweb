@@ -79,6 +79,12 @@ public class Selector {
     /** Appends :empty pseudo-class (no children). */
     public Selector empty() { return pseudo("empty"); }
 
+    /** Appends :popover-open pseudo-class (a popover in its showing state). */
+    public Selector popoverOpen() { return pseudo("popover-open"); }
+
+    /** Appends :open pseudo-class (an open details, dialog or select). */
+    public Selector open() { return pseudo("open"); }
+
     /** Appends :not() pseudo-class. @param inner the selector to negate */
     public Selector not(Selector inner) { sb.append(":not(").append(inner.build()).append(")"); return this; }
 

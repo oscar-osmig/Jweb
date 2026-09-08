@@ -14,8 +14,7 @@ public class HomePage implements Template {
         // minHeight 100% (not flex/fixed height) keeps the hero vertically
         // centered on large screens while letting the page grow and scroll
         // on phones instead of clipping.
-        return div(style()
-                .display(flex).flexDirection(column).justifyContent(center).alignItems(center)
+        return div(center().flexDirection(column)
                 .minHeight(percent(100)).padding(SP_8, GUTTER),
             hero(),
             features()

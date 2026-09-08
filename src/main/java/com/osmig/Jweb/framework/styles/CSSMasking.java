@@ -1,5 +1,8 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.CSSValue;
+import jweb.Style;
+
 /**
  * CSS Masking and Clipping DSL for applying masks and clip paths to elements.
  *
@@ -8,174 +11,208 @@ package com.osmig.Jweb.framework.styles;
  *
  * <h2>Usage</h2>
  * <pre>{@code
- * import static com.osmig.Jweb.framework.styles.CSS.*;
- * import static com.osmig.Jweb.framework.styles.CSSMasking.*;
+ * import static jweb.Css.*;
  *
  * // Gradient mask (fade out bottom)
  * rule(".fade-bottom")
- *     .prop(maskImage("linear-gradient(black 60%, transparent)"))
+ *     .apply(maskImage("linear-gradient(black 60%, transparent)"))
  *
  * // Image mask
  * rule(".masked")
- *     .prop(maskImage("url('mask.svg')"))
- *     .prop(maskSize("cover"))
- *     .prop(maskRepeat("no-repeat"))
+ *     .apply(maskImage("url('mask.svg')"))
+ *     .apply(maskSize("cover"))
+ *     .apply(maskRepeat("no-repeat"))
  *
  * // Clip path - circle
  * rule(".circle")
- *     .prop(clipCircle("50%"))
+ *     .apply(clipCircle("50%"))
  *
  * // Clip path - polygon (triangle)
  * rule(".triangle")
- *     .prop(clipPolygon("50% 0%", "0% 100%", "100% 100%"))
+ *     .apply(clipPolygon("50% 0%", "0% 100%", "100% 100%"))
  *
  * // Clip path - inset (rounded rectangle)
  * rule(".rounded-clip")
- *     .prop(clipInset("10px", "8px"))
+ *     .apply(clipInset("10px", "8px"))
  * }</pre>
  *
  * @see CSS for creating style rules
- *
- * @deprecated The mask properties are first-class {@code Style} methods that take
- *             typed values instead of pre-joined {@code "prop:value"} strings:
- *             {@link jweb.Style#mask}, {@link jweb.Style#maskImage},
- *             {@link jweb.Style#maskMode}, {@link jweb.Style#maskRepeat},
- *             {@link jweb.Style#maskPosition}, {@link jweb.Style#maskClip},
- *             {@link jweb.Style#maskOrigin}, {@link jweb.Style#maskSize},
- *             {@link jweb.Style#maskComposite}, {@link jweb.Style#maskType}, and
- *             {@link jweb.Style#clipPath} for the clip-shape helpers.
  */
-@Deprecated
-public class CSSMasking {
+public class CSSMasking extends CSSLogicalProperties {
 
     protected CSSMasking() {}
 
     // ==================== mask-image ====================
 
     /**
-     * Creates a mask-image property.
+     * Creates a mask-image declaration.
      *
      * @param value the mask image (e.g., "url('mask.svg')", "linear-gradient(...)")
-     * @return the property string (with -webkit- prefix for compatibility)
+     * @return a {@code Style} holding the declaration (with -webkit- prefix for compatibility)
      */
-    public static String maskImage(String value) {
-        return "-webkit-mask-image:" + value + ";mask-image:" + value;
+    public static Style<?> maskImage(String value) {
+        return CSS.style().prop("-webkit-mask-image", value).prop("mask-image", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskImage(String)}. */
+    public static Style<?> maskImage(CSSValue value) {
+        return maskImage(value.css());
     }
 
     /** No mask image. */
-    public static String maskImageNone() {
-        return "-webkit-mask-image:none;mask-image:none";
+    public static Style<?> maskImageNone() {
+        return maskImage("none");
     }
 
     // ==================== mask-mode ====================
 
     /**
-     * Creates a mask-mode property.
+     * Creates a mask-mode declaration.
      *
      * @param value "alpha", "luminance", or "match-source"
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskMode(String value) {
-        return "-webkit-mask-mode:" + value + ";mask-mode:" + value;
+    public static Style<?> maskMode(String value) {
+        return CSS.style().prop("-webkit-mask-mode", value).prop("mask-mode", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskMode(String)}. */
+    public static Style<?> maskMode(CSSValue value) {
+        return maskMode(value.css());
     }
 
     /** Uses alpha channel for masking. */
-    public static String maskModeAlpha() {
+    public static Style<?> maskModeAlpha() {
         return maskMode("alpha");
     }
 
     /** Uses luminance for masking. */
-    public static String maskModeLuminance() {
+    public static Style<?> maskModeLuminance() {
         return maskMode("luminance");
     }
 
     // ==================== mask-position ====================
 
     /**
-     * Creates a mask-position property.
+     * Creates a mask-position declaration.
      *
      * @param value the position (e.g., "center", "top right", "50% 50%")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskPosition(String value) {
-        return "-webkit-mask-position:" + value + ";mask-position:" + value;
+    public static Style<?> maskPosition(String value) {
+        return CSS.style().prop("-webkit-mask-position", value).prop("mask-position", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskPosition(String)}. */
+    public static Style<?> maskPosition(CSSValue value) {
+        return maskPosition(value.css());
     }
 
     // ==================== mask-size ====================
 
     /**
-     * Creates a mask-size property.
+     * Creates a mask-size declaration.
      *
      * @param value the size (e.g., "cover", "contain", "100px 200px", "50%")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskSize(String value) {
-        return "-webkit-mask-size:" + value + ";mask-size:" + value;
+    public static Style<?> maskSize(String value) {
+        return CSS.style().prop("-webkit-mask-size", value).prop("mask-size", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskSize(String)}. */
+    public static Style<?> maskSize(CSSValue value) {
+        return maskSize(value.css());
     }
 
     // ==================== mask-repeat ====================
 
     /**
-     * Creates a mask-repeat property.
+     * Creates a mask-repeat declaration.
      *
      * @param value "repeat", "no-repeat", "repeat-x", "repeat-y", "space", "round"
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskRepeat(String value) {
-        return "-webkit-mask-repeat:" + value + ";mask-repeat:" + value;
+    public static Style<?> maskRepeat(String value) {
+        return CSS.style().prop("-webkit-mask-repeat", value).prop("mask-repeat", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskRepeat(String)}. */
+    public static Style<?> maskRepeat(CSSValue value) {
+        return maskRepeat(value.css());
     }
 
     // ==================== mask-origin ====================
 
     /**
-     * Creates a mask-origin property.
+     * Creates a mask-origin declaration.
      *
      * @param value "border-box", "padding-box", "content-box", "fill-box", "stroke-box", "view-box"
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskOrigin(String value) {
-        return "-webkit-mask-origin:" + value + ";mask-origin:" + value;
+    public static Style<?> maskOrigin(String value) {
+        return CSS.style().prop("-webkit-mask-origin", value).prop("mask-origin", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskOrigin(String)}. */
+    public static Style<?> maskOrigin(CSSValue value) {
+        return maskOrigin(value.css());
     }
 
     // ==================== mask-clip ====================
 
     /**
-     * Creates a mask-clip property.
+     * Creates a mask-clip declaration.
      *
      * @param value "border-box", "padding-box", "content-box", "fill-box", "stroke-box", "view-box", "no-clip"
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskClip(String value) {
-        return "-webkit-mask-clip:" + value + ";mask-clip:" + value;
+    public static Style<?> maskClip(String value) {
+        return CSS.style().prop("-webkit-mask-clip", value).prop("mask-clip", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskClip(String)}. */
+    public static Style<?> maskClip(CSSValue value) {
+        return maskClip(value.css());
     }
 
     // ==================== mask-composite ====================
 
     /**
-     * Creates a mask-composite property.
+     * Creates a mask-composite declaration.
      *
      * @param value "add", "subtract", "intersect", "exclude"
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String maskComposite(String value) {
-        return "-webkit-mask-composite:" + value + ";mask-composite:" + value;
+    public static Style<?> maskComposite(String value) {
+        return CSS.style().prop("-webkit-mask-composite", value).prop("mask-composite", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #maskComposite(String)}. */
+    public static Style<?> maskComposite(CSSValue value) {
+        return maskComposite(value.css());
     }
 
     // ==================== clip-path ====================
 
     /**
-     * Creates a clip-path property.
+     * Creates a clip-path declaration.
      *
      * @param value the clip path value
-     * @return the property string
+     * @return a {@code Style} holding {@code clip-path: value}
      */
-    public static String clipPath(String value) {
-        return "clip-path:" + value;
+    public static Style<?> clipPath(String value) {
+        return CSS.style().prop("clip-path", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #clipPath(String)}. */
+    public static Style<?> clipPath(CSSValue value) {
+        return clipPath(value.css());
     }
 
     /** No clip path. */
-    public static String clipPathNone() {
-        return "clip-path:none";
+    public static Style<?> clipPathNone() {
+        return clipPath("none");
     }
 
     // ==================== clip-path Shapes ====================
@@ -184,10 +221,10 @@ public class CSSMasking {
      * Creates a circle clip path.
      *
      * @param radius the circle radius (e.g., "50%", "100px")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipCircle(String radius) {
-        return "clip-path:circle(" + radius + ")";
+    public static Style<?> clipCircle(String radius) {
+        return clipPath("circle(" + radius + ")");
     }
 
     /**
@@ -195,10 +232,10 @@ public class CSSMasking {
      *
      * @param radius the circle radius
      * @param position the center position (e.g., "at 50% 50%", "at center")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipCircle(String radius, String position) {
-        return "clip-path:circle(" + radius + " at " + position + ")";
+    public static Style<?> clipCircle(String radius, String position) {
+        return clipPath("circle(" + radius + " at " + position + ")");
     }
 
     /**
@@ -206,10 +243,10 @@ public class CSSMasking {
      *
      * @param rx horizontal radius
      * @param ry vertical radius
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipEllipse(String rx, String ry) {
-        return "clip-path:ellipse(" + rx + " " + ry + ")";
+    public static Style<?> clipEllipse(String rx, String ry) {
+        return clipPath("ellipse(" + rx + " " + ry + ")");
     }
 
     /**
@@ -218,20 +255,20 @@ public class CSSMasking {
      * @param rx horizontal radius
      * @param ry vertical radius
      * @param position center position
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipEllipse(String rx, String ry, String position) {
-        return "clip-path:ellipse(" + rx + " " + ry + " at " + position + ")";
+    public static Style<?> clipEllipse(String rx, String ry, String position) {
+        return clipPath("ellipse(" + rx + " " + ry + " at " + position + ")");
     }
 
     /**
      * Creates an inset clip path (rounded rectangle).
      *
      * @param inset the inset values (e.g., "10px", "10px 20px", "5% 10% 15% 20%")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipInset(String inset) {
-        return "clip-path:inset(" + inset + ")";
+    public static Style<?> clipInset(String inset) {
+        return clipPath("inset(" + inset + ")");
     }
 
     /**
@@ -239,81 +276,81 @@ public class CSSMasking {
      *
      * @param inset the inset values
      * @param borderRadius the border radius
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipInset(String inset, String borderRadius) {
-        return "clip-path:inset(" + inset + " round " + borderRadius + ")";
+    public static Style<?> clipInset(String inset, String borderRadius) {
+        return clipPath("inset(" + inset + " round " + borderRadius + ")");
     }
 
     /**
      * Creates a polygon clip path.
      *
      * @param points the polygon points (e.g., "50% 0%", "0% 100%", "100% 100%")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipPolygon(String... points) {
-        return "clip-path:polygon(" + String.join(",", points) + ")";
+    public static Style<?> clipPolygon(String... points) {
+        return clipPath("polygon(" + String.join(",", points) + ")");
     }
 
     /**
      * Creates a path() clip path using SVG path data.
      *
      * @param svgPath the SVG path data string
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipSvgPath(String svgPath) {
-        return "clip-path:path('" + svgPath + "')";
+    public static Style<?> clipSvgPath(String svgPath) {
+        return clipPath("path('" + svgPath + "')");
     }
 
     /**
      * Creates a clip-path referencing an SVG clipPath element.
      *
      * @param url the URL to the SVG clipPath (e.g., "#myClip", "clip.svg#myClip")
-     * @return the property string
+     * @return a {@code Style} holding the declaration
      */
-    public static String clipUrl(String url) {
-        return "clip-path:url(" + url + ")";
+    public static Style<?> clipUrl(String url) {
+        return clipPath("url(" + url + ")");
     }
 
     // ==================== Common Shapes ====================
 
     /** Clips to a triangle pointing up. */
-    public static String clipTriangleUp() {
+    public static Style<?> clipTriangleUp() {
         return clipPolygon("50% 0%", "0% 100%", "100% 100%");
     }
 
     /** Clips to a triangle pointing down. */
-    public static String clipTriangleDown() {
+    public static Style<?> clipTriangleDown() {
         return clipPolygon("0% 0%", "100% 0%", "50% 100%");
     }
 
     /** Clips to a triangle pointing left. */
-    public static String clipTriangleLeft() {
+    public static Style<?> clipTriangleLeft() {
         return clipPolygon("100% 0%", "0% 50%", "100% 100%");
     }
 
     /** Clips to a triangle pointing right. */
-    public static String clipTriangleRight() {
+    public static Style<?> clipTriangleRight() {
         return clipPolygon("0% 0%", "100% 50%", "0% 100%");
     }
 
     /** Clips to a diamond shape. */
-    public static String clipDiamond() {
+    public static Style<?> clipDiamond() {
         return clipPolygon("50% 0%", "100% 50%", "50% 100%", "0% 50%");
     }
 
     /** Clips to a pentagon. */
-    public static String clipPentagon() {
+    public static Style<?> clipPentagon() {
         return clipPolygon("50% 0%", "100% 38%", "82% 100%", "18% 100%", "0% 38%");
     }
 
     /** Clips to a hexagon. */
-    public static String clipHexagon() {
+    public static Style<?> clipHexagon() {
         return clipPolygon("25% 0%", "75% 0%", "100% 50%", "75% 100%", "25% 100%", "0% 50%");
     }
 
     /** Clips to a star shape. */
-    public static String clipStar() {
+    public static Style<?> clipStar() {
         return clipPolygon(
             "50% 0%", "61% 35%", "98% 35%", "68% 57%",
             "79% 91%", "50% 70%", "21% 91%", "32% 57%",

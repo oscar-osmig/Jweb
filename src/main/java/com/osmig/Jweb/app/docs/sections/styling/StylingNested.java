@@ -11,11 +11,10 @@ public final class StylingNested {
             h3Title("Nested CSS"),
             para("Write CSS with nesting syntax for cleaner, more organized stylesheets."),
             codeBlock("""
-import jweb.css.CSSNested;
 import static jweb.Css.*;
 
-// Basic nesting (CSSNested stays qualified — its rule() clashes with Css.rule)
-CSSNested.rule(".card")
+// Basic nesting
+nest(".card")
     .style(style()
         .padding(rem(1))
         .borderRadius(px(8)))
@@ -39,7 +38,7 @@ CSSNested.rule(".card")
             h3Title("Parent Selector (&)"),
             para("Reference the parent selector for states and modifiers."),
             codeBlock("""
-CSSNested.rule(".button")
+nest(".button")
     .style(style()
         .padding(rem(0.75), rem(1.5))
         .backgroundColor(hex("#3b82f6")))
@@ -60,7 +59,7 @@ CSSNested.rule(".button")
             h3Title("Deep Nesting"),
             para("Nest multiple levels for complex component styles."),
             codeBlock("""
-CSSNested.rule(".nav")
+nest(".nav")
     .style(style().display(flex))
     .nest(".menu")
         .style(style().display(flex).gap(rem(1)))
@@ -82,7 +81,7 @@ CSSNested.rule(".nav")
             h3Title("Media Queries in Nesting"),
             para("Nest media queries inside rules for component-scoped responsive styles."),
             codeBlock("""
-CSSNested.rule(".grid")
+nest(".grid")
     .style(style()
         .display(grid)
         .gridTemplateColumns(fr(1))
@@ -97,7 +96,7 @@ CSSNested.rule(".grid")
 
             h3Title("Complete Component Example"),
             codeBlock("""
-String cardStyles = CSSNested.rule(".card")
+String cardStyles = nest(".card")
     .style(style()
         .backgroundColor(white)
         .borderRadius(px(8))

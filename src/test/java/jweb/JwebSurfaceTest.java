@@ -99,6 +99,13 @@ class JwebSurfaceTest {
         jweb.css.Supports sp = jweb.css.Supports.supports("display", "grid");
         jweb.css.Rule rule = jweb.css.Rule.of(".x", style().color("red"));
         jweb.css.Selector sel = jweb.css.Selectors.cls("card").hover();
+        jweb.css.Theme theme = jweb.css.Theme.light().color("primary", hex("#4f46e5"));
+        jweb.CSSValue token = jweb.css.Theme.color("primary");
+        jweb.Style<?> mixin = row(rem(1)).apply(card()).hover(style().color("red"));
+
+        assertEquals(":root{--color-primary:#4f46e5;}", theme.css());
+        assertEquals("var(--color-primary)", token.css());
+        assertEquals("&:hover{color: red;}", mixin.variantCss("&"));
 
         String css = sheet.add(mq.rules(rule)).add(kf.from(style().opacity(0)).to(style().opacity(1)))
             .add(sp.rules(rule)).add(cq.rule(".x", style().display(block))).build();

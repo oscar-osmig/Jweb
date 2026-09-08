@@ -39,8 +39,7 @@ public class SubheaderSidebar implements Template {
                 .marginBottom(SP_4).textTransform(uppercase)
                 .letterSpacing(em(0.05)),
                 text("On This Page")),
-            nav(attrs().id("subheader-nav"), style()
-                .display(flex).flexDirection(column).gap(SP_1)
+            nav(attrs().id("subheader-nav"), stack(SP_1)
                 .overflowY(auto)
                 .maxHeight(calc("100vh - 50px"))
                 .paddingRight(SP_2)

@@ -22,7 +22,7 @@ package com.osmig.Jweb.framework.styles;
  * @deprecated Replaced by {@code jweb.Css} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class CSSColors {
+public class CSSColors extends CSSNested {
 
     protected CSSColors() {}
 

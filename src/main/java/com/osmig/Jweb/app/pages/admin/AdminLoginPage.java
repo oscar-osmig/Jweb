@@ -23,8 +23,7 @@ public class AdminLoginPage implements Template {
 
     @Override
     public Element render() {
-        return div(style()
-                .display(flex).justifyContent(center).alignItems(center)
+        return div(center()
                 .flex(1).padding(SP_8),
             loginCard()
         );
@@ -51,9 +50,8 @@ public class AdminLoginPage implements Template {
                         .textAlign(center).marginBottom(SP_6),
                     text("Enter your credentials to access the dashboard")),
                 errorMessage(),
-                form(attrs().action("/only-admin/log/in").method("post").style()
-                        .display(flex).flexDirection(column).gap(SP_4)
-                    .done(),
+                form(attrs().action("/only-admin/log/in").method("post"),
+                    stack(SP_4),
                     Csrf.tokenField(csrfToken),
                     field("Email", "email", "email", "admin@example.com"),
                     field("Admin Token", "token", "password", "Enter admin token"),

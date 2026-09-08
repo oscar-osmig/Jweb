@@ -192,7 +192,6 @@ import static jweb.Js.*;      // JS: handlers, actions, expressions, events, asy
 // (jweb.Actions is the same surface under its old name)
 import static jweb.State.*;   // server-driven state hooks
 import static jweb.UI.*;      // prebuilt components
-import static jweb.Layout.*;  // layout primitives
 import static jweb.Mongo.*;   // MongoDB access (also jweb.Schema, jweb.Doc)
 
 // Specialty modules keep their class names under jweb.css.* / jweb.js.*

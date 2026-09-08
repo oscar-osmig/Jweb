@@ -42,22 +42,50 @@ app.pages(
     "/about", AboutPage.class
 );"""),
 
+            docSubtitle("The layout's stylesheet"),
+            para("A layout owns the global CSS: the reset, the design tokens, the "
+                 + "document shell. Return it from styles() and the render puts it in "
+                 + "<head> — no page has to remember to include it."),
+            codeBlock("""
+public class Layout implements Template {
+
+    @Override
+    public Element render() {
+        return html(new Head(title), body(new Nav(), main(content), new Footer()));
+    }
+
+    @Override
+    public Stylesheet styles() {
+        return stylesheet()
+            .add(Theme.TOKENS)
+            .rule("*, *::before, *::after", style().boxSizing(borderBox).margin(zero))
+            .rule("body", style().color(TEXT).backgroundColor(BG));
+    }
+}"""),
+
             docSubtitle("Theme Tokens"),
             codeBlock("""
 public final class Theme {
-    // Colors
-    public static final CSSValue PRIMARY = hex("#6366f1");
-    public static final CSSValue TEXT = hex("#1e293b");
 
-    // Spacing
-    public static final CSSValue SP_4 = rem(1);
-    public static final CSSValue SP_8 = rem(2);
+    public static final jweb.css.Theme TOKENS = jweb.css.Theme.light()
+        .color("primary", hex("#6366f1"))
+        .color("text",    hex("#1e293b"))
+        .space("4",       rem(1))
+        .space("8",       rem(2))
+        .dark(jweb.css.Theme.dark().color("text", hex("#e2e8f0")));
+
+    // The names pages use — each one a var() reference
+    public static final CSSValue PRIMARY = jweb.css.Theme.color("primary");
+    public static final CSSValue TEXT    = jweb.css.Theme.color("text");
+    public static final CSSValue SP_4    = jweb.css.Theme.space("4");
+    public static final CSSValue SP_8    = jweb.css.Theme.space("8");
 }
 
-// Usage
+// Usage — unchanged
 div(style().color(PRIMARY).padding(SP_4))"""),
 
-            docTip("Define design tokens in Theme.java for consistent styling across your app."),
+            docTip("Define design tokens in Theme.java for consistent styling across your app. "
+                 + "As custom properties they are visible in devtools and swappable at runtime."),
 
             LayoutsI18n.render()
         );

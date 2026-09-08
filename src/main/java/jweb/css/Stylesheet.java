@@ -237,6 +237,56 @@ public class Stylesheet {
     }
 
     /**
+     * Adds a design system's custom properties — the {@code :root} block, and
+     * the dark-scheme block if the theme has one.
+     *
+     * @param theme the theme
+     * @return this for chaining
+     */
+    public Stylesheet add(Theme theme) {
+        rules.add(theme.css());
+        return this;
+    }
+
+    /**
+     * Adds a {@code @starting-style} block — the values a transition animates
+     * <em>from</em> the first time an element is rendered.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * stylesheet()
+     *     .rule(".toast", style().opacity(1).transition(propAll, ms(200), ease))
+     *     .startingStyle(".toast", style().opacity(0))
+     * </pre>
+     *
+     * @param selector the selector the starting values apply to
+     * @param style the starting declarations
+     * @return this for chaining
+     */
+    public Stylesheet startingStyle(String selector, jweb.Style<?> style) {
+        rules.add("@starting-style{" + selector + "{" + style.build() + "}}");
+        return this;
+    }
+
+    /**
+     * Adds a {@code @starting-style} block holding several rules.
+     *
+     * @param nestedRules the rules inside the block
+     * @return this for chaining
+     */
+    public Stylesheet startingStyle(Rule... nestedRules) {
+        StringBuilder sb = new StringBuilder("@starting-style{");
+        for (Rule r : nestedRules) sb.append(r.build());
+        rules.add(sb.append("}").toString());
+        return this;
+    }
+
+    /** True when nothing has been added. */
+    public boolean isEmpty() {
+        return rules.isEmpty();
+    }
+
+    /**
      * Builds the complete stylesheet.
      *
      * @return CSS string

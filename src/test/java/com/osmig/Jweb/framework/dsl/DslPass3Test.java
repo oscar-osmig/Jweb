@@ -56,6 +56,59 @@ class DslPass3Test {
         assertNotNull(f); assertNotNull(s); assertNotNull(c);
     }
 
+    /**
+     * The layout mixins share their names with keyword constants ({@code grid},
+     * {@code center}, {@code cover}, {@code contain}, {@code row}) and, for
+     * {@code grid}, with a Three scene setting. Fields and methods are separate
+     * namespaces, so both spellings must keep resolving under all four
+     * wildcards.
+     */
+    @Test
+    void theLayoutMixinsDoNotShadowTheKeywordConstants() {
+        jweb.Style<?> asMixin = grid(3, rem(1));
+        jweb.Style<?> asConstant = style().display(grid);
+        jweb.three.SceneSetting sceneGrid = Three.grid(10, 40);
+
+        assertEquals("display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem;",
+            asMixin.build());
+        assertEquals("display: grid;", asConstant.build());
+        assertNotNull(sceneGrid.toMap());
+
+        assertEquals("display: flex; align-items: center;", row().build());
+        assertEquals("align-items: center;", style().alignItems(center).build());
+        assertEquals("object-fit: cover;", style().objectFit(cover).build());
+        assertTrue(cover().build().contains("object-fit: cover;"));
+        assertTrue(contain().build().contains("object-fit: contain;"));
+        assertTrue(center().build().startsWith("display: flex;"));
+        assertTrue(stack(rem(1)).build().contains("flex-direction: column;"));
+        assertTrue(cluster(rem(1)).build().contains("flex-wrap: wrap;"));
+        assertTrue(container(px(900)).build().contains("max-width: 900px;"));
+        assertTrue(card().build().contains("var(--color-surface"));
+        assertTrue(truncate().build().contains("ellipsis"));
+        assertTrue(truncate(2).build().contains("-webkit-line-clamp: 2;"));
+        assertTrue(srOnly().build().contains("position: absolute;"));
+        assertTrue(fullBleed().build().contains("100vw"));
+        assertEquals("aspect-ratio: 4 / 3;", aspect(4, 3).build());
+        assertTrue(autoGrid(px(240)).build().contains("auto-fit"));
+        assertTrue(autoGrid(px(240), rem(1)).build().contains("gap: 1rem;"));
+    }
+
+    /** The 3.0 keyword constants, under all four wildcards. */
+    @Test
+    void theNewKeywordConstantsResolve() {
+        assertEquals("field-sizing: content;", style().fieldSizing(content).build());
+        assertEquals("scrollbar-width: thin;", style().scrollbarWidth(thin).build());
+        assertEquals("scrollbar-gutter: stable both-edges;",
+            style().scrollbarGutter(stableBothEdges).build());
+        assertEquals("text-box: trim-both cap alphabetic;",
+            style().textBox(trimBoth, capAlphabetic).build());
+        assertEquals("text-box-trim: trim-start;", style().textBoxTrim(trimStart).build());
+        assertEquals("text-box-trim: trim-end;", style().textBoxTrim(trimEnd).build());
+        assertEquals("text-box-edge: ex alphabetic;", style().textBoxEdge(exAlphabetic).build());
+        assertEquals("interpolate-size: allow-keywords;",
+            style().interpolateSize(allowKeywords).build());
+    }
+
     @Test
     void spanWithAStringIsTheElementEvenWithCssImported() {
         assertEquals("<span>x</span>", span("x").toHtml());
@@ -205,6 +258,31 @@ class DslPass3Test {
     void selectorStartersLiveInSelectors() {
         assertEquals(".card:hover", jweb.css.Selectors.cls("card").hover().toString());
         assertEquals("#header", jweb.css.Selectors.id("header").toString());
+    }
+
+    // ==================== the ten modern-CSS modules join the Css chain =====
+
+    /**
+     * CSSColors → CSSNested → CSSProperty → CSSScope → CSSLayer → CSSScrollSnap
+     * → CSSMasking → CSSLogicalProperties → CSSSubgrid → CSSTextWrap →
+     * CSSAnchorPositioning is now one chain, all reachable through the single
+     * {@code import static jweb.Css.*;} already at the top of this file — with
+     * no ambiguity against El/Js/Three.
+     */
+    @Test
+    void modernCssModulesReachThroughOneImportWithNoAmbiguity() {
+        assertEquals("text-wrap: balance;", textWrapBalance().build());
+        assertEquals("anchor-name: --menu;", anchorName("--menu").build());
+        assertEquals("anchor(--menu bottom)", anchor("--menu", "bottom").css());
+        assertEquals("grid-template-columns: subgrid;", subgridColumns().build());
+        assertEquals("scroll-snap-align: start;", snapAlign("start").build());
+        assertEquals("clip-path: circle(50%);", clipCircle("50%").build());
+        assertEquals("margin-inline: auto;", marginInline("auto").build());
+        assertEquals(".menu {\n  color: red;\n}\n", nest(".menu").prop("color", "red").build());
+
+        // Composes with the rest of the CSS DSL via apply() — the point of retyping.
+        assertEquals("text-wrap: balance; color: red;",
+            style().apply(textWrapBalance()).color("red").build());
     }
 
     // ==================== async / three ====================

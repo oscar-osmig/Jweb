@@ -102,6 +102,29 @@ class ThreeDslTest {
         assertEquals("#ffffff", directionalLight().color(hex("#ffffff")).toMap().get("color"));
     }
 
+    @Test
+    void typedCssColorsAreByteIdenticalToTheStringForm() {
+        // A mesh/material color.
+        assertEquals(
+            box().color("#c9a961").metalness(0.4).toMap(),
+            box().color(hex("#c9a961")).metalness(0.4).toMap());
+
+        // A light color.
+        assertEquals(
+            pointLight().color("#c9a961").intensity(2).toMap(),
+            pointLight().color(hex("#c9a961")).intensity(2).toMap());
+
+        // A scene/fog color.
+        assertEquals(
+            fog("#c9a961", 1, 50).toMap(),
+            fog(hex("#c9a961"), 1, 50).toMap());
+
+        // Particles.colors — the multi-color palette.
+        assertEquals(
+            particles(10).colors("#c9a961", "#ffb347").toMap(),
+            particles(10).colors(hex("#c9a961"), hex("#ffb347")).toMap());
+    }
+
     // ==================== Animation presets ====================
 
     @Test

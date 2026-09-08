@@ -133,6 +133,40 @@ public class ContainerQuery {
         return this;
     }
 
+    // ==================== Style Queries ====================
+
+    /**
+     * A style query — matches on the computed value of a custom property on
+     * the container: {@code @container style(--theme: dark)}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * container("card").style("--variant", "featured")
+     *     .rule(".title", style().fontWeight(700))
+     * </pre>
+     *
+     * @param customProperty the custom property name (the {@code --} is added
+     *     for you)
+     * @param value the value it must have
+     * @return this builder for chaining
+     */
+    public ContainerQuery style(String customProperty, String value) {
+        String name = customProperty.startsWith("--") ? customProperty : "--" + customProperty;
+        conditions.add("style(" + name + ": " + value + ")");
+        return this;
+    }
+
+    /**
+     * A style query with a typed value — see {@link #style(String, String)}.
+     *
+     * @param customProperty the custom property name
+     * @param value the value it must have
+     * @return this builder for chaining
+     */
+    public ContainerQuery style(String customProperty, CSSValue value) {
+        return style(customProperty, value.css());
+    }
+
     // ==================== Custom Condition ====================
 
     public ContainerQuery condition(String condition) {
@@ -168,6 +202,25 @@ public class ContainerQuery {
     }
 
     // ==================== Build ====================
+
+    /**
+     * Just the {@code @container …} condition line, without its rules — what
+     * {@code style().at(container("card").minWidth(px(400)), …)} wraps a
+     * generated class in.
+     *
+     * @return the at-rule prelude
+     */
+    public String query() {
+        StringBuilder sb = new StringBuilder("@container ");
+        if (containerName != null && !containerName.isEmpty()) {
+            sb.append(containerName).append(" ");
+        }
+        for (int i = 0; i < conditions.size(); i++) {
+            if (i > 0) sb.append(" and ");
+            sb.append(conditions.get(i));
+        }
+        return sb.toString().stripTrailing();
+    }
 
     public String build() {
         StringBuilder sb = new StringBuilder();

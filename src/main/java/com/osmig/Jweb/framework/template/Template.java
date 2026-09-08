@@ -88,7 +88,33 @@ public interface Template extends Element {
 
     @Override
     default VNode toVNode() {
+        com.osmig.Jweb.framework.styles.PageStyles.collect(this);
         return render().toVNode();
+    }
+
+    /**
+     * This template's stylesheet — the class rules it needs, owned by the
+     * component that needs them instead of by a global CSS file.
+     *
+     * <p>The render collects the stylesheet of the page, of its layout, and of
+     * every template rendered inside them, dedupes them by content, and emits
+     * one {@code <style>} in the document head. Ten instances of a component
+     * contribute one copy.</p>
+     *
+     * <p>Example:</p>
+     * <pre>
+     * &#64;Override
+     * public Stylesheet styles() {
+     *     return stylesheet()
+     *         .rule(".card", style().padding(rem(1)).borderRadius(px(12)))
+     *         .rule(".card:hover", style().boxShadow(zero, px(4), px(12), rgba(0, 0, 0, 0.1)));
+     * }
+     * </pre>
+     *
+     * @return the stylesheet, or null (the default) for none
+     */
+    default jweb.css.Stylesheet styles() {
+        return null;
     }
 
     // ==================== Lifecycle Hooks ====================

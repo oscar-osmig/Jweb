@@ -510,6 +510,11 @@ public class Three {
         return new HemisphereLight().sky(sky).ground(ground);
     }
 
+    /** Soft illumination with typed sky and ground colors: {@code hemisphereLight(hex("#bde"), hex("#585"))}. */
+    public static HemisphereLight hemisphereLight(CSSValue sky, CSSValue ground) {
+        return new HemisphereLight().sky(sky).ground(ground);
+    }
+
     // ==================== Scene settings ====================
 
     /** A solid background color (scenes are transparent over the page by default). */

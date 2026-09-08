@@ -89,7 +89,7 @@ package com.osmig.Jweb.framework.styles;
  * @deprecated Replaced by {@code jweb.css.CSSProperty} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class CSSProperty {
+public class CSSProperty extends CSSScope {
 
     protected CSSProperty() {}
 
@@ -226,7 +226,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with color syntax
      */
-    public static PropertyBuilder color(String name) {
+    public static PropertyBuilder colorProperty(String name) {
         return register(name).syntax("<color>");
     }
 
@@ -236,7 +236,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with length syntax
      */
-    public static PropertyBuilder length(String name) {
+    public static PropertyBuilder lengthProperty(String name) {
         return register(name).syntax("<length>");
     }
 
@@ -246,7 +246,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with number syntax
      */
-    public static PropertyBuilder number(String name) {
+    public static PropertyBuilder numberProperty(String name) {
         return register(name).syntax("<number>");
     }
 
@@ -256,7 +256,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with percentage syntax
      */
-    public static PropertyBuilder percentage(String name) {
+    public static PropertyBuilder percentageProperty(String name) {
         return register(name).syntax("<percentage>");
     }
 
@@ -266,7 +266,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with integer syntax
      */
-    public static PropertyBuilder integer(String name) {
+    public static PropertyBuilder integerProperty(String name) {
         return register(name).syntax("<integer>");
     }
 
@@ -276,7 +276,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with angle syntax
      */
-    public static PropertyBuilder angle(String name) {
+    public static PropertyBuilder angleProperty(String name) {
         return register(name).syntax("<angle>");
     }
 
@@ -286,7 +286,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with time syntax
      */
-    public static PropertyBuilder time(String name) {
+    public static PropertyBuilder timeProperty(String name) {
         return register(name).syntax("<time>");
     }
 
@@ -296,7 +296,7 @@ public class CSSProperty {
      *
      * @return a PropertyBuilder with image syntax
      */
-    public static PropertyBuilder image(String name) {
+    public static PropertyBuilder imageProperty(String name) {
         return register(name).syntax("<image>");
     }
 

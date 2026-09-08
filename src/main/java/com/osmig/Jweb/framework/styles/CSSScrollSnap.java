@@ -1,5 +1,8 @@
 package com.osmig.Jweb.framework.styles;
 
+import jweb.CSSValue;
+import jweb.Style;
+
 /**
  * CSS Scroll Snap DSL for creating scroll-snapping containers and children.
  *
@@ -8,420 +11,371 @@ package com.osmig.Jweb.framework.styles;
  *
  * <h2>Horizontal Snap Container</h2>
  * <pre>{@code
- * import static com.osmig.Jweb.framework.styles.CSS.*;
- * import static com.osmig.Jweb.framework.styles.CSSScrollSnap.*;
+ * import static jweb.Css.*;
  *
  * // Container: snap on X axis, mandatory
  * rule(".carousel")
- *     .prop(snapTypeX("mandatory"))
- *     .prop(snapPadding("0 20px"))
+ *     .apply(snapTypeX("mandatory"))
+ *     .apply(snapPadding("0 20px"))
  *     .display("flex")
  *     .overflowX("auto")
  *
  * // Children: snap to start
  * rule(".carousel > .slide")
- *     .prop(snapAlign("start"))
- *     .prop(snapStop("always"))
+ *     .apply(snapAlign("start"))
+ *     .apply(snapStop("always"))
  * }</pre>
  *
  * <h2>Vertical Page Snap</h2>
  * <pre>{@code
  * rule(".pages")
- *     .prop(snapTypeY("mandatory"))
+ *     .apply(snapTypeY("mandatory"))
  *     .height("100vh")
  *     .overflowY("auto")
  *
  * rule(".pages > section")
- *     .prop(snapAlign("start"))
+ *     .apply(snapAlign("start"))
  *     .height("100vh")
  * }</pre>
  *
+ * <p>Note the naming: {@code snapPadding}/{@code snapMargin} emit the real
+ * {@code scroll-padding}/{@code scroll-margin} properties — there are no
+ * {@code scroll-snap-padding} or {@code scroll-snap-margin} properties.</p>
+ *
  * @see CSS for creating style rules
- *
- * @deprecated The properties are first-class {@code Style} methods that take typed
- *             values instead of pre-joined {@code "prop:value"} strings:
- *             {@code snapType} → {@link jweb.Style#scrollSnapType},
- *             {@code snapAlign} → {@link jweb.Style#scrollSnapAlign},
- *             {@code snapStop} → {@link jweb.Style#scrollSnapStop},
- *             {@code snapPadding} → {@link jweb.Style#scrollPadding},
- *             {@code snapMargin} → {@link jweb.Style#scrollMargin},
- *             {@code overscrollBehavior} → {@link jweb.Style#overscrollBehavior}.
- *
- *             <p>Note the naming correction: the real CSS properties behind
- *             {@code snapPadding}/{@code snapMargin} are {@code scroll-padding} and
- *             {@code scroll-margin} — there are no {@code scroll-snap-padding} or
- *             {@code scroll-snap-margin} properties, so the old names taught the
- *             wrong thing.</p>
  */
-@Deprecated
-public class CSSScrollSnap {
+public class CSSScrollSnap extends CSSMasking {
 
     protected CSSScrollSnap() {}
 
     // ==================== Scroll Snap Type ====================
 
     /**
-     * Creates a scroll-snap-type property for both axes.
+     * Creates a scroll-snap-type declaration for both axes.
      * @param value "none", "x mandatory", "y proximity", "both mandatory", etc.
-     * @return the property string
-     *
-     * @deprecated Use {@link jweb.Style#scrollSnapType} — the property is {@code scroll-snap-type}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapType(String value) {
-        return "scroll-snap-type:" + value;
+    public static Style<?> snapType(String value) {
+        return CSS.style().prop("scroll-snap-type", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapType(String)}. */
+    public static Style<?> snapType(CSSValue value) {
+        return snapType(value.css());
     }
 
     /**
      * Creates scroll-snap-type for horizontal axis.
      * @param strictness "mandatory" or "proximity"
-     * @return the property string
-     *
-     * @deprecated Use {@code style().scrollSnapType("x " + strictness)}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapTypeX(String strictness) {
-        return "scroll-snap-type:x " + strictness;
+    public static Style<?> snapTypeX(String strictness) {
+        return snapType("x " + strictness);
     }
 
     /**
      * Creates scroll-snap-type for vertical axis.
      * @param strictness "mandatory" or "proximity"
-     * @return the property string
-     *
-     * @deprecated Use {@code style().scrollSnapType("y " + strictness)}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapTypeY(String strictness) {
-        return "scroll-snap-type:y " + strictness;
+    public static Style<?> snapTypeY(String strictness) {
+        return snapType("y " + strictness);
     }
 
     /**
      * Creates scroll-snap-type for both axes.
      * @param strictness "mandatory" or "proximity"
-     * @return the property string
-     *
-     * @deprecated Use {@code style().scrollSnapType("both " + strictness)}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapTypeBoth(String strictness) {
-        return "scroll-snap-type:both " + strictness;
+    public static Style<?> snapTypeBoth(String strictness) {
+        return snapType("both " + strictness);
     }
 
     /**
      * Creates scroll-snap-type for block axis.
      * @param strictness "mandatory" or "proximity"
-     * @return the property string
-     *
-     * @deprecated Use {@code style().scrollSnapType("block " + strictness)}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapTypeBlock(String strictness) {
-        return "scroll-snap-type:block " + strictness;
+    public static Style<?> snapTypeBlock(String strictness) {
+        return snapType("block " + strictness);
     }
 
     /**
      * Creates scroll-snap-type for inline axis.
      * @param strictness "mandatory" or "proximity"
-     * @return the property string
-     *
-     * @deprecated Use {@code style().scrollSnapType("inline " + strictness)}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapTypeInline(String strictness) {
-        return "scroll-snap-type:inline " + strictness;
+    public static Style<?> snapTypeInline(String strictness) {
+        return snapType("inline " + strictness);
     }
 
-    /**
-     * Disables scroll snapping.
-     *
-     * @deprecated Use {@code style().scrollSnapType("none")}.
-     */
-    @Deprecated
-    public static String snapTypeNone() {
-        return "scroll-snap-type:none";
+    /** Disables scroll snapping. */
+    public static Style<?> snapTypeNone() {
+        return snapType("none");
     }
 
     // ==================== Scroll Snap Align ====================
 
     /**
-     * Creates a scroll-snap-align property.
+     * Creates a scroll-snap-align declaration.
      * @param value "none", "start", "end", "center"
-     * @return the property string
-     *
-     * @deprecated Use {@link jweb.Style#scrollSnapAlign} — the property is {@code scroll-snap-align}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapAlign(String value) {
-        return "scroll-snap-align:" + value;
+    public static Style<?> snapAlign(String value) {
+        return CSS.style().prop("scroll-snap-align", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapAlign(String)}. */
+    public static Style<?> snapAlign(CSSValue value) {
+        return snapAlign(value.css());
     }
 
     /**
      * Creates scroll-snap-align with separate block and inline values.
      * @param block block alignment
      * @param inline inline alignment
-     * @return the property string
-     *
-     * @deprecated Use {@code style().scrollSnapAlign(block + " " + inline)}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapAlign(String block, String inline) {
-        return "scroll-snap-align:" + block + " " + inline;
+    public static Style<?> snapAlign(String block, String inline) {
+        return snapAlign(block + " " + inline);
     }
 
-    /**
-     * Snaps to start edge.
-     *
-     * @deprecated Use {@code style().scrollSnapAlign("start")}.
-     */
-    @Deprecated
-    public static String snapAlignStart() {
-        return "scroll-snap-align:start";
+    /** {@code CSSValue} overload of {@link #snapAlign(String, String)}. */
+    public static Style<?> snapAlign(CSSValue block, CSSValue inline) {
+        return snapAlign(block.css(), inline.css());
     }
 
-    /**
-     * Snaps to center.
-     *
-     * @deprecated Use {@code style().scrollSnapAlign("center")}.
-     */
-    @Deprecated
-    public static String snapAlignCenter() {
-        return "scroll-snap-align:center";
+    /** Snaps to start edge. */
+    public static Style<?> snapAlignStart() {
+        return snapAlign("start");
     }
 
-    /**
-     * Snaps to end edge.
-     *
-     * @deprecated Use {@code style().scrollSnapAlign("end")}.
-     */
-    @Deprecated
-    public static String snapAlignEnd() {
-        return "scroll-snap-align:end";
+    /** Snaps to center. */
+    public static Style<?> snapAlignCenter() {
+        return snapAlign("center");
     }
 
-    /**
-     * No snap alignment.
-     *
-     * @deprecated Use {@code style().scrollSnapAlign("none")}.
-     */
-    @Deprecated
-    public static String snapAlignNone() {
-        return "scroll-snap-align:none";
+    /** Snaps to end edge. */
+    public static Style<?> snapAlignEnd() {
+        return snapAlign("end");
+    }
+
+    /** No snap alignment. */
+    public static Style<?> snapAlignNone() {
+        return snapAlign("none");
     }
 
     // ==================== Scroll Snap Stop ====================
 
     /**
-     * Creates a scroll-snap-stop property.
+     * Creates a scroll-snap-stop declaration.
      * @param value "normal" or "always"
-     * @return the property string
-     *
-     * @deprecated Use {@link jweb.Style#scrollSnapStop} — the property is {@code scroll-snap-stop}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapStop(String value) {
-        return "scroll-snap-stop:" + value;
+    public static Style<?> snapStop(String value) {
+        return CSS.style().prop("scroll-snap-stop", value);
     }
 
-    /**
-     * Normal snap stop (can skip snap points during fast scroll).
-     *
-     * @deprecated Use {@code style().scrollSnapStop("normal")}.
-     */
-    @Deprecated
-    public static String snapStopNormal() {
-        return "scroll-snap-stop:normal";
+    /** {@code CSSValue} overload of {@link #snapStop(String)}. */
+    public static Style<?> snapStop(CSSValue value) {
+        return snapStop(value.css());
     }
 
-    /**
-     * Always stops at this snap point (cannot be skipped).
-     *
-     * @deprecated Use {@code style().scrollSnapStop("always")}.
-     */
-    @Deprecated
-    public static String snapStopAlways() {
-        return "scroll-snap-stop:always";
+    /** Normal snap stop (can skip snap points during fast scroll). */
+    public static Style<?> snapStopNormal() {
+        return snapStop("normal");
+    }
+
+    /** Always stops at this snap point (cannot be skipped). */
+    public static Style<?> snapStopAlways() {
+        return snapStop("always");
     }
 
     // ==================== Scroll Padding ====================
 
     /**
-     * Creates a scroll-padding property (applied to scroll container).
+     * Creates a scroll-padding declaration (applied to scroll container).
      * @param value the padding value(s)
-     * @return the property string
-     *
-     * @deprecated Use {@link jweb.Style#scrollPadding} — the property is {@code scroll-padding}, NOT {@code scroll-snap-padding}; there is no such property.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapPadding(String value) {
-        return "scroll-padding:" + value;
+    public static Style<?> snapPadding(String value) {
+        return CSS.style().prop("scroll-padding", value);
     }
 
-    /**
-     * Creates scroll-padding-top.
-     *
-     * @deprecated Use {@link jweb.Style#scrollPaddingTop} — the property is {@code scroll-padding-top}.
-     */
-    @Deprecated
-    public static String snapPaddingTop(String value) {
-        return "scroll-padding-top:" + value;
+    /** {@code CSSValue} overload of {@link #snapPadding(String)}. */
+    public static Style<?> snapPadding(CSSValue value) {
+        return snapPadding(value.css());
     }
 
-    /**
-     * Creates scroll-padding-right.
-     *
-     * @deprecated Use {@link jweb.Style#scrollPaddingRight} — the property is {@code scroll-padding-right}.
-     */
-    @Deprecated
-    public static String snapPaddingRight(String value) {
-        return "scroll-padding-right:" + value;
+    /** Creates scroll-padding-top. */
+    public static Style<?> snapPaddingTop(String value) {
+        return CSS.style().prop("scroll-padding-top", value);
     }
 
-    /**
-     * Creates scroll-padding-bottom.
-     *
-     * @deprecated Use {@link jweb.Style#scrollPaddingBottom} — the property is {@code scroll-padding-bottom}.
-     */
-    @Deprecated
-    public static String snapPaddingBottom(String value) {
-        return "scroll-padding-bottom:" + value;
+    /** {@code CSSValue} overload of {@link #snapPaddingTop(String)}. */
+    public static Style<?> snapPaddingTop(CSSValue value) {
+        return snapPaddingTop(value.css());
     }
 
-    /**
-     * Creates scroll-padding-left.
-     *
-     * @deprecated Use {@link jweb.Style#scrollPaddingLeft} — the property is {@code scroll-padding-left}.
-     */
-    @Deprecated
-    public static String snapPaddingLeft(String value) {
-        return "scroll-padding-left:" + value;
+    /** Creates scroll-padding-right. */
+    public static Style<?> snapPaddingRight(String value) {
+        return CSS.style().prop("scroll-padding-right", value);
     }
 
-    /**
-     * Creates scroll-padding-inline.
-     *
-     * @deprecated Use {@code style().prop("scroll-padding-inline", value)} — the property is {@code scroll-padding-inline}.
-     */
-    @Deprecated
-    public static String snapPaddingInline(String value) {
-        return "scroll-padding-inline:" + value;
+    /** {@code CSSValue} overload of {@link #snapPaddingRight(String)}. */
+    public static Style<?> snapPaddingRight(CSSValue value) {
+        return snapPaddingRight(value.css());
     }
 
-    /**
-     * Creates scroll-padding-block.
-     *
-     * @deprecated Use {@code style().prop("scroll-padding-block", value)} — the property is {@code scroll-padding-block}.
-     */
-    @Deprecated
-    public static String snapPaddingBlock(String value) {
-        return "scroll-padding-block:" + value;
+    /** Creates scroll-padding-bottom. */
+    public static Style<?> snapPaddingBottom(String value) {
+        return CSS.style().prop("scroll-padding-bottom", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapPaddingBottom(String)}. */
+    public static Style<?> snapPaddingBottom(CSSValue value) {
+        return snapPaddingBottom(value.css());
+    }
+
+    /** Creates scroll-padding-left. */
+    public static Style<?> snapPaddingLeft(String value) {
+        return CSS.style().prop("scroll-padding-left", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapPaddingLeft(String)}. */
+    public static Style<?> snapPaddingLeft(CSSValue value) {
+        return snapPaddingLeft(value.css());
+    }
+
+    /** Creates scroll-padding-inline. */
+    public static Style<?> snapPaddingInline(String value) {
+        return CSS.style().prop("scroll-padding-inline", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapPaddingInline(String)}. */
+    public static Style<?> snapPaddingInline(CSSValue value) {
+        return snapPaddingInline(value.css());
+    }
+
+    /** Creates scroll-padding-block. */
+    public static Style<?> snapPaddingBlock(String value) {
+        return CSS.style().prop("scroll-padding-block", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapPaddingBlock(String)}. */
+    public static Style<?> snapPaddingBlock(CSSValue value) {
+        return snapPaddingBlock(value.css());
     }
 
     // ==================== Scroll Margin ====================
 
     /**
-     * Creates a scroll-margin property (applied to snap children).
+     * Creates a scroll-margin declaration (applied to snap children).
      * @param value the margin value(s)
-     * @return the property string
-     *
-     * @deprecated Use {@link jweb.Style#scrollMargin} — the property is {@code scroll-margin}, NOT {@code scroll-snap-margin}; there is no such property.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String snapMargin(String value) {
-        return "scroll-margin:" + value;
+    public static Style<?> snapMargin(String value) {
+        return CSS.style().prop("scroll-margin", value);
     }
 
-    /**
-     * Creates scroll-margin-top.
-     *
-     * @deprecated Use {@link jweb.Style#scrollMarginTop} — the property is {@code scroll-margin-top}.
-     */
-    @Deprecated
-    public static String snapMarginTop(String value) {
-        return "scroll-margin-top:" + value;
+    /** {@code CSSValue} overload of {@link #snapMargin(String)}. */
+    public static Style<?> snapMargin(CSSValue value) {
+        return snapMargin(value.css());
     }
 
-    /**
-     * Creates scroll-margin-right.
-     *
-     * @deprecated Use {@link jweb.Style#scrollMarginRight} — the property is {@code scroll-margin-right}.
-     */
-    @Deprecated
-    public static String snapMarginRight(String value) {
-        return "scroll-margin-right:" + value;
+    /** Creates scroll-margin-top. */
+    public static Style<?> snapMarginTop(String value) {
+        return CSS.style().prop("scroll-margin-top", value);
     }
 
-    /**
-     * Creates scroll-margin-bottom.
-     *
-     * @deprecated Use {@link jweb.Style#scrollMarginBottom} — the property is {@code scroll-margin-bottom}.
-     */
-    @Deprecated
-    public static String snapMarginBottom(String value) {
-        return "scroll-margin-bottom:" + value;
+    /** {@code CSSValue} overload of {@link #snapMarginTop(String)}. */
+    public static Style<?> snapMarginTop(CSSValue value) {
+        return snapMarginTop(value.css());
     }
 
-    /**
-     * Creates scroll-margin-left.
-     *
-     * @deprecated Use {@link jweb.Style#scrollMarginLeft} — the property is {@code scroll-margin-left}.
-     */
-    @Deprecated
-    public static String snapMarginLeft(String value) {
-        return "scroll-margin-left:" + value;
+    /** Creates scroll-margin-right. */
+    public static Style<?> snapMarginRight(String value) {
+        return CSS.style().prop("scroll-margin-right", value);
     }
 
-    /**
-     * Creates scroll-margin-inline.
-     *
-     * @deprecated Use {@code style().prop("scroll-margin-inline", value)} — the property is {@code scroll-margin-inline}.
-     */
-    @Deprecated
-    public static String snapMarginInline(String value) {
-        return "scroll-margin-inline:" + value;
+    /** {@code CSSValue} overload of {@link #snapMarginRight(String)}. */
+    public static Style<?> snapMarginRight(CSSValue value) {
+        return snapMarginRight(value.css());
     }
 
-    /**
-     * Creates scroll-margin-block.
-     *
-     * @deprecated Use {@code style().prop("scroll-margin-block", value)} — the property is {@code scroll-margin-block}.
-     */
-    @Deprecated
-    public static String snapMarginBlock(String value) {
-        return "scroll-margin-block:" + value;
+    /** Creates scroll-margin-bottom. */
+    public static Style<?> snapMarginBottom(String value) {
+        return CSS.style().prop("scroll-margin-bottom", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapMarginBottom(String)}. */
+    public static Style<?> snapMarginBottom(CSSValue value) {
+        return snapMarginBottom(value.css());
+    }
+
+    /** Creates scroll-margin-left. */
+    public static Style<?> snapMarginLeft(String value) {
+        return CSS.style().prop("scroll-margin-left", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapMarginLeft(String)}. */
+    public static Style<?> snapMarginLeft(CSSValue value) {
+        return snapMarginLeft(value.css());
+    }
+
+    /** Creates scroll-margin-inline. */
+    public static Style<?> snapMarginInline(String value) {
+        return CSS.style().prop("scroll-margin-inline", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapMarginInline(String)}. */
+    public static Style<?> snapMarginInline(CSSValue value) {
+        return snapMarginInline(value.css());
+    }
+
+    /** Creates scroll-margin-block. */
+    public static Style<?> snapMarginBlock(String value) {
+        return CSS.style().prop("scroll-margin-block", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #snapMarginBlock(String)}. */
+    public static Style<?> snapMarginBlock(CSSValue value) {
+        return snapMarginBlock(value.css());
     }
 
     // ==================== Overscroll Behavior ====================
 
     /**
-     * Creates an overscroll-behavior property.
+     * Creates an overscroll-behavior declaration.
      * @param value "auto", "contain", or "none"
-     * @return the property string
-     *
-     * @deprecated Use {@link jweb.Style#overscrollBehavior}.
+     * @return a {@code Style} holding the declaration
      */
-    @Deprecated
-    public static String overscrollBehavior(String value) {
-        return "overscroll-behavior:" + value;
+    public static Style<?> overscrollBehavior(String value) {
+        return CSS.style().prop("overscroll-behavior", value);
     }
 
-    /**
-     * Creates overscroll-behavior-x.
-     *
-     * @deprecated Use {@link jweb.Style#overscrollBehaviorX}.
-     */
-    @Deprecated
-    public static String overscrollBehaviorX(String value) {
-        return "overscroll-behavior-x:" + value;
+    /** {@code CSSValue} overload of {@link #overscrollBehavior(String)}. */
+    public static Style<?> overscrollBehavior(CSSValue value) {
+        return overscrollBehavior(value.css());
     }
 
-    /**
-     * Creates overscroll-behavior-y.
-     *
-     * @deprecated Use {@link jweb.Style#overscrollBehaviorY}.
-     */
-    @Deprecated
-    public static String overscrollBehaviorY(String value) {
-        return "overscroll-behavior-y:" + value;
+    /** Creates overscroll-behavior-x. */
+    public static Style<?> overscrollBehaviorX(String value) {
+        return CSS.style().prop("overscroll-behavior-x", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #overscrollBehaviorX(String)}. */
+    public static Style<?> overscrollBehaviorX(CSSValue value) {
+        return overscrollBehaviorX(value.css());
+    }
+
+    /** Creates overscroll-behavior-y. */
+    public static Style<?> overscrollBehaviorY(String value) {
+        return CSS.style().prop("overscroll-behavior-y", value);
+    }
+
+    /** {@code CSSValue} overload of {@link #overscrollBehaviorY(String)}. */
+    public static Style<?> overscrollBehaviorY(CSSValue value) {
+        return overscrollBehaviorY(value.css());
     }
 }

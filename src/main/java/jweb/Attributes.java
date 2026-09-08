@@ -228,7 +228,7 @@ public class Attributes implements HtmlAttributes<Attributes> {
     public Attributes style(UnaryOperator<InlineStyle> builder) {
         InlineStyle s = new InlineStyle(this);
         builder.apply(s);
-        return set("style", s.build());
+        return s.done();
     }
 
     /**
@@ -312,9 +312,13 @@ public class Attributes implements HtmlAttributes<Attributes> {
             this.parent = parent;
         }
 
-        // Helper to finalize style and return parent
+        // Helper to finalize style and return parent. Conditional rules
+        // (.hover, .at, .dark, …) become a generated class on the parent's
+        // class attribute; the plain declarations stay inline.
         private Attributes complete() {
             parent.set("style", build());
+            com.osmig.Jweb.framework.styles.PageStyles.addClass(
+                parent.toMap(), com.osmig.Jweb.framework.styles.PageStyles.register(this));
             return parent;
         }
 

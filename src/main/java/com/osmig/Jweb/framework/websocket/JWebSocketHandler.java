@@ -193,7 +193,11 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             String componentId = entry.getKey();
             var component = entry.getValue();
             String newHtml = component.render();
-            patches.add(new DomPatch(componentId, newHtml));
+            // A re-render can be the first to need a stylesheet or a
+            // generated class rule; the patch carries the CSS it introduced
+            // (a <style> set through innerHTML applies).
+            String css = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
+            patches.add(new DomPatch(componentId, css + newHtml));
         }
 
         // Re-renders can mint Actions-DSL handlers the page has never seen

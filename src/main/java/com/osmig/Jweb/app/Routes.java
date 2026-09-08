@@ -81,8 +81,8 @@ public class Routes implements JWebRoutes {
 
         // Contact page needs the request to issue a session-bound CSRF token
         app.get("/contact", ctx -> new Layout("Contact - JWeb",
-            new ContactPage(Csrf.getOrCreateToken(ctx)).render()
-        ).render());
+            new ContactPage(Csrf.getOrCreateToken(ctx))
+        ));
 
         // Contact form target — returns a status fragment that the runtime
         // swaps into #form-status (works without JS as a plain POST too)
@@ -106,8 +106,8 @@ public class Routes implements JWebRoutes {
         // Docs page needs request access for query params; ?v= selects the
         // docs version (defaults to latest)
         app.get("/docs", ctx -> new Layout("Documentation - JWeb",
-            new DocsPage(ctx.query("section"), ctx.query("v")).render()
-        ).render());
+            new DocsPage(ctx.query("section"), ctx.query("v"))
+        ));
 
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx ->
@@ -165,8 +165,8 @@ public class Routes implements JWebRoutes {
         // only — nothing is compiled or reflected, and output uses the normal
         // escaping pipeline. The render POST is stateless (no CSRF surface).
         app.get("/sandbox", ctx -> new Layout("Sandbox - JWeb",
-            new com.osmig.Jweb.app.sandbox.SandboxPage(ctx.query("file")).render()
-        ).render());
+            new com.osmig.Jweb.app.sandbox.SandboxPage(ctx.query("file"))
+        ));
 
         app.post("/sandbox/render", (RouteHandler) ctx ->
             com.osmig.Jweb.app.sandbox.SandboxPanes.renderFragment(
@@ -179,7 +179,7 @@ public class Routes implements JWebRoutes {
         // Streaming SSR demo: the shell flushes instantly, both blocks
         // stream in as their (deliberately slow) data resolves
         app.get("/demo/streaming", ctx -> jweb.Streamed.of(
-            () -> new Layout("Streaming Demo", DemoStreamingPage.content()).render()));
+            () -> new Layout("Streaming Demo", DemoStreamingPage.content())));
 
         // Fragment for the demo's swap block — carries its own Actions-DSL
         // handler, whose definitions script executes on swap
@@ -187,7 +187,7 @@ public class Routes implements JWebRoutes {
 
         // Three DSL demo: declarative 3D scenes, zero handwritten JavaScript
         app.get("/demo/three", ctx -> new Layout("3D Scenes - JWeb",
-            ThreeDemoPage.content()).render());
+            ThreeDemoPage.content()));
 
         // Fragment target for the demo's clickable shapes (clickSwap)
         app.get("/demo/three/pick", ctx ->
@@ -199,8 +199,8 @@ public class Routes implements JWebRoutes {
                 return Response.redirect("/only-admin/messages");
             }
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(Csrf.getOrCreateToken(ctx)).render()
-            ).render());
+                new AdminLoginPage(Csrf.getOrCreateToken(ctx))
+            ));
         });
 
         // Admin login handler
@@ -216,8 +216,8 @@ public class Routes implements JWebRoutes {
                     : "Admin login is not configured — set JWEB_ADMIN_TOKEN and JWEB_ADMIN_EMAIL.";
             }
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(error, Csrf.getOrCreateToken(ctx)).render()
-            ).render());
+                new AdminLoginPage(error, Csrf.getOrCreateToken(ctx))
+            ));
         });
 
         // Admin messages page
@@ -226,8 +226,8 @@ public class Routes implements JWebRoutes {
                 return Response.redirect("/only-admin/log/in");
             }
             return Response.html(new Layout("Messages - Admin",
-                new AdminMessagesPage(adminApi.getMessages(), Csrf.getOrCreateToken(ctx)).render()
-            ).render());
+                new AdminMessagesPage(adminApi.getMessages(), Csrf.getOrCreateToken(ctx))
+            ));
         });
 
         // Admin logout — POST with CSRF token so a cross-site link can't trigger it

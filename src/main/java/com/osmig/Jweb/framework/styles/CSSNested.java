@@ -13,7 +13,7 @@ import java.util.List;
  *
  * <h2>Basic Nesting</h2>
  * <pre>{@code
- * CSSNested.rule(".card")
+ * nest(".card")
  *     .prop("padding", "1rem")
  *     .prop("border", "1px solid gray")
  *     .nest(".card-header")
@@ -43,7 +43,7 @@ import java.util.List;
  *
  * <h2>Nesting with &amp; (Parent Selector)</h2>
  * <pre>{@code
- * CSSNested.rule(".btn")
+ * nest(".btn")
  *     .prop("padding", "0.5rem 1rem")
  *     .nest("&:hover")
  *         .prop("background-color", "darkblue")
@@ -68,7 +68,7 @@ import java.util.List;
  *
  * <h2>Deep Nesting</h2>
  * <pre>{@code
- * CSSNested.rule("nav")
+ * nest("nav")
  *     .nest("ul")
  *         .prop("list-style", "none")
  *         .nest("li")
@@ -86,7 +86,7 @@ import java.util.List;
  *
  * <h2>Media Query Nesting</h2>
  * <pre>{@code
- * CSSNested.rule(".container")
+ * nest(".container")
  *     .prop("width", "100%")
  *     .media("(min-width: 768px)")
  *         .prop("max-width", "720px")
@@ -103,7 +103,7 @@ import java.util.List;
  * @deprecated Replaced by {@code jweb.css.CSSNested} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class CSSNested {
+public class CSSNested extends CSSProperty {
 
     protected CSSNested() {}
 
@@ -113,7 +113,7 @@ public class CSSNested {
      * @param selector the root selector
      * @return a NestedRule builder
      */
-    public static NestedRule rule(String selector) {
+    public static NestedRule nest(String selector) {
         return new NestedRule(selector, null, 0);
     }
 
@@ -123,7 +123,7 @@ public class CSSNested {
      * @param selector the selector builder
      * @return a NestedRule builder
      */
-    public static NestedRule rule(Selector selector) {
+    public static NestedRule nest(Selector selector) {
         return new NestedRule(selector.build(), null, 0);
     }
 

@@ -650,6 +650,27 @@ public class CSS extends CSSUnits {
     /** Overscroll-behavior: auto - default behavior. */
     public static final CSSValue overscrollAuto = () -> "auto";
 
+    // ========== Field Sizing, Scrollbars, Text Box, Interpolate Size ==========
+
+    /** Field-sizing: content — an input that grows with what is typed in it. */
+    public static final CSSValue content = () -> "content";
+    /** Scrollbar-gutter: stable both-edges — reserve the gutter on both sides. */
+    public static final CSSValue stableBothEdges = () -> "stable both-edges";
+    /** Scrollbar-width: thin. */
+    public static final CSSValue thin = () -> "thin";
+    /** Text-box-trim: trim-both — drop the half-leading above and below. */
+    public static final CSSValue trimBoth = () -> "trim-both";
+    /** Text-box-trim: trim-start. */
+    public static final CSSValue trimStart = () -> "trim-start";
+    /** Text-box-trim: trim-end. */
+    public static final CSSValue trimEnd = () -> "trim-end";
+    /** Text-box-edge: cap alphabetic — cap height to the alphabetic baseline. */
+    public static final CSSValue capAlphabetic = () -> "cap alphabetic";
+    /** Text-box-edge: ex alphabetic — x-height to the alphabetic baseline. */
+    public static final CSSValue exAlphabetic = () -> "ex alphabetic";
+    /** Interpolate-size: allow-keywords — animate to and from {@code auto}. */
+    public static final CSSValue allowKeywords = () -> "allow-keywords";
+
     // ========== Text Wrap Values ==========
     // Use with: style().textWrap(balance)
 

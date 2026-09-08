@@ -788,179 +788,6 @@ Form.create()
     .submit("Create Account")
     .build()""";
 
-    // ==================== Layouts Section ====================
-
-    public static final String LAYOUTS_IMPORT = """
-import static jweb.Layout.*;""";
-
-    public static final String LAYOUTS_PAGE = """
-// Full page with header, main, footer
-Layout.page(
-    Layout.header(
-        a(href("/"), "Logo"),
-        nav(
-            a(href("/about"), "About"),
-            a(href("/contact"), "Contact")
-        )
-    ),
-    Layout.main(
-        Layout.container(
-            h1("Welcome"),
-            p("Page content here...")
-        )
-    ),
-    Layout.footer(
-        "© 2024 My Company"
-    )
-)""";
-
-    public static final String LAYOUTS_CONTAINERS = """
-// Default container (max-width: 1200px)
-Layout.container(
-    h1("Centered Content"),
-    p("This content has a maximum width and is centered.")
-)
-
-// Narrow container (max-width: 800px) - good for reading
-Layout.narrow(
-    article(
-        h1("Blog Post Title"),
-        p("Article content that's easy to read...")
-    )
-)
-
-// Wide container (max-width: 1400px)
-Layout.wide(content)
-
-// Custom max-width
-Layout.container(px(960), content)""";
-
-    public static final String LAYOUTS_FLEXBOX = """
-// Horizontal row
-Layout.row(child1, child2, child3)
-Layout.row(rem(2), child1, child2)  // with gap
-
-// Vertical column
-Layout.column(child1, child2, child3)
-Layout.column(rem(1), child1, child2)  // with gap
-
-// Centered content
-Layout.center(
-    h1("Perfectly Centered")
-)
-
-// Space between items
-Layout.spaceBetween(
-    div("Left"),
-    div("Right")
-)
-
-// Wrapping items with gap
-Layout.wrap(rem(1),
-    badge("Tag 1"),
-    badge("Tag 2"),
-    badge("Tag 3")
-)""";
-
-    public static final String LAYOUTS_GRID = """
-// Equal columns
-Layout.grid(3,  // 3 columns
-    card1, card2, card3,
-    card4, card5, card6
-)
-
-// Grid with gap
-Layout.grid(3, rem(2),
-    card1, card2, card3
-)
-
-// Auto-fit grid (responsive)
-Layout.autoGrid(px(300), rem(1.5),
-    card1, card2, card3, card4
-)  // Cards are at least 300px, columns adjust automatically""";
-
-    public static final String LAYOUTS_COLUMNS = """
-// Equal width columns
-Layout.columns(2, child1, child2)
-Layout.columns(3, rem(2), child1, child2, child3)
-
-// Custom column ratios
-Layout.columns("1fr", "2fr", rem(2),
-    sidebar,  // 1/3 width
-    content   // 2/3 width
-)""";
-
-    public static final String LAYOUTS_SIDEBAR = """
-// Left sidebar
-Layout.sidebar(px(250),      // sidebar width
-    div("Sidebar"),    // sidebar content
-    div("Main content") // main content
-)
-
-// Right sidebar
-Layout.sidebarRight(px(300),
-    div("Main content"),
-    div("Sidebar")
-)""";
-
-    public static final String LAYOUTS_STACK = """
-// Vertical stack with consistent spacing
-Layout.stack(rem(1),
-    h1("Title"),
-    p("Paragraph 1"),
-    p("Paragraph 2"),
-    p("Paragraph 3")
-)
-
-// Horizontal cluster (good for tags, buttons)
-Layout.cluster(rem(0.5),
-    button("Save"),
-    button("Cancel"),
-    button("Delete")
-)""";
-
-    public static final String LAYOUTS_SPECIAL = """
-// Split layout (left/right)
-Layout.split(
-    div("Left side"),
-    div("Right side")
-)
-
-// Aspect ratio container
-Layout.aspectRatio("16/9",
-    img(src("/video-thumbnail.jpg"))
-)
-
-// Full-height centered cover
-Layout.fullCover(
-    div(
-        h1("Hero Section"),
-        p("Full viewport height, centered content")
-    )
-)
-
-// Sticky header
-Layout.stickyHeader(
-    nav("This sticks to top when scrolling")
-)
-
-// Scrollable container
-Layout.scrollable(px(400),
-    longContent
-)
-
-// Card with padding and shadow
-Layout.card(
-    h3("Card Title"),
-    p("Card content...")
-)
-
-// Dividers and spacers
-Layout.divider()           // horizontal rule
-Layout.verticalDivider(px(24))
-Layout.spacer()            // flexible space
-Layout.space(rem(2))       // fixed space""";
-
     // ==================== UI Components Section ====================
 
     public static final String UI_IMPORT = """
@@ -1074,12 +901,11 @@ div(
 
     public static final String UI_COMPLETE = """
 import static jweb.UI.*;
-import static jweb.Layout.*;
+import static jweb.Css.*;
 
-// card() and divider() exist in both UI and Layout — qualify those
 UI.card(
     // Header with badge
-    row(rem(1),
+    div(row(rem(1)),
         h3("User Statistics"),
         badge("Live", Badge.SUCCESS)
     ),
@@ -1087,7 +913,7 @@ UI.card(
     UI.divider(),
 
     // Progress section
-    stack(rem(0.5),
+    div(stack(rem(0.5)),
         p("Storage Used"),
         progressBar(65),
         p("65% of 100GB")
@@ -1096,7 +922,7 @@ UI.card(
     UI.divider(),
 
     // Actions
-    cluster(rem(0.5),
+    div(cluster(rem(0.5)),
         primaryButton("Upgrade", e -> {}),
         ghostButton("View Details", e -> {})
     )

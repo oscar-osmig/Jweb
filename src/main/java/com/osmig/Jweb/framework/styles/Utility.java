@@ -24,14 +24,14 @@ import java.util.List;
  *
  * // Or use with Theme
  * Theme theme = Theme.preset();
- * String css = Utility.generateCss(theme);
+ * String css = Utility.generateCss();
  * </pre>
  *
  * @deprecated A Tailwind clone is a framework opinion, not a CSS capability — use
  *             {@code style()} / {@code rule()} directly, which give full CSS parity.
  *
  *             <p><b>It is also partly inert:</b> the builder's variant methods only
- *             append class names to the output string, and {@link #generateCss(Theme)}
+ *             append class names to the output string, and {@link #generateCss()}
  *             emits no matching rules for most of them — every {@code dark:} utility,
  *             every responsive {@code sm:}/{@code md:}/{@code lg:} utility, the
  *             {@code text-gray-*} colours, and the parameterised {@code hover:}
@@ -606,7 +606,7 @@ public class Utility {
      * Generates CSS for all utility classes.
      * Use this with Theme.preset() for a complete utility system.
      */
-    public static String generateCss(Theme theme) {
+    public static String generateCss() {
         StringBuilder css = new StringBuilder();
 
         // Display

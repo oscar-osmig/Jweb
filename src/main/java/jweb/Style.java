@@ -347,6 +347,15 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
         return prop("border-left", width.css() + " " + style.css() + " " + color.css());
     }
 
+    /** One-value {@code border-top}, e.g. {@code borderTop(none)}. */
+    public T borderTop(CSSValue value) { return prop("border-top", value); }
+    /** One-value {@code border-right}, e.g. {@code borderRight(none)}. */
+    public T borderRight(CSSValue value) { return prop("border-right", value); }
+    /** One-value {@code border-bottom}, e.g. {@code borderBottom(none)}. */
+    public T borderBottom(CSSValue value) { return prop("border-bottom", value); }
+    /** One-value {@code border-left}, e.g. {@code borderLeft(none)}. */
+    public T borderLeft(CSSValue value) { return prop("border-left", value); }
+
     public T borderRadius(CSSValue value) { return prop("border-radius", value); }
 
     public T borderRadius(CSSValue topLeft, CSSValue topRight, CSSValue bottomRight, CSSValue bottomLeft) {
@@ -1701,6 +1710,119 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      */
     public T viewTransitionNone() { return prop("view-transition-name", "none"); }
 
+    /**
+     * Sets view-transition-class — the group name a view transition targets,
+     * so one {@code ::view-transition-group(.card)} rule animates every card
+     * instead of needing a unique name per element.
+     *
+     * @param name the class name
+     * @return this builder for chaining
+     */
+    public T viewTransitionClass(String name) { return prop("view-transition-class", name); }
+
+    // ==================== Newer Properties ====================
+
+    /**
+     * Sets field-sizing — {@code content} makes an input or textarea grow with
+     * what is typed into it, {@code fixed} keeps the classic sizing.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().fieldSizing(content)
+     * </pre>
+     *
+     * @param value {@code content} or {@code fixed}
+     * @return this builder for chaining
+     */
+    public T fieldSizing(CSSValue value) { return prop("field-sizing", value); }
+
+    /** Sets field-sizing. @param value {@code "content"} or {@code "fixed"} */
+    public T fieldSizing(String value) { return prop("field-sizing", value); }
+
+    /**
+     * Sets scrollbar-color — the thumb and track colours of this element's
+     * scrollbars.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().scrollbarColor(hex("#94a3b8"), transparent)
+     * </pre>
+     *
+     * @param thumb the thumb colour
+     * @param track the track colour
+     * @return this builder for chaining
+     */
+    public T scrollbarColor(CSSValue thumb, CSSValue track) {
+        return prop("scrollbar-color", thumb.css() + " " + track.css());
+    }
+
+    /** Sets scrollbar-width. @param value {@code auto}, {@code thin} or {@code none} */
+    public T scrollbarWidth(CSSValue value) { return prop("scrollbar-width", value); }
+
+    /**
+     * Sets scrollbar-gutter — reserves the scrollbar's space so content does
+     * not shift when it appears.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().scrollbarGutter(stable)
+     * style().scrollbarGutter(stableBothEdges)
+     * </pre>
+     *
+     * @param value {@code auto}, {@code stable} or {@code stableBothEdges}
+     * @return this builder for chaining
+     */
+    public T scrollbarGutter(CSSValue value) { return prop("scrollbar-gutter", value); }
+
+    /**
+     * Sets text-box-trim — removes the font's half-leading so a heading's box
+     * hugs its glyphs and optical spacing matches the numbers you set.
+     *
+     * @param value {@code trimBoth}, {@code trimStart}, {@code trimEnd} or {@code none}
+     * @return this builder for chaining
+     */
+    public T textBoxTrim(CSSValue value) { return prop("text-box-trim", value); }
+
+    /**
+     * Sets text-box-edge — which font metrics the trim measures from.
+     *
+     * @param value e.g. {@code capAlphabetic} or {@code exAlphabetic}
+     * @return this builder for chaining
+     */
+    public T textBoxEdge(CSSValue value) { return prop("text-box-edge", value); }
+
+    /**
+     * Sets the {@code text-box} shorthand — trim and edge in one.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().textBox(trimBoth, capAlphabetic)
+     * </pre>
+     *
+     * @param trim the trim value
+     * @param edge the edge value
+     * @return this builder for chaining
+     */
+    public T textBox(CSSValue trim, CSSValue edge) {
+        return prop("text-box", trim.css() + " " + edge.css());
+    }
+
+    /**
+     * Sets interpolate-size — {@code allowKeywords} lets a transition or
+     * animation run to and from intrinsic sizes ({@code auto},
+     * {@code min-content}, {@code fit-content}), which otherwise cannot be
+     * animated. Set it on {@code :root} to opt the whole document in.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * stylesheet().rule(":root", style().interpolateSize(allowKeywords))
+     * </pre>
+     *
+     * @param value {@code allowKeywords} or {@code numericOnly}
+     * @return this builder for chaining
+     */
+    public T interpolateSize(CSSValue value) { return prop("interpolate-size", value); }
+
     // ==================== Scroll-Driven Animations ====================
 
     /**
@@ -1858,6 +1980,20 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
 
     /** Sets anchor-name. @param value the dashed-ident anchor name */
     public T anchorName(CSSValue value) { return prop("anchor-name", value); }
+
+    /**
+     * Sets anchor-scope — confines the anchor names inside this subtree, so a
+     * repeated component's anchors resolve to its own copy instead of the
+     * first one in the document.
+     *
+     * @param names {@code "all"}, {@code "none"}, or a comma-separated list of
+     *     dashed-ident anchor names
+     * @return this builder for chaining
+     */
+    public T anchorScope(String names) { return prop("anchor-scope", names); }
+
+    /** Sets anchor-scope. @param value the anchor-scope value */
+    public T anchorScope(CSSValue value) { return prop("anchor-scope", value); }
 
     /**
      * Sets position-anchor — links this positioned element to a named anchor.
@@ -3190,7 +3326,181 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      */
     public T apply(Style<?> fragment) {
         properties.putAll(fragment.properties);
+        variants.addAll(fragment.variants);
         return self();
+    }
+
+    // ==================== Conditional rules (pseudo-classes, media) ====================
+
+    /**
+     * One conditional block hanging off an inline style: the at-rules it sits
+     * inside (outermost first) and the selector suffix it appends.
+     */
+    private record Variant(java.util.List<String> atRules, String suffix, Style<?> style) {}
+
+    /**
+     * Conditional rules. An inline style with any of these gets a generated
+     * class ({@code j-3f9a1c}, a content hash of the rules) and the rules go
+     * into the page's collected stylesheet; the plain declarations still ride
+     * the {@code style=} attribute.
+     */
+    private final java.util.List<Variant> variants = new java.util.ArrayList<>();
+
+    private T variant(java.util.List<String> atRules, String suffix, Style<?> style) {
+        if (style != null) variants.add(new Variant(atRules, suffix, style));
+        return self();
+    }
+
+    private T pseudoVariant(String suffix, Style<?> style) {
+        return variant(java.util.List.of(), suffix, style);
+    }
+
+    /** Styles for {@code :hover}. */
+    public T hover(Style<?> style) { return pseudoVariant(":hover", style); }
+    /** Styles for {@code :focus}. */
+    public T focus(Style<?> style) { return pseudoVariant(":focus", style); }
+    /** Styles for {@code :focus-visible} — keyboard focus only. */
+    public T focusVisible(Style<?> style) { return pseudoVariant(":focus-visible", style); }
+    /** Styles for {@code :focus-within}. */
+    public T focusWithin(Style<?> style) { return pseudoVariant(":focus-within", style); }
+    /** Styles for {@code :active}. */
+    public T active(Style<?> style) { return pseudoVariant(":active", style); }
+    /** Styles for {@code :visited}. */
+    public T visited(Style<?> style) { return pseudoVariant(":visited", style); }
+    /** Styles for {@code :disabled}. */
+    public T disabled(Style<?> style) { return pseudoVariant(":disabled", style); }
+    /** Styles for {@code :checked}. */
+    public T checked(Style<?> style) { return pseudoVariant(":checked", style); }
+    /** Styles for {@code ::placeholder}. */
+    public T placeholder(Style<?> style) { return pseudoVariant("::placeholder", style); }
+    /** Styles for {@code :popover-open} — an open popover. */
+    public T popoverOpen(Style<?> style) { return pseudoVariant(":popover-open", style); }
+
+    /**
+     * Styles for {@code ::before}, with its required {@code content}.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().position(relative)
+     *        .before("", style().position(absolute).inset(zero))
+     * </pre>
+     *
+     * @param content the {@code content} value (quoted for you)
+     * @param style the rest of the pseudo-element's styles
+     * @return this builder for chaining
+     */
+    public T before(String content, Style<?> style) {
+        return pseudoVariant("::before", withContent(content, style));
+    }
+
+    /**
+     * Styles for {@code ::after}, with its required {@code content}.
+     *
+     * @param content the {@code content} value (quoted for you)
+     * @param style the rest of the pseudo-element's styles
+     * @return this builder for chaining
+     */
+    public T after(String content, Style<?> style) {
+        return pseudoVariant("::after", withContent(content, style));
+    }
+
+    private static Style<?> withContent(String content, Style<?> style) {
+        CSS.StyleBuilder merged = CSS.style().prop("content", "\"" + content + "\"");
+        if (style != null) merged.apply(style);
+        return merged;
+    }
+
+    /**
+     * Any other pseudo-class or pseudo-element, written with its colons:
+     * {@code .on(":nth-child(2n)", …)}, {@code .on("::selection", …)}.
+     *
+     * @param selectorSuffix the suffix appended to the generated class
+     * @param style the styles to apply
+     * @return this builder for chaining
+     */
+    public T on(String selectorSuffix, Style<?> style) {
+        return pseudoVariant(selectorSuffix, style);
+    }
+
+    /**
+     * Styles that apply only inside a media query.
+     *
+     * <p>Example:</p>
+     * <pre>
+     * style().fontSize(rem(1)).at(md(), style().fontSize(rem(1.25)))
+     * </pre>
+     *
+     * @param query the media query (conditions only — its own rules are ignored)
+     * @param style the styles to apply inside it
+     * @return this builder for chaining
+     */
+    public T at(jweb.css.MediaQuery query, Style<?> style) {
+        return variant(java.util.List.of(query.query()), "", style);
+    }
+
+    /** Styles that apply only when the container query matches. */
+    public T at(jweb.css.ContainerQuery query, Style<?> style) {
+        return variant(java.util.List.of(query.query()), "", style);
+    }
+
+    /** Styles for {@code @media (prefers-color-scheme: dark)}. */
+    public T dark(Style<?> style) {
+        return variant(java.util.List.of("@media (prefers-color-scheme: dark)"), "", style);
+    }
+
+    /** Styles for {@code @media (prefers-reduced-motion: reduce)}. */
+    public T reducedMotion(Style<?> style) {
+        return variant(java.util.List.of("@media (prefers-reduced-motion: reduce)"), "", style);
+    }
+
+    /**
+     * The starting values a transition animates <em>from</em> the first time
+     * the element is rendered — {@code @starting-style}.
+     *
+     * <p>Example — fade a popover in on first paint:</p>
+     * <pre>
+     * style().opacity(1).transition(propAll, ms(200), ease)
+     *        .startingStyle(style().opacity(0))
+     * </pre>
+     *
+     * @param style the starting declarations
+     * @return this builder for chaining
+     */
+    public T startingStyle(Style<?> style) {
+        return variant(java.util.List.of("@starting-style"), "", style);
+    }
+
+    /** True when this style carries conditional rules that need a class. */
+    public boolean hasVariants() {
+        return !variants.isEmpty();
+    }
+
+    /**
+     * The conditional rules as CSS, written against {@code selector}.
+     *
+     * @param selector the base selector — a generated class name (without the
+     *     dot) or {@code "&"} when hashing
+     * @return the CSS text, empty when there are no variants
+     */
+    public String variantCss(String selector) {
+        StringBuilder sb = new StringBuilder();
+        appendVariants(sb, "&".equals(selector) ? "&" : "." + selector, java.util.List.of());
+        return sb.toString();
+    }
+
+    private void appendVariants(StringBuilder sb, String selector, java.util.List<String> inherited) {
+        for (Variant v : variants) {
+            java.util.List<String> ats = new java.util.ArrayList<>(inherited);
+            ats.addAll(v.atRules());
+            String sel = selector + v.suffix();
+            String declarations = v.style().build();
+            if (!declarations.isEmpty()) {
+                ats.forEach(at -> sb.append(at).append("{"));
+                sb.append(sel).append("{").append(declarations).append("}");
+                ats.forEach(at -> sb.append("}"));
+            }
+            v.style().appendVariants(sb, sel, ats);
+        }
     }
 
     // ==================== Pseudo-element / Mask Helpers ====================
@@ -3264,15 +3574,16 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     /**
-     * Sets a CSS property from a combined {@code "property:value"} string,
-     * as returned by the property-string CSS modules (CSSAnchorPositioning,
-     * CSSScrollSnap, CSSTextWrap, CSSSubgrid, CSSMasking,
-     * CSSLogicalProperties).
+     * Sets a CSS property from a combined {@code "property:value"} string —
+     * for CSS pasted from somewhere else, one declaration at a time.
+     *
+     * <p>The modern-CSS modules used to return exactly this shape; they now
+     * return a {@link Style}, so compose them with {@link #apply(Style)}
+     * instead: {@code style().apply(textWrapBalance())}.</p>
      *
      * <p>Example:</p>
      * <pre>
-     * style().prop(anchorName("--menu"))       // "anchor-name:--menu"
-     *        .prop(scrollSnapTypeX("mandatory"))
+     * style().prop("aspect-ratio: 16 / 9")
      * </pre>
      *
      * @param propertyAndValue a {@code "property:value"} string

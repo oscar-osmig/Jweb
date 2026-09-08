@@ -64,7 +64,7 @@ import java.util.List;
  * @deprecated Replaced by {@code jweb.css.CSSLayer} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class CSSLayer {
+public class CSSLayer extends CSSScrollSnap {
 
     protected CSSLayer() {}
 

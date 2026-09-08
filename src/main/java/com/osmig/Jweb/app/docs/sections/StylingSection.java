@@ -100,6 +100,8 @@ String css = styles(
         .padding(px(0), rem(1))
 );"""),
 
+            StylingPageStyles.render(),
+            StylingMixins.render(),
             StylingUnits.render(),
             StylingColors.render(),
             StylingBoxModel.render(),
@@ -110,7 +112,8 @@ String css = styles(
             StylingResponsive.render(),
             StylingAnimations.render(),
             StylingVariables.render(),
-            StylingModernCSS.render()
+            StylingModernCSS.render(),
+            StylingNewProperties.render()
         );
     }
 }

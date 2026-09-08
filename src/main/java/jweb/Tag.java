@@ -6,7 +6,6 @@ import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.elements.TextElement;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
-import com.osmig.Jweb.framework.styles.StyledElement;
 import com.osmig.Jweb.framework.vdom.VElement;
 import com.osmig.Jweb.framework.vdom.VNode;
 import com.osmig.Jweb.framework.vdom.VText;
@@ -272,28 +271,6 @@ public class Tag implements Element, HtmlAttributes<Tag> {
         return this;
     }
 
-    // ==================== Styled Element Support ====================
-
-    public StyledElement styled() {
-        return new StyledElement(this.toVNode());
-    }
-
-    public StyledElement styled(jweb.Style<?> baseStyle) {
-        return new StyledElement(this.toVNode()).style(baseStyle);
-    }
-
-    public StyledElement hover(jweb.Style<?> hoverStyle) {
-        return new StyledElement(this.toVNode()).hover(hoverStyle);
-    }
-
-    public StyledElement focus(jweb.Style<?> focusStyle) {
-        return new StyledElement(this.toVNode()).focus(focusStyle);
-    }
-
-    public StyledElement active(jweb.Style<?> activeStyle) {
-        return new StyledElement(this.toVNode()).active(activeStyle);
-    }
-
     // ==================== Getters ====================
 
     public String getTagName() { return tagName; }
@@ -364,6 +341,7 @@ public class Tag implements Element, HtmlAttributes<Tag> {
 
     public static Map<String, String> extractAttrs(Object... items) {
         Map<String, String> attrs = new LinkedHashMap<>();
+        List<jweb.Style<?>> styles = new ArrayList<>();
         for (Object item : items) {
             if (item instanceof Attr attr) {
                 attrs.put(attr.name(), attr.value());
@@ -373,8 +351,11 @@ public class Tag implements Element, HtmlAttributes<Tag> {
                 attrs.putAll(inlineStyle.toMap());
             } else if (item instanceof jweb.Style<?> style) {
                 // A bare style() builder as an argument becomes the style
-                // attribute: div(style().padding(px(4)), text("hi"))
-                attrs.put("style", style.build());
+                // attribute: div(style().padding(px(4)), text("hi")). Any
+                // conditional rules it carries (.hover, .at, .dark) become a
+                // generated class collected below, so a class_() written in
+                // any position still merges instead of overwriting.
+                styles.add(style);
             } else {
                 // Same extraction rules inside a group (Iterable or Object[]) as
                 // at the top level — InlineStyle/Style used to be silently dropped.
@@ -388,10 +369,13 @@ public class Tag implements Element, HtmlAttributes<Tag> {
                     } else if (subItem instanceof Attributes attributes) {
                         attrs.putAll(attributes.toMap());
                     } else if (subItem instanceof jweb.Style<?> style) {
-                        attrs.put("style", style.build());
+                        styles.add(style);
                     }
                 }
             }
+        }
+        for (jweb.Style<?> style : styles) {
+            com.osmig.Jweb.framework.styles.PageStyles.applyTo(style, attrs);
         }
         return attrs;
     }

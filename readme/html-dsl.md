@@ -228,12 +228,13 @@ div()
     .children(list.stream().map(ItemView::new).toList())
     .each(users, u -> li(u.name()))          // iterate on the instance
     .when(isAdmin, () -> adminBadge())       // conditional child
-    .styled(style().padding(px(16)))         // per-element stylesheet class (jweb-N)
-    .hover(style().backgroundColor(hex("#f5f5f5")))
 ```
 
-`.styled()/.hover()/.focus()/.active()` generate a unique `jweb-N` class plus an inline
-`<style>` block next to the element (see CSS DSL doc).
+For per-element pseudo-classes, put them on the style instead —
+`div(style().padding(px(16)).hover(style().backgroundColor(hex("#f5f5f5"))))` generates a
+content-hashed class and puts the rule in the page's stylesheet (see CSS DSL doc). The old
+`Tag.styled()/.hover()/.focus()/.active()`, which emitted a `<style>` block next to the
+element under a counter-based `jweb-N` class, are gone in 3.0.
 
 ## Templates are elements
 
@@ -414,21 +415,24 @@ ErrorBoundary.of(() -> riskyComponent.render())
     .onError(err -> Log.framework().error("render failed", err));
 ```
 
-## Layout helpers (`jweb.Layout`)
+## Layout mixins (`jweb.Css`)
 
-A static utility of ~45 prebuilt layout wrappers. Most apps also have their own `Layout`
-template, so import this one qualified:
+The old `jweb.Layout` — 45 element-returning wrappers nothing used — is gone in 3.0.
+Layout is a style, not an element, so it composes with everything else a style does:
 
 ```java
-jweb.Layout.container(...)      // centered max-width container
-jweb.Layout.row(...) / column(...) / center(...)
-jweb.Layout.spaceBetween(...) / cluster(...) / stack(...)
-jweb.Layout.grid(3, ...) / autoGrid(minColWidth, gap, ...)
-jweb.Layout.sidebar(px(280), side, main)
-jweb.Layout.card(...) / divider() / spacer() / space(px(24))
-jweb.Layout.sticky(top, ...) / scrollable(height, ...) / aspectRatio("16/9", ...)
-jweb.Layout.visuallyHidden(...)  // a11y: screen-reader-only content
+div(row(SP_4), a, b)                     // flex, centred, gapped
+div(stack(SP_4).maxWidth(px(500)), …)
+div(center().flex(1), …)
+nav(cluster(SP_2).justifyContent(spaceBetween), …)
+div(container(px(1200)).padding(SP_8, GUTTER), …)
+div(autoGrid(px(240), SP_4), cards)      // as many columns as fit
+span(truncate(2), longText)
+span(srOnly(), "Skip to content")
+img(src("/hero.jpg"), cover())
 ```
+
+See [the CSS DSL](./css-dsl.md#layout-mixins) for the full list.
 
 ## Raw content & custom tags
 

@@ -7,49 +7,43 @@ package com.osmig.Jweb.framework.styles;
  * other "anchor" elements, even when they are not in the same stacking
  * context or parent. This is useful for tooltips, popovers, and dropdowns.</p>
  *
+ * <p>The root of the modern-CSS chain reachable through {@code jweb.Css.*} —
+ * its declaration factories return {@link jweb.Style}, so they compose with
+ * {@link jweb.Style#apply(jweb.Style)}, and its {@code anchor()} /
+ * {@code anchorSize()} function helpers return {@link jweb.CSSValue}, so they
+ * feed straight into any typed property.</p>
+ *
  * <h2>Basic Anchor Positioning</h2>
  * <pre>{@code
- * import static com.osmig.Jweb.framework.styles.CSS.*;
- * import static com.osmig.Jweb.framework.styles.CSSAnchorPositioning.*;
+ * import static jweb.Css.*;
  *
  * // Define an anchor
  * rule(".anchor-element")
- *     .prop(anchorName("--my-anchor"))
+ *     .apply(anchorName("--my-anchor"))
  *
  * // Position relative to anchor
  * rule(".positioned-element")
- *     .prop(positionAnchor("--my-anchor"))
+ *     .apply(positionAnchor("--my-anchor"))
  *     .position("absolute")
- *     .prop(top(anchor("--my-anchor", "bottom")))
- *     .prop(left(anchor("--my-anchor", "left")))
+ *     .top(anchor("--my-anchor", "bottom"))
+ *     .left(anchor("--my-anchor", "left"))
  * }</pre>
  *
  * <h2>Position Area</h2>
  * <pre>{@code
  * // Using position-area for simpler positioning
  * rule(".tooltip")
- *     .prop(positionAnchor("--trigger"))
- *     .prop(positionArea("top"))
+ *     .apply(positionAnchor("--trigger"))
+ *     .apply(positionArea("top"))
  * }</pre>
  *
  * <h2>Fallback Positioning</h2>
  * <pre>{@code
- * rule(".tooltip").positionTryFallbacks("flip-block, flip-inline");
+ * rule(".tooltip").apply(positionTryFallbacks("flip-block, flip-inline"));
  * }</pre>
  *
  * @see CSS for creating style rules
- *
- * @deprecated The properties are now first-class {@code Style} methods that take
- *             typed values instead of pre-joined {@code "prop:value"} strings:
- *             {@link jweb.Style#anchorName}, {@link jweb.Style#positionAnchor},
- *             {@link jweb.Style#positionArea}, {@link jweb.Style#positionVisibility},
- *             {@link jweb.Style#positionTryFallbacks}, and
- *             {@link jweb.Style#top}/{@link jweb.Style#right}/{@link jweb.Style#bottom}/{@link jweb.Style#left}
- *             for the inset properties. The {@code anchor()} / {@code anchorSize()}
- *             value helpers here are still useful — feed their output to those
- *             methods (or write the string directly).
  */
-@Deprecated
 public class CSSAnchorPositioning {
 
     protected CSSAnchorPositioning() {}
@@ -57,23 +51,43 @@ public class CSSAnchorPositioning {
     // ==================== Anchor Definition ====================
 
     /**
-     * Creates an anchor-name property value.
+     * Creates an anchor-name declaration.
      *
      * @param name the dashed-ident anchor name (e.g., "--my-anchor")
-     * @return a property string "anchor-name: name"
+     * @return a {@code Style} holding {@code anchor-name: name}
      */
-    public static String anchorName(String name) {
-        return "anchor-name:" + name;
+    public static jweb.Style<?> anchorName(String name) {
+        return CSS.style().prop("anchor-name", name);
     }
 
     /**
-     * Creates a position-anchor property value (links positioned element to its anchor).
+     * Creates an anchor-name declaration from a {@code CSSValue}.
+     *
+     * @param name the anchor name
+     * @return a {@code Style} holding {@code anchor-name: name}
+     */
+    public static jweb.Style<?> anchorName(jweb.CSSValue name) {
+        return anchorName(name.css());
+    }
+
+    /**
+     * Creates a position-anchor declaration (links positioned element to its anchor).
      *
      * @param name the dashed-ident anchor name
-     * @return a property string "position-anchor: name"
+     * @return a {@code Style} holding {@code position-anchor: name}
      */
-    public static String positionAnchor(String name) {
-        return "position-anchor:" + name;
+    public static jweb.Style<?> positionAnchor(String name) {
+        return CSS.style().prop("position-anchor", name);
+    }
+
+    /**
+     * Creates a position-anchor declaration from a {@code CSSValue}.
+     *
+     * @param name the anchor name
+     * @return a {@code Style} holding {@code position-anchor: name}
+     */
+    public static jweb.Style<?> positionAnchor(jweb.CSSValue name) {
+        return positionAnchor(name.css());
     }
 
     // ==================== anchor() Function ====================
@@ -85,10 +99,10 @@ public class CSSAnchorPositioning {
      * @param anchorName the anchor name
      * @param side the anchor side: "top", "right", "bottom", "left", "center",
      *             "start", "end", "self-start", "self-end"
-     * @return the anchor() function string
+     * @return the anchor() function value
      */
-    public static String anchor(String anchorName, String side) {
-        return "anchor(" + anchorName + " " + side + ")";
+    public static jweb.CSSValue anchor(String anchorName, String side) {
+        return () -> "anchor(" + anchorName + " " + side + ")";
     }
 
     /**
@@ -97,20 +111,20 @@ public class CSSAnchorPositioning {
      * @param anchorName the anchor name
      * @param side the anchor side
      * @param fallback the fallback value if anchor is unavailable
-     * @return the anchor() function string
+     * @return the anchor() function value
      */
-    public static String anchor(String anchorName, String side, String fallback) {
-        return "anchor(" + anchorName + " " + side + "," + fallback + ")";
+    public static jweb.CSSValue anchor(String anchorName, String side, String fallback) {
+        return () -> "anchor(" + anchorName + " " + side + "," + fallback + ")";
     }
 
     /**
      * Creates an anchor() function using the default anchor.
      *
      * @param side the anchor side
-     * @return the anchor() function string
+     * @return the anchor() function value
      */
-    public static String anchor(String side) {
-        return "anchor(" + side + ")";
+    public static jweb.CSSValue anchor(String side) {
+        return () -> "anchor(" + side + ")";
     }
 
     // ==================== anchor-size() Function ====================
@@ -120,10 +134,10 @@ public class CSSAnchorPositioning {
      *
      * @param anchorName the anchor name
      * @param dimension "width", "height", "block", "inline", "self-block", "self-inline"
-     * @return the anchor-size() function string
+     * @return the anchor-size() function value
      */
-    public static String anchorSize(String anchorName, String dimension) {
-        return "anchor-size(" + anchorName + " " + dimension + ")";
+    public static jweb.CSSValue anchorSize(String anchorName, String dimension) {
+        return () -> "anchor-size(" + anchorName + " " + dimension + ")";
     }
 
     /**
@@ -132,91 +146,59 @@ public class CSSAnchorPositioning {
      * @param anchorName the anchor name
      * @param dimension the dimension
      * @param fallback the fallback value
-     * @return the anchor-size() function string
+     * @return the anchor-size() function value
      */
-    public static String anchorSize(String anchorName, String dimension, String fallback) {
-        return "anchor-size(" + anchorName + " " + dimension + "," + fallback + ")";
+    public static jweb.CSSValue anchorSize(String anchorName, String dimension, String fallback) {
+        return () -> "anchor-size(" + anchorName + " " + dimension + "," + fallback + ")";
     }
 
     /**
      * Creates an anchor-size() using default anchor.
      *
      * @param dimension the dimension
-     * @return the anchor-size() function string
+     * @return the anchor-size() function value
      */
-    public static String anchorSizeDefault(String dimension) {
-        return "anchor-size(" + dimension + ")";
+    public static jweb.CSSValue anchorSizeDefault(String dimension) {
+        return () -> "anchor-size(" + dimension + ")";
     }
 
     // ==================== Position Area ====================
 
     /**
-     * Creates a position-area property value for simplified anchor positioning.
+     * Creates a position-area declaration for simplified anchor positioning.
      *
      * @param area the position area value, e.g., "top", "bottom", "left", "right",
      *             "top left", "bottom right", "center", "span-all"
-     * @return a property string "position-area: area"
+     * @return a {@code Style} holding {@code position-area: area}
      */
-    public static String positionArea(String area) {
-        return "position-area:" + area;
-    }
-
-    // ==================== Inset Properties with anchor() ====================
-
-    /**
-     * Creates a top property with anchor() value.
-     *
-     * @param anchorValue the anchor() function string
-     * @return a property string "top: anchor()"
-     */
-    public static String top(String anchorValue) {
-        return "top:" + anchorValue;
+    public static jweb.Style<?> positionArea(String area) {
+        return CSS.style().prop("position-area", area);
     }
 
     /**
-     * Creates a right property with anchor() value.
+     * Creates a position-area declaration from a {@code CSSValue}.
      *
-     * @param anchorValue the anchor() function string
-     * @return a property string "right: anchor()"
+     * @param area the position area value
+     * @return a {@code Style} holding {@code position-area: area}
      */
-    public static String right(String anchorValue) {
-        return "right:" + anchorValue;
-    }
-
-    /**
-     * Creates a bottom property with anchor() value.
-     *
-     * @param anchorValue the anchor() function string
-     * @return a property string "bottom: anchor()"
-     */
-    public static String bottom(String anchorValue) {
-        return "bottom:" + anchorValue;
-    }
-
-    /**
-     * Creates a left property with anchor() value.
-     *
-     * @param anchorValue the anchor() function string
-     * @return a property string "left: anchor()"
-     */
-    public static String left(String anchorValue) {
-        return "left:" + anchorValue;
+    public static jweb.Style<?> positionArea(jweb.CSSValue area) {
+        return positionArea(area.css());
     }
 
     // ==================== Position Fallback ====================
 
     // @position-fallback and @try were dropped from the spec before shipping —
     // positionFallback()/tryTactic() have been removed. Use
-    // Style.positionTryFallbacks(...) plus positionTry(name, style) below.
+    // positionTryFallbacks(...) plus positionTry(name, style) below.
 
     /**
-     * Creates a position-try-fallbacks property value.
+     * Creates a position-try-fallbacks declaration.
      *
      * @param fallbacks the fallback values (e.g., "flip-block", "--my-fallback")
-     * @return a property string "position-try-fallbacks: values"
+     * @return a {@code Style} holding {@code position-try-fallbacks: values}
      */
-    public static String positionTryFallbacks(String... fallbacks) {
-        return "position-try-fallbacks:" + String.join(",", fallbacks);
+    public static jweb.Style<?> positionTryFallbacks(String... fallbacks) {
+        return CSS.style().prop("position-try-fallbacks", String.join(",", fallbacks));
     }
 
     /**
@@ -257,13 +239,23 @@ public class CSSAnchorPositioning {
     // ==================== Position Visibility ====================
 
     /**
-     * Creates a position-visibility property value.
+     * Creates a position-visibility declaration.
      *
      * @param value "always", "anchors-visible", or "no-overflow"
-     * @return a property string "position-visibility: value"
+     * @return a {@code Style} holding {@code position-visibility: value}
      */
-    public static String positionVisibility(String value) {
-        return "position-visibility:" + value;
+    public static jweb.Style<?> positionVisibility(String value) {
+        return CSS.style().prop("position-visibility", value);
+    }
+
+    /**
+     * Creates a position-visibility declaration from a {@code CSSValue}.
+     *
+     * @param value the position-visibility value
+     * @return a {@code Style} holding {@code position-visibility: value}
+     */
+    public static jweb.Style<?> positionVisibility(jweb.CSSValue value) {
+        return positionVisibility(value.css());
     }
 
     // ==================== Convenience Methods ====================
@@ -271,36 +263,36 @@ public class CSSAnchorPositioning {
     /**
      * Positions an element above its anchor.
      *
-     * @return the position-area property for top positioning
+     * @return the position-area declaration for top positioning
      */
-    public static String positionAbove() {
+    public static jweb.Style<?> positionAbove() {
         return positionArea("top");
     }
 
     /**
      * Positions an element below its anchor.
      *
-     * @return the position-area property for bottom positioning
+     * @return the position-area declaration for bottom positioning
      */
-    public static String positionBelow() {
+    public static jweb.Style<?> positionBelow() {
         return positionArea("bottom");
     }
 
     /**
      * Positions an element to the left of its anchor.
      *
-     * @return the position-area property for left positioning
+     * @return the position-area declaration for left positioning
      */
-    public static String positionLeft() {
+    public static jweb.Style<?> positionLeft() {
         return positionArea("left");
     }
 
     /**
      * Positions an element to the right of its anchor.
      *
-     * @return the position-area property for right positioning
+     * @return the position-area declaration for right positioning
      */
-    public static String positionRight() {
+    public static jweb.Style<?> positionRight() {
         return positionArea("right");
     }
 }

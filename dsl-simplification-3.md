@@ -84,6 +84,78 @@ New top-level factories in `jweb.El`: every `on*` handler (both `Consumer<Event>
 | `stylesheet().mediaQuery(mq, new Rule(sel, style))` | `stylesheet().add(mq.rule(sel, style))` |
 | `.keyframes(k)`, `.fontFace(f)`, `.supports(s)` | `.add(k)`, `.add(f)`, `.add(s)` (old names still work) |
 
+### Stylesheets belong to pages
+
+| Was | Now |
+|---|---|
+| `head(…, style(globalStyles()))` with `private String globalStyles()` returning `stylesheet()….build()` | `@Override public Stylesheet styles()` on the layout/page/component — the render collects every template's, dedupes by content, and emits one nonce-stamped `<style>` in `<head>` |
+| `div(class_("docs-layout"), style(docsStyles()), …)` | the same `styles()` hook; no `<style>` in the body |
+| `Stylesheet.toStyleTag()` (used 0 times — there was no way to attach a sheet to a page) | still there, but `styles()` is the way |
+| `div().styled(s).hover(s2)` — `Tag.styled()/.hover()/.focus()/.active()` and `StyledElement`, which minted a counter-based `jweb-N` class and emitted a `<style>` block next to the element (no dedupe, no hoisting, a different class every render) | **deleted**. `div(style().apply(s).hover(s2))` |
+| no way to write `:hover` on an element without a class rule | `style().hover(style()…)` — a content-hash class (`j-3f9a1c`) is generated, its rules ride the page stylesheet, the plain declarations stay inline |
+| — | `.focus .focusVisible .focusWithin .active .visited .disabled .checked .placeholder .popoverOpen .before(content, s) .after(content, s) .on(":nth-child(2n)", s)` |
+| — | `.at(md(), s)`, `.at(container("card")…, s)`, `.dark(s)`, `.reducedMotion(s)`, `.startingStyle(s)` — they nest, and `apply()` carries them |
+| — | `MediaQuery.query()` / `ContainerQuery.query()` — the condition line without its rules |
+
+Fragments, streamed blocks and WebSocket patches each carry the CSS their own render
+introduced, exactly as they already carry Actions definitions.
+
+### Layout is a style, not an element
+
+| Was | Now |
+|---|---|
+| `jweb.Layout` / `com.osmig.Jweb.framework.layout.Layout` — 45 element-returning wrappers, used by nothing | **deleted**. `row() row(gap) stack() stack(gap) center() cluster(gap) container(maxWidth) card() truncate() truncate(lines) srOnly() fullBleed() aspect(w,h) cover() contain() grid(cols,gap) autoGrid(min) autoGrid(min,gap)` on `jweb.Css`, each returning a `Style` |
+| `style().display(flex).flexDirection(column).gap(SP_4)` (×46 in our own pages) | `stack(SP_4)` |
+| `style().maxWidth(px(500)).margin(zero, auto)` | `container(px(500))` |
+
+### One token system
+
+| Was | Now |
+|---|---|
+| `com.osmig.Jweb.framework.styles.Theme` (601 lines, `Theme.create()`, `toCss()/toFullCss()/toStyleElement()`) — dead code | **deleted**; `jweb.css.Theme` is the real type |
+| `CSSVariables.designSystem()` / `DesignSystemBuilder` | **deleted** — a third token-naming scheme |
+| `CSSVariables.theme()` / `ThemeBuilder` (`light(…).dark(…).buildBoth()`) | **deleted** — a fourth |
+| `CSSVariables.scoped(scope, name)`, `component(c, p)`, `theme(name)` | **deleted** — string concatenation dressed as API |
+| `CSSVariables.themeColor/spacing/radius/fontSizeVar/shadow(level, fallback)` | **deleted** — they encoded a naming convention; use `Theme.color("x")` etc. |
+| an app's tokens as `static final CSSValue PRIMARY = hex("#4f46e5")` | `Theme.light().color("primary", hex("#4f46e5"))` emitted through `styles()`, read back as `Theme.color("primary")` → `var(--color-primary)`; the app keeps its constant names |
+| dark mode by hand | `.dark(Theme.dark().color("bg", …))` → `:root`, `@media (prefers-color-scheme: dark){:root:not([data-theme=light])}` and `:root[data-theme=dark]` |
+| `Utility.generateCss(Theme)` | `Utility.generateCss()` — the parameter was never read (`Utility` stays deprecated) |
+
+### The modern-CSS modules are part of the DSL now
+
+Ten modules were separate static imports whose methods returned raw
+`"property:value"` strings, so they only composed through `.prop(...)`. They are now in
+the `Css` inheritance chain — `CSSColors extends CSSNested extends CSSProperty extends
+CSSScope extends CSSLayer extends CSSScrollSnap extends CSSMasking extends
+CSSLogicalProperties extends CSSSubgrid extends CSSTextWrap extends
+CSSAnchorPositioning` — and they are typed.
+
+| Was | Now |
+|---|---|
+| ten imports: `import static jweb.css.CSSTextWrap.*;` … | `import static jweb.Css.*` reaches all of them |
+| `style().prop(textWrapBalance())` — the method returned `"text-wrap:balance"` | `style().apply(textWrapBalance())` — it returns a `Style` |
+| `style().prop("top", anchor("--menu", "bottom"))` — a bare `String` | `style().top(anchor("--menu", "bottom"))` — it returns a `CSSValue` |
+| `CSSNested.rule(sel)` — collided with `Css.rule(sel)` | `nest(sel)` |
+| `CSSProperty.color/length/number/percentage/integer/angle/time/image(name)` — collided with the unit and colour statics | `colorProperty/lengthProperty/numberProperty/percentageProperty/integerProperty/angleProperty/timeProperty/imageProperty(name)` |
+| `CSSSubgrid.gridTemplateColumns/gridTemplateRows/gridColumn/gridRow(String)` | **deleted** — the `Style` methods of the same name already did it |
+| `CSSAnchorPositioning.top/right/bottom/left(String)` | **deleted** — `style().top(anchor(…))` |
+| every value-taking module method took a `String` | each also takes a `CSSValue` (`inlineSize(rem(1))`, `snapPadding(px(20))`, `maskSize(percent(100))`) |
+
+The six value modules (anchor positioning, text wrap, subgrid, logical properties,
+masking, scroll snap) are **no longer deprecated** — the deprecation said "returns a
+pre-joined string, use the `Style` method", which stopped being true.
+
+### Properties and at-rules that were missing
+
+| Was | Now |
+|---|---|
+| `.prop("border-right", "none")` (only the 3-arg form existed) | `.borderRight(none)`, and `borderLeft/Top/Bottom(CSSValue)` |
+| — | `fieldSizing(content\|fixed)`, `scrollbarColor(thumb, track)`, `scrollbarWidth`, `scrollbarGutter(stable\|stableBothEdges)`, `textBoxTrim`, `textBoxEdge`, `textBox(trim, edge)`, `anchorScope`, `viewTransitionClass`, `interpolateSize(allowKeywords)` |
+| — | `@starting-style`: `style().startingStyle(s)` and `stylesheet().startingStyle(sel, s)` |
+| — | `Selector.popoverOpen()` / `.open()`, and `style().popoverOpen(s)` |
+| — | `ContainerQuery.style("--x", "y")` → `@container style(--x: y)` |
+| — | keyword constants `content`, `thin`, `stableBothEdges`, `trimBoth/trimStart/trimEnd`, `capAlphabetic`, `exAlphabetic`, `allowKeywords` |
+
 ## JavaScript
 
 | Was | Now |
@@ -198,6 +270,14 @@ These still compile and now mean something else. Search for them:
    a `Val`, use `JS.call(...)`, `fetch(str(...))`, `delay(...)`.
 5. **`span("x")` with `Css.*` imported** is now the `<span>` element (it used to be the
    grid line-name span).
+6. **`center`, `cover`, `contain`, `grid`, `row` with `Css.*` imported** are still the
+   keyword constants; the new same-named *methods* (`center()`, `grid(3, gap)`) are a
+   separate namespace, so `display(grid)` is unchanged.
+7. **A `style()` with only conditional rules** (`style().hover(…)` and nothing else) no
+   longer renders an empty `style=""` attribute.
+8. **`style().prop(textWrapBalance())`** — the single-argument `prop(String)` that split a
+   `"property:value"` string still exists, but the modules no longer return one, so this
+   is now a compile error. → `style().apply(textWrapBalance())`.
 
 Everything else is a compile error with an obvious fix, or a deprecation warning:
 deleted `abbr(text, title)` / `blockquote(cite, …)` / `datalist(id, …)` / `optgroup(label, …)`,
@@ -212,6 +292,5 @@ The release is **source- and binary-incompatible** — recompile downstream code
 
 - **Numbers meaning pixels** for length properties (React's convention). Real ergonomics,
   but a convention rather than a platform name.
-- **Responsive rules inside an inline `style()`** — a feature, not syntax.
 - **Renaming `class_`, `for_`, `float_`, `if_`, `return_`** and the rest of the keyword set,
   `hex()`, `px()`, or removing `attrs()` — all honest.

@@ -28,11 +28,9 @@ public class DocsPage implements Template {
 
     @Override
     public Element render() {
-        // Layout styles live in docsStyles() as class rules (not inline) so
-        // the phone media query below can restack them — inline styles would
-        // always win over @media rules.
+        // The layout rules live in styles() — the render collects them and
+        // emits them in <head>.
         return div(class_("docs-layout"),
-            style(docsStyles()),
             new DocSidebar(section, version).render(),
             div(class_("docs-content"), style()
                     .flex(1).minWidth(zero).minHeight(num(0))
@@ -50,8 +48,7 @@ public class DocsPage implements Template {
     /** A slim reminder while reading docs for anything but the latest release. */
     private Element versionBanner() {
         if (DocVersions.isLatest(version)) return null;
-        return div(style()
-                .display(flex).alignItems(center).gap(SP_2)
+        return div(row(SP_2)
                 .padding(SP_2, SP_3).marginBottom(SP_6)
                 .borderRadius(ROUNDED)
                 .backgroundColor(hex("#fffbeb"))
@@ -63,7 +60,13 @@ public class DocsPage implements Template {
                 text("Switch to " + DocVersions.latest() + " (latest)")));
     }
 
-    private String docsStyles() {
+    /**
+     * The docs layout's own stylesheet. These have to be class rules, not
+     * inline styles: the phone media query below restacks the panes, and an
+     * inline style would always win over an {@code @media} rule.
+     */
+    @Override
+    public jweb.css.Stylesheet styles() {
         return stylesheet()
             // Desktop-first three-pane layout
             .rule(".docs-layout", style()
@@ -73,8 +76,7 @@ public class DocsPage implements Template {
                 .borderRight(px(1), solid, BORDER)
                 .overflowY(auto).flexShrink(0))
             .rule(".docs-nav-section", style().marginBottom(SP_6))
-            .rule(".docs-nav-links", style()
-                .display(flex).flexDirection(column).gap(SP_1))
+            .rule(".docs-nav-links", stack(SP_1))
             // The "On This Page" rail is opt-in: hidden until its script finds
             // headers (adds .has-headers) AND the screen is wide enough.
             .rule(".subheader-sidebar", style().display(none))
@@ -86,11 +88,10 @@ public class DocsPage implements Template {
                 .rule(".docs-layout", style().flexDirection(column))
                 .rule(".docs-sidebar", style()
                     .width(auto).padding(SP_3, SP_4)
-                    .prop("border-right", "none")
+                    .borderRight(none)
                     .borderBottom(px(1), solid, BORDER)
                     .overflowX(auto).overflowY(hidden))
-                .rule(".docs-sidebar-inner", style()
-                    .display(flex).alignItems(center).gap(SP_4))
+                .rule(".docs-sidebar-inner", row(SP_4))
                 .rule(".docs-nav-section", style().marginBottom(zero))
                 .rule(".docs-nav-title", style().display(none))
                 .rule(".docs-nav-links", style().flexDirection(row))
@@ -111,21 +112,13 @@ public class DocsPage implements Template {
             // Code-block copy button: hidden until the block is hovered or the
             // button keyboard-focused; CodeCopyScript toggles .copied on click.
             // Hover reveal must be class rules — inline styles can't do :hover.
-            .rule(".code-copy-btn", style()
+            .rule(".code-copy-btn", chip()
                 .position(absolute).top(SP_2).right(SP_2)
-                .padding(px(4), px(10))
-                .fontSize(rem(0.75)).lineHeight(1.4)
-                .color(hex("#cbd5e1"))
-                .backgroundColor(rgba(255, 255, 255, 0.08))
-                .border(px(1), solid, rgba(255, 255, 255, 0.15))
-                .borderRadius(px(6))
-                .cursor(pointer)
                 .opacity(0)
                 .transitionOpacity(s(0.15)))
             .rule(".doc-code:hover .code-copy-btn, .code-copy-btn:focus-visible", style()
                 .opacity(1))
-            .rule(".code-copy-btn:hover", style()
-                .backgroundColor(rgba(255, 255, 255, 0.18)).color(hex("#f1f5f9")))
+            .rule(".code-copy-btn:hover", chipHover())
             .rule(".code-copy-btn.copied", style()
                 .color(hex("#6ee7b7")).borderColor(rgba(110, 231, 183, 0.4)))
             // Touch screens have no hover — keep the button always visible.
@@ -136,18 +129,10 @@ public class DocsPage implements Template {
             // visible — it carries information (the version), not just an action.
             .rule(".ver-picker", style()
                 .position(absolute).top(SP_2).right(rem(4.4)).margin(zero))
-            .rule(".ver-picker summary", style()
-                .padding(px(4), px(10))
-                .fontSize(rem(0.75)).lineHeight(1.4)
-                .color(hex("#cbd5e1"))
-                .backgroundColor(rgba(255, 255, 255, 0.08))
-                .border(px(1), solid, rgba(255, 255, 255, 0.15))
-                .borderRadius(px(6))
-                .cursor(pointer)
+            .rule(".ver-picker summary", chip()
                 .prop("list-style", "none"))
             .rule(".ver-picker summary::-webkit-details-marker", style().display(none))
-            .rule(".ver-picker summary:hover", style()
-                .backgroundColor(rgba(255, 255, 255, 0.18)).color(hex("#f1f5f9")))
+            .rule(".ver-picker summary:hover", chipHover())
             .rule(".ver-picker[open] summary", style().color(hex("#f1f5f9")))
             .rule(".ver-picker-menu", style()
                 .position(absolute).right(zero).marginTop(px(6))
@@ -177,14 +162,28 @@ public class DocsPage implements Template {
                 .apply(brandFlow())
                 .borderMask()
                 .zIndex(-1)
-                .pointerEvents(none))
-            // The /docs/tell link is outside the section nav, so DocsNavScript's
-            // delegated mouseover styling never reaches it — it needs a real
-            // :hover rule, which an inline style cannot express.
-            .rule(".docs-tell-link:hover", style()
-                .color(PRIMARY)
-                .borderColor(PRIMARY)
-                .backgroundColor(hex("#eef2ff")))
-            .build();
+                .pointerEvents(none));
+    }
+
+    /**
+     * The pill sitting on a dark code block — the copy button and the version
+     * picker are the same object with different contents.
+     */
+    private static jweb.Style<?> chip() {
+        return style()
+            .padding(px(4), px(10))
+            .fontSize(rem(0.75)).lineHeight(1.4)
+            .color(hex("#cbd5e1"))
+            .backgroundColor(rgba(255, 255, 255, 0.08))
+            .border(px(1), solid, rgba(255, 255, 255, 0.15))
+            .borderRadius(px(6))
+            .cursor(pointer);
+    }
+
+    /** The chip's hover state. */
+    private static jweb.Style<?> chipHover() {
+        return style()
+            .backgroundColor(rgba(255, 255, 255, 0.18))
+            .color(hex("#f1f5f9"));
     }
 }

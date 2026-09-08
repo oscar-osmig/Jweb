@@ -493,6 +493,21 @@ public class MediaQuery {
      *
      * @return the formatted CSS @media rule
      */
+    /**
+     * Just the {@code @media …} condition line, without its rules — what
+     * {@code style().at(md(), …)} wraps a generated class in.
+     *
+     * @return the at-rule prelude
+     */
+    public String query() {
+        StringBuilder sb = new StringBuilder("@media ");
+        for (int i = 0; i < conditions.size(); i++) {
+            if (i > 0) sb.append(" and ");
+            sb.append(conditions.get(i));
+        }
+        return sb.toString().stripTrailing();
+    }
+
     public String build() {
         StringBuilder sb = new StringBuilder();
         sb.append("@media ");

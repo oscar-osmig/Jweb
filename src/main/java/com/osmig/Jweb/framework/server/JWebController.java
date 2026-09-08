@@ -58,6 +58,7 @@ public class JWebController {
     // Pre-cached markers for fast HTML injection
     private static final String BODY_END = "</body>";
     private static final String HTML_END = "</html>";
+    private static final String HEAD_END = "</head>";
 
     public JWebController(JWeb jweb) {
         this.router = jweb.getRouter();
@@ -186,6 +187,7 @@ public class JWebController {
         // Templates returned from handlers get their lifecycle hooks
         if (result instanceof Template template) {
             template.beforeRender(request);
+            com.osmig.Jweb.framework.styles.PageStyles.collect(template);
             String html = template.render().toHtml();
             template.afterRender(request);
             html = applyTemplateExtras(html, template);
@@ -197,11 +199,13 @@ public class JWebController {
                 .body(html);
         }
 
-        // If middleware already returned a ResponseEntity, use it directly
+        // If middleware or the handler already built a ResponseEntity, use it
+        // directly — except that an HTML body still needs the CSS this render
+        // collected, which nothing else on this path would deliver.
         if (result instanceof ResponseEntity<?> responseEntity) {
             @SuppressWarnings("unchecked")
             ResponseEntity<String> typed = (ResponseEntity<String>) responseEntity;
-            return typed;
+            return withPageStyles(typed, context);
         }
 
         // Handle RawContent with proper content type
@@ -273,12 +277,17 @@ public class JWebController {
         // nonce-stamped definitions script (inline on*= attributes can't
         // run under the recommended CSP)
         String actionsTag = com.osmig.Jweb.framework.js.ClientActions.drainScriptTag(context);
+        // The CSS this render collected: every Template's styles() hook plus
+        // the rules behind the generated classes of conditional inline styles
+        String styleTag = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
 
-        // Fast path: if no scripts to inject, return as-is
+        // Fast path: if nothing to inject, return as-is
         if (prefetchScript.isEmpty() && hydrationScript.isEmpty()
-                && runtimeScript.isEmpty() && actionsTag.isEmpty()) {
+                && runtimeScript.isEmpty() && actionsTag.isEmpty() && styleTag.isEmpty()) {
             return html;
         }
+
+        html = injectPageStyles(html, styleTag);
 
         // Order: hydration data first so JWeb.init() can read __JWEB_DATA__
         String scripts = prefetchScript + hydrationScript + actionsTag + runtimeScript;
@@ -310,6 +319,46 @@ public class JWebController {
         // and the runtime's swap() executes the marked tag (browsers never
         // run scripts inserted via innerHTML on their own).
         return actionsTag.isEmpty() ? html : html + actionsTag;
+    }
+
+    /**
+     * Adds the render's collected CSS to an already-built HTML response —
+     * {@code Response.html(new Layout(...))} and anything else that hands back
+     * a {@link ResponseEntity} instead of an {@link Element}.
+     */
+    static ResponseEntity<String> withPageStyles(ResponseEntity<String> response,
+                                                 StateManager.StateContext context) {
+        if (context == null || response.getBody() == null) return response;
+        MediaType type = response.getHeaders().getContentType();
+        if (type != null && !MediaType.TEXT_HTML.isCompatibleWith(type)) return response;
+        String styleTag = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
+        if (styleTag.isEmpty()) return response;
+        return new ResponseEntity<>(injectPageStyles(response.getBody(), styleTag),
+            response.getHeaders(), response.getStatusCode());
+    }
+
+    /**
+     * Puts the render's collected CSS where it belongs: at the end of
+     * {@code <head>} for a document, and in front of the markup it styles for
+     * a swap fragment (a {@code <style>} inserted through {@code innerHTML}
+     * does apply — unlike a script, which is why action definitions need the
+     * runtime's help and stylesheets do not).
+     */
+    static String injectPageStyles(String html, String styleTag) {
+        if (styleTag.isEmpty()) return html;
+        int headEnd = html.lastIndexOf(HEAD_END);
+        if (headEnd != -1) {
+            return new StringBuilder(html.length() + styleTag.length())
+                .append(html, 0, headEnd).append(styleTag)
+                .append(html, headEnd, html.length()).toString();
+        }
+        int bodyEnd = html.lastIndexOf(BODY_END);
+        if (bodyEnd != -1) {
+            return new StringBuilder(html.length() + styleTag.length())
+                .append(html, 0, bodyEnd).append(styleTag)
+                .append(html, bodyEnd, html.length()).toString();
+        }
+        return styleTag + html;
     }
 
     // Cached external script tags (content is fixed after startup; the
@@ -395,7 +444,10 @@ public class JWebController {
             while (it.hasNext()) {
                 var pending = it.next();
                 if (pending.html().isDone()) {
-                    out.write(streamChunk(pending.placeholderId(), pending.html().join(),
+                    // The block's CSS rides inside the chunk's <template>:
+                    // cloning it into the document applies the rules.
+                    String lateCss = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
+                    out.write(streamChunk(pending.placeholderId(), lateCss + pending.html().join(),
                         lateStatesJson(context, sentStateIds),
                         com.osmig.Jweb.framework.js.ClientActions.drainJs(context)));
                     it.remove();
@@ -543,6 +595,7 @@ public class JWebController {
         Template page = route.pageSupplier().get();
         pageHolder[0] = page;
         page.beforeRender(request);
+        com.osmig.Jweb.framework.styles.PageStyles.collect(page);
         var content = page.render();
         String title = page.pageTitle().orElse(route.title());
         var result = route.layoutClass() != null
@@ -650,6 +703,7 @@ public class JWebController {
             } else {
                 layout = (Template) cachedCtor.newInstance(Element.of(content));
             }
+            com.osmig.Jweb.framework.styles.PageStyles.collect(layout);
             return layout.render();
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate layout: " + layoutClass.getName(), e);

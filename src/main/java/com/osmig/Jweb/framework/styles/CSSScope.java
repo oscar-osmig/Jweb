@@ -58,7 +58,7 @@ import java.util.List;
  * @deprecated Replaced by {@code jweb.css.CSSScope} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class CSSScope {
+public class CSSScope extends CSSLayer {
 
     protected CSSScope() {}
 

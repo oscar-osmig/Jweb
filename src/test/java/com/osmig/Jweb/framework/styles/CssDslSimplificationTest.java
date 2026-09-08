@@ -241,31 +241,31 @@ class CssDslSimplificationTest {
 
     @Test
     void pseudoElementsGetDoubleColonsAndPseudoClassesGetSingle() {
-        String html = new StyledElement(com.osmig.Jweb.framework.vdom.VElement.of("input"))
+        String css = style()
             .hover(style().color("red"))
             .placeholder(style().color("gray"))
-            .before(style().content("x"))
-            .after(style().content("y"))
-            .toHtml();
+            .before("x", style().color("blue"))
+            .after("y", style().color("blue"))
+            .variantCss("&");
 
-        assertTrue(html.contains(":hover{color: red;}"), html);
-        assertFalse(html.matches("(?s).*[^:]:placeholder\\{.*"),
-            "placeholder is a pseudo-ELEMENT and must not use a single colon: " + html);
-        assertTrue(html.contains("::placeholder{color: gray;}"), html);
-        assertTrue(html.contains("::before{"), html);
-        assertTrue(html.contains("::after{"), html);
+        assertTrue(css.contains("&:hover{color: red;}"), css);
+        assertFalse(css.matches("(?s).*[^:]:placeholder\\{.*"),
+            "placeholder is a pseudo-ELEMENT and must not use a single colon: " + css);
+        assertTrue(css.contains("&::placeholder{color: gray;}"), css);
+        assertTrue(css.contains("&::before{content: \"x\";"), css);
+        assertTrue(css.contains("&::after{content: \"y\";"), css);
     }
 
     @Test
-    void genericPseudoEscapeHatchesWork() {
-        String html = new StyledElement(com.osmig.Jweb.framework.vdom.VElement.of("div"))
-            .pseudo("nth-of-type(2n)", style().background("gray"))
-            .pseudoElement("first-line", style().fontWeight(700))
-            .toHtml();
+    void anyOtherPseudoIsWrittenWithItsOwnColons() {
+        String css = style()
+            .on(":nth-of-type(2n)", style().background("gray"))
+            .on("::first-line", style().fontWeight(700))
+            .variantCss("&");
 
-        assertTrue(html.contains(":nth-of-type(2n){background: gray;}"), html);
-        assertFalse(html.contains("::nth-of-type"), html);
-        assertTrue(html.contains("::first-line{font-weight: 700;}"), html);
+        assertTrue(css.contains("&:nth-of-type(2n){background: gray;}"), css);
+        assertFalse(css.contains("::nth-of-type"), css);
+        assertTrue(css.contains("&::first-line{font-weight: 700;}"), css);
     }
 
     // ==================== C14 — BEM emits flat rules ====================
@@ -395,5 +395,121 @@ class CssDslSimplificationTest {
 
         String css = Stylesheet.stylesheet().add(ViewTransitions.viewTransitions()).build();
         assertEquals("@view-transition{navigation:auto}", css);
+    }
+
+    // ==================== Modern-CSS fold-in — the ten stranded modules ====
+
+    /** CSSAnchorPositioning — declarations are Style, functions are CSSValue. */
+    @Test
+    void anchorPositioningFamilyIsTypedNotStrings() {
+        assertEquals("anchor-name: --menu;", CSSAnchorPositioning.anchorName("--menu").build());
+        assertEquals("position-area: bottom;", CSSAnchorPositioning.positionArea("bottom").build());
+        assertEquals("anchor(--btn bottom)", CSSAnchorPositioning.anchor("--btn", "bottom").css());
+        assertEquals("anchor-size(--btn width)", CSSAnchorPositioning.anchorSize("--btn", "width").css());
+
+        // Composes with a real Style property directly — no more prop(String) bridge.
+        assertEquals("top: anchor(--btn bottom);",
+            style().top(CSSAnchorPositioning.anchor("--btn", "bottom")).build());
+    }
+
+    /** CSSTextWrap — every declaration factory now returns a Style fragment. */
+    @Test
+    void textWrapFamilyReturnsStyleFragments() {
+        assertEquals("text-wrap: balance;", CSSTextWrap.textWrapBalance().build());
+        assertEquals("word-break: break-all;", CSSTextWrap.wordBreakAll().build());
+        assertEquals(
+            "display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;",
+            CSSTextWrap.lineClamp(3).build());
+
+        assertEquals("text-wrap: balance; color: red;",
+            style().apply(CSSTextWrap.textWrapBalance()).color("red").build());
+    }
+
+    /** CSSMasking — clip-path shapes are still complete declarations, now typed. */
+    @Test
+    void maskingClipPathFamilyEmitsCompleteDeclarations() {
+        assertEquals("clip-path: circle(50%);", CSSMasking.clipCircle("50%").build());
+        assertEquals("clip-path: polygon(50% 0%,0% 100%,100% 100%);",
+            CSSMasking.clipPolygon("50% 0%", "0% 100%", "100% 100%").build());
+        assertEquals("-webkit-mask-image: url(m.svg); mask-image: url(m.svg);",
+            CSSMasking.maskImage("url(m.svg)").build());
+    }
+
+    /** CSSLogicalProperties — writing-mode-aware declarations, plus CSSValue overloads. */
+    @Test
+    void logicalPropertiesFamilyEmitsDeclarations() {
+        assertEquals("margin-inline: auto;", CSSLogicalProperties.marginInline("auto").build());
+        assertEquals("inline-size: 50%;", CSSLogicalProperties.inlineSize(percent(50)).build());
+        assertEquals("padding-block: 1rem 2rem;",
+            CSSLogicalProperties.paddingBlock(rem(1), rem(2)).build());
+    }
+
+    /** CSSScrollSnap — real property names (scroll-padding, not scroll-snap-padding). */
+    @Test
+    void scrollSnapFamilyEmitsDeclarations() {
+        assertEquals("scroll-snap-align: start;", CSSScrollSnap.snapAlign("start").build());
+        assertEquals("scroll-padding: 0 20px;", CSSScrollSnap.snapPadding("0 20px").build());
+        assertEquals("scroll-padding: 0 20px;", CSSScrollSnap.snapPadding(jweb.CSSValue.of("0 20px")).build());
+    }
+
+    /** CSSSubgrid — subgrid values as typed declarations. */
+    @Test
+    void subgridFamilyEmitsDeclarations() {
+        assertEquals("grid-template-columns: subgrid;", CSSSubgrid.subgridColumns().build());
+        assertEquals("grid-template-columns: subgrid; grid-template-rows: subgrid;",
+            CSSSubgrid.subgridBoth().build());
+        assertEquals("grid-column: 1 / -1;", CSSSubgrid.gridColumnFull().build());
+    }
+
+    /** C1(b) — the chain: import static jweb.Css.*; reaches every stranded module now. */
+    @Test
+    void oneImportReachesAllTenModules() {
+        assertEquals("text-wrap: balance;", jweb.Css.textWrapBalance().build());
+        assertEquals("anchor-name: --menu;", jweb.Css.anchorName("--menu").build());
+        assertEquals("grid-template-columns: subgrid;", jweb.Css.subgridColumns().build());
+        assertEquals("scroll-snap-align: start;", jweb.Css.snapAlign("start").build());
+        assertEquals("clip-path: circle(50%);", jweb.Css.clipCircle("50%").build());
+        assertEquals("margin-inline: auto;", jweb.Css.marginInline("auto").build());
+    }
+
+    /** CSSNested.rule renamed to nest — CSS.rule kept the name (C1 rename). */
+    @Test
+    void nestedRuleStarterIsNamedNestNotRule() {
+        assertEquals(".card {\n  padding: 1rem;\n}\n", CSSNested.nest(".card").prop("padding", "1rem").build());
+        assertTrue(java.util.Arrays.stream(CSSNested.class.getMethods())
+                .noneMatch(m -> m.getName().equals("rule")),
+            "CSSNested.rule must be gone — renamed to nest() to stop clashing with CSS.rule");
+    }
+
+    /** CSSProperty's syntax helpers renamed to avoid clashing with unit/colour statics. */
+    @Test
+    void propertySyntaxHelpersAreRenamedWithPropertySuffix() {
+        assertEquals("@property --hue {\n  syntax: '<number>';\n  inherits: true;\n  initial-value: 210;\n}",
+            CSSProperty.numberProperty("--hue").inherits(true).initialValue("210").build());
+        for (String gone : new String[] {"color", "length", "number", "percentage", "integer", "angle", "time", "image"}) {
+            assertTrue(java.util.Arrays.stream(CSSProperty.class.getMethods())
+                    .noneMatch(m -> m.getName().equals(gone)),
+                "CSSProperty." + gone + "(String) must be gone — renamed to " + gone + "Property");
+        }
+    }
+
+    /** CSSAnchorPositioning.top/right/bottom/left(String) were redundant one-liners — deleted. */
+    @Test
+    void anchorPositioningInsetAliasesAreGone() {
+        for (String gone : new String[] {"top", "right", "bottom", "left"}) {
+            assertTrue(java.util.Arrays.stream(CSSAnchorPositioning.class.getMethods())
+                    .noneMatch(m -> m.getName().equals(gone)),
+                "CSSAnchorPositioning." + gone + "(String) must be gone — redundant with style()." + gone + "(anchor(...))");
+        }
+    }
+
+    /** CSSSubgrid's grid-template/placement String setters were redundant with Style's own — deleted. */
+    @Test
+    void subgridRedundantGridSettersAreGone() {
+        for (String gone : new String[] {"gridTemplateColumns", "gridTemplateRows", "gridColumn", "gridRow"}) {
+            assertTrue(java.util.Arrays.stream(CSSSubgrid.class.getMethods())
+                    .noneMatch(m -> m.getName().equals(gone)),
+                "CSSSubgrid." + gone + "(String) must be gone — redundant with the Style instance method");
+        }
     }
 }
