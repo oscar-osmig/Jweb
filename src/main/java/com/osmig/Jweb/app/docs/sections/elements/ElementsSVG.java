@@ -14,7 +14,11 @@ public final class ElementsSVG {
             codeBlock("""
 // Import SVG elements
 import static jweb.El.*;
-import static jweb.el.SVGElements.*;"""),
+import static jweb.el.SVGElements.*;
+
+// Three elements are renamed to avoid clashing with the CSS DSL under these
+// wildcard imports: svgText (the SVG <text> — plain text is a text node),
+// svgLinearGradient and svgRadialGradient (the plain names are CSS values)."""),
 
             h3Title("Basic SVG"),
             para("Create an SVG container with viewBox."),
@@ -145,15 +149,22 @@ skewX(10)              // Skew horizontally
 skewY(10)              // Skew vertically"""),
 
             h3Title("Definitions & Reuse"),
-            para("Define reusable elements and gradients."),
+            para("Define reusable elements and gradients. Gradients are svgLinearGradient / " +
+                 "svgRadialGradient here — linearGradient and radialGradient are the CSS values."),
             codeBlock("""
 svg(viewBox("0 0 200 200"),
     // Define reusable elements
     defs(
-        // Gradient
-        linearGradient(id("gradient1"),
+        // Linear gradient
+        svgLinearGradient(id("gradient1"),
             stop(offset("0%"), stopColor("blue")),
             stop(offset("100%"), stopColor("purple"))
+        ),
+
+        // Radial gradient
+        svgRadialGradient(id("glow"),
+            stop(offset("0%"), stopColor("white")),
+            stop(offset("100%"), stopColor("blue"))
         ),
 
         // Reusable symbol
@@ -166,9 +177,81 @@ svg(viewBox("0 0 200 200"),
     rect(x(10), y(10), width(80), height(80),
         fill("url(#gradient1)")
     ),
+    circle(cx(150), cy(50), r(30), fill("url(#glow)")),
 
     // Reuse symbol
     use(href("#star"), x(100), y(100), width(50), height(50))
+)"""),
+
+            h3Title("Text, Patterns & Filters"),
+            para("Text on the SVG canvas, tiled patterns, and filter effects. svgText is the " +
+                 "SVG <text> element — plain text() is gone, and a bare String is still a text node."),
+            codeBlock("""
+// Text with a tspan run and text along a path
+svg(viewBox("0 0 200 60"),
+    defs(
+        path(id("curve"), d("M10 50 Q100 10 190 50"))
+    ),
+    svgText(x(10), y(20), fontFamily("system-ui"), fontSize(16),
+        "Plain, ", tspan(fill("red"), "colored"), " text"
+    ),
+    svgText(
+        textPath(href("#curve"), "Text that follows a curve")
+    )
+)
+
+// Tiled pattern fill
+svg(viewBox("0 0 100 100"),
+    defs(
+        pattern(id("dots"), width(10), height(10),
+            attr("patternUnits", "userSpaceOnUse"),
+            circle(cx(5), cy(5), r(2), fill("gray"))
+        )
+    ),
+    rect(x(0), y(0), width(100), height(100), fill("url(#dots)"))
+)
+
+// Blur and drop-shadow filters
+svg(viewBox("0 0 100 100"),
+    defs(
+        filter(id("blur"),
+            feGaussianBlur(attr("in", "SourceGraphic"), stdDeviation(3))),
+        filter(id("shadow"),
+            feDropShadow(attr("dx", "2"), attr("dy", "2"), stdDeviation(2)))
+    ),
+    circle(cx(30), cy(50), r(20), fill("blue"), filterRef("blur")),
+    circle(cx(70), cy(50), r(20), fill("green"), filterRef("shadow"))
+)
+
+// Clip and mask
+svg(viewBox("0 0 100 100"),
+    defs(
+        clipPath(id("circle-clip"), circle(cx(50), cy(50), r(30)))
+    ),
+    image(href("/photo.jpg"), x(0), y(0), width(100), height(100),
+        clipPathRef("circle-clip"))
+)"""),
+
+            h3Title("Animation"),
+            para("Native SMIL animation: animate for values, animateTransform for transforms, " +
+                 "animateMotion for movement along a path."),
+            codeBlock("""
+// Fade in
+circle(cx(50), cy(50), r(20), fill("blue"),
+    animate(attributeName("opacity"), from("0"), to("1"), dur("1s"))
+)
+
+// Spin forever
+rect(x(40), y(40), width(20), height(20), fill("red"),
+    animateTransform(attributeName("transform"), type("rotate"),
+        from("0 50 50"), to("360 50 50"), dur("2s"), repeatCount("indefinite"))
+)
+
+// Move along a path
+svg(viewBox("0 0 200 100"),
+    circle(r(6), fill("purple"),
+        animateMotion(attr("path", "M10 90 Q100 10 190 90"),
+            dur("3s"), repeatCount("indefinite")))
 )"""),
 
             h3Title("Icon Example"),

@@ -668,125 +668,116 @@ input(onInput(e -> {
 input(onFocus(e -> showHint()), onBlur(e -> validateField()))""";
 
     // ==================== Form Builder Section ====================
+    // A form is a record: one class declares the fields, their types and their
+    // rules; the same record renders the form, validates the submission, and
+    // comes back as a typed value. There is no separate builder chain.
 
     public static final String FORM_BUILDER_BASIC = """
-import static jweb.Form.*;
+public record ContactForm(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email) {}
 
-Form.create()
+form(ContactForm.class)
     .action("/contact")
-    .method("POST")
-    .text("name", f -> f.label("Full Name").placeholder("John Doe").required())
-    .email("email", f -> f.label("Email").required())
-    .submit("Send Message")
-    .build()""";
+    .submit("Send Message")""";
 
     public static final String FORM_BUILDER_TYPES = """
-Form.create()
-    // Text inputs
-    .text("username", f -> f.label("Username").required())
-    .email("email", f -> f.label("Email"))
-    .password("password", f -> f.label("Password").minLength(8))
-    .url("website", f -> f.label("Website"))
-    .tel("phone", f -> f.label("Phone"))
-    .number("age", f -> f.label("Age").min(0).max(120))
+// The Java type of each record component picks the control
+public record Signup(
+    String username,                       // <input type="text">
+    @Form.Email String email,              // <input type="email">
+    @Form.Password String password,        // <input type="password">
+    @Form.Multiline(rows = 4) String bio,   // <textarea>
+    int age,                                // <input type="number">
+    boolean subscribe,                      // <input type="checkbox">
+    Plan plan,                              // <select> over the enum's constants
+    LocalDate birthdate,                    // <input type="date">
+    LocalTime meetingTime,                  // <input type="time">
+    LocalDateTime eventAt,                  // <input type="datetime-local">
+    UploadedFile resume) {}                 // <input type="file">, form goes multipart
 
-    // Date/time inputs
-    .date("birthdate", f -> f.label("Birth Date"))
-    .time("meeting", f -> f.label("Meeting Time"))
-    .datetime("event", f -> f.label("Event Date/Time"))
+enum Plan { FREE, PRO, ENTERPRISE }
 
-    // Other inputs
-    .textarea("bio", f -> f.label("Bio").rows(4))
-    .checkbox("terms", f -> f.label("I agree to the terms"))
-    .hidden("csrf", csrfToken)
-    .build()""";
+form(Signup.class).action("/signup").submit("Sign Up")""";
 
     public static final String FORM_BUILDER_CONFIG = """
-.text("username", f -> f
-    .label("Username")           // Form label
-    .placeholder("johndoe")      // Placeholder text
-    .required()                  // Required field
-    .minLength(3)                // Minimum length
-    .maxLength(20)               // Maximum length
-    .pattern("[a-z0-9]+")        // Regex pattern
-    .autocomplete("username")    // Autocomplete hint
-    .autofocus()                 // Auto focus on load
-    .disabled()                  // Disabled field
-    .readonly()                  // Read-only field
-    .value("default")            // Default value
-    .help("3-20 characters")     // Help text below field
-)""";
+// field(name, f -> ...) is presentational only — label, placeholder, help
+// text, control type, rows, accept, autocomplete, options. The rules
+// (required, email, length) stay on the record's annotations.
+form(Signup.class)
+    .field("username", f -> f
+        .label("Username")             // overrides the derived label
+        .placeholder("johndoe")        // placeholder text
+        .help("3-20 characters")       // help text under the control
+        .autocomplete("username"))
+    .field("bio", f -> f.rows(6))                 // more textarea rows
+    .field("resume", f -> f.accept(".pdf,.doc"))  // file input's accept
+    .submit("Create Account")""";
 
     public static final String FORM_BUILDER_SELECT = """
-.select("country", s -> s
-    .label("Country")
-    .placeholder("Select a country")
-    .required()
-    .option(value("us"), "United States", true)  // pre-selected
-    .option(value("uk"), "United Kingdom")
-    .option(value("ca"), "Canada")
-    .option(value("de"), "Germany")
-)""";
+public enum Country { US, UK, CA, DE }
+public record Address(Country country) {}
+
+// An enum component renders as a <select> over its constants automatically
+form(Address.class).submit("Save")
+
+// options(...) replaces the choices shown — relabels an enum, or supplies
+// the choices for a plain String component
+form(Address.class)
+    .field("country", f -> f.options("United States", "United Kingdom", "Canada", "Germany"))
+    .submit("Save")""";
 
     public static final String FORM_BUILDER_RADIO = """
-.radio("plan", r -> r
-    .label("Subscription Plan")
-    .option(value("basic"), "Basic - $9/month")
-    .option(value("pro"), "Professional - $29/month", true)  // pre-selected
-    .option(value("enterprise"), "Enterprise - $99/month")
+// There is no separate radio-group builder — a fixed set of choices is
+// an enum component, which renders as a <select>:
+public enum Plan { FREE, PRO, ENTERPRISE }
+public record Signup(Plan plan) {}
+
+form(Signup.class).submit("Sign Up")
+
+// A native radio-button group is plain elements, same as any other
+// hand-written field:
+fieldset(
+    legend("Plan"),
+    label(input(type("radio"), name("plan"), value("free"), checked()), " Free"),
+    label(input(type("radio"), name("plan"), value("pro")), " Pro - $9/month"),
+    label(input(type("radio"), name("plan"), value("enterprise")), " Enterprise - $99/month")
 )""";
 
     public static final String FORM_BUILDER_BUTTONS = """
-.submit("Create Account")     // Submit button text
-.reset("Clear Form")          // Optional reset button
+form(Signup.class)
+    .submit("Create Account")   // the submit button's text
 
-// Or with custom styling:
-.submit("Sign Up", b -> b
-    .class_("btn-primary")
-    .disabled()
-)""";
+// There is no reset() or a per-button config lambda — style the emitted
+// .jweb-submit class instead, or skip Form.styles() and write your own CSS.""";
 
     public static final String FORM_BUILDER_COMPLETE = """
-Form.create()
-    .class_("registration-form")
+public record Registration(
+    @Form.Required String firstName,
+    @Form.Required String lastName,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Password String password,
+    Country country,
+    Plan plan,
+    boolean newsletter,
+    @Form.Required boolean terms) {}
+
+form(Registration.class)
+    .cls("registration-form")
     .action("/register")
-    .method("POST")
-
-    // Personal Info
-    .text("firstName", f -> f.label("First Name").required())
-    .text("lastName", f -> f.label("Last Name").required())
-    .email("email", f -> f.label("Email Address").required())
-
-    // Account
-    .password("password", f -> f
-        .label("Password")
-        .required()
-        .minLength(8)
-        .help("At least 8 characters"))
-    .password("confirmPassword", f -> f
-        .label("Confirm Password")
-        .required())
-
-    // Preferences
-    .select("country", s -> s
-        .label("Country")
-        .option(value("us"), "United States")
-        .option(value("uk"), "United Kingdom")
-        .required())
-
-    .radio("plan", r -> r
-        .label("Plan")
-        .option(value("free"), "Free", true)  // pre-selected
-        .option(value("pro"), "Pro - $10/mo"))
-
-    .checkbox("newsletter", f -> f
-        .label("Subscribe to newsletter"))
-    .checkbox("terms", f -> f
-        .label("I agree to the Terms of Service")
-        .required())
-
+    .field("password", f -> f.help("At least 8 characters"))
+    .field("terms", f -> f.label("I agree to the Terms of Service"))
     .submit("Create Account")
-    .build()""";
+
+// Server side — bind, then either use the value or re-render with the errors
+app.post("/register", req -> {
+    Form.Bound<Registration> bound = Form.bind(Registration.class, req);
+    if (!bound.ok()) {
+        return form(Registration.class).action("/register").errors(bound).submit("Create Account");
+    }
+    accounts.create(bound.value());
+    return Response.redirect("/welcome");
+});""";
 
     // ==================== UI Components Section ====================
 
@@ -956,8 +947,7 @@ form(), input(), textarea(), select(), option(), button(), label()
 img(), video(), audio(), canvas(), svg(), iframe()
 
 // Helpers
-text("content")      // Text node (rarely needed — a bare String is text)
-raw("<b>html</b>")   // Unescaped HTML
+raw("<b>html</b>")   // Unescaped HTML — a bare String is always escaped text
 fragment(...)        // Group without wrapper
 each(list, mapper)   // List iteration
 when(cond, supplier) // Conditional — Java's ternary/switch handle the rest""";
@@ -968,7 +958,7 @@ attrs()
     .id("main")
     .class_("container")
     .addClass("active")
-    .style().display(flex).done()
+    .style(s -> s.display(flex))
 
     // Links & Media
     .href("/page")
@@ -1009,7 +999,7 @@ attrs()
     .onKeyDown(e -> ...)""";
 
     public static final String DSL_STYLES = """
-.style()
+style()
     // Layout
     .display(flex)
     .position(relative)
@@ -1059,8 +1049,7 @@ attrs()
     .overflow(hidden)
     .cursor(pointer)
     .transition(all, s(0.2), ease)
-    .transform(scale(1.1))
-.done()""";
+    .transform(scale(1.1))""";
 
     public static final String DSL_ROUTING = """
 JWeb app = JWeb.create();
@@ -1276,8 +1265,8 @@ Toast.initial(Toast.Type.SUCCESS, "Welcome!")""";
 
     public static final String UI_DATATABLE = """
 UI.DataTable.<User>create()
-    .column("Name", u -> text(u.getName()))
-    .column("Email", u -> text(u.getEmail()))
+    .column("Name", User::getName)
+    .column("Email", User::getEmail)
     .column("Role", u -> UI.badge(u.getRole(), Badge.INFO))
     .data(users)
     .striped()

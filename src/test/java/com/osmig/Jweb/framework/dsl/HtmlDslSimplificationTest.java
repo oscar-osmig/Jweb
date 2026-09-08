@@ -1,11 +1,8 @@
 package com.osmig.Jweb.framework.dsl;
 
 import jweb.Attributes;
-import com.osmig.Jweb.framework.elements.Button;
 import com.osmig.Jweb.framework.elements.Elements;
 import com.osmig.Jweb.framework.elements.FormElements;
-import com.osmig.Jweb.framework.elements.FormEnhancements;
-import com.osmig.Jweb.framework.elements.Input;
 import com.osmig.Jweb.framework.elements.PictureElements;
 import com.osmig.Jweb.framework.elements.PopoverElements;
 import jweb.Tag;
@@ -143,20 +140,18 @@ class HtmlDslSimplificationTest {
         assertEquals("<audio controls></audio>", audio(attr("controls", null)).toHtml());
     }
 
-    // ==================== H4 — InlineStyle is lambda + done() ====================
+    // ==================== H4 — a style is an argument or a lambda ====================
 
     @Test
-    void inlineStyleFinishesWithDoneOrTheLambdaForm() {
-        String viaDone = div(attrs().style().color(CSS.hex("#f00")).done().id("a"), "x").toHtml();
+    void inlineStyleIsALambdaInsideAChain() {
         String viaLambda = div(attrs().style(s -> s.color(CSS.hex("#f00"))).id("a"), "x").toHtml();
-        assertEquals(viaLambda, viaDone);
-        assertTrue(viaDone.contains("style=\"color: #f00;\""), viaDone);
-        assertTrue(viaDone.contains("id=\"a\""), viaDone);
+        assertTrue(viaLambda.contains("style=\"color: #f00;\""), viaLambda);
+        assertTrue(viaLambda.contains("id=\"a\""), viaLambda);
     }
 
     @Test
-    void inlineStylePassedStraightToAnElementStillAutoFinalizes() {
-        String html = div(attrs().class_("card").style().padding(CSS.px(10)), p("hi")).toHtml();
+    void aBareStyleBuilderIsItsOwnElementArgument() {
+        String html = div(cls("card"), CSS.style().padding(CSS.px(10)), p("hi")).toHtml();
         assertTrue(html.contains("class=\"card\""), html);
         assertTrue(html.contains("style=\"padding: 10px;\""), html);
         assertTrue(html.contains("<p>hi</p>"), html);
@@ -167,11 +162,11 @@ class HtmlDslSimplificationTest {
     @Test
     void classIfAndClassToggleAreTheConditionalClassApi() {
         assertEquals("<div class=\"btn active\"></div>",
-            div(attrs().class_("btn").classIf("active", true)).toHtml());
+            div(attrs().cls("btn").classIf(true, "active")).toHtml());
         assertEquals("<div class=\"btn\"></div>",
-            div(attrs().class_("btn").classIf("active", false)).toHtml());
+            div(attrs().cls("btn").classIf(false, "active")).toHtml());
         assertEquals("<div class=\"btn open\"></div>",
-            div(attrs().class_("btn").classToggle(true, "open", "closed")).toHtml());
+            div(attrs().cls("btn").classToggle(true, "open", "closed")).toHtml());
     }
 
     // ==================== H8 — layout presets merge, never clobber ====================
@@ -201,90 +196,44 @@ class HtmlDslSimplificationTest {
     }
 
     // ==================== H9 — one input story ====================
+    // The 23 typed-input helpers and the Input/Button builders are gone: a form is a
+    // record (jweb.Form), and anything outside one is the element with its attributes.
 
     @Test
-    void everyEntryPointAgreesOnTheIdEqualsNamePolicy() {
-        assertEquals(Elements.textInput("u").toHtml(), FormElements.textInput("u").toHtml());
-        assertEquals(Elements.dateInput("d").toHtml(), FormEnhancements.dateInput("d").toHtml());
-        assertTrue(FormEnhancements.dateInput("d").toHtml().contains("id=\"d\""),
-            "FormEnhancements.dateInput used to set no id");
-        assertEquals(Elements.colorInput("c", "#fff").toHtml(), FormEnhancements.colorInput("c", "#fff").toHtml());
-        assertEquals(Elements.rangeInput("v", 0, 100, 50).toHtml(), FormEnhancements.rangeInput("v", 0, 100, 50).toHtml());
-        assertTrue(FormEnhancements.monthInput("m").toHtml().contains("id=\"m\""));
+    void aPlainInputCarriesEverythingTheTypedHelpersUsedTo() {
+        assertEquals("<input type=\"text\" name=\"u\" id=\"u\">",
+            input(type("text"), name("u"), id("u")).toHtml());
+        assertEquals("<input type=\"radio\" name=\"color\" id=\"color-red\" value=\"red\">",
+            input(type("radio"), name("color"), id("color-red"), value("red")).toHtml());
+        String search = input(type("search"), name("q"), attrs().list("suggestions"),
+            data("role", "search"), aria("label", "Search")).toHtml();
+        assertTrue(search.contains("list=\"suggestions\""), search);
+        assertTrue(search.contains("data-role=\"search\""), search);
+        assertTrue(search.contains("aria-label=\"Search\""), search);
     }
 
     @Test
-    void radioIdsUseTheDashSchemeEverywhere() {
-        assertEquals("color-red", Elements.radioId("color", "red"));
-        assertTrue(Elements.radio("color", "red").toHtml().contains("id=\"color-red\""));
-        assertTrue(FormElements.radio("color", "red").toHtml().contains("id=\"color-red\""));
-        String viaBuilder = Input.radio("color", "red").toHtml();
-        assertTrue(viaBuilder.contains("id=\"color-red\""), viaBuilder);
-        assertFalse(viaBuilder.contains("color_red"), viaBuilder);
-    }
-
-    @Test
-    void inputBuilderIsNoLongerADeadEnd() {
-        String html = Input.text("q")
-            .attr("list", "suggestions")
-            .data("role", "search")
-            .aria("label", "Search")
-            .toHtml();
-        assertTrue(html.contains("list=\"suggestions\""), html);
-        assertTrue(html.contains("data-role=\"search\""), html);
-        assertTrue(html.contains("aria-label=\"Search\""), html);
-
-        // ... and hands back a Tag so the full element API stays available
-        Tag asTag = Input.text("q").required().toTag();
-        assertTrue(asTag.addClass("wide").toHtml().contains("class=\"wide\""));
-    }
-
-    @Test
-    void buttonBuilderHasOnClickAndEscapeHatches() {
-        String handler = Button.of("Save").onClick(e -> { }).toHtml();
+    void buttonHandlersDelegateInsideARenderContextAndFallBackOutsideIt() {
+        String handler = button(onClick(e -> { }), "Save").toHtml();
         assertTrue(handler.contains("data-jweb-onclick=\"h_"),
             "server handlers delegate via data attribute (nonce CSPs block inline handlers): " + handler);
 
-        String action = Button.of("Retry")
-            .onClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();
+        String action = button(onClick(com.osmig.Jweb.framework.js.Actions.reload()), "Retry").toHtml();
         assertTrue(action.contains("onclick="), "inline fallback outside a render context: " + action);
         assertTrue(action.contains("reload"), action);
 
-        // Inside a render context the Actions form delegates like the server
-        // form does — inline on*= attributes can't run under a nonce CSP
         var context = com.osmig.Jweb.framework.state.StateManager.createContext();
         try {
-            String cspSafe = Button.of("Retry")
-                .onClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();
+            String cspSafe = button(onClick(com.osmig.Jweb.framework.js.Actions.reload()), "Retry").toHtml();
             assertTrue(cspSafe.contains("data-jweb-actclick=\"a"), cspSafe);
             assertFalse(cspSafe.contains("onclick="), cspSafe);
         } finally {
             com.osmig.Jweb.framework.state.StateManager.clearContext();
         }
-
-        String extras = Button.of("More")
-            .attr("popovertarget", "menu").data("role", "menu").aria("expanded", "false").toHtml();
-        assertTrue(extras.contains("popovertarget=\"menu\""), extras);
-        assertTrue(extras.contains("data-role=\"menu\""), extras);
-        assertTrue(extras.contains("aria-expanded=\"false\""), extras);
-
-        assertTrue(Button.submit("Go").toTag().addClass("btn").toHtml().contains("class=\"btn\""));
     }
 
     @Test
     void onDblClickRendersLikeOnClick() {
-        // Button previously had onClick but no double-click equivalent at all.
-        String handler = Button.of("Zoom").onDblClick(e -> { }).toHtml();
-        assertTrue(handler.contains("data-jweb-ondblclick=\"h_"),
-            "server handlers delegate via data attribute, same as onClick: " + handler);
-
-        String action = Button.of("Zoom")
-            .onDblClick(com.osmig.Jweb.framework.js.Actions.reload()).toHtml();
-        assertTrue(action.contains("ondblclick="), "inline fallback outside a render context: " + action);
-        assertTrue(action.contains("reload"), action);
-
-        // Same two flavours reach the element handler attrs (attrs()/El facade),
-        // and onDblClick is an alias for the existing onDoubleClick verb.
         String attrHtml = div(attrs().onDblClick(e -> { }), "x").toHtml();
         assertTrue(attrHtml.contains("data-jweb-ondblclick=\"h_"), attrHtml);
 
@@ -301,7 +250,7 @@ class HtmlDslSimplificationTest {
         assertEquals("popovertarget", PopoverElements.popovertarget("m").name());
         assertEquals("popovertargetaction", PopoverElements.popovertargetaction("show").name());
         assertEquals(PopoverElements.popoverTarget("m"), PopoverElements.popovertarget("m"));
-        String html = Input.text("t").minlength(3).maxlength(9).toHtml();
+        String html = input(attrs().type("text").name("t").minlength(3).maxlength(9)).toHtml();
         assertTrue(html.contains("minlength=\"3\""), html);
         assertTrue(html.contains("maxlength=\"9\""), html);
     }
@@ -311,7 +260,7 @@ class HtmlDslSimplificationTest {
     @Test
     void theBlessedReplacementsForThePrunedCompositesWork() {
         assertEquals("<time datetime=\"2026-01-21\">January 21, 2026</time>",
-            time(datetime("2026-01-21"), text("January 21, 2026")).toHtml());
+            time(datetime("2026-01-21"), "January 21, 2026").toHtml());
         assertEquals("<img src=\"/a.png\" loading=\"lazy\">", img(src("/a.png"), loading("lazy")).toHtml());
         assertEquals("<button type=\"submit\">Go</button>", button(type("submit"), "Go").toHtml());
         assertEquals("<fieldset disabled></fieldset>", fieldset(disabled()).toHtml());
@@ -335,8 +284,8 @@ class HtmlDslSimplificationTest {
     }
 
     @Test
-    void inlineStyleInsideAnIterableIsExtractedToo() {
-        List<Object> items = List.of(attrs().id("a").style().color(CSS.hex("#00f")));
+    void attributesInsideAnIterableAreExtractedToo() {
+        List<Object> items = List.of(attrs().id("a").style(s -> s.color(CSS.hex("#00f"))));
         String html = div(items).toHtml();
         assertTrue(html.contains("id=\"a\""), html);
         assertTrue(html.contains("style=\"color: #00f;\""), html);
@@ -360,7 +309,7 @@ class HtmlDslSimplificationTest {
         assertEquals("<p>3.5</p>", p(3.5).toHtml());
         assertEquals("<p>true</p>", p(true).toHtml());
         assertEquals("<p><span>s</span></p>", p(span("s")).toHtml());
-        assertEquals("<p>raw<b>x</b></p>", p(text("raw"), raw("<b>x</b>")).toHtml());
+        assertEquals("<p>raw<b>x</b></p>", p("raw", raw("<b>x</b>")).toHtml());
         assertEquals("<p></p>", p((Object) null).toHtml());
     }
 
@@ -401,9 +350,9 @@ class HtmlDslSimplificationTest {
         assertEquals("<div hidden></div>", new Tag("div").hidden(true).toHtml());
         assertEquals("<input autofocus>", new Tag("input").autofocus().toHtml());
         assertEquals("<input readonly>", new Tag("input").readonly().toHtml());
-        // ... and the typed builders use the same convention
-        assertEquals("<input type=\"text\" name=\"n\" id=\"n\" required>",
-            Input.text("n").required().toHtml());
+        assertEquals("<option selected></option>", new Tag("option").selected().toHtml());
+        assertEquals("<option></option>", new Tag("option").selected(false).toHtml());
+        assertEquals("<option selected></option>", option(selected()).toHtml());
     }
 
     // ==================== H17 — numeric overloads ====================
@@ -414,7 +363,7 @@ class HtmlDslSimplificationTest {
         assertEquals("<input step=\"2\">", input(attrs().step(2)).toHtml());
         assertEquals("<progress value=\"0.5\" max=\"1.0\"></progress>",
             progress(attrs().value(0.5).set("max", "1.0")).toHtml());
-        assertTrue(Input.number("n").step(2).toHtml().contains("step=\"2\""));
-        assertTrue(Input.number("n").step(0.5).toHtml().contains("step=\"0.5\""));
+        assertTrue(input(attrs().type("number").step(2)).toHtml().contains("step=\"2\""));
+        assertTrue(input(attrs().type("number").step(0.5)).toHtml().contains("step=\"0.5\""));
     }
 }

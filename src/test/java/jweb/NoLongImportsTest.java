@@ -43,9 +43,6 @@ class NoLongImportsTest {
         "readme/why-jweb.md", List.of(
             new Allowed("com.osmig.Jweb.framework.cli.JWebCli",
                 "a JVM main-class invocation on a shell command line, not a Java import")),
-        "readme/html-dsl.md", List.of(
-            new Allowed("import com.osmig.Jweb.framework.elements.Form;",
-                "the small elements/Form builder; jweb.Form is forms/Form and the forms/elements batch owns its short name")),
         "readme/known-issues.md", List.of(
             new Allowed("`com.osmig.Jweb.framework.*`", "prose naming the legacy namespace in a migration note")),
         "README.md", List.of(

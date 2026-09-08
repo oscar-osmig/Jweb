@@ -308,11 +308,11 @@ public final class SandboxDsl {
 
         Eval(String src) { this.src = src; }
 
-        /** Evaluate a call in element-child position: element, text() or style(). */
+        /** Evaluate a call in element-child position: element,  or style(). */
         Object evalElementArg(SCall c) {
             if (c.name().equals("text")) {
                 SStr s = oneString(c, "text(...) takes exactly one string");
-                return text(s.val());
+                return s.val();
             }
             if (c.name().equals("style")) {
                 if (!c.args().isEmpty()) throw new DslError("style() takes no arguments — chain methods after it", c.pos());
@@ -330,12 +330,12 @@ public final class SandboxDsl {
                 List<Object> parts = new ArrayList<>();
                 for (Arg a : c.args()) {
                     switch (a) {
-                        case SStr s -> { captureTextKnob(c.name(), s); parts.add(text(s.val())); }
+                        case SStr s -> { captureTextKnob(c.name(), s); parts.add(s.val()); }
                         case SCall sub -> {
                             if (sub.name().equals("text")) {
                                 SStr s = oneString(sub, "text(...) takes exactly one string");
                                 captureTextKnob(c.name(), s);
-                                parts.add(text(s.val()));
+                                parts.add(s.val());
                             } else {
                                 parts.add(evalElementArg(sub));
                             }

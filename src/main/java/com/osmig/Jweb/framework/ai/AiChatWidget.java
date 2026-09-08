@@ -28,39 +28,39 @@ public final class AiChatWidget {
     }
 
     public static Element render(String title) {
-        return div(attrs().id("jweb-ai-widget").style()
+        return div(attrs().id("jweb-ai-widget").style(s -> s
                 .maxWidth(px(420)).width(percent(100))
                 .border(px(1), solid, hex("#e2e8f0")).borderRadius(px(12))
                 .display(flex).flexDirection(column)
                 .backgroundColor(white)
                 .overflow(hidden)
-            .done(),
-            div(attrs().style()
+            ),
+            div(attrs().style(s -> s
                     .padding(rem(0.75), rem(1))
                     .borderBottom(px(1), solid, hex("#e2e8f0"))
                     .fontWeight(600).fontSize(rem(0.9))
-                .done(),
+                ),
                 text(title)),
-            div(attrs().id("jweb-ai-messages").style()
+            div(attrs().id("jweb-ai-messages").style(s -> s
                     .padding(rem(1)).height(px(320)).overflowY(auto)
                     .display(flex).flexDirection(column).gap(rem(0.5))
                     .fontSize(rem(0.875))
-                .done()),
-            form(attrs().id("jweb-ai-form").style()
+                )),
+            form(attrs().id("jweb-ai-form").style(s -> s
                     .display(flex).gap(rem(0.5))
                     .padding(rem(0.75))
                     .borderTop(px(1), solid, hex("#e2e8f0"))
-                .done(),
+                ),
                 input(attrs().id("jweb-ai-input").type("text").name("message")
                     .placeholder("Ask anything...")
-                    .style().flex(1).padding(rem(0.5))
+                    .style(s -> s.flex(1).padding(rem(0.5))
                     .border(px(1), solid, hex("#d1d5db")).borderRadius(px(6))
-                    .done()),
-                button(attrs().type("submit").style()
+                    )),
+                button(attrs().type("submit").style(s -> s
                         .padding(rem(0.5), rem(1))
                         .backgroundColor(hex("#6366f1")).color(white)
                         .border(none).borderRadius(px(6)).cursor(pointer)
-                    .done(),
+                    ),
                     text("Send"))),
             inlineScript(widgetScript())
         );

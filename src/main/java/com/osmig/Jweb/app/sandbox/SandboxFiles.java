@@ -122,8 +122,8 @@ public final class SandboxFiles {
                         .padding(rem(1.5))
                         .background(hex("#4f46e5"))
                         .borderRadius(px(12)).color(white),
-                    h1(text("Hello, JWeb!")),
-                    p(text("Rendered live, straight from this code."))
+                    h1("Hello, JWeb!"),
+                    p("Rendered live, straight from this code.")
                 );
             }
         }""";
@@ -146,9 +146,9 @@ public final class SandboxFiles {
                         .border(px(1), solid, hex("#e2e8f0"))
                         .borderRadius(px(12))
                         .boxShadow("0 4px 14px rgba(15, 23, 42, 0.08)"),
-                    h2(text("Hey, Ada! 👋")),
+                    h2("Hey, Ada! 👋"),
                     p(style().color(hex("#64748b")),
-                        text("This card is one reusable Java class."))
+                        "This card is one reusable Java class.")
                 );
             }
         }""";
@@ -173,7 +173,7 @@ public final class SandboxFiles {
                         .background(linearGradient("90deg",
                             hex("#4f46e5"), hex("#db2777")))
                         .color(white),
-                    text("Deploy")
+                    "Deploy"
                 );
             }
         }""";
@@ -194,12 +194,12 @@ public final class SandboxFiles {
                 .padding(SP_4).borderRadius(ROUNDED_LG)
                 .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
                 .fontSize(TEXT_SM).lineHeight(1.9),
-            div(style().color(TEXT_LIGHT), text("$ ./mvnw spring-boot:run")),
-            div(text("🚀 JWeb dev server on http://localhost:8085")),
-            div(text("   ├─ /            → HomePage")),
-            div(text("   ├─ components   → GreetingCard, Buttons")),
-            div(text("   └─ hot-reload   ✓ watching")),
-            div(style().color(hex("#6ee7b7")), text("Ready in 0.042s ⚡ (Java, not magic)"))
+            div(style().color(TEXT_LIGHT), "$ ./mvnw spring-boot:run"),
+            div("🚀 JWeb dev server on http://localhost:8085"),
+            div("   ├─ /            → HomePage"),
+            div("   ├─ components   → GreetingCard, Buttons"),
+            div("   └─ hot-reload   ✓ watching"),
+            div(style().color(hex("#6ee7b7")), "Ready in 0.042s ⚡ (Java, not magic)")
         );
     }
 
@@ -209,13 +209,13 @@ public final class SandboxFiles {
                 .borderRadius(ROUNDED_LG).padding(SP_4)
                 .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
                 .fontSize(TEXT_SM).lineHeight(2),
-            div(style().color(TEXT_LIGHT).marginBottom(SP_2), text("registered routes")),
-            div(span(style().color(hex("#059669")).fontWeight(700), text("GET  ")),
-                span(style().color(TEXT), text("/           → HomePage    ")),
-                span(style().color(TEXT_LIGHT), text("200 ✓"))),
-            div(span(style().color(hex("#059669")).fontWeight(700), text("GET  ")),
-                span(style().color(TEXT), text("/teapot     → (reserved)  ")),
-                span(style().color(TEXT_LIGHT), text("418 🫖")))
+            div(style().color(TEXT_LIGHT).marginBottom(SP_2), "registered routes"),
+            div(span(style().color(hex("#059669")).fontWeight(700), "GET  "),
+                span(style().color(TEXT), "/           → HomePage    "),
+                span(style().color(TEXT_LIGHT), "200 ✓")),
+            div(span(style().color(hex("#059669")).fontWeight(700), "GET  "),
+                span(style().color(TEXT), "/teapot     → (reserved)  "),
+                span(style().color(TEXT_LIGHT), "418 🫖"))
         );
     }
 
@@ -225,10 +225,10 @@ public final class SandboxFiles {
                 .padding(SP_4).borderRadius(ROUNDED_LG)
                 .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
                 .fontSize(TEXT_SM).lineHeight(1.9),
-            div(style().color(TEXT_LIGHT), text("$ ./mvnw dependency:resolve")),
-            div(text("[INFO] com.github.oscar-osmig:Jweb:v2.0.0 ✓")),
-            div(text("[INFO] ...and 0 frontend build tools 🎉")),
-            div(style().color(hex("#6ee7b7")), text("[INFO] BUILD SUCCESS"))
+            div(style().color(TEXT_LIGHT), "$ ./mvnw dependency:resolve"),
+            div("[INFO] com.github.oscar-osmig:Jweb:v2.0.0 ✓"),
+            div("[INFO] ...and 0 frontend build tools 🎉"),
+            div(style().color(hex("#6ee7b7")), "[INFO] BUILD SUCCESS")
         );
     }
 }

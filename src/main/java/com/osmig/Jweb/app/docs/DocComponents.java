@@ -13,16 +13,16 @@ public final class DocComponents {
         return div(style().maxWidth(px(900)), fragment(children));
     }
 
-    public static Element docTitle(String t) { return h1(attrs().style(title()), text(t)); }
+    public static Element docTitle(String t) { return h1(attrs().style(title()), t); }
 
     public static Element docSubtitle(String t) {
         String id = toSlug(t);
-        return h2(attrs().id(id).style(subtitle()), text(t));
+        return h2(attrs().id(id).style(subtitle()), t);
     }
 
     public static Element h3Title(String t) {
         String id = toSlug(t);
-        return h3(attrs().id(id).style(subtitle().fontSize(rem(1.1)).marginTop(rem(1.5))), text(t));
+        return h3(attrs().id(id).style(subtitle().fontSize(rem(1.1)).marginTop(rem(1.5))), t);
     }
 
     private static String toSlug(String text) {
@@ -33,29 +33,29 @@ public final class DocComponents {
             .replaceAll("^-|-$", "");
     }
 
-    public static Element para(String t) { return p(attrs().style(paragraph()), text(t)); }
+    public static Element para(String t) { return p(attrs().style(paragraph()), t); }
 
     public static Element codeBlock(String c) {
         // Wrapper anchors the copy button; its hover reveal and the click
         // handler live in DocsPage.docsStyles() and CodeCopyScript.
         return div(attrs().class_("doc-code").style(style().position(relative)),
-            pre(attrs().style(DocStyles.codeBlock()), code(text(c))),
+            pre(attrs().style(DocStyles.codeBlock()), code(c)),
             button(attrs().class_("code-copy-btn").type("button").aria("label", "Copy code to clipboard"),
-                text("Copy")));
+                "Copy"));
     }
 
-    public static Element inlineCode(String c) { return span(attrs().style(DocStyles.inlineCode()), text(c)); }
+    public static Element inlineCode(String c) { return span(attrs().style(DocStyles.inlineCode()), c); }
 
     public static Element docList(String... items) {
         // Nulls are skipped so sinceText(...) items can drop out per version
         List<String> present = java.util.Arrays.stream(items)
             .filter(java.util.Objects::nonNull).toList();
-        return ul(attrs().style(list()), each(present, i -> li(attrs().style(listItem()), text(i))));
+        return ul(attrs().style(list()), each(present, i -> li(attrs().style(listItem()), i)));
     }
 
-    public static Element docTip(String t) { return div(attrs().style(tip()), text(t)); }
+    public static Element docTip(String t) { return div(attrs().style(tip()), t); }
 
-    public static Element warn(String t) { return div(attrs().style(warning()), text(t)); }
+    public static Element warn(String t) { return div(attrs().style(warning()), t); }
 
     public static Element spacer() { return div(style().height(rem(2))); }
 

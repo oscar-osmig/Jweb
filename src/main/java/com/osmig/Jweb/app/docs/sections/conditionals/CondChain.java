@@ -50,9 +50,9 @@ match(
 
             since("v3.0.0",
                 h3Title("Multi-Way Choices"),
-                para("One conditional shape — when(condition, element) — covers optional " +
-                     "content; Java's own switch expression handles branching on a value, " +
-                     "so there is no separate chain or match() to learn."),
+                para("when() covers one branch or two. Branching on a value is what Java's " +
+                     "switch expression is for, so there is no elif chain and no match() — " +
+                     "both are gone in 3.0."),
                 codeBlock("""
 // Role-based content
 Element panel = switch (role) {

@@ -5,7 +5,8 @@ JWeb provides React-like reactive state management with `State<T>`.
 ## Basic Usage
 
 ```java
-import static com.osmig.Jweb.framework.state.StateHooks.*;
+import jweb.state.State;
+import static jweb.State.*;
 
 public class Counter implements Template {
     private final State<Integer> count = useState(0);

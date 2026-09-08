@@ -69,7 +69,7 @@ public class DocContent {
             para("This feature arrived in " + introduced + " — you are viewing the "
                  + "documentation for " + version + ", which does not include it."),
             p(a(attrs().href("/docs?section=" + section),
-                text("Switch to " + DocVersions.latest() + " documentation")))
+                "Switch to " + DocVersions.latest() + " documentation"))
         );
     }
 }

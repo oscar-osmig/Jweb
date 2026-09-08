@@ -19,6 +19,8 @@ public record Attr(String name, String value) {
     public static Attr placeholder(String value) { return new Attr("placeholder", value); }
     public static Attr action(String value) { return new Attr("action", value); }
     public static Attr method(String value) { return new Attr("method", value); }
+    /** The {@code enctype} attribute of {@code <form>} — {@code "multipart/form-data"} for file uploads. */
+    public static Attr enctype(String value) { return new Attr("enctype", value); }
     public static Attr target(String value) { return new Attr("target", value); }
     public static Attr title(String value) { return new Attr("title", value); }
     public static Attr for_(String value) { return new Attr("for", value); }
@@ -26,6 +28,8 @@ public record Attr(String name, String value) {
     public static Attr disabled() { return new Attr("disabled", null); }
     public static Attr checked() { return new Attr("checked", null); }
     public static Attr required() { return new Attr("required", null); }
+    /** The {@code selected} boolean attribute of {@code <option>}. */
+    public static Attr selected() { return new Attr("selected", null); }
     public static Attr readonly() { return new Attr("readonly", null); }
     public static Attr hidden() { return new Attr("hidden", null); }
     public static Attr autofocus() { return new Attr("autofocus", null); }

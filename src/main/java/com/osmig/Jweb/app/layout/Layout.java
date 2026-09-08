@@ -79,6 +79,15 @@ public class Layout implements Template {
             .add(keyframes("gradientShift")
                 .at(0, style().backgroundPosition(percent(0), percent(50)))
                 .at(50, style().backgroundPosition(percent(100), percent(50)))
-                .at(100, style().backgroundPosition(percent(0), percent(50))));
+                .at(100, style().backgroundPosition(percent(0), percent(50))))
+            // The record-driven forms ship their own class names; this is the
+            // one place the app dresses them.
+            .raw(jweb.Form.styles())
+            .rule(".jweb-label", style().color(Theme.TEXT))
+            .rule(".jweb-control", style().border(px(1), solid, Theme.BORDER))
+            .rule(".jweb-control:focus", style().borderColor(Theme.PRIMARY))
+            .rule(".jweb-submit", style().width(percent(100)).backgroundColor(Theme.PRIMARY))
+            // The admin card's sign-in button carries the brand gradient
+            .rule(".admin-login-form .jweb-submit", style().apply(Theme.brandFlow()));
     }
 }

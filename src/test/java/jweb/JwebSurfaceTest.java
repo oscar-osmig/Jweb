@@ -52,16 +52,35 @@ class JwebSurfaceTest {
         assertTrue(scene.toHtml().contains("data-three"));
     }
 
+    /** A form is a record — the type the form system is built on. */
+    record Signup(@jweb.Form.Required String name,
+                  @jweb.Form.Required @jweb.Form.Email String email) {}
+
+    @Test
+    void formValueTypesAreJwebTypes() {
+        jweb.Form<Signup> signup = form(Signup.class);
+        jweb.Form<Signup> configured = signup.action("/signup").submit("Join");
+        jweb.Form.Bound<Signup> bound =
+            new jweb.Form.Bound<>(new Signup("Ada", "ada@example.com"),
+                jweb.ValidationResult.valid(), java.util.Map.of());
+        jweb.When chain = when(true).then(p("yes"));
+        jweb.Element chosen = when(false).then(p("no")).otherwise(p("fallback"));
+
+        assertTrue(configured.toHtml().contains("<form"), configured.toHtml());
+        assertTrue(configured.toHtml().contains("name=\"email\""), configured.toHtml());
+        assertTrue(bound.ok());
+        assertEquals("<p>yes</p>", chain.toHtml());
+        assertEquals("<p>fallback</p>", chosen.toHtml());
+    }
+
     @Test
     void errorBoundaryAndTransitionAreElements() {
         jweb.ErrorBoundary eb = jweb.ErrorBoundary.of((Supplier<jweb.Element>) () -> p("x"));
         jweb.Element tr = jweb.Transition.fade(true, () -> p("y"));
         jweb.Element outlet = jweb.Portal.outlet("modals");
-        jweb.Element button = jweb.Button.of("Save");
         assertTrue(eb.toHtml().contains("x"));
         assertTrue(tr.toHtml().contains("y"));
         assertNotNull(outlet.toHtml());
-        assertTrue(button.toHtml().contains("Save"));
     }
 
     // ==================== JavaScript ====================

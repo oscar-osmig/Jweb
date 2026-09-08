@@ -5,9 +5,9 @@ Templates are the foundation of JWeb's component system.
 ## Basic Template
 
 ```java
-import com.osmig.Jweb.framework.template.Template;
-import com.osmig.Jweb.framework.core.Element;
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import jweb.Template;
+import jweb.Element;
+import static jweb.El.*;
 
 public class Card implements Template {
     private final String title;
@@ -642,9 +642,12 @@ public class FormField implements Template {
 }
 
 // Use in multiple forms
-new FormField("Email", emailInput("email"), errors.get("email"))
-new FormField("Password", passwordInput("password"), errors.get("password"))
+new FormField("Email", input(type("email"), name("email"), id("email")), errors.get("email"))
+new FormField("Password", input(type("password"), name("password"), id("password")), errors.get("password"))
 ```
+
+For a whole form, prefer the record-based form system over hand-rolled fields
+like this one — see [validation.md](./validation.md).
 
 ### 3. Use beforeRender for Data
 

@@ -271,6 +271,20 @@ public final class DocsTell {
             7. **The four DSL imports coexist, and anything that emits JavaScript is an
                `Action`, never a String.** `Ref.focus()`, `Toast.success(...)`,
                `UI.Modal.open(id)`, a Template's `onMount()` — all Actions.
+            8. **A class list is `cls`/`classes`, a choice is `when`.** `cls("card")` is
+               the everyday class attribute; `classes("chip", when(active, "chip-on"))`
+               joins parts and skips the ones that did not match;
+               `attrs().classIf(cond, "on")` reads condition-first.
+               `when(cond, element)` renders one branch, `when(cond, ifTrue, ifFalse)`
+               chooses, and `when(cond).then(a).otherwise(b)` says the same thing down the
+               page. Branches take an Element, a lambda, or a String.
+            9. **A form is a record.** `form(Contact.class)` renders a labelled control per
+               record component (typed by the Java type), adds the CSRF hidden field from
+               the current request, and `Form.bind(Contact.class, req)` validates the
+               submission and hands back the record. Rules live on the record:
+               `@Form.Required`, `@Form.Email`, `@Form.Password`, `@Form.Multiline(rows)`,
+               `@Form.Label`, `@Form.Length`. `form(X.class).errors(bound)` re-renders with
+               per-field messages, `aria-invalid`, and the values as typed.
 
             ## Do not emit 1.x or 2.x syntax
 
@@ -286,12 +300,21 @@ public final class DocsTell {
             - `span("x")` is the `<span>` element even with `jweb.Css.*` imported.
 
             Also gone: `attrs().onClick(...)` as the only way to attach a handler (write
-            `onClick(...)` as an argument), `text("...")` as a requirement (a bare String is
-            text), `new Nav().render()` (a Template is an Element), `match/cond/otherwise`
-            (use `when(cond, x)`, a ternary or a `switch` expression), the `jweb.Actions`
-            import as a separate layer (it is `jweb.Js`), `Css.raw` (`CSSValue.of`), the
-            Selector starters in `Css` (`jweb.css.Selectors`), and the `*Js()` String
-            helpers (Actions). Full detail is in the `migrating-to-3` topic below.
+            `onClick(...)` as an argument), the `text(…)` wrapper as a requirement (a bare
+            String is text), `new Nav().render()` (a Template is an Element),
+            `match/cond/otherwise` and the `.elif(...)` chain (use `when(cond, x)`,
+            `when(cond, x, y)`, `when(cond).then(x).otherwise(y)`, or a `switch`
+            expression), the `jweb.Actions` import as a separate layer (it is `jweb.Js`),
+            `Css.raw` (`CSSValue.of`), the Selector starters in `Css`
+            (`jweb.css.Selectors`), and the `*Js()` String helpers (Actions).
+
+            Also gone, from the second HTML pass: the no-argument `attrs().style` starter and
+            the `done` call that ended it (a `style()` builder is its own element
+            argument, or `attrs().style(s -> ...)`); `jweb.Input`, `jweb.Button`, `jweb.el.DialogHelper`,
+            `jweb.el.DetailsHelper`, `jweb.el.FormEnhancements`; the 23 typed-input statics
+            (`textInput`, `emailInput`, `field(label, input)`, ...); and both old form
+            builders (`Form.create()` and `FormModel`). Full detail is in the
+            `migrating-to-3` topic below.
 
             ## Imports
 

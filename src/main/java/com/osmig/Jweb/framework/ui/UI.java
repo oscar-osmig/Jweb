@@ -56,7 +56,7 @@ public class UI {
      * Creates a primary button (filled, accent color).
      */
     public static Element primaryButton(String btnText, Consumer<Event> onClick) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(hex("#6366f1"))
                 .color(white)
                 .padding(rem(0.5), rem(1))
@@ -66,7 +66,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionBackground(s(0.2))
-            .done().onClick(onClick),
+            ).onClick(onClick),
             text(btnText));
     }
 
@@ -74,7 +74,7 @@ public class UI {
      * Creates a secondary button (outlined).
      */
     public static Element secondaryButton(String btnText, Consumer<Event> onClick) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(transparent)
                 .color(hex("#6366f1"))
                 .padding(rem(0.5), rem(1))
@@ -84,7 +84,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionAll(s(0.2))
-            .done().onClick(onClick),
+            ).onClick(onClick),
             text(btnText));
     }
 
@@ -92,7 +92,7 @@ public class UI {
      * Creates a danger button (red).
      */
     public static Element dangerButton(String btnText, Consumer<Event> onClick) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(hex("#ef4444"))
                 .color(white)
                 .padding(rem(0.5), rem(1))
@@ -102,7 +102,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionBackground(s(0.2))
-            .done().onClick(onClick),
+            ).onClick(onClick),
             text(btnText));
     }
 
@@ -110,7 +110,7 @@ public class UI {
      * Creates a ghost button (minimal styling).
      */
     public static Element ghostButton(String btnText, Consumer<Event> onClick) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(transparent)
                 .color(hex("#374151"))
                 .padding(rem(0.5), rem(1))
@@ -120,7 +120,7 @@ public class UI {
                 .fontWeight(500)
                 .clickable()
                 .transitionBackground(s(0.2))
-            .done().onClick(onClick),
+            ).onClick(onClick),
             text(btnText));
     }
 
@@ -128,7 +128,7 @@ public class UI {
      * Creates a link-styled button.
      */
     public static Element linkButton(String btnText, Consumer<Event> onClick) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(transparent)
                 .color(hex("#6366f1"))
                 .padding(zero)
@@ -136,7 +136,7 @@ public class UI {
                 .fontSize(rem(0.875))
                 .clickable()
                 .textDecoration(underline)
-            .done().onClick(onClick),
+            ).onClick(onClick),
             text(btnText));
     }
 
@@ -144,7 +144,7 @@ public class UI {
      * Creates a button with icon and text.
      */
     public static Element iconButton(String icon, String btnText, Consumer<Event> onClick) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(hex("#6366f1"))
                 .color(white)
                 .padding(rem(0.5), rem(1))
@@ -156,7 +156,7 @@ public class UI {
                 .flex()
                 .alignItems(center)
                 .gap(rem(0.5))
-            .done().onClick(onClick),
+            ).onClick(onClick),
             span(text(icon)),
             span(text(btnText)));
     }
@@ -184,13 +184,13 @@ public class UI {
      * Creates a badge with variant.
      */
     public static Element badge(String text, Badge variant) {
-        return span(attrs().style()
+        return span(attrs().style(s -> s
                 .backgroundColor(hex(variant.bgColor))
                 .color(hex(variant.textColor))
                 .padding(rem(0.125), rem(0.5))
                 .rounded(px(9999))
                 .fontSize(rem(0.75))
-                .fontWeight(500),
+                .fontWeight(500)),
             text(text));
     }
 
@@ -207,7 +207,7 @@ public class UI {
      * Creates a removable tag.
      */
     public static Element tag(String tagText, Consumer<Event> onRemove) {
-        return span(attrs().style()
+        return span(attrs().style(s -> s
                 .backgroundColor(hex("#e5e7eb"))
                 .color(hex("#374151"))
                 .padding(rem(0.25), rem(0.75))
@@ -215,12 +215,12 @@ public class UI {
                 .fontSize(rem(0.875))
                 .flex()
                 .alignItems(center)
-                .gap(rem(0.5)),
+                .gap(rem(0.5))),
             text(tagText),
-            onRemove != null ? span(attrs().style()
+            onRemove != null ? span(attrs().style(s -> s
                     .clickable()
                     .opacity(0.6)
-                .done().onClick(onRemove),
+                ).onClick(onRemove),
                 text("\u00D7")) : null);
     }
 
@@ -254,13 +254,13 @@ public class UI {
      * Creates an alert message.
      */
     public static Element alert(String message, Alert variant) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .backgroundColor(hex(variant.bgColor))
                 .color(hex(variant.textColor))
                 .borderLeft(px(4), solid, hex(variant.borderColor))
                 .padding(rem(1))
                 .rounded(px(4))
-                .fontSize(rem(0.875)),
+                .fontSize(rem(0.875))),
             text(message));
     }
 
@@ -268,15 +268,15 @@ public class UI {
      * Creates an alert with title and message.
      */
     public static Element alert(String alertTitle, String message, Alert variant) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .backgroundColor(hex(variant.bgColor))
                 .color(hex(variant.textColor))
                 .borderLeft(px(4), solid, hex(variant.borderColor))
                 .padding(rem(1))
-                .rounded(px(4)),
-            strong(attrs().style().fontSize(rem(0.875)).display(block).marginBottom(rem(0.25)),
+                .rounded(px(4))),
+            strong(attrs().style(s -> s.fontSize(rem(0.875)).display(block).marginBottom(rem(0.25))),
                 text(alertTitle)),
-            span(attrs().style().fontSize(rem(0.875)),
+            span(attrs().style(s -> s.fontSize(rem(0.875))),
                 text(message)));
     }
 
@@ -314,20 +314,20 @@ public class UI {
      * Creates a card with title and content.
      */
     public static Element card(String cardTitle, Object... content) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .backgroundColor(white)
                 .rounded(px(8))
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)")
-                .overflow(hidden),
-            div(attrs().style()
+                .overflow(hidden)),
+            div(attrs().style(s -> s
                     .padding(rem(1.5))
-                    .borderBottom(px(1), solid, hex("#e5e7eb")),
-                h3(attrs().style()
+                    .borderBottom(px(1), solid, hex("#e5e7eb"))),
+                h3(attrs().style(s -> s
                         .fontSize(rem(1.125))
                         .fontWeight(600)
-                        .margin(zero),
+                        .margin(zero)),
                     text(cardTitle))),
-            div(attrs().style().padding(rem(1.5)),
+            div(attrs().style(s -> s.padding(rem(1.5))),
                 content));
     }
 
@@ -335,11 +335,11 @@ public class UI {
      * Creates a simple card (no title).
      */
     public static Element card(Object... content) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .backgroundColor(white)
                 .rounded(px(8))
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)")
-                .padding(rem(1.5)),
+                .padding(rem(1.5))),
             content);
     }
 
@@ -347,21 +347,21 @@ public class UI {
      * Creates a card with header, body, and footer.
      */
     public static Element card(Element header, Element body, Element footer) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .backgroundColor(white)
                 .rounded(px(8))
                 .boxShadow("0 1px 3px rgba(0,0,0,0.1)")
-                .overflow(hidden),
-            div(attrs().style()
+                .overflow(hidden)),
+            div(attrs().style(s -> s
                     .padding(rem(1))
-                    .borderBottom(px(1), solid, hex("#e5e7eb")),
+                    .borderBottom(px(1), solid, hex("#e5e7eb"))),
                 header),
-            div(attrs().style().padding(rem(1.5)),
+            div(attrs().style(s -> s.padding(rem(1.5))),
                 body),
-            div(attrs().style()
+            div(attrs().style(s -> s
                     .padding(rem(1))
                     .borderTop(px(1), solid, hex("#e5e7eb"))
-                    .backgroundColor(hex("#f9fafb")),
+                    .backgroundColor(hex("#f9fafb"))),
                 footer));
     }
 
@@ -379,7 +379,7 @@ public class UI {
      */
     public static Element avatar(String name, jweb.CSSValue size) {
         String initials = getInitials(name);
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .width(size)
                 .height(size)
                 .rounded(px(9999))
@@ -388,7 +388,7 @@ public class UI {
                 .flexCenter()
                 .fontSize(rem(0.875))
                 .fontWeight(600)
-            .done().title(name),
+            ).title(name),
             text(initials));
     }
 
@@ -403,12 +403,12 @@ public class UI {
      * Creates an avatar with image and custom size.
      */
     public static Element avatarImage(String src, String alt, jweb.CSSValue size) {
-        return img(attrs().style()
+        return img(attrs().style(s -> s
                 .width(size)
                 .height(size)
                 .rounded(px(9999))
                 .objectFit(cover)
-            .done().src(src).alt(alt));
+            ).src(src).alt(alt));
     }
 
     private static String getInitials(String name) {
@@ -434,16 +434,16 @@ public class UI {
      */
     public static Element progressBar(int progressPercent, jweb.CSSValue color) {
         int clamped = Math.max(0, Math.min(100, progressPercent));
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .backgroundColor(hex("#e5e7eb"))
                 .rounded(px(9999))
                 .height(px(8))
-                .overflow(hidden),
-            div(attrs().style()
+                .overflow(hidden)),
+            div(attrs().style(s -> s
                 .backgroundColor(color)
                 .height(percent(100))
                 .width(percent(clamped))
-                .transitionAll(s(0.3))));
+                .transitionAll(s(0.3)))));
     }
 
     // ==================== Spinner ====================
@@ -459,13 +459,13 @@ public class UI {
      * Creates a loading spinner with custom size.
      */
     public static Element spinner(jweb.CSSValue size) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .width(size)
                 .height(size)
                 .border(px(2), solid, hex("#e5e7eb"))
                 .borderTop(px(2), solid, hex("#6366f1"))
                 .rounded(px(9999))
-                .animation(anim("spin"), s(1), linear, s(0), infinite));
+                .animation(anim("spin"), s(1), linear, s(0), infinite)));
     }
 
     // ==================== Tooltip (wrapper) ====================
@@ -475,10 +475,10 @@ public class UI {
      * Note: Requires CSS for :hover to show tooltip.
      */
     public static Element tooltip(String text, Object... content) {
-        return span(attrs().style()
+        return span(attrs().style(s -> s
                 .position(relative)
                 .display(inlineBlock)
-            .done().title(text),
+            ).title(text),
             content);
     }
 
@@ -488,27 +488,27 @@ public class UI {
      * Creates a horizontal divider with optional text.
      */
     public static Element divider(String dividerText) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .flex()
                 .alignItems(center)
-                .gap(rem(1)),
-            div(attrs().style().flexGrow(1).height(px(1)).backgroundColor(hex("#e5e7eb"))),
-            span(attrs().style()
+                .gap(rem(1))),
+            div(attrs().style(s -> s.flexGrow(1).height(px(1)).backgroundColor(hex("#e5e7eb")))),
+            span(attrs().style(s -> s
                     .color(hex("#6b7280"))
-                    .fontSize(rem(0.875)),
+                    .fontSize(rem(0.875))),
                 text(dividerText)),
-            div(attrs().style().flexGrow(1).height(px(1)).backgroundColor(hex("#e5e7eb"))));
+            div(attrs().style(s -> s.flexGrow(1).height(px(1)).backgroundColor(hex("#e5e7eb")))));
     }
 
     /**
      * Creates a simple horizontal divider.
      */
     public static Element divider() {
-        return hr(attrs().style()
+        return hr(attrs().style(s -> s
                 .border(none)
                 .borderTop(px(1), solid, hex("#e5e7eb"))
                 .margin(rem(1), zero)
-            .done());
+            ));
     }
 
     // ==================== Skeleton ====================
@@ -517,12 +517,12 @@ public class UI {
      * Creates a skeleton loading placeholder.
      */
     public static Element skeleton(jweb.CSSValue skWidth, jweb.CSSValue skHeight) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .width(skWidth)
                 .height(skHeight)
                 .backgroundColor(hex("#e5e7eb"))
                 .rounded(px(4))
-                .animation(anim("pulse"), s(2), easeInOut, s(0), infinite));
+                .animation(anim("pulse"), s(2), easeInOut, s(0), infinite)));
     }
 
     /**
@@ -536,12 +536,12 @@ public class UI {
      * Creates a circular skeleton (for avatars).
      */
     public static Element skeletonCircle(jweb.CSSValue size) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .width(size)
                 .height(size)
                 .backgroundColor(hex("#e5e7eb"))
                 .rounded(px(9999))
-                .animation(anim("pulse"), s(2), easeInOut, s(0), infinite));
+                .animation(anim("pulse"), s(2), easeInOut, s(0), infinite)));
     }
 
     // ==================== Empty State ====================
@@ -550,24 +550,24 @@ public class UI {
      * Creates an empty state placeholder.
      */
     public static Element emptyState(String emptyTitle, String description) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .textCenter()
-                .padding(rem(3)),
-            div(attrs().style()
+                .padding(rem(3))),
+            div(attrs().style(s -> s
                     .fontSize(rem(3))
-                    .marginBottom(rem(1)),
+                    .marginBottom(rem(1))),
                 text("\uD83D\uDCED")), // mailbox emoji
-            h3(attrs().style()
+            h3(attrs().style(s -> s
                     .fontSize(rem(1.125))
                     .fontWeight(600)
                     .color(hex("#374151"))
                     .margin(zero)
-                    .marginBottom(rem(0.5)),
+                    .marginBottom(rem(0.5))),
                 text(emptyTitle)),
-            p(attrs().style()
+            p(attrs().style(s -> s
                     .color(hex("#6b7280"))
                     .fontSize(rem(0.875))
-                    .margin(zero),
+                    .margin(zero)),
                 text(description)));
     }
 
@@ -575,25 +575,25 @@ public class UI {
      * Creates an empty state with action button.
      */
     public static Element emptyState(String emptyTitle, String description, String buttonText, Consumer<Event> onClick) {
-        return div(attrs().style()
+        return div(attrs().style(s -> s
                 .textCenter()
-                .padding(rem(3)),
-            div(attrs().style()
+                .padding(rem(3))),
+            div(attrs().style(s -> s
                     .fontSize(rem(3))
-                    .marginBottom(rem(1)),
+                    .marginBottom(rem(1))),
                 text("\uD83D\uDCED")),
-            h3(attrs().style()
+            h3(attrs().style(s -> s
                     .fontSize(rem(1.125))
                     .fontWeight(600)
                     .color(hex("#374151"))
                     .margin(zero)
-                    .marginBottom(rem(0.5)),
+                    .marginBottom(rem(0.5))),
                 text(emptyTitle)),
-            p(attrs().style()
+            p(attrs().style(s -> s
                     .color(hex("#6b7280"))
                     .fontSize(rem(0.875))
                     .margin(zero)
-                    .marginBottom(rem(1.5)),
+                    .marginBottom(rem(1.5))),
                 text(description)),
             primaryButton(buttonText, onClick));
     }
@@ -607,21 +607,21 @@ public class UI {
         Element[] elements = new Element[items.length * 2 - 1];
         for (int i = 0; i < items.length; i++) {
             boolean isLast = i == items.length - 1;
-            elements[i * 2] = span(attrs().style()
+            elements[i * 2] = span(attrs().style(s -> s
                     .color(isLast ? hex("#374151") : hex("#6b7280"))
                     .fontSize(rem(0.875))
-                    .fontWeight(isLast ? 500 : 400),
+                    .fontWeight(isLast ? 500 : 400)),
                 text(items[i]));
             if (!isLast) {
-                elements[i * 2 + 1] = span(attrs().style()
+                elements[i * 2 + 1] = span(attrs().style(s -> s
                         .color(hex("#9ca3af"))
-                        .margin(zero, rem(0.5)),
+                        .margin(zero, rem(0.5))),
                     text("/"));
             }
         }
-        return nav(attrs().style()
+        return nav(attrs().style(s -> s
                 .flex()
-                .alignItems(center),
+                .alignItems(center)),
             elements);
     }
 
@@ -631,14 +631,14 @@ public class UI {
      * Creates a keyboard key display.
      */
     public static Element kbd(String key) {
-        return span(attrs().style()
+        return span(attrs().style(s -> s
                 .backgroundColor(hex("#f3f4f6"))
                 .border(px(1), solid, hex("#d1d5db"))
                 .borderBottom(px(2), solid, hex("#d1d5db"))
                 .rounded(px(4))
                 .padding(rem(0.125), rem(0.375))
                 .fontSize(rem(0.75))
-                .fontFamily("monospace"),
+                .fontFamily("monospace")),
             text(key));
     }
 
@@ -648,13 +648,13 @@ public class UI {
      * Creates an inline code element.
      */
     public static Element inlineCode(String codeStr) {
-        return span(attrs().style()
+        return span(attrs().style(s -> s
                 .backgroundColor(hex("#f3f4f6"))
                 .color(hex("#e11d48"))
                 .padding(rem(0.125), rem(0.375))
                 .rounded(px(4))
                 .fontSize(rem(0.875))
-                .fontFamily("monospace"),
+                .fontFamily("monospace")),
             text(codeStr));
     }
 
@@ -662,7 +662,7 @@ public class UI {
      * Creates a code block.
      */
     public static Element codeBlock(String codeStr) {
-        return pre(attrs().style()
+        return pre(attrs().style(s -> s
                 .backgroundColor(hex("#1f2937"))
                 .color(hex("#f9fafb"))
                 .padding(rem(1))
@@ -670,7 +670,7 @@ public class UI {
                 .overflow(auto)
                 .fontSize(rem(0.875))
                 .fontFamily("monospace")
-                .lineHeight(1.5),
+                .lineHeight(1.5)),
             code(text(codeStr)));
     }
 
@@ -719,20 +719,20 @@ public class UI {
         public Element build() {
             List<Element> headerElements = new ArrayList<>();
             if (title != null) {
-                headerElements.add(h3(attrs().style()
+                headerElements.add(h3(attrs().style(s -> s
                         .fontSize(rem(1.125))
                         .fontWeight(600)
-                        .margin(zero),
+                        .margin(zero)),
                     text(title)));
             }
             if (closable) {
-                headerElements.add(button(attrs().style()
+                headerElements.add(button(attrs().style(s -> s
                         .backgroundColor(transparent)
                         .border(none)
                         .fontSize(rem(1.5))
                         .clickable()
                         .color(hex("#6b7280"))
-                    .done().data("modal-close", id),
+                    ).data("modal-close", id),
                     text("\u00D7")));
             }
 
@@ -740,34 +740,34 @@ public class UI {
 
             // Header
             if (!headerElements.isEmpty()) {
-                content.add(div(attrs().style()
+                content.add(div(attrs().style(s -> s
                         .flex()
                         .justifyContent(spaceBetween)
                         .alignItems(center)
                         .padding(rem(1), rem(1.5))
-                        .borderBottom(px(1), solid, hex("#e5e7eb")),
+                        .borderBottom(px(1), solid, hex("#e5e7eb"))),
                     headerElements.toArray()));
             }
 
             // Body
             if (body != null) {
-                content.add(div(attrs().style().padding(rem(1.5)), body));
+                content.add(div(attrs().style(s -> s.padding(rem(1.5))), body));
             }
 
             // Footer
             if (footer != null && footer.length > 0) {
-                content.add(div(attrs().style()
+                content.add(div(attrs().style(s -> s
                         .flex()
                         .justifyContent(flexEnd)
                         .gap(rem(0.5))
                         .padding(rem(1), rem(1.5))
                         .borderTop(px(1), solid, hex("#e5e7eb"))
-                        .backgroundColor(hex("#f9fafb")),
+                        .backgroundColor(hex("#f9fafb"))),
                     footer));
             }
 
             // Modal container
-            Element modal = div(attrs().style()
+            Element modal = div(attrs().style(s -> s
                     .backgroundColor(white)
                     .rounded(px(8))
                     .boxShadow("0 25px 50px -12px rgba(0,0,0,0.25)")
@@ -775,18 +775,18 @@ public class UI {
                     .maxWidth(percent(90))
                     .maxHeight(vh(90))
                     .overflow(auto)
-                .done().data("modal-content", id),
+                ).data("modal-content", id),
                 content.toArray());
 
             // Overlay
-            return div(attrs().style()
+            return div(attrs().style(s -> s
                     .position(fixed)
                     .inset(zero)
                     .backgroundColor(rgba(0, 0, 0, 0.5))
                     .flexCenter()
                     .zIndex(1000)
                     .display(none)
-                .done().id(id)
+                ).id(id)
                 .data("modal-overlay", closeOnOverlay ? "close" : ""),
                 modal);
         }
@@ -835,7 +835,7 @@ public class UI {
      * Creates a button that opens a modal.
      */
     public static Element modalTrigger(String modalId, String buttonText) {
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(hex("#6366f1"))
                 .color(white)
                 .padding(rem(0.5), rem(1))
@@ -844,7 +844,7 @@ public class UI {
                 .fontSize(rem(0.875))
                 .fontWeight(500)
                 .clickable()
-            .done().data("modal-open", modalId),
+            ).data("modal-open", modalId),
             text(buttonText));
     }
 
@@ -909,7 +909,7 @@ public class UI {
                 // Tab button
                 Element btn;
                 if (style == TabStyle.PILLS) {
-                    btn = button(attrs().style()
+                    btn = button(attrs().style(s -> s
                             .backgroundColor(isDefault ? hex("#6366f1") : transparent)
                             .color(isDefault ? white : hex("#6b7280"))
                             .padding(rem(0.5), rem(1))
@@ -919,12 +919,12 @@ public class UI {
                             .fontWeight(500)
                             .clickable()
                             .transitionAll(s(0.2))
-                        .done().data("tab", tab.id)
+                        ).data("tab", tab.id)
                         .data("tab-group", id),
-                        tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
+                        tab.icon != null ? span(attrs().style(s -> s.marginRight(rem(0.5))), text(tab.icon)) : null,
                         text(tab.label));
                 } else if (style == TabStyle.BOXED) {
-                    btn = button(attrs().style()
+                    btn = button(attrs().style(s -> s
                             .backgroundColor(isDefault ? white : hex("#f3f4f6"))
                             .color(isDefault ? hex("#6366f1") : hex("#6b7280"))
                             .padding(rem(0.75), rem(1.25))
@@ -934,12 +934,12 @@ public class UI {
                             .fontSize(rem(0.875))
                             .fontWeight(500)
                             .clickable()
-                        .done().data("tab", tab.id)
+                        ).data("tab", tab.id)
                         .data("tab-group", id),
-                        tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
+                        tab.icon != null ? span(attrs().style(s -> s.marginRight(rem(0.5))), text(tab.icon)) : null,
                         text(tab.label));
                 } else { // LINE (default)
-                    btn = button(attrs().style()
+                    btn = button(attrs().style(s -> s
                             .backgroundColor(transparent)
                             .color(isDefault ? hex("#6366f1") : hex("#6b7280"))
                             .padding(rem(0.75), rem(1))
@@ -949,27 +949,27 @@ public class UI {
                             .fontWeight(isDefault ? 600 : 500)
                             .clickable()
                             .transitionAll(s(0.2))
-                        .done().data("tab", tab.id)
+                        ).data("tab", tab.id)
                         .data("tab-group", id),
-                        tab.icon != null ? span(attrs().style().marginRight(rem(0.5)), text(tab.icon)) : null,
+                        tab.icon != null ? span(attrs().style(s -> s.marginRight(rem(0.5))), text(tab.icon)) : null,
                         text(tab.label));
                 }
                 tabButtons.add(btn);
 
                 // Tab panel
-                tabPanels.add(div(attrs().style()
+                tabPanels.add(div(attrs().style(s -> s
                         .display(isDefault ? block : none)
                         .padding(rem(1))
-                    .done().data("tab-panel", tab.id)
+                    ).data("tab-panel", tab.id)
                     .data("tab-group", id),
                     tab.content));
             }
 
             // Tab list
-            Element tabList = div(attrs().style()
+            Element tabList = div(attrs().style(s -> s
                     .flex()
                     .gap(style == TabStyle.LINE ? zero : rem(0.5))
-                    .borderBottom(px(1), solid, style == TabStyle.LINE ? hex("#e5e7eb") : transparent),
+                    .borderBottom(px(1), solid, style == TabStyle.LINE ? hex("#e5e7eb") : transparent)),
                 tabButtons.toArray());
 
             return div(attrs().id(id),
@@ -1035,7 +1035,7 @@ public class UI {
 
         public Dropdown trigger(jweb.Element element) { this.trigger = Element.of(element); return this; }
         public Dropdown trigger(String buttonText) {
-            this.trigger = button(attrs().style()
+            this.trigger = button(attrs().style(s -> s
                     .backgroundColor(white)
                     .color(hex("#374151"))
                     .padding(rem(0.5), rem(1))
@@ -1045,7 +1045,7 @@ public class UI {
                     .clickable()
                     .flex()
                     .alignItems(center)
-                    .gap(rem(0.5)),
+                    .gap(rem(0.5))),
                 text(buttonText),
                 span(text("\u25BC"))); // down arrow
             return this;
@@ -1080,13 +1080,13 @@ public class UI {
             List<Element> menuItems = new ArrayList<>();
             for (DropdownItem item : items) {
                 if (item.isDivider) {
-                    menuItems.add(hr(attrs().style()
+                    menuItems.add(hr(attrs().style(s -> s
                         .border(none)
                         .borderTop(px(1), solid, hex("#e5e7eb"))
                         .margin(rem(0.25), zero)
-                        .done()));
+                        )));
                 } else {
-                    Element menuItem = button(attrs().style()
+                    Element menuItem = button(attrs().style(s -> s
                             .display(flex)
                             .width(percent(100))
                             .alignItems(center)
@@ -1099,7 +1099,7 @@ public class UI {
                             .fontSize(rem(0.875))
                             .clickable()
                             .transitionBackground(s(0.15))
-                        .done().data("dropdown-item", id)
+                        ).data("dropdown-item", id)
                         .onClick(item.onClick),
                         item.icon != null ? span(text(item.icon)) : null,
                         text(item.label));
@@ -1113,7 +1113,7 @@ public class UI {
             String leftRight = position == Position.BOTTOM_RIGHT || position == Position.TOP_RIGHT
                 ? "right:0" : "left:0";
 
-            Element menu = div(attrs().style()
+            Element menu = div(attrs().style(s -> s
                     .position(absolute)
                     .prop(topBottom.split(":")[0], topBottom.split(":")[1])
                     .prop(leftRight.split(":")[0], leftRight.split(":")[1])
@@ -1126,17 +1126,17 @@ public class UI {
                     .padding(rem(0.25))
                     .zIndex(50)
                     .display(none)
-                .done().data("dropdown-menu", id),
+                ).data("dropdown-menu", id),
                 menuItems.toArray());
 
             Element triggerWrapper = div(attrs()
                 .data("dropdown-trigger", id),
                 trigger);
 
-            return div(attrs().style()
+            return div(attrs().style(s -> s
                     .position(relative)
                     .display(inlineBlock)
-                .done().id(id),
+                ).id(id),
                 triggerWrapper,
                 menu);
         }
@@ -1219,7 +1219,7 @@ public class UI {
             for (AccordionItem item : items) {
                 boolean isOpen = item.id.equals(defaultOpen);
 
-                Element header = button(attrs().style()
+                Element header = button(attrs().style(s -> s
                         .display(flex)
                         .width(percent(100))
                         .justifyContent(spaceBetween)
@@ -1233,32 +1233,32 @@ public class UI {
                         .fontWeight(500)
                         .textAlign(left)
                         .clickable()
-                    .done().data("accordion-trigger", item.id)
+                    ).data("accordion-trigger", item.id)
                     .data("accordion-group", id)
                     .data("accordion-multiple", String.valueOf(allowMultiple)),
                     text(item.title),
-                    span(attrs().style()
+                    span(attrs().style(s -> s
                             .transitionTransform(s(0.2))
                             .transform(rotate(deg(isOpen ? 180 : 0)))
-                        .done().data("accordion-icon", item.id),
+                        ).data("accordion-icon", item.id),
                         text("\u25BC")));
 
-                Element content = div(attrs().style()
+                Element content = div(attrs().style(s -> s
                         .display(isOpen ? block : none)
                         .padding(rem(1))
                         .backgroundColor(white)
                         .borderBottom(px(1), solid, hex("#e5e7eb"))
-                    .done().data("accordion-content", item.id),
+                    ).data("accordion-content", item.id),
                     item.content);
 
                 sections.add(div(header, content));
             }
 
-            return div(attrs().style()
+            return div(attrs().style(s -> s
                     .border(px(1), solid, hex("#e5e7eb"))
                     .rounded(px(8))
                     .overflow(hidden)
-                .done().id(id),
+                ).id(id),
                 sections.toArray());
         }
 
@@ -1324,12 +1324,12 @@ public class UI {
         }
 
         public Nav brand(String name, String href) {
-            this.brand = a(attrs().style()
+            this.brand = a(attrs().style(s -> s
                     .fontSize(rem(1.25))
                     .fontWeight(700)
                     .color(hex("#111827"))
                     .textDecoration(none)
-                .done().href(href),
+                ).href(href),
                 text(name));
             return this;
         }
@@ -1361,50 +1361,50 @@ public class UI {
             // Links
             List<Element> navLinks = new ArrayList<>();
             for (NavLink link : links) {
-                navLinks.add(a(attrs().style()
+                navLinks.add(a(attrs().style(s -> s
                         .color(link.active ? hex("#6366f1") : hex("#6b7280"))
                         .fontSize(rem(0.875))
                         .fontWeight(link.active ? 600 : 500)
                         .textDecoration(none)
                         .padding(rem(0.5), rem(0.75))
                         .transitionColors(s(0.15))
-                    .done().href(link.href),
+                    ).href(link.href),
                     text(link.label)));
             }
 
             // Main nav content
-            Element leftSection = div(attrs().style()
+            Element leftSection = div(attrs().style(s -> s
                     .flex()
                     .alignItems(center)
-                    .gap(rem(2)),
+                    .gap(rem(2))),
                 brand,
-                navLinks.isEmpty() ? null : nav(attrs().style()
+                navLinks.isEmpty() ? null : nav(attrs().style(s -> s
                         .flex()
-                        .gap(rem(0.5)),
+                        .gap(rem(0.5))),
                     navLinks.toArray()));
 
             Element rightSection = rightElements != null && rightElements.length > 0
-                ? div(attrs().style()
+                ? div(attrs().style(s -> s
                         .flex()
                         .alignItems(center)
-                        .gap(rem(0.75)),
+                        .gap(rem(0.75))),
                     rightElements)
                 : null;
 
-            return header(attrs().style()
+            return header(attrs().style(s -> s
                     .backgroundColor(white)
                     .borderBottom(px(1), solid, hex("#e5e7eb"))
                     .height(height)
                     .position(sticky ? CSS.sticky : relative)
-                    .apply(sticky ? style().top(zero).zIndex(100) : style()),
-                div(attrs().style()
+                    .apply(sticky ? style().top(zero).zIndex(100) : style())),
+                div(attrs().style(s -> s
                         .maxWidth(px(1280))
                         .margin(zero, auto)
                         .padding(zero, rem(1.5))
                         .height(percent(100))
                         .flex()
                         .justifyContent(spaceBetween)
-                        .alignItems(center),
+                        .alignItems(center)),
                     leftSection,
                     rightSection));
         }
@@ -1456,51 +1456,51 @@ public class UI {
 
             // Header
             if (header != null) {
-                content.add(div(attrs().style()
+                content.add(div(attrs().style(s -> s
                         .padding(rem(1.25))
-                        .borderBottom(px(1), solid, hex("#e5e7eb")),
+                        .borderBottom(px(1), solid, hex("#e5e7eb"))),
                     header));
             }
 
             // Sections
             for (SidebarSection section : sections) {
                 List<Element> sectionContent = new ArrayList<>();
-                sectionContent.add(div(attrs().style()
+                sectionContent.add(div(attrs().style(s -> s
                         .fontSize(rem(0.75))
                         .fontWeight(600)
                         .color(hex("#6b7280"))
                         .textTransform(uppercase)
                         .letterSpacing(em(0.05))
-                        .padding(rem(0.75), rem(1.25)),
+                        .padding(rem(0.75), rem(1.25))),
                     text(section.title)));
 
                 for (Element item : section.items) {
                     sectionContent.add(item);
                 }
 
-                content.add(div(attrs().style().paddingBottom(rem(1)),
+                content.add(div(attrs().style(s -> s.paddingBottom(rem(1))),
                     sectionContent.toArray()));
             }
 
             // Footer
             if (footer != null) {
-                content.add(div(attrs().style()
+                content.add(div(attrs().style(s -> s
                         .marginTop(auto)
                         .padding(rem(1))
                         .borderTop(px(1), solid, hex("#e5e7eb"))
                         .fontSize(rem(0.75))
-                        .color(hex("#9ca3af")),
+                        .color(hex("#9ca3af"))),
                     footer));
             }
 
-            return aside(attrs().style()
+            return aside(attrs().style(s -> s
                     .width(width)
                     .height(vh(100))
                     .backgroundColor(white)
                     .borderRight(px(1), solid, hex("#e5e7eb"))
                     .flex()
                     .flexDirection(column)
-                    .overflow(auto),
+                    .overflow(auto)),
                 content.toArray());
         }
 
@@ -1518,7 +1518,7 @@ public class UI {
      * Creates a sidebar link with active state.
      */
     public static Element sidebarLink(String label, String href, boolean active) {
-        return a(attrs().style()
+        return a(attrs().style(s -> s
                 .display(block)
                 .color(active ? hex("#6366f1") : hex("#374151"))
                 .backgroundColor(active ? hex("#eef2ff") : transparent)
@@ -1527,7 +1527,7 @@ public class UI {
                 .padding(rem(0.5), rem(1.25))
                 .textDecoration(none)
                 .transitionAll(s(0.15))
-            .done().href(href),
+            ).href(href),
             text(label));
     }
 
@@ -1535,7 +1535,7 @@ public class UI {
      * Creates a sidebar link with icon.
      */
     public static Element sidebarLink(String icon, String label, String href, boolean active) {
-        return a(attrs().style()
+        return a(attrs().style(s -> s
                 .display(flex)
                 .alignItems(center)
                 .gap(rem(0.75))
@@ -1546,7 +1546,7 @@ public class UI {
                 .padding(rem(0.5), rem(1.25))
                 .textDecoration(none)
                 .transitionAll(s(0.15))
-            .done().href(href),
+            ).href(href),
             span(text(icon)),
             text(label));
     }
@@ -1618,7 +1618,7 @@ public class UI {
             // Header
             List<Element> headerCells = new ArrayList<>();
             for (Column<T> col : columns) {
-                Element headerCell = th(attrs().style()
+                Element headerCell = th(attrs().style(s -> s
                         .textAlign(left)
                         .padding(compact ? rem(0.5) : rem(0.75), rem(1))
                         .fontSize(rem(0.75))
@@ -1628,7 +1628,7 @@ public class UI {
                         .letterSpacing(em(0.05))
                         .backgroundColor(hex("#f9fafb"))
                         .borderBottom(px(1), solid, hex("#e5e7eb"))
-                        .width(col.width != null ? col.width : auto),
+                        .width(col.width != null ? col.width : auto)),
                     text(col.header));
                 headerCells.add(headerCell);
             }
@@ -1639,10 +1639,10 @@ public class UI {
             if (data.isEmpty()) {
                 Element emptyCell = td(attrs()
                         .set("colspan", String.valueOf(columns.size()))
-                        .style()
+                        .style(s -> s
                         .textCenter()
                         .padding(rem(3))
-                        .color(hex("#6b7280")),
+                        .color(hex("#6b7280"))),
                     emptyState != null ? emptyState : text(emptyMessage));
                 bodyRows.add(tr(emptyCell));
             } else {
@@ -1650,31 +1650,31 @@ public class UI {
                 for (T item : data) {
                     List<Element> cells = new ArrayList<>();
                     for (Column<T> col : columns) {
-                        Element cell = td(attrs().style()
+                        Element cell = td(attrs().style(s -> s
                                 .padding(compact ? rem(0.5) : rem(0.75), rem(1))
                                 .borderBottom(px(1), solid, hex("#e5e7eb"))
-                                .fontSize(rem(0.875)),
+                                .fontSize(rem(0.875))),
                             col.renderer.apply(item));
                         cells.add(cell);
                     }
 
                     final int idx = rowIndex;
-                    Element row = tr(attrs().style()
+                    Element row = tr(attrs().style(s -> s
                             .backgroundColor(striped && idx % 2 == 1 ? hex("#f9fafb") : white)
-                            .apply(hoverable ? style().transitionBackground(s(0.15)) : style()),
+                            .apply(hoverable ? style().transitionBackground(s(0.15)) : style())),
                         cells.toArray());
                     bodyRows.add(row);
                     rowIndex++;
                 }
             }
 
-            return div(attrs().style()
+            return div(attrs().style(s -> s
                     .overflow(auto)
                     .rounded(px(8))
-                    .border(px(1), solid, bordered ? hex("#e5e7eb") : transparent),
-                table(attrs().style()
+                    .border(px(1), solid, bordered ? hex("#e5e7eb") : transparent)),
+                table(attrs().style(s -> s
                         .width(percent(100))
-                        .borderCollapse(collapse),
+                        .borderCollapse(collapse)),
                     thead(headerRow),
                     tbody(bodyRows.toArray())));
         }
@@ -1697,7 +1697,7 @@ public class UI {
         List<Element> items = new ArrayList<>();
 
         // Previous button
-        items.add(button(attrs().style()
+        items.add(button(attrs().style(s -> s
                 .backgroundColor(currentPage == 1 ? hex("#f3f4f6") : white)
                 .color(currentPage == 1 ? hex("#9ca3af") : hex("#374151"))
                 .padding(rem(0.5), rem(0.75))
@@ -1705,7 +1705,7 @@ public class UI {
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .clickable()
-            .done().disabled(currentPage == 1)
+            ).disabled(currentPage == 1)
             .onClick(e -> onPageChange.accept(currentPage - 1)),
             text("\u2190 Prev")));
 
@@ -1716,9 +1716,9 @@ public class UI {
         if (start > 1) {
             items.add(pageButton(1, currentPage, onPageChange));
             if (start > 2) {
-                items.add(span(attrs().style()
+                items.add(span(attrs().style(s -> s
                         .padding(rem(0.5))
-                        .color(hex("#6b7280")),
+                        .color(hex("#6b7280"))),
                     text("...")));
             }
         }
@@ -1729,16 +1729,16 @@ public class UI {
 
         if (end < totalPages) {
             if (end < totalPages - 1) {
-                items.add(span(attrs().style()
+                items.add(span(attrs().style(s -> s
                         .padding(rem(0.5))
-                        .color(hex("#6b7280")),
+                        .color(hex("#6b7280"))),
                     text("...")));
             }
             items.add(pageButton(totalPages, currentPage, onPageChange));
         }
 
         // Next button
-        items.add(button(attrs().style()
+        items.add(button(attrs().style(s -> s
                 .backgroundColor(currentPage == totalPages ? hex("#f3f4f6") : white)
                 .color(currentPage == totalPages ? hex("#9ca3af") : hex("#374151"))
                 .padding(rem(0.5), rem(0.75))
@@ -1746,20 +1746,20 @@ public class UI {
                 .rounded(px(6))
                 .fontSize(rem(0.875))
                 .clickable()
-            .done().disabled(currentPage == totalPages)
+            ).disabled(currentPage == totalPages)
             .onClick(e -> onPageChange.accept(currentPage + 1)),
             text("Next \u2192")));
 
-        return nav(attrs().style()
+        return nav(attrs().style(s -> s
                 .flex()
                 .alignItems(center)
-                .gap(rem(0.25)),
+                .gap(rem(0.25))),
             items.toArray());
     }
 
     private static Element pageButton(int page, int currentPage, Consumer<Integer> onPageChange) {
         boolean isCurrent = page == currentPage;
-        return button(attrs().style()
+        return button(attrs().style(s -> s
                 .backgroundColor(isCurrent ? hex("#6366f1") : white)
                 .color(isCurrent ? white : hex("#374151"))
                 .padding(rem(0.5), rem(0.75))
@@ -1769,7 +1769,7 @@ public class UI {
                 .fontWeight(isCurrent ? 600 : 400)
                 .minWidth(rem(2.5))
                 .clickable()
-            .done().onClick(e -> onPageChange.accept(page)),
+            ).onClick(e -> onPageChange.accept(page)),
             text(String.valueOf(page)));
     }
 

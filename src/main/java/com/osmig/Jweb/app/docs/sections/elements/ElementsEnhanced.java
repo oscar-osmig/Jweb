@@ -142,7 +142,7 @@ p("As described in ", cite("The Art of Programming"), "...")
 p("She said, ", q("Hello World"), " and it ran.")
 
 // Blockquote with source URL
-blockquote(attr("cite", "https://example.com"),
+blockquote(attrs().cite("https://example.com"),
     p("Knowledge is power.")
 )
 
@@ -171,7 +171,6 @@ p(s("Available in stores"), " — Now online only!")"""),
             h3Title("Form Enhancements"),
             para("Modern form elements for autocomplete, grouping, and specialized inputs."),
             codeBlock("""
-import static jweb.el.FormEnhancements.*;
 import static jweb.El.*;
 
 // Autocomplete with datalist
@@ -185,10 +184,10 @@ datalist(id("browsers"),
 
 // Grouped options in select
 select(name("car"),
-    optgroup(attr("label", "Swedish Cars"),
+    optgroup(attrs().label("Swedish Cars"),
         option(value("volvo"), "Volvo"),
         option(value("saab"), "Saab")),
-    optgroup(attr("label", "German Cars"),
+    optgroup(attrs().label("German Cars"),
         option(value("bmw"), "BMW"),
         option(value("audi"), "Audi"))
 )
@@ -202,20 +201,22 @@ fieldset(
     input(type("email"), name("email"))
 )
 
-// Specialized input types
-colorInput("theme-color", "#3b82f6")     // Color picker
-dateInput("birthday")                     // Date picker
-dateInput("event", "2026-01-01", "2026-12-31") // With range
-timeInput("meeting")                      // Time picker
-datetimeInput("appointment")              // Date + time
-monthInput("start-month")                // Month picker
-weekInput("sprint-week")                  // Week picker
-rangeInput("volume", 0, 100, 50)          // Slider
-rangeInput("opacity", 0, 100, 50, 5)     // Slider with step"""),
+// Specialized input types — a plain input() with the right type attribute
+input(type("color"), name("theme-color"), value("#3b82f6"))            // Color picker
+input(type("date"), name("birthday"))                                   // Date picker
+input(type("date"), name("event"), attrs().min("2026-01-01").max("2026-12-31")) // With range
+input(type("time"), name("meeting"))                                    // Time picker
+input(type("datetime-local"), name("appointment"))                      // Date + time
+input(type("month"), name("start-month"))                              // Month picker
+input(type("week"), name("sprint-week"))                                // Week picker
+input(type("range"), name("volume"), attrs().min(0).max(100).value("50"))          // Slider
+input(type("range"), name("opacity"), attrs().min(0).max(100).value("50").step(5)) // Slider with step"""),
 
-            docTip("Core elements (figure, dl, blockquote, fieldset, etc.) are available via El.* static import. " +
-                   "Typed input helpers (colorInput, rangeInput, etc.) " +
-                   "require importing from their specific module: PopoverElements, PictureElements, or FormEnhancements.")
+            docTip("Core elements (figure, dl, blockquote, fieldset, etc.) and the popover/picture attributes " +
+                   "are all available via El.* static import; PopoverElements and PictureElements add a few " +
+                   "action helpers (popoverHideButton, showPopover, ...) on top. There is no FormEnhancements " +
+                   "module any more — a specialized input (date, time, range, color, ...) is a plain input() " +
+                   "with the matching type attribute.")
         );
     }
 }

@@ -21,17 +21,17 @@ select(name("country"),
 
 // With selected option
 select(name("status"),
-    option(value("active"), attrs().set("selected", ""), "Active"),
+    option(value("active"), selected(), "Active"),
     option(value("inactive"), "Inactive")
 )
 
 // Option groups
 select(name("car"),
-    optgroup(attr("label", "Swedish Cars"),
+    optgroup(attrs().label("Swedish Cars"),
         option(value("volvo"), "Volvo"),
         option(value("saab"), "Saab")
     ),
-    optgroup(attr("label", "German Cars"),
+    optgroup(attrs().label("German Cars"),
         option(value("mercedes"), "Mercedes"),
         option(value("audi"), "Audi")
     )

@@ -12,42 +12,35 @@ public final class ElementsModern {
             para("Modern interactive elements with built-in browser functionality."),
 
             h3Title("Dialog (Modal)"),
-            para("Native modal dialogs with backdrop and close behavior."),
+            para("Native modal dialogs with backdrop and close behavior, driven by Actions on jweb.El."),
             codeBlock("""
-import static jweb.el.DialogHelper.*;
-
 // Define the dialog
 dialog(id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure you want to proceed?"),
     div(class_("dialog-actions"),
-        button(onClick(close("confirm-dialog")), "Cancel"),
-        button(onClick(close("confirm-dialog", "confirmed")), "Confirm")
+        button(onClick(closeDialog("confirm-dialog")), "Cancel"),
+        button(onClick(closeDialog("confirm-dialog", "confirmed")), "Confirm")
     )
 )
 
 // Open as modal (with backdrop)
-button(onClick(showModal("confirm-dialog")), "Open Modal")
+button(onClick(openDialog("confirm-dialog")), "Open Modal")
 
-// Open as non-modal
-button(onClick(show("confirm-dialog")), "Open Non-Modal")
+// Toggle: opens a closed dialog, closes an open one
+button(onClick(toggleDialog("confirm-dialog")), "Toggle")
 
-// Toggle
-button(onClick(toggle("confirm-dialog")), "Toggle")
-
-// Close on backdrop click
-dialog(id("my-dialog"), onClick(closeOnBackdropClick("my-dialog")),
+// Read the return value after it closes
+dialog(id("my-dialog"), onClose(e -> handleResult(e)),
     div(class_("dialog-content"),
-        h2("Click outside to close"),
-        p("Dialog content here")
+        h2("Pick one"),
+        button(onClick(closeDialog("my-dialog", "yes")), "Yes")
     )
 )"""),
 
             h3Title("Details & Summary (Accordion)"),
             para("Expandable content sections with native toggle behavior."),
             codeBlock("""
-import static jweb.el.DetailsHelper.*;
-
 // Basic collapsible
 details(
     summary("Click to expand"),
@@ -60,9 +53,9 @@ details(attrs().open(),
     p("Visible content")
 )
 
-// FAQ Accordion (exclusive - using name attribute)
+// FAQ Accordion (exclusive - using the name attribute, a native browser feature)
 div(class_("faq"),
-    details(name("faq"),
+    details(name("faq"), id("faq-1"),
         summary("What is JWeb?"),
         p("JWeb is a pure Java web framework...")
     ),
@@ -76,10 +69,9 @@ div(class_("faq"),
     )
 )
 
-// Control with JavaScript helpers
-button(onClick(openAll("faq")), "Expand All")
-button(onClick(closeAll("faq")), "Collapse All")
-button(onClick(openExclusive("faq-1", "faq")), "Open First Only")"""),
+// Control one with an Action
+button(onClick(openDetails("faq-1")), "Expand First")
+button(onClick(toggleDetails("faq-1")), "Toggle First")"""),
 
             h3Title("Progress Bar"),
             para("Display progress of a task."),

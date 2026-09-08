@@ -5,7 +5,7 @@ JWeb provides a type-safe DSL for building HTML.
 ## Basic Usage
 
 ```java
-import static com.osmig.Jweb.framework.elements.Elements.*;
+import static jweb.El.*;
 
 // Simple elements
 div()
@@ -90,7 +90,7 @@ button(
 Using the Actions DSL for type-safe event handling:
 
 ```java
-import static com.osmig.Jweb.framework.js.Actions.*;
+import static jweb.Js.*;
 
 // Click with action
 button(
@@ -148,66 +148,40 @@ form(
 ### Forms
 - `form()`, `input()`, `textarea()`, `select()`, `option()`, `button()`, `label()`, `fieldset()`, `legend()`
 
-## Form Input Builders
+## Forms
 
-Type-safe form input builders for common input types:
+A record is the form: it declares the fields, their types and their rules,
+and the same record renders the form and binds the submission back to a typed
+value. See [templates.md](./templates.md) and
+[validation.md](./validation.md) for the full picture; in short:
 
 ```java
-import static com.osmig.Jweb.framework.elements.Elements.*;
+public record SignupForm(
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Password @Form.Length(min = 8) String password) {}
 
-// Text inputs
-textInput("username")                    // <input type="text" name="username">
-textInput("search", "Search...")         // With placeholder
-emailInput("email")                      // <input type="email" name="email">
-passwordInput("password")                // <input type="password" name="password">
-numberInput("age")                       // <input type="number" name="age">
-telInput("phone")                        // <input type="tel" name="phone">
-urlInput("website")                      // <input type="url" name="website">
-searchInput("q")                         // <input type="search" name="q">
+form(SignupForm.class)
+    .action("/signup")
+    .submit("Sign up")
 
-// Selection inputs
-checkbox("remember", "Remember me")       // Checkbox with label
-radio("plan", "basic", "Basic Plan")      // Radio with value and label
-
-// Date/time inputs
-dateInput("birthdate")                    // <input type="date" name="birthdate">
-timeInput("startTime")                    // <input type="time" name="startTime">
-datetimeInput("appointment")              // <input type="datetime-local" name="appointment">
-
-// Other inputs
-hiddenInput("csrf", token)                // <input type="hidden" name="csrf" value="...">
-fileInput("document")                     // <input type="file" name="document">
-colorInput("theme")                       // <input type="color" name="theme">
-rangeInput("volume", 0, 100)              // <input type="range" name="volume" min="0" max="100">
-
-// Field wrapper (label + input + error)
-field("Email", emailInput("email").required())
-field("Password", passwordInput("pwd"), "Must be 8+ characters")
+// app.post("/signup", req -> { Form.Bound<SignupForm> bound = Form.bind(SignupForm.class, req); ... });
 ```
 
-### Chaining Input Methods
+An input outside a `<form>` is just the element with its attributes — no
+builder needed:
 
 ```java
-textInput("username")
-    .id("user-input")
-    .required()
-    .minLength(3)
-    .maxLength(50)
-    .pattern("[a-z]+")
-    .autocomplete("username")
-    .build()
-
-numberInput("quantity")
-    .min(1)
-    .max(100)
-    .step(1)
-    .value("1")
-    .build()
+input(type("email"), name("email"), id("email"), placeholder("you@example.com"), required())
+input(type("checkbox"), name("remember"), id("remember"), value("yes")), label(for_("remember"), "Remember me")
+input(type("radio"), name("plan"), id("plan-basic"), value("basic")), label(for_("plan-basic"), "Basic Plan")
+input(type("hidden"), name("csrf"), value(token))
+input(type("range"), name("volume"), min("0"), max("100"))
 ```
 
 ## Batch Class Application
 
-Apply multiple classes at once using `classes()`:
+Apply multiple classes at once using `classes()`, which joins parts and skips
+nulls, blanks, and non-matching `when(...)` branches:
 
 ```java
 // Multiple classes
@@ -215,17 +189,15 @@ div(classes("card", "featured", "animate"),
     h2("Featured Item")
 )
 
-// Conditional classes
-div(classes("btn", isActive ? "active" : null, isPrimary ? "primary" : null),
+// Conditional classes — a part may be a String, null, or a when(...) branch
+div(classes("btn", when(isActive, "active"), when(isPrimary, "primary")),
     "Click me"
 )
 
-// Using class_() with condition
+// The same, built with attrs().classIf(condition, name) — condition first
 div(
-    class_("card"),
-    class_("featured", isFeatured),  // Only added if isFeatured is true
-    class_("disabled", isDisabled),
-    text("Card content")
+    attrs().cls("card").classIf(isFeatured, "featured").classIf(isDisabled, "disabled"),
+    "Card content"
 )
 ```
 
@@ -241,13 +213,18 @@ div(
     when(isAdmin, () -> button("Admin Panel"))
 )
 
-// Using ifElse()
+// Either/or, both branches lazy
 div(
-    ifElse(isLoggedIn,
+    when(isLoggedIn,
         () -> span("Welcome, " + username),
         () -> a(href("/login"), "Sign In")
     )
 )
+
+// The chained form, for a branch too long to read as one expression
+when(isLoggedIn)
+    .then(span("Welcome, " + username))
+    .otherwise(a(href("/login"), "Sign In"))
 ```
 
 ## Loops
@@ -280,9 +257,11 @@ div(
 
 ## Text Content
 
+A bare String child is escaped text — there is no separate function to call:
+
 ```java
 // Escaped text (safe)
-p(text("User input: <script>alert('xss')</script>"))
+p("User input: <script>alert('xss')</script>")
 // Renders: <p>User input: &lt;script&gt;alert('xss')&lt;/script&gt;</p>
 
 // Simple text

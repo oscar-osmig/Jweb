@@ -2,10 +2,19 @@
 
 JWeb provides a fluent validation API for validating form data and request inputs.
 
+For a whole HTML form, prefer the record-based form system
+(`jweb.Form`, `@Form.Required`, `Form.bind()` — see
+[templates.md](./templates.md)), which validates and binds in one step. Use
+`FormValidator` directly for one-off fields, JSON bodies, or rules that don't
+map to a single record.
+
 ## Basic Usage
 
 ```java
-import com.osmig.Jweb.framework.validation.*;
+import jweb.FormValidator;
+import jweb.ValidationResult;
+import jweb.Validator;
+import jweb.Validators;
 
 ValidationResult result = FormValidator.create()
     .field("email", request.formParam("email"))
@@ -166,27 +175,28 @@ Validator<String> strongPassword = Validators.required()
     ));
 ```
 
-## Validation Exception
+## Failing fast with an exception
 
-Throw validation errors as exceptions:
+For an API route, throwing carries the messages to the error middleware, which
+turns them into a 422 with the field errors in the body:
 
 ```java
+import com.osmig.Jweb.framework.error.ValidationException;   // no short name yet
+
 app.post("/api/users", req -> {
     ValidationResult result = FormValidator.create()
-        .field("email", req.formParam("email"))
-            .required()
-            .email()
+        .field("email", req.formParam("email"), f -> f.required().email())
         .validate();
 
-    if (result.hasErrors()) {
-        throw new ValidationException(result);
-    }
+    if (result.hasErrors()) throw new ValidationException(result);
 
     // Process valid data...
 });
 ```
 
-The `ErrorHandler` middleware will convert this to a proper error response.
+For an HTML form, prefer `Form.bind(...)` and re-render with
+`form(X.class).errors(bound)` — the user sees the messages next to the fields
+instead of an error page.
 
 ## JSON API Validation
 
@@ -216,23 +226,34 @@ app.post("/api/users", req -> {
 
 ## Displaying Errors in Templates
 
+A record form renders its own messages — pass the binding result and every field
+gets its message, `aria-invalid`, a summary, and the value the user typed:
+
+```java
+public record Register(@Form.Required @Form.Email String email) {}
+
+form(Register.class).action("/register").errors(bound).submit("Register")
+```
+
+Hand-built markup reads the `ValidationResult` itself:
+
 ```java
 public class RegisterPage implements Template {
-    private final Map<String, List<String>> errors;
+    private final ValidationResult errors;
 
-    public RegisterPage(Map<String, List<String>> errors) {
-        this.errors = errors != null ? errors : Map.of();
+    public RegisterPage(ValidationResult errors) {
+        this.errors = errors != null ? errors : ValidationResult.valid();
     }
 
     @Override
     public Element render() {
         return form(method("post"), action("/register"),
-            div(class_("field"),
+            div(cls("field"),
                 label(for_("email"), "Email"),
-                input(type("email"), name("email"), id("email")),
-                when(errors.containsKey("email"), () ->
-                    span(class_("error"), errors.get("email").get(0))
-                )
+                input(type("email"), name("email"), id("email"),
+                    attrs().aria("invalid", errors.hasErrors("email") ? "true" : "false")),
+                when(errors.hasErrors("email"),
+                    span(cls("error"), errors.getFirstError("email")))
             ),
             button(type("submit"), "Register")
         );

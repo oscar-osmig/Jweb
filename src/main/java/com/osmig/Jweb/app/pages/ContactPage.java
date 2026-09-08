@@ -1,28 +1,20 @@
 package com.osmig.Jweb.app.pages;
 
+import com.osmig.Jweb.app.forms.ContactForm;
 import jweb.Element;
-import jweb.Csrf;
-import jweb.CsrfToken;
 import jweb.Template;
 
 import static jweb.El.*;
 import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
-import static com.osmig.Jweb.app.forms.FormComponents.*;
 
 /**
- * Contact page. The form is a progressive fragment swap: no JavaScript is
- * written here — the JWeb runtime POSTs the form and swaps the returned
- * status fragment into #form-status. Without JS the form still submits
- * natively to the same route.
+ * Contact page. The whole form is the {@link ContactForm} record: labels,
+ * control types, the CSRF hidden field and the per-field error slots all come
+ * from it. The submit is a progressive fragment swap — no JavaScript is written
+ * here; without JS the form still posts natively to the same route.
  */
 public class ContactPage implements Template {
-
-    private final CsrfToken csrfToken;
-
-    public ContactPage(CsrfToken csrfToken) {
-        this.csrfToken = csrfToken;
-    }
 
     @Override
     public Element render() {
@@ -31,17 +23,16 @@ public class ContactPage implements Template {
             h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT), "Get in Touch"),
             p(style().marginTop(SP_4).color(TEXT_LIGHT).lineHeight(1.7),
                 "Have questions, feedback, or ideas? We'd love to hear from you."),
-            form(id("contact-form"),
-                 action("/contact/submit"), method("post"),          // no-JS fallback
-                 swapForm("/contact/submit", "#form-status"),         // progressive swap
-                 stack(SP_4).marginTop(SP_8),
-                Csrf.tokenField(csrfToken),
-                field("Name", "name", "text", "Your name"),
-                field("Email", "email", "email", "you@example.com"),
-                textareaField("Message", "message", "How can we help?", 4),
-                div(id("form-status")),
-                submitButton("Send Message")
-            )
+            div(style().marginTop(SP_8),
+                form(ContactForm.class)
+                    .id("contact-form")
+                    .action("/contact/submit")                     // no-JS fallback
+                    .swapForm("/contact/submit", "#form-status")   // progressive swap
+                    .field("name", f -> f.placeholder("Your name").autocomplete("name"))
+                    .field("email", f -> f.placeholder("you@example.com").autocomplete("email"))
+                    .field("message", f -> f.placeholder("How can we help?"))
+                    .submit("Send Message")),
+            div(id("form-status"), style().marginTop(SP_4))
         );
     }
 }

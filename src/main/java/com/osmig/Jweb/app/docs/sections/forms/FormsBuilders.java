@@ -8,76 +8,119 @@ public final class FormsBuilders {
 
     public static Element render() {
         return section(
-            h3Title("Form Input Builders"),
-            para("JWeb provides type-safe input builders with validation and styling built-in."),
-            codeBlock("""
+            before("v3.0.0",
+                h3Title("Form Input Builders"),
+                para("JWeb provides type-safe input builders with validation and styling built-in."),
+                codeBlock("""
 import jweb.Input;
 
 // Fluent input builders
 Input.text("username")
-Input.text("fullName").placeholder("John Doe")
-
-// Email with validation
 Input.email("email").required()
+Input.password("password").minLength(8).required()
 
-// Password with constraints
-Input.password("password")
-    .minLength(8)
-    .required()
-
-// Number inputs
-Input.number("age").min(0).max(120)
-Input.number("price").step("0.01")"""),
-
-            h3Title("Labeled Fields"),
-            para("The field() helper wraps an input with a label wired to its id."),
-            codeBlock("""
-import static jweb.El.*;
-
-// Basic text field
+// Labeled fields
 field("Full Name", textInput("name"))
+field("Email Address", emailInput("email", "user@example.com"))""")),
 
-// Email field with placeholder
-field("Email Address", emailInput("email", "user@example.com"))
+            since("v3.0.0",
+                h3Title("A Form Is a Record"),
+                para("form(SomeRecord.class) renders the whole form: one labelled field per "
+                     + "record component, the control type read from the Java type, the CSRF "
+                     + "hidden field taken from the current request, and a submit button. "
+                     + "The same record validates the submission on the server, so the rules "
+                     + "are written once."),
+                codeBlock("""
+public record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
 
-// Password field
-field("Password", passwordInput("password"))
+// Render
+form(Contact.class)
+    .action("/contact")
+    .submit("Send message")"""),
 
-// Number field
-field("Quantity", numberInput("quantity"))"""),
+                h3Title("Component Type to Control"),
+                para("The Java type picks the control; the hints refine it."),
+                codeBlock("""
+String                       -> <input type="text">
+@Form.Email String           -> <input type="email">   + email validation
+@Form.Password String        -> <input type="password">
+@Form.Multiline String       -> <textarea>
+int, long, Integer, Long     -> <input type="number">
+double, float, BigDecimal    -> <input type="number" step="any">
+boolean, Boolean             -> <input type="checkbox">
+an enum                      -> <select> over its constants
+LocalDate / LocalTime        -> <input type="date"> / type="time">
+LocalDateTime                -> <input type="datetime-local">
+UploadedFile                 -> <input type="file">, form becomes multipart"""),
 
-            h3Title("Checkbox and Radio"),
+                h3Title("Overriding a Field"),
+                para("field(name, f -> ...) changes how a field is presented — label, "
+                     + "placeholder, help text, control type, rows. The rules (required, "
+                     + "email, length) stay on the record, so the browser and the server "
+                     + "can never disagree about them."),
+                codeBlock("""
+form(Contact.class)
+    .action("/contact")
+    .field("email", f -> f.label("Your email")
+                          .placeholder("you@example.com")
+                          .autocomplete("email"))
+    .field("message", f -> f.rows(6).help("Markdown is fine."))
+    .submit("Send message")"""),
+
+                h3Title("Binding and Errors"),
+                para("Form.bind reads the submitted values, validates them against the same "
+                     + "record, and hands back the value or the messages. Passing the result "
+                     + "to errors(...) re-renders the form with the user's input, per-field "
+                     + "messages, aria-invalid on the controls, and a summary."),
+                codeBlock("""
+app.post("/contact", req -> {
+    Form.Bound<Contact> submitted = Form.bind(Contact.class, req);
+    if (!submitted.ok()) {
+        return form(Contact.class)
+            .action("/contact")
+            .errors(submitted)          // messages + the values as typed
+            .submit("Send message");
+    }
+    Contact contact = submitted.value();
+    messages.save(contact);
+    return p("Thanks!");
+});"""),
+
+                h3Title("Progressive Submission"),
+                para("swapForm posts over fetch and swaps the returned fragment into a "
+                     + "target; the plain action() keeps working with JavaScript off."),
+                codeBlock("""
+form(Contact.class)
+    .id("contact-form")
+    .action("/contact/submit")                    // no-JS fallback
+    .swapForm("/contact/submit", "#form-status")  // progressive swap
+    .submit("Send Message")"""),
+
+                h3Title("Styling"),
+                para("The form emits stable class names — jweb-form, jweb-field, jweb-label, "
+                     + "jweb-control, jweb-help, jweb-error, jweb-errors, jweb-submit. "
+                     + "Form.styles() is a ready-made stylesheet for them; drop it in the head "
+                     + "once and override what you like."),
+                codeBlock("""
+head(
+    style(Form.styles()),
+    style(stylesheet()
+        .rule(".jweb-submit", style().backgroundColor(BRAND))
+        .build())
+)""")),
+
+            h3Title("Selects Without a Record"),
+            para("Outside a record form, a select is elements all the way down."),
             codeBlock("""
-// Single checkbox (Input builder)
-Input.checkbox("terms")
-Input.checkbox("newsletter").checked()
-
-// Radio group — same name, different values
-div(
-    label(for_("size-s"), "Small"),
-    Input.radio("size", "s").id("size-s"),
-    label(for_("size-m"), "Medium"),
-    Input.radio("size", "m").id("size-m").checked(),
-    label(for_("size-l"), "Large"),
-    Input.radio("size", "l").id("size-l")
-)"""),
-
-            h3Title("Select Dropdown"),
-            codeBlock("""
-// Labeled select
-field("Country", select(name("country"), id("country"),
-    option(value("us"), "United States"),
-    option(value("uk"), "United Kingdom"),
-    option(value("ca"), "Canada")
-))
-
-// With groups
-select(name("car"),
-    optgroup(attr("label", "Swedish Cars"),
+select(name("car"), id("car"),
+    optgroup(attrs().label("Swedish Cars"),
         option(value("volvo"), "Volvo"),
         option(value("saab"), "Saab")
     ),
-    optgroup(attr("label", "German Cars"),
+    optgroup(attrs().label("German Cars"),
         option(value("mercedes"), "Mercedes"),
         option(value("audi"), "Audi")
     )
@@ -88,7 +131,8 @@ select(name("skills"), attrs().multiple(),
     each(skillsList, s -> option(value(s), s))
 )"""),
 
-            docTip("Input builders automatically generate IDs and wire up labels for accessibility.")
+            docTip("The record is the single source of truth: it renders the form, states "
+                   + "the rules, and is what you get back from Form.bind.")
         );
     }
 }

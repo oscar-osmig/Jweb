@@ -253,24 +253,6 @@ public class Tag implements Element, HtmlAttributes<Tag> {
         return this;
     }
 
-    /**
-     * Conditionally add one of two children.
-     * div().ifElse(isLoggedIn, () -> span().text("Welcome"), () -> a().href("/login").text("Sign In"))
-     *
-     * @deprecated Use {@code .when(cond, ...)} twice, or
-     *             {@code .child(match(cond(c, a), otherwise(b)))} instead.
-     */
-    @Deprecated
-    public Tag ifElse(boolean condition,
-                      java.util.function.Supplier<Element> ifTrue,
-                      java.util.function.Supplier<Element> ifFalse) {
-        Element el = condition ? ifTrue.get() : ifFalse.get();
-        if (el != null) {
-            children.add(el.toVNode());
-        }
-        return this;
-    }
-
     // ==================== Getters ====================
 
     public String getTagName() { return tagName; }
@@ -393,6 +375,31 @@ public class Tag implements Element, HtmlAttributes<Tag> {
     public static Tag create(String tagName, Object... items) {
         Map<String, String> attrs = extractAttrs(items);
         List<VNode> children = toVNodes(items);
+        warnOnNestedTitle(tagName, children);
         return new Tag(tagName, attrs, children);
+    }
+
+    /** Parents a {@code <title>} element legitimately belongs to. */
+    private static final java.util.Set<String> TITLE_PARENTS =
+        java.util.Set.of("head", "html", "svg", "g", "symbol", "defs", "a", "use");
+
+    private static final System.Logger LOG = System.getLogger(Tag.class.getName());
+
+    /**
+     * {@code title(...)} is the {@code <title>} element, so {@code button(title("Save"))}
+     * silently nests a document title where a tooltip was meant. The compiler
+     * cannot catch it — a Tag is a valid child anywhere — so say it out loud once.
+     */
+    private static void warnOnNestedTitle(String tagName, List<VNode> children) {
+        if (TITLE_PARENTS.contains(tagName)) return;
+        for (VNode child : children) {
+            if (child instanceof VElement element && "title".equals(element.getTag())) {
+                LOG.log(System.Logger.Level.WARNING,
+                    () -> "<title> nested inside <" + tagName + ">: title(\"…\") is the document "
+                        + "title element. For the tooltip attribute use " + tagName
+                        + "(attrs().title(\"…\"), …).");
+                return;
+            }
+        }
     }
 }

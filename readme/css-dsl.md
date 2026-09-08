@@ -52,16 +52,6 @@ div(attrs()
     content
 )
 
-// Fluent chain with .done()
-div(attrs()
-    .style()
-        .display(flex)
-        .padding(px(20))
-    .done()
-    .class_("card"),
-    content
-)
-
 // Shortcuts
 div(attrs().style(s -> s
     .size(px(100))                          // width + height: 100px
@@ -98,7 +88,7 @@ public static Style<?> brandFlow() {
 }
 
 // Anywhere:
-button(attrs().style().padding(SP_3).apply(brandFlow()).color(white).done(), ...)
+button(attrs().style(s -> s.padding(SP_3).apply(brandFlow()).color(white)), ...)
 ```
 
 Related helpers that kill common `prop("...")` strings:
@@ -166,16 +156,23 @@ Also new: `font("italic bold 14px/1.5 Georgia, serif")` (the `font` shorthand), 
 
 ### Bare styles as element arguments
 
-When an element only needs styling, pass `style()` directly — no
-`attrs().style()....done()` ceremony, and it composes with `Attr` shortcuts:
+When an element only needs styling, pass `style()` directly — it composes with `Attr`
+shortcuts, and it is now the only spelling: the `attrs().style()` starter and the
+`.done()` that ended it are gone in 3.0.
 
 ```java
-// Before
+// Before (2.2.3)
 div(attrs().style().padding(SP_4).color(TEXT).done(), text("hi"))
 
 // After
-div(style().padding(SP_4).color(TEXT), text("hi"))
-div(class_("card"), id("hero"), style().margin(zero), p("content"))
+div(style().padding(SP_4).color(TEXT), "hi")
+div(cls("card"), id("hero"), style().margin(zero), p("content"))
+```
+
+Inside an `attrs()` chain the style is a lambda, which keeps the chain going:
+
+```java
+div(attrs().cls("card").style(s -> s.display(flex).gap(rem(1))).id("main"), content)
 ```
 
 Use `attrs()` when you need chained event handlers or many attributes.

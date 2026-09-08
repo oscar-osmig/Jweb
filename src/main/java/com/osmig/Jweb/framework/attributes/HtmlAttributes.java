@@ -121,21 +121,42 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
     }
 
     /**
-     * Fluent conditional class adding.
-     * More readable than addClass(boolean, String) for simple conditions.
+     * Adds a class when the condition holds — condition first, the way it
+     * reads out loud:
      *
-     * <p>Example:</p>
      * <pre>
-     * attrs().class_("btn").classIf("active", isActive).classIf("disabled", isDisabled)
+     * attrs().cls("btn").classIf(isActive, "active").classIf(isDisabled, "disabled")
      * </pre>
+     *
+     * @param condition whether to add the class
+     * @param className the class name to add
+     * @return this for chaining
+     */
+    default SELF classIf(boolean condition, String className) {
+        return condition ? addClass(className) : self();
+    }
+
+    /**
+     * Adds a class when the condition holds.
      *
      * @param className the class name to add if condition is true
      * @param condition whether to add the class
      * @return this for chaining
+     * @deprecated Use {@link #classIf(boolean, String)} — the condition reads
+     *             first, matching {@code when(cond, ...)} everywhere else.
      */
+    @Deprecated
     default SELF classIf(String className, boolean condition) {
-        return condition ? addClass(className) : self();
+        return classIf(condition, className);
     }
+
+    /**
+     * The class attribute — the everyday spelling of {@link #class_(String)}.
+     *
+     * @param value the CSS class(es)
+     * @return this for chaining
+     */
+    default SELF cls(String value) { return set("class", value); }
 
     /**
      * Adds class based on ternary condition.
@@ -168,12 +189,13 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
     default SELF style(jweb.CSSValue style) { return set("style", style.css()); }
 
     /**
-     * Sets inline style using a lambda builder - NO .done() needed!
+     * Sets the inline style from a lambda — the one way to style inside an
+     * {@code attrs()} chain, and the chain keeps going afterwards.
      *
      * <p>Example:</p>
      * <pre>
      * attrs()
-     *     .class_("card")
+     *     .cls("card")
      *     .style(s -&gt; s.display(flex).padding(px(10)).backgroundColor(white))
      *     .id("main")
      * </pre>
@@ -189,8 +211,37 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
 
     // ==================== Common Attributes ====================
 
-    /** Sets the title attribute (tooltip). @param value the title text @return this for chaining */
+    /**
+     * Sets the title attribute (tooltip).
+     *
+     * <p>This is the only way to reach the attribute: the bare {@code title(...)}
+     * static is the {@code <title>} <em>element</em>, so
+     * {@code button(attrs().title("Save"), "Save")} is the tooltip and
+     * {@code button(title("Save"), ...)} would nest a document title.</p>
+     *
+     * @param value the title text
+     * @return this for chaining
+     */
     default SELF title(String value) { return set("title", value); }
+
+    /**
+     * Sets the label attribute of {@code <option>} / {@code <optgroup>} /
+     * {@code <track>}: {@code optgroup(attrs().label("Cars"), ...)}.
+     *
+     * @param value the label text
+     * @return this for chaining
+     */
+    default SELF label(String value) { return set("label", value); }
+
+    /**
+     * Sets the cite attribute of {@code <blockquote>} / {@code <q>} /
+     * {@code <ins>} / {@code <del>} — the source URL:
+     * {@code blockquote(attrs().cite(url), "…")}.
+     *
+     * @param value the source URL
+     * @return this for chaining
+     */
+    default SELF cite(String value) { return set("cite", value); }
     /** Sets the href attribute for links. @param value the URL @return this for chaining */
     default SELF href(String value) { return set("href", value); }
     /** Sets the target attribute for links. @param value the target window/frame @return this for chaining */
@@ -248,6 +299,10 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
     default SELF checked(boolean isChecked) { return isChecked ? checked() : self(); }
     /** Adds the required boolean attribute. @return this for chaining */
     default SELF required() { return set("required", null); }
+    /** Adds the selected boolean attribute for {@code <option>}. @return this for chaining */
+    default SELF selected() { return set("selected", null); }
+    /** Conditionally adds the selected attribute. @param isSelected whether to select @return this for chaining */
+    default SELF selected(boolean isSelected) { return isSelected ? selected() : self(); }
     /** Adds the readonly boolean attribute. @return this for chaining */
     default SELF readonly() { return set("readonly", null); }
     /** Adds the hidden boolean attribute. @return this for chaining */

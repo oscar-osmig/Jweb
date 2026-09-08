@@ -43,8 +43,17 @@ By design (know them, don't "fix" them):
 - **Under `Js.*`, `fetch(url)`, `call(fn)` and `sleep(ms)` are the page-level `Action`
   forms.** The expression-level twins are `fetch(str(url))` / `fetch(v("url"))`,
   `JS.call(fn, args...)` and `delay(ms)`.
-- **Typed input helpers stay in `Input.*`** (`Input.text("name")`, `Input.email(...)`) — they
-  can't be re-exported from `El` because the names collide with `El.text()` / `El.time()` etc.
+- **There are no typed input helpers any more.** `jweb.Input` and the 23
+  `textInput`/`emailInput`/`field(...)` statics were deleted in 3.0: a form is a record
+  (`form(Contact.class)`, see [HTML DSL](./html-dsl.md#forms-a-record-is-the-form)), and
+  anything outside a form is `input(type("text"), name("q"), id("q"))`.
+- **Three attributes have no free static name**, because an element already owns it:
+  `title`, `label` and `cite` are `attrs().title(...)` / `attrs().label(...)` /
+  `attrs().cite(...)`. `button(title("x"), …)` compiles and nests a `<title>` element —
+  the renderer logs a warning when a `<title>` appears outside a head or SVG parent.
+- **Three SVG elements carry an `svg` prefix** so the four wildcard imports stay
+  unambiguous: `svgText` (plain `text` is the text node), `svgLinearGradient` and
+  `svgRadialGradient` (the plain names are CSS values).
 - **`jweb.yaml` sets `prefetch.hover-delay: 300`** while the code default is 100 — either is
   fine, just know yaml wins.
 - **Inline handler corners that stay inline on purpose.** Every handler form is CSP-safe
@@ -90,7 +99,7 @@ The whole user-facing DSL moved behind a new top-level `jweb` package (spark/j2h
 `jweb.El` (HTML: union of legacy `El`+`Elements`), `jweb.Css` (union of `CSS`+`CSSUnits`+
 `CSSColors`+`CSSGrid`+`CSSAnimations`+`CSSVariables` + `media()`/`keyframes()`/`stylesheet()`),
 `jweb.Js` (`JS`+`Events`+`Runtime`+`Async`), `jweb.Actions`, `jweb.State`, `jweb.UI`,
-`jweb.Layout`, `jweb.Input`, `jweb.Form`, `jweb.Mongo`/`Schema`/`Doc`, and the types
+`jweb.Layout`, `jweb.Form`, `jweb.Mongo`/`Schema`/`Doc`, and the types
 `jweb.Element`, `jweb.Template`, `jweb.Style`, `jweb.CSSValue`, `jweb.JWeb`, `jweb.JWebRoutes`.
 
 - The legacy `com.osmig.Jweb.framework.*` entry points are `@Deprecated` aliases — **existing
@@ -265,7 +274,7 @@ works end-to-end:
 - **`OpenApi.scan(package)`** — real classpath scan for `@REST` classes.
 - **Javadocs corrected** — `JWeb`/`JWebAutoConfiguration` (`@REST` et al.), `Csrf`
   (`Middlewares.csrf()`), `Jwt` path scoping, `Toast.toastScript()`, `Ref` (`inputRef.focus()`),
-  `FormModel.bindFromParameterMap`, `ErrorHandler` real method names.
+  `Form.bind`, `ErrorHandler` real method names.
 
 ## ✅ Routing / dispatch (fixed)
 

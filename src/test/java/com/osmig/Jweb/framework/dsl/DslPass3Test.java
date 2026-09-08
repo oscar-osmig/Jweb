@@ -165,6 +165,88 @@ class DslPass3Test {
         assertEquals("span 2", span(2).css());
     }
 
+    /**
+     * The 3.0 additions, all reached under the four wildcards at once — the
+     * point of this test is that none of these names became ambiguous.
+     */
+    @Test
+    void theNewStaticsCoexistWithTheFourWildcards() {
+        Attr classAttr = cls("card");                    // vs jweb.css.Selectors.cls
+        Attr joined = classes("chip", when(true, "on")); // vs Utility.classes()
+        Attr chosen = selected();
+        Attr encoding = enctype("multipart/form-data");
+        Object either = when(true, p("a"), p("b"));      // vs Three.when
+        Object chained = when(false).then(p("a")).otherwise(p("b"));
+        Tag svgTextNode = svgText("label");              // text(...) is the text node
+        Tag gradient = svgLinearGradient(id("g"));       // linearGradient(...) is a CSS value
+        Object cssGradient = linearGradient(hex("#fff"), hex("#000"));
+        Tag svgFilter = filter(id("blur"), feGaussianBlur(attr("stdDeviation", "2")));
+        Tag svgMask = mask(id("m"), rect(attrs().width(10).height(10)));
+        Tag clip = clipPath(id("c"), circle(attrs().r("5")));
+        Object dialogAction = openDialog("confirm");
+        Object detailsAction = toggleDetails("faq");
+
+        assertEquals("class", classAttr.name());
+        assertEquals("chip on", joined.value());
+        assertEquals("selected", chosen.name());
+        assertEquals("<form enctype=\"multipart/form-data\"></form>", form(encoding).toHtml());
+        assertEquals("<p>a</p>", ((jweb.Element) either).toHtml());
+        assertEquals("<p>b</p>", ((jweb.Element) chained).toHtml());
+        assertEquals("<text>label</text>", svgTextNode.toHtml());
+        assertEquals("<linearGradient id=\"g\"></linearGradient>", gradient.toHtml());
+        assertTrue(((CSSValue) cssGradient).css().startsWith("linear-gradient("), cssGradient.toString());
+        assertTrue(svgFilter.toHtml().contains("<feGaussianBlur"), svgFilter.toHtml());
+        assertTrue(svgMask.toHtml().startsWith("<mask id=\"m\">"), svgMask.toHtml());
+        assertTrue(clip.toHtml().startsWith("<clipPath id=\"c\">"), clip.toHtml());
+        assertEquals("document.getElementById('confirm').showModal()",
+            ((jweb.Action) dialogAction).build());
+        assertTrue(((jweb.Action) detailsAction).build().contains("open=!d.open"));
+    }
+
+    @Test
+    void classesJoinsPartsAndSkipsTheOnesThatDidNotMatch() {
+        assertEquals("<div class=\"chip chip-on lg\"></div>",
+            div(classes("chip", when(true, "chip-on"), "lg")).toHtml());
+        assertEquals("<div class=\"chip lg\"></div>",
+            div(classes("chip", when(false, "chip-on"), null, "  ", "lg")).toHtml());
+        assertEquals("<div class=\"btn active\"></div>",
+            div(attrs().cls("btn").classIf(true, "active")).toHtml());
+        assertEquals("<div class=\"btn\"></div>",
+            div(attrs().cls("btn").classIf(false, "active")).toHtml());
+    }
+
+    @Test
+    void whenHasOneShapeForOneBranchAndOneForTwo() {
+        assertEquals("<p>yes</p>", ((jweb.Element) when(true, p("yes"))).toHtml());
+        assertEquals("", ((jweb.Element) when(false, p("yes"))).toHtml());
+        assertEquals("<p>yes</p>", when(true, p("yes"), p("no")).toHtml());
+        assertEquals("<p>no</p>", when(false, p("yes"), p("no")).toHtml());
+        assertEquals("2 new", div(when(true, "2 new", "none")).toHtml().replaceAll("</?div>", ""));
+        assertEquals("<p>lazy</p>",
+            when(true, () -> p("lazy"), () -> p("other")).toHtml());
+
+        // a chain without otherwise() is still an element
+        assertEquals("<p>only</p>", when(true).then(p("only")).toHtml());
+        assertEquals("", when(false).then(p("only")).toHtml());
+        assertEquals("<p>fallback</p>", when(false).then(p("only")).otherwise(p("fallback")).toHtml());
+    }
+
+    @Test
+    void theTitleAttributeLivesOnAttrsBecauseTitleIsAnElement() {
+        assertEquals("<button title=\"Save\">Save</button>",
+            button(attrs().title("Save"), "Save").toHtml());
+        assertEquals("<optgroup label=\"Cars\"></optgroup>", optgroup(attrs().label("Cars")).toHtml());
+        assertEquals("<blockquote cite=\"https://x\"><p>q</p></blockquote>",
+            blockquote(attrs().cite("https://x"), p("q")).toHtml());
+        // the trap the javadoc and the render-time warning call out: title(...) is
+        // the <title> element, so this nests a document title instead of setting
+        // the tooltip
+        assertEquals("<button><title>Save</title>Save</button>",
+            button(title("Save"), "Save").toHtml());
+        // ... and inside a head it is exactly what it should be
+        assertEquals("<head><title>Page</title></head>", head(title("Page")).toHtml());
+    }
+
     // ==================== a String is always text ====================
 
     @Test

@@ -5,15 +5,14 @@
 ## Imports — one facade
 
 ```java
-import static jweb.El.*;   // every element, attribute shortcut, event handler, typed
-                           // input, conditional, popover, SVG shape, state binding
+import static jweb.El.*;   // every element, attribute shortcut, event handler,
+                           // conditional, popover, SVG element, state binding
 ```
 
-`jweb.El` is the union of the legacy `El` + `Elements` facades: every element, `attrs()`
-and the attribute shortcuts (`id`, `class_`, `href`, `src`, `placeholder`, `data`, `aria`,
-`role`, ...), every `on*` handler, the swap family, `ref`, `bind`, typed inputs
-(`textInput`, `emailInput`, `checkbox`, `radio`, ...), `when`, popovers, `icon`/`appleIcon`,
-and the core SVG shapes.
+One import. `jweb.El` carries every element, `attrs()` and the attribute shortcuts (`id`,
+`cls`, `href`, `src`, `placeholder`, `data`, `aria`, `role`, ...), every `on*` handler, the
+swap family, `ref`, `bind`, `when`/`classes`/`each`, popovers, `icon`/`appleIcon`, the
+dialog and details Actions, the whole SVG element set, and `form(SomeRecord.class)`.
 
 It coexists with the other three DSL imports — `jweb.Css.*`, `jweb.Js.*`, `jweb.Three.*` —
 without an ambiguous name between them.
@@ -24,7 +23,7 @@ without an ambiguous name between them.
 `style()` builder and children mix freely, in any order:
 
 ```java
-div(class_("card"), id("main"),
+div(cls("card"), id("main"),
     h1("Title"),
     p("Body"))
 
@@ -49,16 +48,10 @@ No element reads its first String as an attribute any more (`a(href, text)`,
 [Migrating to 3.0](./../dsl-simplification-3.md)). The exceptions are void elements, which
 cannot hold text, so their Strings are their most common attributes: `img(src)`,
 `img(src, alt)`, `meta(name, content)`, `input(type, name)`; and the code-bearing
-`inlineScript(js)` / `style(css)`, whose String is emitted verbatim. `text("…")` still
-exists when you want to say it explicitly.
+`inlineScript(js)` / `style(css)`, whose String is emitted verbatim.
 
-Still separate on purpose:
-
-```java
-import static jweb.Input.*;                  // typed input DSL (names clash with El)
-import static jweb.el.DialogHelper.*;        // dialog Actions
-import static jweb.el.DetailsHelper.*;       // details Actions
-```
+`text("…")` is deprecated — the bare String *is* the escaped text node. It only survives
+for the rare spot that needs an `Element` value where no element factory is in reach.
 
 > `data(name, value)` builds a `data-*` **attribute**. The rare `<data>` and `<var>`
 > elements are `tag("data", value("SKU-1"), "Widget")` and `tag("var", "x")` — their
@@ -68,12 +61,12 @@ import static jweb.el.DetailsHelper.*;       // details Actions
 
 ```java
 // Function style — attributes, handlers and children in one call
-div(class_("card"), id("main"),
+div(cls("card"), id("main"),
     h1("Title"),
     p("Body"))
 
 // Builder style — chain from an empty element
-div().class_("card").id("main")
+div().cls("card").id("main")
      .child(h1().text("Title"))
      .child(p().text("Body"))
 ```
@@ -84,7 +77,7 @@ attribute surface (the `HtmlAttributes` interface, built on a single `set(name, 
 so anything you can set on one you can set on the other, and a chain keeps its exact type:
 
 ```java
-Tag row = td().colspan(2).class_("num").text("42");
+Tag row = td().colspan(2).cls("num").text("42");
 Attributes a = attrs().rel("noopener").tabindex(1).targetBlank();
 ```
 
@@ -146,11 +139,11 @@ p("Clicks: ", span(bind(clicks), clicks.get()))    // patched live on every chan
 builder returned by `attrs()`, for the long tail and for chaining several unusual ones:
 
 ```java
-div(class_("card"), id("main"), data("user-id", "123"), aria("label", "User card"), ...)
+div(cls("card"), id("main"), data("user-id", "123"), aria("label", "User card"), ...)
 
 div(attrs()
     .rel("noopener").tabindex(1)
-    .classIf("active", isActive)            // adds "active" when true
+    .classIf(isActive, "active")            // condition first, like when(...)
     .classToggle(isOpen, "open", "closed")  // one or the other
     .set("custom-attr", "v"),               // any attribute
     content)
@@ -165,18 +158,51 @@ div(attrs()
 dialog/details (`open()`), iframe (`sandbox`, `allow`).
 
 Attribute names use exact HTML spelling (`fetchpriority`, `popovertarget`, `minlength`).
-A trailing underscore marks a Java keyword and nothing else: `class_`, `for_`. The `title`
-and `style` attributes have no underscore shortcut — `attrs().title(...)`, and a bare
-`style()` builder argument.
+A trailing underscore marks a Java keyword and nothing else: `class_`, `for_`.
+
+Four attributes have no free static name because an element already owns it, so they live
+on `attrs()` only: **`title`**, **`label`**, **`cite`** and **`style`**.
+
+```java
+button(attrs().title("Save"), "Save")        // the tooltip
+button(title("Save"), "Save")                // NOT the tooltip — nests a <title> element
+optgroup(attrs().label("Swedish Cars"), option(value("volvo"), "Volvo"))
+blockquote(attrs().cite("https://example.com/source"), p("Quoted"))
+div(style().padding(px(8)), "hi")            // the style builder is its own argument
+```
+
+`selected()` and `enctype(...)` are free statics, like `required()` and `checked()`.
+
+`title(...)` is the `<title>` **element**. `button(title("x"), ...)` compiles and silently
+nests a document title inside the button; the renderer logs a warning when a `<title>`
+turns up outside a head or SVG parent.
+
+### Class names
+
+`cls("a b")` is the everyday spelling; `class_` is the same attribute under the
+trailing-underscore keyword rule. `classes(...)` joins its parts and drops the ones that
+did not match, so a class list is never built with `+` and a ternary:
+
+```java
+div(cls("card"))
+
+String size = "lg";
+div(classes("chip", when(active, "chip-on"), size))     // class="chip chip-on lg"
+div(classes("chip", when(false, "chip-on"), size))      // class="chip lg"
+div(attrs().cls("chip").classIf(active, "chip-on"))     // the same, on an attrs() chain
+```
 
 ### Inline styles
 
 ```java
 div(style().padding(SP_4).color(TEXT), "hi")              // bare builder as an argument
-div(class_("card"), id("hero"), style().margin(zero), p("content"))
+div(cls("card"), id("hero"), style().margin(zero), p("content"))
 
-div(attrs().class_("card").style(s -> s.display(flex).gap(rem(1))), ...)   // inside attrs()
+div(attrs().cls("card").style(s -> s.display(flex).gap(rem(1))).id("main"), ...)  // in a chain
 ```
+
+There is no `attrs().style()` starter and no `.done()`: a style is either its own element
+argument or a lambda inside an `attrs()` chain.
 
 ### Builder shortcuts that replace quoted strings
 
@@ -190,31 +216,109 @@ svg(viewBox(0, 0, 24, 24), attrs().width(24).height(24),
     path(d("M9 21H5a2...")))
 ```
 
-## Fluent builders: `Input`, `Button`, `Form`
+## SVG
 
-Beyond `input(type("email"), name("email"), ...)`, dedicated builders exist:
+The whole SVG element set is on `jweb.El`:
 
-```java
-import jweb.Input;
-import jweb.Button;
-import com.osmig.Jweb.framework.elements.Form;   // the small elements/Form builder
-                                                 // (jweb.Form is the richer forms/Form)
-
-Input.email("email").placeholder("you@example.com").required()
-Input.password("pw").minLength(8)
-Input.range("volume")          // also: text/number/tel/url/search/date/time/color/checkbox/radio/file/hidden
-
-Button.submit("Save")
-Button.of("Cancel").formAction("/cancel")
-
-Form.post("/api/users")
-    .multipart()
-    .add(Input.text("name").required())
-    .add(Button.submit("Create"))
+```
+svg  g  defs  symbol  use  path  rect  circle  ellipse  line  polyline  polygon
+pattern  filter  mask  clipPath  image  stop
+svgText  tspan  textPath
+svgLinearGradient  svgRadialGradient
+animate  animateTransform  animateMotion
+feGaussianBlur  feDropShadow  feColorMatrix
 ```
 
-There is also a much richer `forms/Form` builder (labels, help text, radio groups, selects)
-and `forms/FormModel` (POJO → form) — see [Backend](./backend.md#forms).
+Three carry an `svg` prefix because the plain name is taken by something authors reach
+for more often under the four wildcard imports: `text(...)` is the text node, and
+`linearGradient(...)` / `radialGradient(...)` are CSS values.
+
+```java
+svg(viewBox(0, 0, 100, 50),
+    defs(svgLinearGradient(id("fade"),
+        stop(attrs().set("offset", "0%").set("stop-color", "#6366f1")),
+        stop(attrs().set("offset", "100%").set("stop-color", "#ec4899")))),
+    rect(attrs().width(100).height(50), fill("url(#fade)")),
+    svgText(attrs().x("50").y("30").set("text-anchor", "middle"), "JWeb"))
+```
+
+## Forms: a record is the form
+
+There is one form system, `jweb.Form`, and it starts from a record. The record declares
+the fields and their rules; the same record renders the form, validates the submission,
+and comes back as a typed value.
+
+```java
+public record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+```
+
+```java
+form(Contact.class)
+    .id("contact-form")
+    .action("/contact/submit")                    // works with JavaScript off
+    .swapForm("/contact/submit", "#form-status")  // progressive fragment swap
+    .field("email", f -> f.placeholder("you@example.com").autocomplete("email"))
+    .submit("Send message")
+```
+
+That renders a labelled control per component, the CSRF hidden field taken from the
+current request (no token passing), and a submit button.
+
+The Java type picks the control:
+
+| component type | control |
+| --- | --- |
+| `String` | `<input type="text">` |
+| `@Form.Email String` | `<input type="email">` + email validation |
+| `@Form.Password String` | `<input type="password">` |
+| `@Form.Multiline String` | `<textarea>` |
+| `int`, `long`, `Integer`, `Long` | `<input type="number">` |
+| `double`, `float`, `BigDecimal` | `<input type="number" step="any">` |
+| `boolean`, `Boolean` | `<input type="checkbox">` |
+| an enum | `<select>` over its constants |
+| `LocalDate` / `LocalTime` / `LocalDateTime` | `date` / `time` / `datetime-local` |
+| `UploadedFile` | `<input type="file">`, and the form becomes `multipart/form-data` |
+
+Hints: `@Form.Required`, `@Form.Email`, `@Form.Password`, `@Form.Multiline(rows = 4)`,
+`@Form.Label("Your email")`, `@Form.Length(min = 3, max = 40)`.
+
+The token comes from the request being handled, so a page that renders a form takes no
+arguments. Pass one explicitly with `.csrf(token)` when the form is built outside a
+request.
+
+### Binding and errors
+
+```java
+app.post("/contact/submit", req -> {
+    Form.Bound<Contact> submitted = Form.bind(Contact.class, req);
+    if (!submitted.ok()) {
+        return form(Contact.class)
+            .action("/contact/submit")
+            .errors(submitted)              // messages + the values the user typed
+            .submit("Send message");
+    }
+    store.save(submitted.value());
+    return p("Thanks!");
+});
+```
+
+`Bound` carries `value()` (the record, or `null`), `errors()` (a `ValidationResult` keyed
+by component name), `ok()` and `submitted()` (the raw input). `errors(...)` re-renders
+every field with its message, `aria-invalid` on the control, and a summary above the form.
+`Form.validate(Contact.class, values)` is the same validation without building the record.
+
+`field(name, f -> ...)` only changes presentation — `label`, `placeholder`, `help`,
+`type`, `rows`, `accept`, `autocomplete`, `options`. The rules stay on the record, so the
+browser and the server cannot disagree about them.
+
+### Styling
+
+The form emits stable class names: `jweb-form`, `jweb-field`, `jweb-label`,
+`jweb-control`, `jweb-help`, `jweb-error`, `jweb-errors`, `jweb-submit`. `Form.styles()`
+is a ready-made stylesheet for them — put it in the head once and override what you like.
 
 ## Tag instance API
 
@@ -247,16 +351,14 @@ html(new Head(title), body(new Nav(), main(content), new Footer()))
 ## Modern HTML5 Elements
 
 ```java
-// Dialog (modal) — helpers return Actions
-import static jweb.el.DialogHelper.*;
-
+// Dialog (modal) — the openDialog/closeDialog family on El returns Actions
 dialog(id("confirm-dialog"),
     h2("Confirm Action"),
     p("Are you sure?"),
-    button(onClick(close("confirm-dialog")), "Cancel"),
-    button(onClick(close("confirm-dialog", "confirmed")), "Confirm")
+    button(onClick(closeDialog("confirm-dialog")), "Cancel"),
+    button(onClick(closeDialog("confirm-dialog", "confirmed")), "Confirm")
 )
-button(onClick(showModal("confirm-dialog")), "Open Dialog")
+button(onClick(openDialog("confirm-dialog")), "Open Dialog")
 
 // Details/Summary — name attribute creates an exclusive accordion
 details(name("faq"), summary("Question 1"), p("Answer 1"))
@@ -272,10 +374,10 @@ time(datetime("2026-08-08"), "August 8, 2026")
 tag("data", value("SKU-123"), "Product Widget")
 ```
 
-`DialogHelper`: `showModal`, `show`, `close`, `close(id, returnValue)`, `toggle`,
-`closeOnBackdropClick`, `getReturnValue`, `isOpen`.
-`DetailsHelper`: `open`, `close`, `toggle`, `isOpen`, `openExclusive`, `closeAll`, `openAll`,
-`closeAllBySelector`, `openAllBySelector`.
+`<dialog>`: `openDialog(id)` (modal), `closeDialog(id)`, `closeDialog(id, returnValue)`,
+`toggleDialog(id)`. `<details>`: `openDetails(id)`, `closeDetails(id)`,
+`toggleDetails(id)`. All seven are Actions on `jweb.El` — the name says `Dialog`/`Details`
+because `jweb.Js` already owns `show`, `hide`, `toggle` and `showModal` for plain elements.
 
 ## Popover API
 
@@ -313,7 +415,7 @@ dl(
     dt("CSS"),  dd("Cascading Style Sheets")
 )
 
-figure(class_("code-example"),
+figure(cls("code-example"),
     pre(code("const x = 42;")),
     figcaption("Example: Variable declaration")
 )
@@ -324,10 +426,13 @@ p("Search results for: ", mark("JWeb framework"))
 p("H", sub("2"), "O")
 p("E = mc", sup("2"))
 p(del("old price: $20"), " ", ins("new price: $15"))
-blockquote(attr("cite", "https://example.com/source"), p("Quoted text with a cite URL"))
+blockquote(attrs().cite("https://example.com/source"), p("Quoted text with a cite URL"))
 ```
 
-## Form Enhancements
+## Form markup outside a record
+
+When the fields are not a record — a search box, a filter bar, a datalist — the form
+elements are elements like any other.
 
 ```java
 input(attrs().list("browsers")),
@@ -338,10 +443,10 @@ datalist(id("browsers"),
 )
 
 select(name("car"),
-    optgroup(attr("label", "Swedish Cars"),
+    optgroup(attrs().label("Swedish Cars"),
         option(value("volvo"), "Volvo"),
         option(value("saab"), "Saab")),
-    optgroup(attr("label", "German Cars"),
+    optgroup(attrs().label("German Cars"),
         option(value("bmw"), "BMW"),
         option(value("audi"), "Audi"))
 )
@@ -352,29 +457,37 @@ fieldset(
     input(type("text"), name("name"), id("name"))
 )
 
-// Typed input helpers (the input's id defaults to its name, so label(for_(name), ...) pairs)
-colorInput("theme-color", "#3b82f6")
-dateInput("birthday")
-dateInput("event", "2026-01-01", "2026-12-31")   // with min/max
-timeInput("meeting-time")
-rangeInput("volume", 0, 100, 50)
-// monthInput/weekInput and the submit-button overrides formaction/formmethod/... are in
-// jweb.el.FormEnhancements
+// Every other input is the element with its attributes — there is no second spelling
+input(type("color"), name("theme-color"), id("theme-color"), value("#3b82f6"))
+input(type("date"), name("event"), id("event"), attrs().min("2026-01-01").max("2026-12-31"))
+input(type("range"), name("volume"), id("volume"), attrs().min(0).max(100).value(50))
 ```
 
 ## Conditional Rendering
 
-One shape. `when(condition, element)` renders the element or nothing; the Supplier form
-only builds it when needed — the same `when` the Three DSL uses:
+`when(condition, element)` renders the element or nothing. `when(condition, ifTrue,
+ifFalse)` is the same call one argument longer — so the predicate is never written twice,
+negated. Branches take an `Element`, a `Supplier` lambda (only the taken branch is built),
+or a String (text):
 
 ```java
-when(isLoggedIn, () -> span("Welcome, " + user.getName()))
-when(isLoggedIn, welcomeBanner)
+when(isLoggedIn, () -> span("Welcome, " + user.getName()))   // one branch
+when(isLoggedIn, userMenu(), loginButton())                  // two
+when(unread > 0, unread + " new", "All caught up")           // Strings are text
+```
 
-// Two branches: Java's ternary
-isLoggedIn ? userMenu() : loginButton()
+When a branch is long enough that the argument list stops reading, the chain says the same
+thing down the page. A chain without `otherwise(...)` is still an element:
 
-// Several: a switch expression
+```java
+when(active)
+    .then(span(cls("chip chip-on"), name))
+    .otherwise(a(href("/tag/" + name), cls("chip"), name))
+```
+
+Several branches are what Java's `switch` expression is for:
+
+```java
 switch (role) {
     case ADMIN -> adminPanel();
     case MODERATOR -> modPanel();
@@ -382,15 +495,15 @@ switch (role) {
 }
 ```
 
-`null` children render nothing, so a conditional branch never needs a placeholder. The
-`when(cond).then(...).elif(...).otherwise(...)` chain and `match(cond(...), otherwise(...))`
-are deprecated — Java already has both.
+`null` children render nothing, so a conditional branch never needs a placeholder.
+`match(cond(...), otherwise(...))`, the `.elif(...)` chain and `Tag.ifElse` are gone in
+3.0 — see [Migrating to 3.0](./../dsl-simplification-3.md).
 
 ## Collection Iteration & Fragments
 
 ```java
 ul(each(users, user ->
-    li(class_("user-item"),
+    li(cls("user-item"),
         strong(user.getName()),
         span(" - " + user.getEmail()))
 ))
@@ -411,7 +524,7 @@ tryCatch(() -> riskyComponent.render())   // silent empty fallback
 
 import jweb.ErrorBoundary;
 ErrorBoundary.of(() -> riskyComponent.render())
-    .fallback(err -> div(class_("error"), p(err.getMessage())))
+    .fallback(err -> div(cls("error"), p(err.getMessage())))
     .onError(err -> Log.framework().error("render failed", err));
 ```
 
@@ -437,8 +550,9 @@ See [the CSS DSL](./css-dsl.md#layout-mixins) for the full list.
 ## Raw content & custom tags
 
 ```java
-text("escaped text")                 // VText — the explicit form of a bare String
-raw("<b>trusted html</b>")           // VRaw — no escaping, use with care
+raw("<b>trusted html</b>")           // no escaping, use with care
+                                     // (a bare String is already escaped text;
+                                     //  text("…") is deprecated)
 tag("custom-element", attrs().set("prop", "x"), span("child"))
 
 // Full-response raw payloads (from route handlers):

@@ -7,6 +7,7 @@ import jweb.Middlewares;
 import jweb.OpenApi;
 import jweb.RouteHandler;
 import jweb.Csrf;
+import jweb.Form;
 import jweb.Response;
 import jweb.Session;
 import jweb.api.Component;
@@ -14,6 +15,8 @@ import jweb.api.Range;
 import com.osmig.Jweb.app.api.AdminApi;
 import com.osmig.Jweb.app.api.ContactApi;
 import com.osmig.Jweb.app.api.ExampleApi;
+import com.osmig.Jweb.app.forms.AdminLogin;
+import com.osmig.Jweb.app.forms.ContactForm;
 import com.osmig.Jweb.app.forms.ContactStatus;
 import com.osmig.Jweb.app.layout.Layout;
 import com.osmig.Jweb.app.pages.HomePage;
@@ -49,9 +52,6 @@ public class Routes implements JWebRoutes {
      */
     private static final String PLAIN_TEXT = "text/plain; charset=UTF-8";
 
-    /** The admin login form — both fields optional so a blank submit gets the form back, not a 400. */
-    public record Login(Optional<String> email, Optional<String> token) {}
-
     /** The admin messages view: {@code ?order=oldest&limit=20}, enum by name, bounded. */
     public record MessagesView(Optional<AdminMessagesPage.Order> order,
                                @Range(min = 1, max = 500) Optional<Integer> limit) {}
@@ -62,10 +62,6 @@ public class Routes implements JWebRoutes {
     public Routes(AdminApi adminApi, com.osmig.Jweb.app.api.MessageStore messageStore) {
         this.adminApi = adminApi;
         this.messageStore = messageStore;
-    }
-
-    private static boolean isBlank(String s) {
-        return s == null || s.isBlank();
     }
 
     @Override
@@ -84,27 +80,26 @@ public class Routes implements JWebRoutes {
                "/about", AboutPage.class
            );
 
-        // Contact page needs the request to issue a session-bound CSRF token
+        // The contact form's CSRF token comes from the request the page is
+        // rendered for, so the page itself takes no arguments
         app.get("/contact", ctx -> new Layout("Contact - JWeb",
-            new ContactPage(Csrf.getOrCreateToken(ctx))
+            new ContactPage()
         ));
 
         // Contact form target — returns a status fragment that the runtime
-        // swaps into #form-status (works without JS as a plain POST too)
+        // swaps into #form-status (works without JS as a plain POST too).
+        // ContactForm's annotations are the whole validation: no hand-written
+        // null checks, no length checks.
         app.post("/contact/submit", (RouteHandler) ctx -> {
             if (!Csrf.isValid(ctx)) {
                 return ContactStatus.error("Your session expired — reload the page and try again.");
             }
-            String name = ctx.formParam("name");
-            String email = ctx.formParam("email");
-            String message = ctx.formParam("message");
-            if (isBlank(name) || isBlank(email) || isBlank(message)) {
-                return ContactStatus.error("All fields are required.");
+            Form.Bound<ContactForm> submitted = Form.bind(ContactForm.class, ctx);
+            if (!submitted.ok()) {
+                return ContactStatus.error(submitted.errors().getAllMessages().get(0));
             }
-            if (name.length() > 200 || email.length() > 320 || message.length() > 5_000) {
-                return ContactStatus.error("Message is too long.");
-            }
-            messageStore.save(name.trim(), email.trim(), message.trim());
+            ContactForm contact = submitted.value();
+            messageStore.save(contact.name().trim(), contact.email().trim(), contact.message().trim());
             return ContactStatus.success("Message sent — we'll get back to you soon!");
         });
 
@@ -216,20 +211,24 @@ public class Routes implements JWebRoutes {
             ));
         });
 
-        // Admin login handler: the form binds to the Login record
-        app.post("/only-admin/log/in", Login.class, (ctx, login) -> {
-            String error;
+        // Admin login handler: the form binds to the AdminLogin record; a
+        // blank or malformed submit re-renders the form with its field errors
+        app.post("/only-admin/log/in", (RouteHandler) ctx -> {
+            Form.Bound<AdminLogin> submitted = Form.bind(AdminLogin.class, ctx);
+            String error = null;
             if (!Csrf.isValid(ctx)) {
                 error = "Your session expired — please try again.";
-            } else if (adminApi.login(ctx, login.email().orElse(null), login.token().orElse(null))) {
-                return Response.redirect("/only-admin/messages");
-            } else {
+            } else if (submitted.ok()) {
+                AdminLogin login = submitted.value();
+                if (adminApi.login(ctx, login.email(), login.token())) {
+                    return Response.redirect("/only-admin/messages");
+                }
                 error = adminApi.isConfigured()
                     ? "Invalid email or token"
                     : "Admin login is not configured — set JWEB_ADMIN_TOKEN and JWEB_ADMIN_EMAIL.";
             }
             return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(error, Csrf.getOrCreateToken(ctx))
+                new AdminLoginPage(error, submitted, Csrf.getOrCreateToken(ctx))
             ));
         });
 

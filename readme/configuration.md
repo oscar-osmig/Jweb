@@ -199,7 +199,9 @@ app/
 │   ├── DocComponents/DocStyles/DocsNavScript
 │   └── sections/                 # 21 top-level sections + per-topic subpackages
 ├── forms/
-│   └── FormComponents.java       # field/textareaField/statusBox/submitButton helpers
+│   ├── AdminLogin.java          # the admin sign-in form (a record)
+│   ├── ContactForm.java         # the contact form (a record — it IS the form)
+│   └── ContactStatus.java       # the status fragment the swap target receives
 ├── layout/
 │   ├── Layout.java               # html > Head + body[Nav, main(content), Footer, DevServer.script()]
 │   ├── Head.java                 # meta/title + global Stylesheet + keyframes

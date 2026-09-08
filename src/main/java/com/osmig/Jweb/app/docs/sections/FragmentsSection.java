@@ -32,7 +32,8 @@ public final class FragmentsSection {
             codeBlock("""
                     form(action("/contact/submit"), method("post"),          // no-JS fallback
                             swapForm("/contact/submit", "#form-status"),         // progressive swap
-                        field("Name", "name", "text", "Your name"),
+                        label(for_("name"), "Name"),
+                        input(type("text"), id("name"), name("name"), placeholder("Your name"), required()),
                         div(id("form-status")),
                         button(type("submit"), "Send"))
 

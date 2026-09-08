@@ -28,14 +28,9 @@ import java.util.function.UnaryOperator;
  * // Multiple classes
  * div(attrs().class_("card").addClass("featured"))
  *
- * // With inline styles using the fluent style builder
- * div(attrs()
- *     .class_("box")
- *     .style()
- *         .display(flex)
- *         .padding(px(10))
- *         .backgroundColor(hex("#f5f5f5"))
- *     .done())
+ * // With inline styles: a style() argument of its own, or the lambda form
+ * div(cls("box"), style().display(flex).padding(px(10)))
+ * div(attrs().cls("box").style(s -&gt; s.display(flex).padding(px(10))).id("main"))
  *
  * // Form attributes
  * form(attrs()
@@ -212,12 +207,13 @@ public class Attributes implements HtmlAttributes<Attributes> {
 
 
     /**
-     * Sets inline style using a lambda builder - NO .done() needed!
+     * Sets the inline style from a lambda — the one way to style inside an
+     * {@code attrs()} chain, and the chain keeps going afterwards.
      *
      * <p>Example:</p>
      * <pre>
      * attrs()
-     *     .class_("card")
+     *     .cls("card")
      *     .style(s -> s.display(flex).padding(px(10)).backgroundColor(white))
      *     .id("main")
      * </pre>
@@ -228,82 +224,21 @@ public class Attributes implements HtmlAttributes<Attributes> {
     public Attributes style(UnaryOperator<InlineStyle> builder) {
         InlineStyle s = new InlineStyle(this);
         builder.apply(s);
-        return s.done();
+        return s.complete();
     }
 
     /**
-     * Starts a fluent inline style builder that chains back to this Attributes.
-     * Call {@link InlineStyle#done()} to finish styling and return to Attributes.
+     * The inline style builder the {@link #style(UnaryOperator)} lambda
+     * receives. It is a {@link Style} with a back-reference to the attributes
+     * it belongs to, so an element argument carries both.
      *
-     * <p>Example:</p>
+     * <p>There is no {@code attrs().style()} starter and no {@code .done()}:
+     * a style is either an element argument of its own or a lambda.</p>
+     *
      * <pre>
-     * attrs()
-     *     .class_("card")
-     *     .style()
-     *         .display(flex)
-     *         .padding(px(10))
-     *         .backgroundColor(white)
-     *     .done()
-     *     .id("main")
+     * a(href("/home"), style().color(blue).textDecoration(none), "Home")  // its own argument
+     * a(attrs().href("/home").style(s -&gt; s.color(blue)).rel("me"), "Home") // inside a chain
      * </pre>
-     *
-     * <p>TIP: Use the lambda version to avoid .done():</p>
-     * <pre>
-     * attrs().style(s -> s.display(flex).padding(px(10)))
-     * </pre>
-     *
-     * @return an InlineStyle builder
-     */
-    public InlineStyle style() { return new InlineStyle(this); }
-
-    /**
-     * Fluent inline style builder that integrates with Attributes.
-     * Extends Style to inherit ALL CSS properties automatically.
-     *
-     * <p>Two ways to use InlineStyle:</p>
-     * <ol>
-     *   <li>Pass directly to an element - auto-finalizes when used</li>
-     *   <li>Call {@link #done()} to explicitly return to Attributes and keep
-     *       chaining attributes</li>
-     * </ol>
-     *
-     * <p>Example - Direct use (preferred, no .done() needed):</p>
-     * <pre>
-     * div(attrs().style()
-     *         .display(flex)
-     *         .padding(px(10)),
-     *     p("Hello"))
-     * </pre>
-     *
-     * <p>Example - To keep chaining attributes, prefer the lambda form:</p>
-     * <pre>
-     * a(attrs()
-     *     .style(s -&gt; s.color(blue).textDecoration(none))
-     *     .href("/home")
-     *     .class_("nav-link"),
-     *     text("Home"))
-     * </pre>
-     *
-     * <p>Example - With .done() (alternative explicit style):</p>
-     * <pre>
-     * div(attrs().style()
-     *         .display(flex)
-     *     .done()
-     *     .id("main"),
-     *     p("Hello"))
-     * </pre>
-     *
-     * <p>This class has access to every CSS property from Style, including:</p>
-     * <ul>
-     *   <li>Box Model: margin, padding, border, width, height</li>
-     *   <li>Flexbox: display(flex), flexDirection, justifyContent, alignItems, gap</li>
-     *   <li>Grid: gridTemplateColumns, gridTemplateRows, gridArea</li>
-     *   <li>Positioning: position, top/right/bottom/left, inset, zIndex</li>
-     *   <li>Typography: color, fontSize, fontWeight, lineHeight, textAlign</li>
-     *   <li>Background: background, backgroundColor, backgroundImage</li>
-     *   <li>Effects: transform, transition, animation, boxShadow, filter</li>
-     *   <li>Logical Properties: marginInline, paddingBlock, insetInline, etc.</li>
-     * </ul>
      */
     public static class InlineStyle extends Style<InlineStyle> {
         private final Attributes parent;
@@ -323,24 +258,10 @@ public class Attributes implements HtmlAttributes<Attributes> {
         }
 
         /**
-         * Finish styling and return to Attributes builder.
-         * Use this when you need explicit control over attribute chaining.
-         */
-        public Attributes done() {
-            return complete();
-        }
-
-        /**
-         * Returns the finalized Attributes with style applied.
-         * This allows InlineStyle to be used directly where Attributes is expected.
-         */
-        public Attributes toAttrs() {
-            return complete();
-        }
-
-        /**
          * Returns the attributes map for element consumption.
          * Auto-finalizes the style into the parent attributes.
+         *
+         * @return the finalized attribute map
          */
         public Map<String, String> toMap() {
             return complete().toMap();
@@ -349,17 +270,12 @@ public class Attributes implements HtmlAttributes<Attributes> {
         /**
          * Returns an immutable copy of the finalized attributes.
          * Auto-finalizes the style into the parent attributes.
+         *
+         * @return an immutable copy of the finalized attributes
          */
         public Map<String, String> buildAttrs() {
             return complete().build();
         }
-
-        // The ~100 chain-through shims that used to live here (every attribute
-        // and event method re-declared on InlineStyle so it could call
-        // complete()) are gone. Finish the style first, then keep chaining:
-        //
-        //   attrs().style(s -> s.display(flex).padding(px(10))).id("main")   // lambda
-        //   attrs().style().display(flex).done().id("main")                  // done()
     }
 
     // ==================== Common Attributes ====================

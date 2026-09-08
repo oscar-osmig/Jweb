@@ -68,25 +68,21 @@ a(attrs().href("/about").targetBlank(), "About Us")
 ## Level 3: Inline Styles
 
 ```java
-// Style via attrs().style()
+// Inside an attrs() chain the style is a lambda, and the chain keeps going
 div(attrs()
-    .class_("box")
+    .cls("box")
     .style(s -> s.padding(px(20)).backgroundColor(white)),
     p("Styled content")
 )
 
-// Fluent style chaining with .done()
-div(attrs().style()
-        .display(flex)
-        .justifyContent(center)
-        .alignItems(center)
-        .gap(rem(1))
-    .done(),
+// style() as its own element argument, when there's no other attribute to chain
+div(cls("card"),
+    style().display(flex).justifyContent(center).alignItems(center).gap(rem(1)),
     span("Centered content")
 )
 
-// Direct InlineStyle usage (no .done() needed)
-div(attrs().style()
+// Same pattern for a bigger set of properties
+div(style()
         .flexCol()
         .padding(rem(2))
         .backgroundColor(hex("#f5f5f5"))
@@ -114,16 +110,19 @@ div(
     when(!isLoggedIn, () -> a(href("/login"), "Sign In"))
 )
 
-// If-else rendering
-ifElse(isLoggedIn,
-    () -> button("Logout"),
-    () -> button("Login")
-)
+// If-else rendering — the eager form
+when(isLoggedIn, button("Logout"), button("Login"))
+
+// The chained form, for branches too long to read as one expression
+// (an Element, a String, or nothing if otherwise() is left off)
+when(isLoggedIn)
+    .then(button("Logout"))
+    .otherwise(button("Login"))
 
 // Combining iteration with conditionals
 ul(each(users, user ->
     li(
-        span(text(user.getName())),
+        span(user.getName()),
         when(user.isAdmin(), () -> span(class_("badge"), "Admin"))
     )
 ))
@@ -235,7 +234,7 @@ public class Badge implements Template {
 
     @Override
     public Element render() {
-        return span(attrs().style()
+        return span(style()
                 .padding(px(4), px(8))
                 .borderRadius(px(4))
                 .backgroundColor(hex(color))
@@ -269,12 +268,12 @@ public class Card implements Template {
 
     @Override
     public Element render() {
-        return div(attrs().style()
+        return div(style()
                 .padding(rem(1.5))
                 .backgroundColor(white)
                 .borderRadius(px(8))
                 .boxShadow(px(0), px(2), px(8), rgba(0, 0, 0, 0.1)),
-            h3(attrs().style().marginBottom(rem(1)), title),
+            h3(style().marginBottom(rem(1)), title),
             fragment(children)
         );
     }
@@ -353,12 +352,12 @@ public class TodoApp implements Template {
             })
             .toList();
 
-        return div(attrs().style()
+        return div(style()
                 .maxWidth(px(600))
                 .margin(zero, auto)
                 .padding(rem(2)),
 
-            h1(attrs().style().textCenter(), "Todo App"),
+            h1(style().textCenter(), "Todo App"),
 
             // Input form
             form(attrs()
@@ -372,7 +371,7 @@ public class TodoApp implements Template {
                         newTodo.set("");
                     }
                 }),
-                div(attrs().style().display(flex).gap(rem(0.5)),
+                div(style().display(flex).gap(rem(0.5)),
                     input(attrs()
                         .type("text")
                         .value(newTodo.get())
@@ -384,16 +383,16 @@ public class TodoApp implements Template {
             ),
 
             // Filter buttons
-            div(attrs().style().display(flex).gap(rem(0.5)).marginY(rem(1)),
+            div(style().display(flex).gap(rem(0.5)).marginY(rem(1)),
                 filterBtn("all", "All"),
                 filterBtn("active", "Active"),
                 filterBtn("completed", "Completed")
             ),
 
             // Todo list
-            ul(attrs().style().listStyle(none).padding(zero),
+            ul(style().listStyle(none).padding(zero),
                 each(filtered, todo ->
-                    li(attrs().style()
+                    li(style()
                             .display(flex)
                             .alignItems(center)
                             .padding(rem(0.75))
@@ -402,7 +401,7 @@ public class TodoApp implements Template {
                             .type("checkbox")
                             .checked(todo.done())
                             .onChange(e -> toggleTodo(todo))),
-                        span(attrs().style()
+                        span(style()
                                 .flex(1, 1, auto)
                                 .marginLeft(rem(0.75))
                                 .textDecoration(todo.done() ? lineThrough : none),
@@ -416,7 +415,7 @@ public class TodoApp implements Template {
             ),
 
             // Footer
-            p(attrs().style().color(gray).fontSize(rem(0.875)),
+            p(style().color(gray).fontSize(rem(0.875)),
                 filtered.size() + " items")
         );
     }
@@ -476,20 +475,20 @@ public class MainLayout implements Template {
                 meta("viewport", "width=device-width, initial-scale=1"),
                 css("/styles.css")
             ),
-            body(attrs().style()
+            body(style()
                     .minHeight(vh(100))
                     .display(flex)
                     .flexDirection(column),
 
                 // Header
-                header(attrs().style()
+                header(style()
                         .padding(rem(1))
                         .backgroundColor(hex("#1e293b"))
                         .color(white),
-                    nav(attrs().style().flexBetween().maxWidth(px(1200)).margin(zero, auto),
-                        a(attrs().href("/").style().color(white).textDecoration(none),
+                    nav(style().flexBetween().maxWidth(px(1200)).margin(zero, auto),
+                        a(attrs().href("/").style(s -> s.color(white).textDecoration(none)),
                             strong("MyApp")),
-                        div(attrs().style().display(flex).gap(rem(1)),
+                        div(style().display(flex).gap(rem(1)),
                             a(href("/features"), "Features"),
                             a(href("/pricing"), "Pricing"),
                             a(href("/about"), "About")
@@ -498,14 +497,14 @@ public class MainLayout implements Template {
                 ),
 
                 // Main content
-                main(attrs().style().flex(1, 1, auto).padding(rem(2)),
-                    div(attrs().style().maxWidth(px(1200)).margin(zero, auto),
+                main(style().flex(1, 1, auto).padding(rem(2)),
+                    div(style().maxWidth(px(1200)).margin(zero, auto),
                         content
                     )
                 ),
 
                 // Footer
-                footer(attrs().style()
+                footer(style()
                         .padding(rem(2))
                         .backgroundColor(hex("#f1f5f9"))
                         .textAlign(center),
@@ -532,67 +531,59 @@ public class HomePage implements Template {
 
 ---
 
-## Level 13: Form Input Builders
+## Level 13: Forms (a record is the form)
+
+One record declares the fields, their types and their rules. The same record
+renders the form, validates the submission and comes back as a typed value —
+there is no separate builder to learn.
 
 ```java
-// Type-safe form inputs. El's typed inputs return Tag (they set id=name for you);
-// validation attributes that have no Tag shortcut go through .attr(). For heavier
-// validation chains use the jweb.Input builder instead:
-// Input.text("username").minLength(3).pattern("[a-zA-Z0-9_]+")
-form(attrs().id("register-form"),
-    // Text input with validation
-    field("Username",
-        textInput("username")
-            .required()
-            .attr("minlength", "3")
-            .attr("maxlength", "20")
-            .attr("pattern", "[a-zA-Z0-9_]+")
-            .attr("autocomplete", "username")
-    ),
+public record RegisterForm(
+    @Form.Required @Form.Length(min = 3, max = 20) String username,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Password @Form.Length(min = 8) String password,
+    @Form.Required int age,
+    boolean newsletter) {}
 
-    field("Email",
-        emailInput("email")
-            .required()
-            .placeholder("you@example.com")
-    ),
+// Render — the CSRF hidden field comes from the current request automatically
+form(RegisterForm.class)
+    .id("register-form")
+    .action("/register")
+    .field("username", f -> f.autocomplete("username"))
+    .field("password", f -> f.help("Must be at least 8 characters"))
+    .field("age", f -> f.help("You must be 18 or older"))
+    .field("newsletter", f -> f.label("Subscribe to the newsletter"))
+    .submit("Register")
 
-    // field() is (label, input) — render help text as its own element
-    field("Password",
-        passwordInput("password")
-            .required()
-            .attr("minlength", "8")
-    ),
-    small("Must be at least 8 characters"),
+// Handle — bind, then either use the value or re-render with the errors
+app.post("/register", req -> {
+    Form.Bound<RegisterForm> bound = Form.bind(RegisterForm.class, req);
+    if (!bound.ok()) {
+        return form(RegisterForm.class).action("/register").errors(bound).submit("Register");
+    }
+    userService.create(bound.value());
+    return Response.redirect("/welcome");
+});
+```
 
-    // Number input with range — the (name, min, max) overload
-    field("Age",
-        numberInput("age", 18, 120).required()
-    ),
+`Form.styles()` returns a stylesheet for the classes it emits (`jweb-form`,
+`jweb-field`, `jweb-label`, `jweb-control`, `jweb-help`, `jweb-error`,
+`jweb-errors`, `jweb-submit`) — drop it in the head once: `style(Form.styles())`.
 
-    // Selection inputs — checkbox(name, value) renders only the input
-    // (id = name); pair it with label(forId, text)
-    div(attrs().style().marginBottom(rem(1)),
-        checkbox("terms", "yes"), label(for_("terms"), "I agree to the terms"),
-        checkbox("newsletter", "yes"), label(for_("newsletter"), "Subscribe to newsletter")
-    ),
+Component type maps to control automatically: `String` → text (email/password/
+textarea with the matching hint), `int`/`long`/`double`/`BigDecimal` → number,
+`boolean` → checkbox, an enum → `<select>`, `LocalDate`/`LocalTime`/
+`LocalDateTime` → date/time/datetime-local, `UploadedFile` → file (and the form
+becomes multipart automatically).
 
-    // Radio group — radio(name, value); generated ids are "name-value"
-    div(attrs().style().marginBottom(rem(1)),
-        p("Select plan:"),
-        radio("plan", "free"), label(for_("plan-free"), "Free Plan"),
-        radio("plan", "pro"), label(for_("plan-pro"), "Pro Plan"),
-        radio("plan", "enterprise"), label(for_("plan-enterprise"), "Enterprise Plan")
-    ),
+An input outside a `<form>` — a search box, a filter toggle — is just the
+element with its attributes, no builder needed:
 
-    // Date inputs
-    field("Start Date", dateInput("startDate")),
-    field("Preferred Time", timeInput("preferredTime")),
+```java
+input(type("search"), name("q"), placeholder("Search…"))
 
-    // Hidden field for CSRF
-    hiddenInput("_csrf", csrfToken),
-
-    button(type("submit"), "Register")
-)
+input(type("checkbox"), name("terms"), id("terms"), value("yes")),
+label(for_("terms"), "I agree to the terms")
 ```
 
 ---
@@ -606,37 +597,44 @@ div(attrs().classes("card", "shadow", "rounded"),
     p("Card content")
 )
 
-// Conditional classes — classIf(name, condition) adds when true,
+// Conditional classes — classIf(condition, name) adds when true (condition
+// first — the old classIf(name, condition) order is deprecated),
 // classToggle picks one of two
 boolean isActive = true;
 boolean isDisabled = false;
 boolean isPrimary = true;
 
 button(attrs()
-        .class_("btn")
-        .classIf("active", isActive)
-        .classIf("disabled", isDisabled)
+        .cls("btn")
+        .classIf(isActive, "active")
+        .classIf(isDisabled, "disabled")
         .classToggle(isPrimary, "btn-primary", "btn-secondary"),
     "Click Me"
 )
 
 // Stacking conditions on a base class
 div(attrs()
-        .class_("notification")
-        .classIf("success", isSuccess)
-        .classIf("error", isError)
-        .classIf("warning", isWarning)
-        .classIf("animate", shouldAnimate),
+        .cls("notification")
+        .classIf(isSuccess, "success")
+        .classIf(isError, "error")
+        .classIf(isWarning, "warning")
+        .classIf(shouldAnimate, "animate"),
     span(message)
 )
 
 // Complex conditional styling
 List<String> items = getItems();
 div(attrs()
-        .class_("list")
-        .classIf("empty", items.isEmpty())
-        .classIf("single", items.size() == 1)
-        .classIf("multiple", items.size() > 1),
+        .cls("list")
+        .classIf(items.isEmpty(), "empty")
+        .classIf(items.size() == 1, "single")
+        .classIf(items.size() > 1, "multiple"),
+    each(items, item -> li(item))
+)
+
+// classes() also takes a when(...) branch directly, skipping non-matches —
+// the same result built without attrs()
+div(classes("list", when(items.isEmpty(), "empty"), when(items.size() == 1, "single")),
     each(items, item -> li(item))
 )
 ```
@@ -1070,7 +1068,7 @@ And `scene(...).id("hero")` exposes the raw three.js objects to scripts via
 | 1 | Basic elements, text, nesting |
 | 2 | `attrs()` builder, form attributes |
 | 3 | Inline styles with `style()` |
-| 4 | `each()`, `when()`, `ifElse()` |
+| 4 | `each()`, `when()` (`when(cond, a, b)`, `.then()/.otherwise()`) |
 | 5 | Event handlers (`onClick`, `onSubmit`) |
 | 6 | Reactive `useState()` |
 | 7 | `useComputed()`, `useEffect()` |
@@ -1079,8 +1077,8 @@ And `scene(...).id("hero")` exposes the raw three.js objects to scripts via
 | 10 | CSS DSL: `rule()`, selectors, transitions |
 | 11 | Full interactive pages |
 | 12 | Templates with layouts |
-| 13 | Form input builders (`textInput`, `emailInput`, `field`) |
-| 14 | Batch classes & conditional styling (`attrs().classes()`, `classIf()`, `classToggle()`) |
+| 13 | Record-based forms (`jweb.Form`, `@Form.Required`, `.field()`, `Form.bind()`) |
+| 14 | Batch classes & conditional styling (`attrs().classes()`, `classIf(cond, name)`, `classToggle()`) |
 | 15 | CSS feature queries (`@supports`) |
 | 16 | Nested CSS with pseudo-selectors |
 | 17 | JavaScript Actions DSL (`actions()`, `state()`, `refs()`) |

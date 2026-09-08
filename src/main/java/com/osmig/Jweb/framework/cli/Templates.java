@@ -16,13 +16,11 @@ final class Templates {
         return """
             package %s.pages;
 
-            import com.osmig.Jweb.framework.core.Element;
-            import com.osmig.Jweb.framework.template.Template;
+            import jweb.Element;
+            import jweb.Template;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
 
             /**
              * %s page.
@@ -31,10 +29,10 @@ final class Templates {
 
                 @Override
                 public Element render() {
-                    return div(attrs().style()
+                    return div(style()
                             .padding(rem(2)),
-                        h1(text("%s")),
-                        p(text("This is the %s page."))
+                        h1("%s"),
+                        p("This is the %s page.")
                     );
                 }
             }
@@ -64,7 +62,7 @@ final class Templates {
 
                 constructorAssigns.append("        this.%s = %s;\n".formatted(name, name));
 
-                renderContent.append("                span(text(%s)),\n".formatted(
+                renderContent.append("                span(%s),\n".formatted(
                     type.equals("String") ? name : "String.valueOf(" + name + ")"));
             }
         }
@@ -74,7 +72,7 @@ final class Templates {
         String constructorAssignsStr = constructorAssigns.length() > 0 ? constructorAssigns.toString() : "";
         String renderContentStr = renderContent.length() > 0
             ? renderContent.substring(0, renderContent.length() - 2)  // Remove trailing comma
-            : "text(\"" + className + " Component\")";
+            : "\"" + className + " Component\"";
 
         String constructor = constructorParamsStr.isEmpty() ? "" : """
 
@@ -85,13 +83,11 @@ final class Templates {
         return """
             package %s.components;
 
-            import com.osmig.Jweb.framework.core.Element;
-            import com.osmig.Jweb.framework.template.Template;
+            import jweb.Element;
+            import jweb.Template;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
 
             /**
              * %s component.
@@ -100,7 +96,7 @@ final class Templates {
             %s%s
                 @Override
                 public Element render() {
-                    return div(attrs().style()
+                    return div(style()
                             .padding(rem(1))
                             .rounded(px(8))
                             .border(px(1), solid, hex("#e5e7eb")),
@@ -120,12 +116,10 @@ final class Templates {
         return """
             package %s.layouts;
 
-            import com.osmig.Jweb.framework.core.Element;
+            import jweb.Element;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
 
             /**
              * %s layout.
@@ -139,113 +133,91 @@ final class Templates {
                             meta(attrs()
                                 .name("viewport")
                                 .content("width=device-width, initial-scale=1.0")),
-                            title(text("JWeb App"))
+                            title("JWeb App")
                         ),
-                        body(attrs().style()
+                        body(style()
                                 .margin(zero)
                                 .fontFamily("system-ui, sans-serif"),
                             // Header
-                            header(attrs().style()
+                            header(style()
                                     .backgroundColor(white)
                                     .borderBottom(px(1), solid, hex("#e5e7eb"))
                                     .padding(rem(1), rem(2)),
-                                nav(attrs().style()
+                                nav(style()
                                         .maxWidth(px(1200))
                                         .margin(zero, auto)
                                         .flex()
                                         .justifyContent(spaceBetween)
                                         .alignItems(center),
-                                    a(attrs().href("/").style()
+                                    a(attrs().href("/").style(s -> s
                                             .fontWeight(700)
                                             .fontSize(rem(1.25))
                                             .color(hex("#111"))
-                                            .textDecoration(none),
-                                        text("JWeb")))),
+                                            .textDecoration(none)),
+                                        "JWeb"))),
                             // Main content
-                            main(attrs().style()
+                            main(style()
                                     .maxWidth(px(1200))
                                     .margin(zero, auto)
                                     .padding(rem(2)),
                                 content),
                             // Footer
-                            footer(attrs().style()
+                            footer(style()
                                     .textCenter()
                                     .padding(rem(2))
                                     .color(hex("#6b7280"))
                                     .fontSize(rem(0.875)),
-                                text("Built with JWeb")))
+                                "Built with JWeb"))
                     );
                 }
             }
             """.formatted(packageName, className, className);
     }
 
-    // ==================== Form Model Template ====================
+    // ==================== Form Template ====================
+    // A form is a record: the components carry the field types, and
+    // jweb.Form.* annotations carry the rules the browser and server share.
 
     static String formModel(String packageName, String className, String[] fields) {
-        StringBuilder fieldsBuilder = new StringBuilder();
-        StringBuilder gettersSetters = new StringBuilder();
+        List<String> components = new ArrayList<>();
 
         for (String field : fields) {
             String[] parts = field.split(":");
             String name = parts[0];
             String type = parts.length > 1 ? parts[1] : "string";
-            String javaType = mapType(type);
-            String fieldType = mapFieldType(type);
             boolean required = type.endsWith("!");
             if (required) {
                 type = type.substring(0, type.length() - 1);
             }
+            String javaType = mapType(type);
 
-            // Field with annotation
-            String label = camelToTitle(name);
-            String annotation = "@FormField(label = \"%s\"".formatted(label);
-            if (!fieldType.equals("TEXT")) {
-                annotation += ", type = FieldType." + fieldType;
+            StringBuilder annotations = new StringBuilder();
+            if (required) annotations.append("@Form.Required ");
+            switch (type.toLowerCase()) {
+                case "email" -> annotations.append("@Form.Email ");
+                case "password" -> annotations.append("@Form.Password ");
+                case "text", "textarea" -> annotations.append("@Form.Multiline ");
+                default -> { }
             }
-            if (required) {
-                annotation += ", required = true";
-            }
-            annotation += ")";
 
-            fieldsBuilder.append("    %s\n".formatted(annotation));
-            fieldsBuilder.append("    private %s %s;\n\n".formatted(javaType, name));
-
-            // Getter
-            String capName = capitalize(name);
-            String getterPrefix = javaType.equals("boolean") ? "is" : "get";
-            gettersSetters.append("""
-                    public %s %s%s() {
-                        return %s;
-                    }
-
-                """.formatted(javaType, getterPrefix, capName, name));
-
-            // Setter
-            gettersSetters.append("""
-                    public void set%s(%s %s) {
-                        this.%s = %s;
-                    }
-
-                """.formatted(capName, javaType, name, name, name));
+            components.add("    %s%s %s".formatted(annotations, javaType, name));
         }
+
+        String componentList = components.isEmpty() ? "" : String.join(",\n", components) + "\n";
 
         return """
             package %s.forms;
 
-            import com.osmig.Jweb.framework.forms.FormModel.FormField;
-            import com.osmig.Jweb.framework.forms.FormModel.FieldType;
+            import jweb.Form;
 
             /**
-             * %s form model.
+             * %s form — a record is the form: render it with
+             * {@code form(%s.class)}, bind a submission with
+             * {@code Form.bind(%s.class, req)}.
              */
-            public class %s {
-
-            %s
-            %s}
-            """.formatted(packageName, className, className,
-                fieldsBuilder.toString(),
-                gettersSetters.toString());
+            public record %s(
+            %s) {}
+            """.formatted(packageName, className, className, className, className, componentList);
     }
 
     // ==================== Entity Template ====================
@@ -331,7 +303,7 @@ final class Templates {
         for (String field : fields) {
             String name = field.split(":")[0];
             String label = camelToTitle(name);
-            columns.append("                    .column(\"%s\", %s -> text(%s.get%s() != null ? %s.get%s().toString() : \"\"))\n"
+            columns.append("                    .column(\"%s\", %s -> span(%s.get%s() != null ? %s.get%s().toString() : \"\"))\n"
                 .formatted(label, entityName.toLowerCase(),
                     entityName.toLowerCase(), capitalize(name),
                     entityName.toLowerCase(), capitalize(name)));
@@ -340,20 +312,18 @@ final class Templates {
         return """
             package %s.pages;
 
-            import com.osmig.Jweb.framework.core.Element;
-            import com.osmig.Jweb.framework.template.Template;
-            import com.osmig.Jweb.framework.ui.UI;
+            import jweb.Element;
+            import jweb.Template;
+            import jweb.UI;
             import %s.models.%s;
             import %s.repositories.%sRepository;
             import org.springframework.beans.factory.annotation.Autowired;
 
             import java.util.List;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
-            import static com.osmig.Jweb.framework.ui.UI.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
+            import static jweb.UI.*;
 
             public class %sListPage implements Template {
 
@@ -364,20 +334,20 @@ final class Templates {
                 public Element render() {
                     List<%s> items = repository.findAll();
 
-                    return div(attrs().style().padding(rem(2)),
-                        div(attrs().style()
+                    return div(style().padding(rem(2)),
+                        div(style()
                                 .flex()
                                 .justifyContent(spaceBetween)
                                 .alignItems(center)
                                 .marginBottom(rem(2)),
-                            h1(text("%ss")),
-                            a(attrs().href("/%ss/new").style()
+                            h1("%ss"),
+                            a(attrs().href("/%ss/new").style(s -> s
                                     .backgroundColor(hex("#6366f1"))
                                     .color(white)
                                     .padding(rem(0.5), rem(1))
                                     .rounded(px(6))
-                                    .textDecoration(none),
-                                text("Add New"))),
+                                    .textDecoration(none)),
+                                "Add New")),
                         UI.DataTable.<%s>create()
             %s                .data(items)
                             .striped()
@@ -397,17 +367,14 @@ final class Templates {
         return """
             package %s.pages;
 
-            import com.osmig.Jweb.framework.core.Element;
-            import com.osmig.Jweb.framework.template.Template;
-            import com.osmig.Jweb.framework.forms.Form;
+            import jweb.Element;
+            import jweb.Template;
             import %s.models.%s;
             import %s.repositories.%sRepository;
             import org.springframework.beans.factory.annotation.Autowired;
 
-            import static com.osmig.Jweb.framework.elements.Elements.*;
-            import static com.osmig.Jweb.framework.styles.CSS.*;
-            import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-            import static com.osmig.Jweb.framework.styles.CSSColors.*;
+            import static jweb.El.*;
+            import static jweb.Css.*;
 
             public class %sFormPage implements Template {
 
@@ -428,22 +395,24 @@ final class Templates {
                         ? repository.findById(id).orElse(new %s())
                         : new %s();
 
-                    return div(attrs().style().padding(rem(2)),
-                        h1(text(id != null ? "Edit %s" : "New %s")),
+                    return div(style().padding(rem(2)),
+                        h1(id != null ? "Edit %s" : "New %s"),
                         buildForm(entity)
                     );
                 }
 
+                // This is a JPA entity, not a record, so it renders through plain
+                // elements rather than the record-based jweb.Form — add a field
+                // for each property, e.g.:
+                // div(style().marginBottom(rem(1)),
+                //     label(for_("name"), "Name"),
+                //     input(type("text"), name("name"), id("name"), value(entity.getName())))
                 private Element buildForm(%s entity) {
-                    var form = Form.create()
-                        .action("/%ss" + (id != null ? "/" + id : ""))
-                        .method("POST");
-
-                    // Add form fields here based on entity properties
-
-                    return form
-                        .submit(id != null ? "Update" : "Create")
-                        .build();
+                    return form(attrs()
+                            .action("/%ss" + (id != null ? "/" + id : ""))
+                            .method("POST"),
+                        button(type("submit"), id != null ? "Update" : "Create")
+                    );
                 }
             }
             """.formatted(packageName, packageName, entityName, packageName, entityName,
@@ -461,16 +430,16 @@ final class Templates {
         return """
             package %s.api;
 
-            import com.osmig.Jweb.framework.api.REST;
-            import com.osmig.Jweb.framework.api.GET;
-            import com.osmig.Jweb.framework.api.POST;
-            import com.osmig.Jweb.framework.api.UPDATE;
-            import com.osmig.Jweb.framework.api.DEL;
+            import jweb.api.REST;
+            import jweb.api.GET;
+            import jweb.api.POST;
+            import jweb.api.UPDATE;
+            import jweb.api.DEL;
 
             import java.util.List;
             import java.util.Map;
 
-            @REST("/%ss")
+            @REST("/api/v1/%ss")
             public class %s {
 
                 @GET
@@ -522,23 +491,6 @@ final class Templates {
             case "time" -> "java.time.LocalTime";
             case "decimal", "bigdecimal" -> "java.math.BigDecimal";
             default -> "String";
-        };
-    }
-
-    private static String mapFieldType(String type) {
-        type = type.toLowerCase().replace("!", "");
-        return switch (type) {
-            case "email" -> "EMAIL";
-            case "password" -> "PASSWORD";
-            case "url" -> "URL";
-            case "tel", "phone" -> "TEL";
-            case "int", "integer", "long", "double", "float", "decimal" -> "NUMBER";
-            case "boolean", "bool" -> "CHECKBOX";
-            case "date" -> "DATE";
-            case "datetime" -> "DATETIME";
-            case "time" -> "TIME";
-            case "textarea", "text" -> "TEXTAREA";
-            default -> "TEXT";
         };
     }
 

@@ -19,15 +19,18 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JwebShortImportsTest {
 
+    /** A form is a record now, so the surface test needs one. */
+    record TestForm(@jweb.Form.Required String name) {}
+
     /** New-style page: jweb.Template + jweb.Element, one import each. */
     static class ShortPage implements Template {
         @Override
         public Element render() {
             return div(class_("page"),
-                h1(text("short")),
-                emailInput("email", "you@example.com"),   // from Elements, now in El
+                h1("short"),
+                input(type("email"), name("email"), placeholder("you@example.com")),
                 icon("/favicon.svg"),                     // from legacy El, now in El
-                when(true, p(text("visible"))));
+                when(true, p("visible")));
         }
     }
 
@@ -36,7 +39,7 @@ class JwebShortImportsTest {
         Element el = div(
             attrs().role("main"),
             svg(viewBox(0, 0, 24, 24), path(d("M0 0h24v24H0z"))), // legacy El extras
-            textInput("name", "Your name"),                        // Elements typed inputs
+            input(type("text"), name("name"), placeholder("Your name")),   // plain element
             button(type("submit"), "Go"));
         String html = el.toHtml();
         assertTrue(html.contains("viewBox"));
@@ -110,10 +113,8 @@ class JwebShortImportsTest {
         jweb.FormValidator validator = jweb.FormValidator.create();
         assertNotNull(validator);
 
-        jweb.Form form = jweb.Form.create();
-        com.osmig.Jweb.framework.forms.Form legacyFormTyped = form;
-        assertTrue(legacyFormTyped.action("/submit").text("name").build()
-            .toHtml().contains("<form"));
+        jweb.Form<TestForm> recordForm = jweb.Form.of(TestForm.class);
+        assertTrue(recordForm.action("/submit").toHtml().contains("<form"));
 
         jweb.state.State<Integer> count =
             com.osmig.Jweb.framework.state.StateManager.createState(0);

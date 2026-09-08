@@ -36,11 +36,11 @@ attrs().class_("btn").addClass("primary").addClass("lg")
 // Multiple classes at once
 attrs().classes("btn", "primary", "lg")
 
-// Conditional classes
+// Conditional classes — the condition comes first, so it reads like an if
 attrs()
     .class_("btn")
-    .classIf("active", isActive)       // Add if true
-    .classIf("disabled", isDisabled)
+    .classIf(isActive, "active")       // Add if true
+    .classIf(isDisabled, "disabled")
 
 // Toggle between classes
 attrs().classToggle(isOpen, "open", "closed")
@@ -48,8 +48,8 @@ attrs().classToggle(isOpen, "open", "closed")
 // Complex conditional
 attrs()
     .class_("card")
-    .classIf("featured", product.isFeatured())
-    .classIf("soldout", product.getStock() == 0)
+    .classIf(product.isFeatured(), "featured")
+    .classIf(product.getStock() == 0, "soldout")
     .classToggle(expanded, "expanded", "collapsed")"""),
 
             h3Title("Inline Styles"),
@@ -65,7 +65,7 @@ div(class_("card"),
     content
 )
 
-// 2. Mixed with other attributes — no attrs()/.done() bridge needed
+// 2. Mixed with other attributes — no attrs() bridge or closing call needed
 a(style().color(blue).textDecoration(none),
     href("/home"),
     class_("nav-link"),

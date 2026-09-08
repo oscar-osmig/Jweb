@@ -30,15 +30,23 @@ when(condition)
 // Iterate
 each(list, item -> renderItem(item))""")),
             since("v3.0.0",
-                para("One conditional shape covers optional content — when(condition, element) " +
-                     "— and Java already has the rest: a ternary for either/or, a switch " +
-                     "expression for multiple cases, and each() for list iteration."),
+                para("Two shapes: when(condition, element) for optional content and " +
+                     "when(condition, ifTrue, ifFalse) for a choice — the same call, one " +
+                     "argument longer. When a branch is long enough that the argument list " +
+                     "stops reading, when(condition).then(...).otherwise(...) says the same " +
+                     "thing down the page. Both branches take an Element, a lambda, or a " +
+                     "String; each() iterates."),
                 codeBlock("""
 // Show if true
-when(condition, () -> element())
+when(condition, element())
 
-// Either/or
-condition ? trueElement() : falseElement()
+// Either/or — one argument longer
+when(condition, trueElement(), falseElement())
+
+// The same choice, chained, when a branch is long
+when(condition)
+    .then(trueElement())
+    .otherwise(falseElement())
 
 // Iterate
 each(list, item -> renderItem(item))""")),

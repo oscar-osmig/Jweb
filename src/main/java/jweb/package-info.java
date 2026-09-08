@@ -10,7 +10,6 @@
  * import static jweb.Actions.*; // declarative event actions
  * import static jweb.State.*;   // server-driven state hooks
  * import static jweb.UI.*;      // prebuilt components
- * import static jweb.Input.*;   // typed input helpers
  * import static jweb.Mongo.*;   // MongoDB access
  * }</pre>
  *

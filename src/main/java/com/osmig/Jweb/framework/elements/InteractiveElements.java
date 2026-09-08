@@ -38,7 +38,7 @@ import jweb.Attributes;
  * p("Let ", tag("var", "x"), " equal 5.")
  *
  * // Blockquote with cite
- * blockquote(attr("cite", "https://example.com"),
+ * blockquote(attrs().cite("https://example.com"),
  *     p("To be or not to be, that is the question.")
  * )
  * }</pre>

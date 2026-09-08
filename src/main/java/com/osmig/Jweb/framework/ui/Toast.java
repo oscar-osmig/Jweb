@@ -93,21 +93,23 @@ public class Toast {
     public static Element container(Position position) {
         String[] parts = position.css.split(";");
         var containerAttrs = attrs().id("toast-container");
-        var style = containerAttrs.style()
-                .position(fixed)
-                .zIndex(9999)
-                .flex()
-                .flexDirection(column)
-                .gap(rem(0.5));
 
-        for (String part : parts) {
-            String[] kv = part.split(":");
-            if (kv.length == 2) {
-                style.prop(kv[0].trim(), kv[1].trim());
+        return div(containerAttrs.style(s -> {
+            s.position(fixed)
+                    .zIndex(9999)
+                    .flex()
+                    .flexDirection(column)
+                    .gap(rem(0.5));
+
+            for (String part : parts) {
+                String[] kv = part.split(":");
+                if (kv.length == 2) {
+                    s.prop(kv[0].trim(), kv[1].trim());
+                }
             }
-        }
 
-        return div(style.done());
+            return s;
+        }));
     }
 
     // ==================== Script ====================

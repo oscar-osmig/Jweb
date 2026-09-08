@@ -75,7 +75,7 @@ public class DocSidebar implements Template {
             h2(class_("docs-nav-title"), style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
-                .letterSpacing(em(0.05)), text("For AI")),
+                .letterSpacing(em(0.05)), "For AI"),
             // The hover state rides the inline style: this link is outside the
             // section nav, so DocsNavScript's delegated mouseover styling never
             // reaches it, and it needs a real :hover rule.
@@ -92,12 +92,12 @@ public class DocSidebar implements Template {
                         .color(PRIMARY)
                         .borderColor(PRIMARY)
                         .backgroundColor(hex("#eef2ff"))),
-                span(style().display(block), text("Download all docs (.md)")),
+                span(style().display(block), "Download all docs (.md)"),
                 span(style()
                         .display(block).marginTop(px(2))
                         .fontFamily("ui-monospace, SFMono-Regular, monospace")
                         .fontSize(px(11)).opacity(0.75),
-                    text("/docs/tell"))));
+                    "/docs/tell")));
     }
 
     private Element navSection(String title, Element... links) {
@@ -105,7 +105,7 @@ public class DocSidebar implements Template {
             h2(class_("docs-nav-title"), style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
-                .letterSpacing(em(0.05)), text(title)),
+                .letterSpacing(em(0.05)), title),
             nav(class_("docs-nav-links"), fragment(links)));
     }
 
@@ -129,7 +129,7 @@ public class DocSidebar implements Template {
             .swap(DocsNavScript.contentHref(id, version), ".docs-content")
             .swapPush(href)
             .data("swap-cache", String.valueOf(DocsNavScript.TTL))
-            .class_(id.equals(active) ? "docs-nav-link active" : "docs-nav-link"),
-            text(label));
+            .cls("docs-nav-link").classIf(id.equals(active), "active"),
+            label);
     }
 }

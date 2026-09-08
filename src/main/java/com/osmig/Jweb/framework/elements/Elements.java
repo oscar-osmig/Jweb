@@ -117,8 +117,92 @@ public class Elements {
 
     /** Creates an id attribute. @param value the element ID */
     public static Attr id(String value) { return Attr.id(value); }
+    /**
+     * The class attribute — the everyday spelling: {@code div(cls("card"))}.
+     *
+     * <p>{@link #class_(String)} is the same attribute under the
+     * trailing-underscore keyword rule; both stay because {@code class} is a
+     * Java keyword and {@code cls} is what authors actually type.</p>
+     *
+     * @param value the CSS class(es)
+     * @return the class attribute
+     */
+    public static Attr cls(String value) { return Attr.class_(value); }
     /** Creates a class attribute. Named class_ to avoid Java keyword conflict. @param value the CSS class(es) */
     public static Attr class_(String value) { return Attr.class_(value); }
+
+    /**
+     * Joins class name parts into one class attribute, skipping nulls and
+     * blanks — so a conditional class never has to be built with {@code +}
+     * and a ternary:
+     *
+     * <pre>
+     * div(classes("chip", when(active, "chip-on"), "lg"))     // class="chip chip-on lg"
+     * </pre>
+     *
+     * <p>A part may be a String, {@code null} (skipped), the result of
+     * {@link #when(boolean, String)} (an empty element when the condition is
+     * false), or a collection/array of those.</p>
+     *
+     * @param parts the class name parts
+     * @return the joined class attribute
+     */
+    public static Attr classes(Object... parts) {
+        StringBuilder joined = new StringBuilder();
+        appendClassParts(joined, parts);
+        return Attr.class_(joined.toString());
+    }
+
+    private static void appendClassParts(StringBuilder into, Object... parts) {
+        if (parts == null) return;
+        for (Object part : parts) {
+            String piece = classPart(part);
+            if (piece == null) continue;
+            for (String word : piece.strip().split("\\s+")) {
+                if (word.isEmpty()) continue;
+                if (into.length() > 0) into.append(' ');
+                into.append(word);
+            }
+        }
+    }
+
+    private static String classPart(Object part) {
+        return switch (part) {
+            case null -> null;
+            case String s -> s;
+            case jweb.Element element -> plainText(element.toVNode());
+            case VNode node -> plainText(node);
+            case Iterable<?> items -> {
+                StringBuilder nested = new StringBuilder();
+                for (Object item : items) appendClassParts(nested, item);
+                yield nested.toString();
+            }
+            case Object[] array -> {
+                StringBuilder nested = new StringBuilder();
+                appendClassParts(nested, array);
+                yield nested.toString();
+            }
+            default -> throw new IllegalArgumentException(
+                "classes(...) takes class name Strings, nulls, when(cond, \"x\") results "
+                    + "or collections of those — not " + part.getClass().getName());
+        };
+    }
+
+    /** The text a class-name part carries: {@code when(cond, "on")} is a text node when it matched. */
+    private static String plainText(VNode node) {
+        if (node instanceof com.osmig.Jweb.framework.vdom.VText text) return text.content();
+        if (node instanceof VFragment fragment) {
+            StringBuilder joined = new StringBuilder();
+            for (VNode child : fragment.children()) {
+                String piece = plainText(child);
+                if (piece == null || piece.isBlank()) continue;
+                if (joined.length() > 0) joined.append(' ');
+                joined.append(piece);
+            }
+            return joined.toString();
+        }
+        return "";
+    }
     // The style attribute is a bare style() builder argument (jweb.Css.style()), or
     // attrs().style(...); the title attribute is attrs().title(...). Neither has a
     // trailing-underscore shortcut: an underscore marks a Java keyword, nothing else.
@@ -140,6 +224,14 @@ public class Elements {
     public static Attr action(String value) { return Attr.action(value); }
     /** Creates a method attribute for forms. @param value the HTTP method */
     public static Attr method(String value) { return Attr.method(value); }
+    /**
+     * Creates an enctype attribute for forms. A record form with an
+     * {@link jweb.UploadedFile} component sets this on its own.
+     *
+     * @param value the encoding, usually {@code "multipart/form-data"}
+     * @return the enctype attribute
+     */
+    public static Attr enctype(String value) { return Attr.enctype(value); }
     /** Creates a target attribute for links. @param value the target (e.g., "_blank") */
     public static Attr target(String value) { return Attr.target(value); }
     /** Creates a for attribute for labels. Named for_ to avoid Java keyword. @param value the target element ID */
@@ -156,6 +248,8 @@ public class Elements {
     public static Attr checked() { return Attr.checked(); }
     /** Creates a required boolean attribute. */
     public static Attr required() { return Attr.required(); }
+    /** Creates a selected boolean attribute for {@code <option>}. */
+    public static Attr selected() { return Attr.selected(); }
     /** Creates a readonly boolean attribute. */
     public static Attr readonly() { return Attr.readonly(); }
     /** Creates a hidden boolean attribute. */
@@ -359,7 +453,7 @@ public class Elements {
     public static Tag sup(Object... children) { return tag("sup", children); }
     public static Tag code(Object... children) { return tag("code", children); }
     public static Tag pre(Object... children) { return tag("pre", children); }
-    /** {@code blockquote("Quote")}; for a source URL: {@code blockquote(attr("cite", url), "Quote")}. */
+    /** {@code blockquote("Quote")}; for a source URL: {@code blockquote(attrs().cite(url), "Quote")}. */
     public static Tag blockquote(Object... children) { return tag("blockquote", children); }
     public static Tag hr(Object... attrs) { return tag("hr", attrs); }
     public static Tag br() { return tag("br"); }
@@ -375,7 +469,7 @@ public class Elements {
     public static Tag wbr() { return tag("wbr"); }
     public static Tag bdi(Object... children) { return tag("bdi", children); }
     public static Tag bdo(Object... children) { return tag("bdo", children); }
-    /** {@code q("Hello")}; for a source URL: {@code q(attr("cite", url), "Hello")}. */
+    /** {@code q("Hello")}; for a source URL: {@code q(attrs().cite(url), "Hello")}. */
     public static Tag q(Object... children) { return tag("q", children); }
     public static Tag dfn(Object... children) { return tag("dfn", children); }
     public static Tag ruby(Object... children) { return tag("ruby", children); }
@@ -439,7 +533,7 @@ public class Elements {
      * {@code option(valueAndText)} produced.
      */
     public static Tag option(Object... children) { return tag("option", children); }
-    /** {@code optgroup(attr("label", "Cars"), option(...), ...)}. */
+    /** {@code optgroup(attrs().label("Cars"), option(...), ...)}. */
     public static Tag optgroup(Object... children) { return tag("optgroup", children); }
     /** {@code label(for_("email"), "Email:")}; {@code label("Email:")} is just text. */
     public static Tag label(Object... children) { return tag("label", children); }
@@ -452,288 +546,32 @@ public class Elements {
     /** {@code datalist(id("browsers"), option("Chrome"), ...)}. */
     public static Tag datalist(Object... children) { return tag("datalist", children); }
 
-    // ==================== Convenient Form Input Builders ====================
-    // These provide concise shortcuts for common form inputs.
-    // The full attrs() API remains available for complex cases.
-    //
-    // ID POLICY (uniform across every xxxInput helper): the input's id is set
-    // to its name, so label(for_(name), "...") pairs with it out of the box. The one
-    // documented variation is radio(), whose id is "name-value" because a radio
-    // group shares one name. hiddenInput() sets no id (nothing labels it).
-    // Pass .id(...) via attrs() instead of the helper when you need another id.
+    // ==================== Records as forms ====================
 
     /**
-     * Creates a text input with name (id defaults to name).
+     * Renders a record as a form — one labelled field per component, typed by
+     * the component's Java type, with the CSRF hidden field filled in from the
+     * current request:
      *
-     * <p>Example:</p>
      * <pre>
-     * textInput("username")
-     * // Output: &lt;input type="text" name="username" id="username"&gt;
-     * </pre>
-     */
-    public static Tag textInput(String name) {
-        return input(attrs().type("text").name(name).id(name));
-    }
-
-    /**
-     * Creates a text input with name and placeholder (id defaults to name).
+     * public record Contact(&#64;Form.Required String name,
+     *                       &#64;Form.Required &#64;Form.Email String email,
+     *                       &#64;Form.Required &#64;Form.Multiline(rows = 4) String message) {}
      *
-     * <p>Example:</p>
-     * <pre>
-     * textInput("username", "Enter username")
+     * form(Contact.class).action("/contact").submit("Send")
      * </pre>
-     */
-    public static Tag textInput(String name, String placeholder) {
-        return input(attrs().type("text").name(name).id(name).placeholder(placeholder));
-    }
-
-    /**
-     * Creates an email input with name (id defaults to name).
      *
-     * <p>Example:</p>
-     * <pre>
-     * emailInput("email")
-     * // Output: &lt;input type="email" name="email" id="email"&gt;
-     * </pre>
-     */
-    public static Tag emailInput(String name) {
-        return input(attrs().type("email").name(name).id(name));
-    }
-
-    /** Creates an email input with name and placeholder (id defaults to name). */
-    public static Tag emailInput(String name, String placeholder) {
-        return input(attrs().type("email").name(name).id(name).placeholder(placeholder));
-    }
-
-    /**
-     * Creates a password input with name (id defaults to name).
+     * <p>The 23 {@code textInput}/{@code emailInput}/{@code field} helpers this
+     * replaces are gone: a form is a record, and everything else is
+     * {@code input(type("text"), name("q"))}.</p>
      *
-     * <p>Example:</p>
-     * <pre>
-     * passwordInput("password")
-     * </pre>
+     * @param recordType the record whose components become the fields
+     * @param <T> the record type
+     * @return the form builder, itself an {@link Element}
+     * @see jweb.Form
      */
-    public static Tag passwordInput(String name) {
-        return input(attrs().type("password").name(name).id(name));
-    }
-
-    /** Creates a password input with name and placeholder (id defaults to name). */
-    public static Tag passwordInput(String name, String placeholder) {
-        return input(attrs().type("password").name(name).id(name).placeholder(placeholder));
-    }
-
-    /**
-     * Creates a number input with name (id defaults to name).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * numberInput("quantity")
-     * </pre>
-     */
-    public static Tag numberInput(String name) {
-        return input(attrs().type("number").name(name).id(name));
-    }
-
-    /** Creates a number input with name, min, and max values (id defaults to name). */
-    public static Tag numberInput(String name, int min, int max) {
-        return input(attrs().type("number").name(name).id(name).min(min).max(max));
-    }
-
-    /**
-     * Creates a checkbox input with name and value (id defaults to name).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * checkbox("agree", "yes")
-     * // Output: &lt;input type="checkbox" name="agree" value="yes" id="agree"&gt;
-     * </pre>
-     */
-    public static Tag checkbox(String name, String value) {
-        return input(attrs().type("checkbox").name(name).value(value).id(name));
-    }
-
-    /** Creates a checkbox input with name, value, and checked state (id defaults to name). */
-    public static Tag checkbox(String name, String value, boolean checked) {
-        return input(attrs().type("checkbox").name(name).value(value).id(name).checked(checked));
-    }
-
-    /**
-     * Creates a radio input with name and value.
-     * A radio group shares one name, so the id is {@code name-value}.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * radio("color", "red")
-     * // Output: &lt;input type="radio" name="color" value="red" id="color-red"&gt;
-     * </pre>
-     */
-    public static Tag radio(String name, String value) {
-        return input(attrs().type("radio").name(name).value(value).id(radioId(name, value)));
-    }
-
-    /** Creates a radio input with name, value, and checked state (id is {@code name-value}). */
-    public static Tag radio(String name, String value, boolean checked) {
-        return input(attrs().type("radio").name(name).value(value)
-            .id(radioId(name, value)).checked(checked));
-    }
-
-    /** The one id scheme for radio buttons: {@code name-value}. */
-    public static String radioId(String name, String value) {
-        return name + "-" + value;
-    }
-
-    /**
-     * Creates a hidden input with name and value (no id — nothing labels it).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * hiddenInput("csrf", token)
-     * </pre>
-     */
-    public static Tag hiddenInput(String name, String value) {
-        return input(attrs().type("hidden").name(name).value(value));
-    }
-
-    /**
-     * Creates a file input with name (id defaults to name).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * fileInput("document")
-     * </pre>
-     */
-    public static Tag fileInput(String name) {
-        return input(attrs().type("file").name(name).id(name));
-    }
-
-    /**
-     * Creates a file input with name and accepted file types (id defaults to name).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * fileInput("image", "image/*")
-     * fileInput("document", ".pdf,.doc,.docx")
-     * </pre>
-     */
-    public static Tag fileInput(String name, String accept) {
-        return input(attrs().type("file").name(name).id(name).accept(accept));
-    }
-
-    /** Creates a date input with name (id defaults to name). */
-    public static Tag dateInput(String name) {
-        return input(attrs().type("date").name(name).id(name));
-    }
-
-    /** Creates a date input with name and min/max bounds (id defaults to name). */
-    public static Tag dateInput(String name, String min, String max) {
-        return input(attrs().type("date").name(name).id(name).min(min).max(max));
-    }
-
-    /** Creates a time input with name (id defaults to name). */
-    public static Tag timeInput(String name) {
-        return input(attrs().type("time").name(name).id(name));
-    }
-
-    /** Creates a datetime-local input with name (id defaults to name). */
-    public static Tag datetimeInput(String name) {
-        return input(attrs().type("datetime-local").name(name).id(name));
-    }
-
-    /** Creates a month input with name (id defaults to name). */
-    public static Tag monthInput(String name) {
-        return input(attrs().type("month").name(name).id(name));
-    }
-
-    /** Creates a week input with name (id defaults to name). */
-    public static Tag weekInput(String name) {
-        return input(attrs().type("week").name(name).id(name));
-    }
-
-    /** Creates a search input with name and placeholder (id defaults to name). */
-    public static Tag searchInput(String name, String placeholder) {
-        return input(attrs().type("search").name(name).id(name).placeholder(placeholder));
-    }
-
-    /** Creates a tel input with name and placeholder (id defaults to name). */
-    public static Tag telInput(String name, String placeholder) {
-        return input(attrs().type("tel").name(name).id(name).placeholder(placeholder));
-    }
-
-    /** Creates a URL input with name and placeholder (id defaults to name). */
-    public static Tag urlInput(String name, String placeholder) {
-        return input(attrs().type("url").name(name).id(name).placeholder(placeholder));
-    }
-
-    /**
-     * Creates a range/slider input with name, min, max, and value (id defaults to name).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * rangeInput("volume", 0, 100, 50)
-     * </pre>
-     */
-    public static Tag rangeInput(String name, int min, int max, int value) {
-        return input(attrs().type("range").name(name).id(name)
-            .min(min).max(max).value(value));
-    }
-
-    /** Creates a range/slider input with an explicit step (id defaults to name). */
-    public static Tag rangeInput(String name, int min, int max, int value, int step) {
-        return input(attrs().type("range").name(name).id(name)
-            .min(min).max(max).value(value).step(step));
-    }
-
-    /** Creates a color input with name (id defaults to name). */
-    public static Tag colorInput(String name) {
-        return input(attrs().type("color").name(name).id(name));
-    }
-
-    /**
-     * Creates a color input with name and default value (id defaults to name).
-     *
-     * <p>Example:</p>
-     * <pre>
-     * colorInput("theme", "#ff6b6b")
-     * </pre>
-     */
-    public static Tag colorInput(String name, String defaultColor) {
-        return input(attrs().type("color").name(name).id(name).value(defaultColor));
-    }
-
-    // submitButton(text)/resetButton(text) are gone: button(type("submit"), text)
-    // is one argument longer, and the composite's name collided with the
-    // submitButton(...) helper nearly every app defines for itself.
-
-    /**
-     * Creates a labeled form field with label and input.
-     *
-     * <p>Example:</p>
-     * <pre>
-     * field("Email", emailInput("email", "you@example.com"))
-     * // Output:
-     * // &lt;div&gt;
-     * //   &lt;label for="email"&gt;Email&lt;/label&gt;
-     * //   &lt;input type="email" name="email" id="email"...&gt;
-     * // &lt;/div&gt;
-     * </pre>
-     */
-    public static Tag field(String labelText, Tag inputElement) {
-        String inputId = inputElement.getAttributes().get("id");
-        return div(
-            label(inputId, labelText),
-            inputElement
-        );
-    }
-
-    /**
-     * Creates a labeled form field with custom wrapper attributes.
-     */
-    public static Tag field(Attributes wrapperAttrs, String labelText, Tag inputElement) {
-        String inputId = inputElement.getAttributes().get("id");
-        return div(wrapperAttrs,
-            label(inputId, labelText),
-            inputElement
-        );
+    public static <T extends Record> jweb.Form<T> form(Class<T> recordType) {
+        return jweb.Form.of(recordType);
     }
 
     // ==================== Media ====================
@@ -777,6 +615,17 @@ public class Elements {
 
     // ==================== Text Helpers ====================
 
+    /**
+     * Escaped text as an explicit node.
+     *
+     * @param content the text
+     * @return the text node
+     * @deprecated A bare String child already is escaped text — {@code p("Hi")},
+     *             not {@code p(text("Hi"))}. The wrapper only survives for the
+     *             rare spot that needs an {@link Element} value where no
+     *             element factory is in reach.
+     */
+    @Deprecated
     public static TextElement text(String content) { return TextElement.of(content); }
     public static TextElement raw(String html) { return TextElement.raw(html); }
 
@@ -808,12 +657,13 @@ public class Elements {
      * <pre>
      * when(isLoggedIn, () -&gt; span("Welcome!"))
      * </pre>
+     *
+     * @param condition whether to render
+     * @param element supplier for the element to render
+     * @return the element, or nothing
      */
     public static Element when(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
-        if (condition) {
-            return Element.of(element.get());
-        }
-        return () -> new VFragment(List.of());
+        return condition ? Element.of(element.get()) : nothing();
     }
 
     /**
@@ -823,241 +673,91 @@ public class Elements {
      * <pre>
      * when(isLoggedIn, span("Welcome!"))
      * </pre>
+     *
+     * @param condition whether to render
+     * @param element the element to render
+     * @return the element, or nothing
      */
     public static Element when(boolean condition, jweb.Element element) {
-        if (condition) {
-            return Element.of(element);
-        }
-        return () -> new VFragment(List.of());
+        return condition ? Element.of(element) : nothing();
     }
 
     /**
-     * Starts a conditional chain for if/elif/else rendering.
+     * Conditionally renders text — the form that makes conditional class names
+     * read straight: {@code classes("chip", when(active, "chip-on"))}.
      *
-     * @param condition the initial condition to check
-     * @return a Condition builder for chaining
-     * @deprecated One conditional shape: {@code when(cond, element)} /
-     *             {@code when(cond, () -> element)} — the same one the Three DSL
-     *             uses. For several branches, Java's own ternary and
-     *             {@code switch} expressions read better than a chain.
+     * @param condition whether to render
+     * @param text the text to render
+     * @return the text, or nothing
      */
-    @Deprecated
-    public static Condition when(boolean condition) {
-        return new Condition(condition);
+    public static Element when(boolean condition, String text) {
+        return condition ? Element.of(TextElement.of(text)) : nothing();
     }
 
     /**
-     * Conditionally renders one of two elements (lazy evaluation).
+     * Renders one of two things — the else form. Each branch may be an
+     * {@link jweb.Element}, a String (text), or {@code null} (nothing):
      *
-     * @deprecated Use a ternary: {@code condition ? ifTrue.get() : ifFalse.get()}.
-     */
-    @Deprecated
-    public static Element ifElse(
-            boolean condition,
-            java.util.function.Supplier<? extends jweb.Element> ifTrue,
-            java.util.function.Supplier<? extends jweb.Element> ifFalse) {
-        return condition ? Element.of(ifTrue.get()) : Element.of(ifFalse.get());
-    }
-
-    // ==================== Condition Builder (if/elif/else) ====================
-
-    /**
-     * Builder for if/elif/else conditional rendering chains.
-     *
-     * @deprecated Use {@code match(cond(...), ..., otherwise(...))} instead.
-     */
-    @Deprecated
-    public static class Condition {
-        private boolean matched = false;
-        private Element result = null;
-
-        Condition(boolean condition) {
-            this.matched = condition;
-        }
-
-        /**
-         * Specifies the element to render if the condition is true.
-         *
-         * @param element the element to render
-         * @return this builder for chaining
-         */
-        public Condition then(jweb.Element element) {
-            if (matched && result == null) {
-                result = Element.of(element);
-            }
-            return this;
-        }
-
-        /**
-         * Specifies a lazy element to render if the condition is true.
-         *
-         * @param element supplier for the element to render
-         * @return this builder for chaining
-         */
-        public Condition then(java.util.function.Supplier<? extends jweb.Element> element) {
-            if (matched && result == null) {
-                result = Element.of(element.get());
-            }
-            return this;
-        }
-
-        /**
-         * Adds an else-if condition.
-         *
-         * @param condition the condition to check
-         * @param element the element to render if this condition is true
-         * @return this builder for chaining
-         */
-        public Condition elif(boolean condition, jweb.Element element) {
-            if (!matched && result == null && condition) {
-                matched = true;
-                result = Element.of(element);
-            }
-            return this;
-        }
-
-        /**
-         * Adds an else-if condition with lazy evaluation.
-         *
-         * @param condition the condition to check
-         * @param element supplier for the element to render
-         * @return this builder for chaining
-         */
-        public Condition elif(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
-            if (!matched && result == null && condition) {
-                matched = true;
-                result = Element.of(element.get());
-            }
-            return this;
-        }
-
-        /**
-         * Specifies the fallback element if no conditions matched.
-         * This terminates the chain and returns the final Element.
-         *
-         * @param element the fallback element
-         * @return the matched element or the fallback
-         */
-        public Element otherwise(jweb.Element element) {
-            if (result != null) {
-                return result;
-            }
-            return Element.of(element);
-        }
-
-        /**
-         * Specifies a lazy fallback element if no conditions matched.
-         *
-         * @param element supplier for the fallback element
-         * @return the matched element or the fallback
-         */
-        public Element otherwise(java.util.function.Supplier<? extends jweb.Element> element) {
-            if (result != null) {
-                return result;
-            }
-            return Element.of(element.get());
-        }
-
-        /**
-         * Ends the chain without a fallback (renders nothing if no match).
-         *
-         * @return the matched element or an empty fragment
-         */
-        public Element end() {
-            if (result != null) {
-                return result;
-            }
-            return () -> new VFragment(List.of());
-        }
-    }
-
-    // ==================== Match Expression (pattern matching style) ====================
-
-    /**
-     * Pattern matching style conditional rendering.
-     *
-     * <p>Usage:</p>
      * <pre>
-     * match(
-     *     cond(isAdmin, adminPanel()),
-     *     cond(isModerator, modPanel()),
-     *     cond(isUser, userPanel()),
-     *     otherwise(loginPrompt())
-     * )
+     * when(active, span(cls("chip-on"), label), a(href(url), label))
      * </pre>
      *
-     * @param cases the condition cases to evaluate
-     * @return the element from the first matching condition
-     * @deprecated The DSL keeps one conditional shape — {@code when(cond, element)}.
-     *             A multi-way choice is what Java's {@code switch} expression is
-     *             for: {@code switch (role) { case ADMIN -> adminPanel(); ... }}.
+     * @param condition which branch to render
+     * @param ifTrue what to render when the condition holds
+     * @param ifFalse what to render otherwise
+     * @return the chosen branch
      */
-    @Deprecated
-    public static Element match(CondCase... cases) {
-        for (CondCase c : cases) {
-            if (c.matches()) {
-                return Element.of(c.element());
-            }
-        }
+    public static Element when(boolean condition, Object ifTrue, Object ifFalse) {
+        return branch(condition ? ifTrue : ifFalse);
+    }
+
+    /**
+     * The else form with both branches lazy — only the taken branch is built:
+     *
+     * <pre>
+     * when(loggedIn, () -&gt; dashboard(user), () -&gt; loginPrompt())
+     * </pre>
+     *
+     * @param condition which branch to render
+     * @param ifTrue supplier for the true branch
+     * @param ifFalse supplier for the false branch
+     * @return the chosen branch
+     */
+    public static Element when(boolean condition,
+                               java.util.function.Supplier<? extends jweb.Element> ifTrue,
+                               java.util.function.Supplier<? extends jweb.Element> ifFalse) {
+        return Element.of((condition ? ifTrue : ifFalse).get());
+    }
+
+    /**
+     * Starts the chained else form, the shape the docs teach when a branch is
+     * long enough that the argument list stops reading:
+     *
+     * <pre>
+     * when(active)
+     *     .then(span(cls("chip chip-on"), name))
+     *     .otherwise(a(href("/tag/" + name), cls("chip"), name))
+     * </pre>
+     *
+     * <p>A chain left without {@code otherwise(...)} is still an element — it
+     * renders the {@code then} branch, or nothing.</p>
+     *
+     * @param condition the condition to check
+     * @return the chain builder
+     */
+    public static jweb.When when(boolean condition) {
+        return new jweb.When(condition);
+    }
+
+    /** One branch of a {@code when}: an Element, a String (text), or nothing. */
+    private static Element branch(Object value) {
+        return Element.of(jweb.When.branch(value));
+    }
+
+    /** An element that renders nothing. */
+    private static Element nothing() {
         return () -> new VFragment(List.of());
     }
-
-    /**
-     * Creates a condition case for use with match().
-     *
-     * @param condition the condition to check
-     * @param element the element to render if condition is true
-     * @return a CondCase
-     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
-     */
-    @Deprecated
-    public static CondCase cond(boolean condition, jweb.Element element) {
-        return new CondCase(condition, element);
-    }
-
-    /**
-     * Creates a condition case with lazy evaluation.
-     *
-     * @param condition the condition to check
-     * @param element supplier for the element to render
-     * @return a CondCase
-     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
-     */
-    @Deprecated
-    public static CondCase cond(boolean condition, java.util.function.Supplier<? extends jweb.Element> element) {
-        return new CondCase(condition, condition ? element.get() : null);
-    }
-
-    /**
-     * Creates a fallback case that always matches (for use as last case in match).
-     *
-     * @param element the fallback element
-     * @return a CondCase that always matches
-     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
-     */
-    @Deprecated
-    public static CondCase otherwise(jweb.Element element) {
-        return new CondCase(true, element);
-    }
-
-    /**
-     * Creates a lazy fallback case that always matches.
-     *
-     * @param element supplier for the fallback element
-     * @return a CondCase that always matches
-     * @deprecated Part of the deprecated {@link #match(CondCase...)} — see there.
-     */
-    @Deprecated
-    public static CondCase otherwise(java.util.function.Supplier<? extends jweb.Element> element) {
-        return new CondCase(true, element.get());
-    }
-
-    /**
-     * Represents a condition-element pair for pattern matching.
-     * @deprecated Part of the deprecated {@link #match(CondCase...)}.
-     */
-    @Deprecated
-    public record CondCase(boolean matches, jweb.Element element) {}
 
     // ==================== Generic Tag Factory ====================
 

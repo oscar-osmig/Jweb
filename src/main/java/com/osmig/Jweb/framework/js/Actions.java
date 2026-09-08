@@ -633,7 +633,8 @@ public class Actions extends Modules {
      * Common pattern for closing modals by clicking outside content.
      *
      * @deprecated Use {@link #onClick(String)} with an explicit target check, or the native
-     *     {@code <dialog>} helpers in {@code DialogHelper}.
+     *     {@code <dialog>} Actions on {@code jweb.El} ({@code openDialog},
+     *     {@code closeDialog}, {@code toggleDialog}).
      */
     @Deprecated
     public static Action hideOnBackdropClick(String refName) {

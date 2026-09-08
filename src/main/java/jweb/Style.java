@@ -3318,7 +3318,7 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
      *                   .animation(anim("shift"), s(3), linear, s(0), infinite);
      * }
      *
-     * button(attrs().style().padding(SP_3).apply(brandGradient()).done(), ...)
+     * button(attrs().style(s -> s.padding(SP_3).apply(brandGradient())), ...)
      * </pre>
      *
      * @param fragment the style whose properties to merge in

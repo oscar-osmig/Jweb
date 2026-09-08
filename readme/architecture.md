@@ -485,7 +485,6 @@ framework/
 ├── elements/           # HTML DSL — 24 modules (El facade, Elements, Tag, per-category modules)
 ├── error/              # ErrorHandler, ErrorResponse, JWebException, ValidationException
 ├── events/             # Event, DomEvent, EventHandler, EventRegistry (server-side events)
-├── forms/              # Form (fluent form builder), FormModel (POJO → form + binding)
 ├── health/             # Health, HealthCheck, HealthStatus
 ├── http/               # Fetch, FetchResult — server-side HTTP client
 ├── hydration/          # HydrationData (__JWEB_DATA__), VNodeSerializer

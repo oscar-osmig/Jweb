@@ -15,7 +15,8 @@ public class SubheaderSidebar implements Template {
 
     @Override
     public Element render() {
-        return aside(attrs().id("subheader-sidebar").class_("subheader-sidebar").style()
+        return aside(id("subheader-sidebar"), cls("subheader-sidebar"),
+            style()
                 // 260, not 220: at 220 a link had 139px of text width, so the
                 // longest heading ("5. pages/HomePage.java", 159px) could not fit
                 // its filename token on the first line and the list number was
@@ -30,16 +31,15 @@ public class SubheaderSidebar implements Template {
                 .position(sticky)
                 .top(px(0))
                 .maxHeight(vh(100))
-                .overflowY(hidden)
+                .overflowY(hidden),
                 // visibility is class-driven (.has-headers + min-width media
                 // rule in DocsPage) — no inline display, so CSS stays in charge
-            .done(),
             h2(style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_4).textTransform(uppercase)
                 .letterSpacing(em(0.05)),
-                text("On This Page")),
-            nav(attrs().id("subheader-nav"), stack(SP_1)
+                "On This Page"),
+            nav(id("subheader-nav"), stack(SP_1)
                 .overflowY(auto)
                 .maxHeight(calc("100vh - 50px"))
                 .paddingRight(SP_2)

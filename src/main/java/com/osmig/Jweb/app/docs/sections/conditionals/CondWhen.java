@@ -30,9 +30,10 @@ when(cart.hasItems(), () ->
     )
 )"""),
 
-            h3Title("Inverse Conditions"),
-            para("Negate the condition to show elements only when it is false."),
-            codeBlock("""
+            before("v3.0.0",
+                h3Title("Inverse Conditions"),
+                para("Negate the condition to show elements only when it is false."),
+                codeBlock("""
 // Show login link when NOT logged in
 when(!isLoggedIn, () ->
     a(href("/login"), "Please log in")
@@ -46,7 +47,35 @@ when(items.isEmpty(), () -> emptyState())
 div(
     when(isLoggedIn, () -> userMenu()),
     when(!isLoggedIn, () -> loginButton())
-)""")
+)""")),
+
+            since("v3.0.0",
+                h3Title("Inverse Conditions"),
+                para("A one-sided when() takes a negated condition; two branches are one " +
+                     "call, so the predicate is never written twice."),
+                codeBlock("""
+// Show login link when NOT logged in
+when(!isLoggedIn, a(href("/login"), "Please log in"))
+
+// Show the empty state instead of the list — one call, one predicate
+when(items.isEmpty(), emptyState(), itemList(items))
+
+// Same for a menu
+when(isLoggedIn, userMenu(), loginButton())""")),
+
+            since("v3.0.0",
+                h3Title("Conditional Text and Classes"),
+                para("A String branch is text, so when() also composes class names: " +
+                     "classes(...) joins its parts and skips the ones that did not match."),
+                codeBlock("""
+// Text
+span(when(unread > 0, unread + " new", "All caught up"))
+
+// Class names — no string concatenation, no ternary
+a(classes("chip", when(active, "chip-on")), href("/tag/" + tag), tag)
+
+// The same on an attrs() chain
+a(attrs().cls("chip").classIf(active, "chip-on").href(url), tag)"""))
         );
     }
 }

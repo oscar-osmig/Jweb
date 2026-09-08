@@ -52,17 +52,17 @@ public final class SandboxPanes {
     }
 
     private static Element status(boolean ok, String msg) {
-        return div(attrs().id("rx-status").data("ok", ok ? "1" : "0"), text(msg));
+        return div(attrs().id("rx-status").data("ok", ok ? "1" : "0"), msg);
     }
 
     /** Blurb + knobs derived from the current code + the reset chip. */
     public static Element dynbarContent(SandboxFile f, List<Knob> knobs) {
         return fragment(
-            div(class_("sandbox-blurb"), text(f.blurb())),
+            div(class_("sandbox-blurb"), f.blurb()),
             div(class_("sandbox-controls"),
                 each(indexed(knobs), k -> knobControl(k.knob(), k.i())),
                 button(attrs().class_("sandbox-chip").id("sandbox-reset").type("button"),
-                    text("↺ Reset file"))));
+                    "↺ Reset file")));
     }
 
     private record IndexedKnob(Knob knob, int i) {}
@@ -87,7 +87,7 @@ public final class SandboxPanes {
                 .set("max", "px".equals(k.unit()) ? "2000" : "200"));
             default -> input(a.type("text").value(k.value()).maxlength(60));
         };
-        return label(class_("sandbox-knob-label"), span(text(k.label())), control);
+        return label(class_("sandbox-knob-label"), span(k.label()), control);
     }
 
     /** Initial page content for the default file (mirrors the POST response). */
@@ -98,6 +98,6 @@ public final class SandboxPanes {
     public static Element initialView(SandboxFile f, Result r) {
         if (f.mode() == Mode.STATIC) return SandboxFiles.staticPreview(f.id());
         return r != null && r.isOk() ? r.element()
-            : div(class_("sandbox-blurb"), text("…"));
+            : div(class_("sandbox-blurb"), "…");
     }
 }

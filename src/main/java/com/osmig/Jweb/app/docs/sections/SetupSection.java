@@ -182,7 +182,7 @@ public final class SetupSection {
      */
     private static Element dependencyBlock(String version) {
         return div(attrs().class_("doc-code").style(s -> s.position("relative")),
-            pre(attrs().style(DocStyles.codeBlock()), code(text("""
+            pre(attrs().style(DocStyles.codeBlock()), code("""
                     <repositories>
                         <repository>
                             <id>jitpack.io</id>
@@ -194,10 +194,10 @@ public final class SetupSection {
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
                         <version>%s</version>
-                    </dependency>""".formatted(version)))),
+                    </dependency>""".formatted(version))),
             versionPicker(version),
             button(attrs().class_("code-copy-btn").type("button")
-                .aria("label", "Copy code to clipboard"), text("Copy")));
+                .aria("label", "Copy code to clipboard"), "Copy"));
     }
 
     /**
@@ -210,11 +210,11 @@ public final class SetupSection {
         if (!listed.contains(version)) listed.add(version);
         return details(attrs().class_("ver-picker"),
             summary(attrs().aria("label", "Change documentation version"),
-                text(version + " ▾")),
+                version + " ▾"),
             div(attrs().class_("ver-picker-menu"),
                 each(listed, v ->
                     a(attrs().href(DocVersions.href("setup", v))
-                        .class_(v.equals(version) ? "ver-picker-item current" : "ver-picker-item"),
-                        text(DocVersions.isLatest(v) ? v + " (latest)" : v)))));
+                        .cls("ver-picker-item").classIf(v.equals(version), "current"),
+                        DocVersions.isLatest(v) ? v + " (latest)" : v))));
     }
 }

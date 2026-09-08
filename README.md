@@ -159,18 +159,27 @@ public class Routes implements JWebRoutes {
 
 ### Form with Server Submission — zero JavaScript written
 
+A form is a record: it declares the fields and their rules, renders the markup, and comes
+back typed. The CSRF hidden field is taken from the current request.
+
 ```java
+public record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+
 // The form POSTs and swaps the returned fragment into #form-status.
 // Without JS it still submits natively to the same route.
-form(attrs().action("/contact/submit").method("post")
-        .swapForm("/contact/submit", "#form-status"),
-    field("Name", "name", "text", "Your name"),
-    div(attrs().id("form-status")),
-    submitButton("Send Message"))
+form(Contact.class)
+    .action("/contact/submit")
+    .swapForm("/contact/submit", "#form-status")
+    .submit("Send Message")
 
-// The route returns a fragment:
+// The route validates against the same record and returns a fragment:
 app.post("/contact/submit", ctx -> {
-    messageStore.save(ctx.formParam("name"), ...);
+    Form.Bound<Contact> submitted = Form.bind(Contact.class, ctx);
+    if (!submitted.ok()) return ContactStatus.error(submitted.errors().getAllMessages().get(0));
+    messageStore.save(submitted.value());
     return ContactStatus.success("Message sent!");
 });
 ```
@@ -186,7 +195,7 @@ Everything you import lives in the `jweb` package:
 
 ```java
 // Static DSLs
-import static jweb.El.*;      // HTML: elements, attributes, typed inputs, conditionals
+import static jweb.El.*;      // HTML: elements, attributes, conditionals, record forms
 import static jweb.Css.*;     // CSS: style(), units, colors, grid, media(), keyframes()
 import static jweb.Js.*;      // JS: handlers, actions, expressions, events, async — one import
 // (jweb.Actions is the same surface under its old name)

@@ -5,8 +5,8 @@ JWeb provides utilities for handling file uploads.
 ## Basic Usage
 
 ```java
-import com.osmig.Jweb.framework.upload.FileUpload;
-import com.osmig.Jweb.framework.upload.UploadedFile;
+import jweb.FileUpload;
+import jweb.UploadedFile;
 
 app.post("/upload", req -> {
     UploadedFile file = FileUpload.getFile(req, "document");
@@ -71,7 +71,7 @@ if (file.isEmpty()) {
 }
 
 // File info
-String name = file.getOriginalFilename();  // "report.pdf"
+String name = file.getFilename();           // "report.pdf"
 String contentType = file.getContentType(); // "application/pdf"
 long size = file.getSize();                 // bytes
 
@@ -99,16 +99,16 @@ if (file.hasExtension("pdf", "doc", "docx")) {
 ## Saving Files
 
 ```java
-// Save to directory (uses original filename)
+// Save to directory with a generated, collision-proof filename
 Path saved = file.saveTo(Path.of("uploads"));
-// Result: uploads/original-name.pdf
+// Result: uploads/<uuid>.pdf
 
-// Save with custom filename
-Path saved = file.saveAs(Path.of("uploads/custom-name.pdf"));
+// Save preserving the original filename (sanitized)
+Path saved = file.saveWithOriginalName(Path.of("uploads"));
+// Result: uploads/report.pdf
 
-// Save with unique filename
-String unique = UUID.randomUUID() + "_" + file.getOriginalFilename();
-Path saved = file.saveAs(Path.of("uploads", unique));
+// Save with a specific filename
+Path saved = file.saveTo(Path.of("uploads"), "custom-name.pdf");
 ```
 
 ## Validation
@@ -206,8 +206,8 @@ public class UploadRoutes implements JWebRoutes {
             }
 
             // Save with unique name
-            String filename = UUID.randomUUID() + "_" + file.getOriginalFilename();
-            Path saved = file.saveAs(UPLOAD_DIR.resolve(filename));
+            String filename = UUID.randomUUID() + "_" + file.getFilename();
+            Path saved = file.saveTo(UPLOAD_DIR, filename);
 
             return uploadForm(null, "File uploaded: " + saved.getFileName());
         });
@@ -273,8 +273,8 @@ app.post("/gallery/upload", req -> {
             .imagesOnly();
 
         if (validation.isValid()) {
-            String filename = UUID.randomUUID() + "_" + image.getOriginalFilename();
-            image.saveAs(Path.of("uploads/gallery", filename));
+            String filename = UUID.randomUUID() + "_" + image.getFilename();
+            image.saveTo(Path.of("uploads/gallery"), filename);
             uploaded.add(filename);
         }
     }

@@ -54,10 +54,10 @@ public class DocsPage implements Template {
                 .backgroundColor(hex("#fffbeb"))
                 .border(px(1), solid, hex("#fde68a"))
                 .fontSize(TEXT_SM).color(hex("#92400e")),
-            span(text("Viewing documentation for " + version + ".")),
-            a(attrs().href("/docs?section=" + section)
-                .style().color(hex("#92400e")).fontWeight(600).done(),
-                text("Switch to " + DocVersions.latest() + " (latest)")));
+            span("Viewing documentation for " + version + "."),
+            a(href("/docs?section=" + section),
+                style().color(hex("#92400e")).fontWeight(600),
+                "Switch to " + DocVersions.latest() + " (latest)"));
     }
 
     /**

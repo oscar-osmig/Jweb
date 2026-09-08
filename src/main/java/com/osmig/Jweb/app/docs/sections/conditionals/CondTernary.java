@@ -19,11 +19,11 @@ when(isAdmin)
 
 // Status display
 when(user.isActive())
-    .then(span(attrs().class_("text-green"), text("Active")))
-    .otherwise(span(attrs().class_("text-red"), text("Inactive")))
+    .then(span(attrs().class_("text-green"), "Active"))
+    .otherwise(span(attrs().class_("text-red"), "Inactive"))
 
 // Toggle button text (Java ternary)
-button(isExpanded ? text("Show Less") : text("Show More"))
+button(isExpanded ? "Show Less" : "Show More")
 
 // Nested conditions
 when(isPremium)
@@ -33,40 +33,48 @@ when(isPremium)
         .otherwise(guestContent()))""")),
             since("v3.0.0",
                 h3Title("Either/Or"),
-                para("Choose between two elements with a Java ternary; " +
-                     "when(condition, element) still covers the one-sided, optional case."),
+                para("when(condition, ifTrue, ifFalse) is the choice: the same call as the "
+                     + "one-sided form with one more argument. Each branch may be an "
+                     + "Element, a lambda (only the taken branch is built), or a String."),
                 codeBlock("""
 // condition ? ifTrue : ifFalse
-isAdmin ? adminDashboard() : userDashboard()
+when(isAdmin, adminDashboard(), userDashboard())
 
 // Status display
-user.isActive()
-    ? span(class_("text-green"), "Active")
-    : span(class_("text-red"), "Inactive")
+when(user.isActive(),
+    span(cls("text-green"), "Active"),
+    span(cls("text-red"), "Inactive"))
 
-// Toggle button text
-button(isExpanded ? "Show Less" : "Show More")
+// Toggle button text — a String branch is text
+button(when(isExpanded, "Show Less", "Show More"))
 
-// Nested conditions
-isPremium
-    ? premiumContent()
-    : (isRegistered ? basicContent() : guestContent())""")),
+// Lambdas when a branch is expensive to build
+when(isPremium, () -> premiumContent(), () -> guestContent())"""),
 
-            h3Title("Using Java Ternary"),
-            para("Standard Java ternary works too."),
-            codeBlock("""
-// Java ternary with elements
-div(
-    isLoggedIn ? userPanel() : loginPrompt()
-)
+                h3Title("The Chained Form"),
+                para("When a branch runs several lines, the chain puts the two outcomes "
+                     + "under each other instead of inside an argument list. A chain left "
+                     + "without otherwise() is still an element — it renders the matched "
+                     + "branch, or nothing."),
+                codeBlock("""
+when(active)
+    .then(span(cls("chip chip-on"), name))
+    .otherwise(a(href("/tag/" + name), cls("chip"), name))
 
-// For simple text
-span(isActive ? "Active" : "Inactive")
+// Nested choices read better as a chain than as nested arguments
+when(isPremium)
+    .then(premiumContent())
+    .otherwise(when(isRegistered, basicContent(), guestContent()))"""),
 
-// Choose class
-div(class_(isError ? "error" : "success"),
-    message
-)""")
+                h3Title("Java's Ternary Still Works"),
+                para("For a value rather than an element — a colour token, a number — the "
+                     + "ternary is shorter and stays in the language."),
+                codeBlock("""
+// A style value
+div(style().color(isError ? RED : GREEN), message)
+
+// A class token
+div(cls(isError ? "error" : "success"), message)"""))
         );
     }
 }

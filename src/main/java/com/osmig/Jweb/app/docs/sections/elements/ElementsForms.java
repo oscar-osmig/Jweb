@@ -92,7 +92,7 @@ select(name("country"),
 // With selected option
 select(name("size"),
     option(value("sm"), "Small"),
-    option(attrs().value("md").set("selected", ""), "Medium"),
+    option(attrs().value("md").selected(), "Medium"),
     option(value("lg"), "Large")
 )
 
@@ -105,11 +105,11 @@ select(attrs().name("colors").multiple(),
 
 // Optgroup
 select(name("car"),
-    optgroup(attr("label", "Swedish Cars"),
+    optgroup(attrs().label("Swedish Cars"),
         option(value("volvo"), "Volvo"),
         option(value("saab"), "Saab")
     ),
-    optgroup(attr("label", "German Cars"),
+    optgroup(attrs().label("German Cars"),
         option(value("mercedes"), "Mercedes"),
         option(value("audi"), "Audi")
     )

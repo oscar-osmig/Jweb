@@ -669,41 +669,43 @@ if (!form.isValid()) throw new ValidationException(form);
 
 ## Forms
 
-### `forms/Form` — fluent form builder
+One form system, `jweb.Form`, and a form is a record. The record declares the fields and
+their rules; the same record renders the form, validates the submission, and comes back as
+a typed value. See [HTML DSL → Forms](./html-dsl.md#forms-a-record-is-the-form) for the
+rendering side.
 
 ```java
 import jweb.Form;
 
-Form.create()
-    .action("/api/v1/register").method("POST")
-    .text("name", f -> f.label("Name").required().placeholder("Jane Doe"))
-    .email("email", f -> f.label("Email").required().help("We never share it"))
-    .password("password", f -> f.label("Password").minLength(8))
-    .select("role", s -> s.label("Role").option("user", "User").option("admin", "Admin"))
-    .radio("plan", r -> r.label("Plan").option("free", "Free", true).option("pro", "Pro"))
-    .checkbox("terms", f -> f.label("I accept the terms").required())
-    .fieldset("Address", fs -> fs.text("street").text("city"))
-    .submit("Create account")
-    .build();
+public record Registration(
+    @Form.Required @Form.Label("Full name") String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Password @Form.Length(min = 8) String password,
+    Plan plan,                                     // an enum renders a <select>
+    boolean newsletter) {}
+
+// Render — the CSRF hidden field comes from the current request
+form(Registration.class).action("/register").submit("Sign up")
+
+// Bind a submission
+app.post("/register", req -> {
+    Form.Bound<Registration> submitted = Form.bind(Registration.class, req);
+    if (!submitted.ok()) {
+        return form(Registration.class).action("/register").errors(submitted).submit("Sign up");
+    }
+    users.create(submitted.value());
+    return Response.redirect("/welcome");
+});
 ```
 
-### `forms/FormModel` — POJO ⇄ form
+`Bound` carries `value()`, `errors()` (a `ValidationResult` keyed by component name),
+`ok()` and `submitted()` (the raw input, so the re-render shows what the user typed).
+`Form.validate(Registration.class, values)` runs the same rules without building the
+record; the messages come from `jweb.Validators`.
 
-```java
-public class Registration {
-    @FormField(label = "Full name", required = true) String name;
-    @FormField(type = FormModel.FieldType.EMAIL)     String email;
-    @FormField(type = FormModel.FieldType.SELECT, options = {"free", "pro"}) String plan;
-    @FormHidden String referrer;
-    @FormIgnore String internal;
-}
-
-// Render
-FormModel.of(Registration.class).action("/register").submitLabel("Sign up").build();
-
-// Bind a submission back to the POJO
-Registration reg = FormModel.bindFromParameterMap(Registration.class, req.formParams());
-```
+The 2.2.3 `Form.create()` fluent builder and `FormModel` (POJO ⇄ form, `@FormField`,
+`bindFromParameterMap`) are both gone — see
+[Migrating to 3.0](./../dsl-simplification-3.md).
 
 ---
 
@@ -728,6 +730,18 @@ file.isImage(); file.getExtension(); file.getSize();
 
 Requires multipart requests (Spring `MultipartHttpServletRequest`). There is no
 `FileUpload.single(...)` — use `getFile`.
+
+An `UploadedFile` component in a form record renders the file input and switches the form
+to `multipart/form-data` on its own, so there is no enctype to remember:
+
+```java
+public record Attachment(@Form.Required String title, UploadedFile document) {}
+
+form(Attachment.class).action("/upload").submit("Upload")
+
+Form.Bound<Attachment> bound = Form.bind(Attachment.class, req);
+if (bound.ok()) bound.value().document().saveTo(Path.of("uploads"));
+```
 
 ---
 

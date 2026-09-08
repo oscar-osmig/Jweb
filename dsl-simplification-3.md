@@ -1,6 +1,7 @@
 # DSL Simplification 3.0 — what changed
 
-The 2026-09-04 pass over the HTML, CSS, JavaScript and Three DSLs. The 2.0 pass
+The 2026-09-04 pass over the HTML, CSS, JavaScript and Three DSLs, and the 2026-09-07
+follow-up that finished the HTML side (class names, conditionals, one form system). The 2.0 pass
 ([dsl-simplification.md](dsl-simplification.md)) set six rules; this pass fixes the places
 where the framework's own pages could not follow them. The goals are unchanged: builder
 style, names that are simple to remember, no raw JS/HTML/CSS, pure Java.
@@ -62,16 +63,55 @@ is the check to re-run when adding a static to any facade.
 | `label("email", "Email:")` | `label(for_("email"), "Email:")` |
 | `option("us", "United States")`, `option("Chrome", "Chrome")` | `option(value("us"), "United States")`, `option("Chrome")` |
 | `abbr("HTML", "HyperText…")` | `abbr(attr("title", "HyperText…"), "HTML")` |
-| `blockquote(citeUrl, …)`, `datalist(id, …)`, `optgroup(label, …)` | `blockquote(attr("cite", url), …)`, `datalist(id("x"), …)`, `optgroup(attr("label", "x"), …)` |
-| `h1(text("Title"))` | `h1("Title")` (`text()` still exists) |
+| `blockquote(citeUrl, …)`, `datalist(id, …)`, `optgroup(label, …)` | `blockquote(attrs().cite(url), …)`, `datalist(id("x"), …)`, `optgroup(attrs().label("x"), …)` |
+| `h1(text("Title"))` | `h1("Title")` — `text(String)` is deprecated |
 | `data_(…)`, `var_(…)` elements; `title_(…)`, `style_(…)` shortcuts; `template_` | `tag("data", …)`, `tag("var", …)`; `attrs().title(…)`, a bare `style()` argument; `template` |
-| `when(c).then(a).elif(c2, b).otherwise(d)`, `match(cond(…), otherwise(…))` | deprecated — `when(c, x)`, a ternary, or a `switch` expression |
+| `when(c).then(a).elif(c2, b).otherwise(d)`, `match(cond(…), otherwise(…))`, `Tag.ifElse` | **deleted** — `when(c, x)`, `when(c, x, y)`, `when(c).then(x).otherwise(y)`, or a `switch` expression |
 | `body(new Nav().render(), …)` | `body(new Nav(), …)` — a Template is an Element |
 | `submitButton("x")` | `button(type("submit"), "x")` (the name collided with app helpers) |
 
 New top-level factories in `jweb.El`: every `on*` handler (both `Consumer<Event>` and
 `Action` forms), `on(type, handler)`, `swap`, `swapOuter`, `swapMorph`, `swapForm`,
 `swapPush`, `ref`, `bind`, `bindInput`.
+
+### The second HTML pass (classes, conditionals, one form system)
+
+| Was | Now |
+|---|---|
+| `class_("card")` everywhere | `cls("card")` — `class_` stays as the keyword-rule twin |
+| `class_("chip" + (active ? " chip-on" : ""))` | `classes("chip", when(active, "chip-on"))` |
+| `attrs().classIf("active", isActive)` | `attrs().classIf(isActive, "active")` — condition first, like `when` |
+| `when(cond, x)` twice, the second negated | `when(cond, ifTrue, ifFalse)` |
+| `when(c).then(a).elif(c2, b).otherwise(d)` | `when(c).then(a).otherwise(b)` — no `elif`; several branches are a `switch` |
+| `match(cond(a, x), cond(b, y), otherwise(z))`, `Elements.CondCase`, `Elements.Condition` | **deleted** — `when`, a ternary, or a `switch` expression |
+| `Tag.ifElse(c, a, b)`, `Elements.ifElse(c, a, b)` | **deleted** — `when(c, a, b)` |
+| `text("Hi")` as a child | `"Hi"` — the wrapper is `@Deprecated` |
+| `attrs().style().padding(px(8)).done().id("x")` | `attrs().style(s -> s.padding(px(8))).id("x")` — `Attributes.style()` and `InlineStyle.done()`/`toAttrs()` are **deleted** |
+| `div(attrs().style().padding(px(8)), …)` | `div(style().padding(px(8)), …)` |
+| `optgroup(attr("label", "Cars"), …)` | `optgroup(attrs().label("Cars"), …)` |
+| `blockquote(attr("cite", url), …)` | `blockquote(attrs().cite(url), …)` |
+| `option(attrs().set("selected", ""), …)` | `option(selected(), …)` / `attrs().selected(isChosen)` |
+| `form(attrs().enctype("multipart/form-data"), …)` | `form(enctype("multipart/form-data"), …)` — a free static, and a record form with an `UploadedFile` component sets it itself |
+| `button(title("x"), …)` silently nested a `<title>` | `button(attrs().title("x"), …)`; a `<title>` outside a head/SVG parent now logs a warning |
+| SVG `defs/symbol/use/ellipse/tspan/textPath/stop/pattern/filter/mask/clipPath/image/animate/animateTransform/animateMotion/fe*` reachable only from `jweb.el.SVGElements` | exported from `jweb.El`. Three are renamed because the plain name is taken under the four wildcards: `svgText`, `svgLinearGradient`, `svgRadialGradient` |
+| `<lineargradient>`, `<clippath>`, `<animatetransform>` in the output | the camelCase SVG names are preserved by the serializer |
+| `jweb.Input` / `Input.text("q")`, `jweb.Button` / `Button.submit("Go")` | **deleted** — `input(type("text"), name("q"), id("q"))`, `button(type("submit"), "Go")` |
+| `jweb.el.DialogHelper.showModal/show/close/toggle/…` | `jweb.El.openDialog(id)` / `closeDialog(id)` / `closeDialog(id, value)` / `toggleDialog(id)` — the rest was dead |
+| `jweb.el.DetailsHelper.open/close/toggle/openExclusive/closeAll/…` | `jweb.El.openDetails(id)` / `closeDetails(id)` / `toggleDetails(id)` |
+| `jweb.el.FormEnhancements.*` | **deleted** — `datalist`, `fieldset`, `legend`, `optgroup` are on `jweb.El`; the rest were typed-input helpers |
+| `textInput/emailInput/passwordInput/numberInput/checkbox/radio/radioId/hiddenInput/fileInput/dateInput/timeInput/datetimeInput/monthInput/weekInput/searchInput/telInput/urlInput/rangeInput/colorInput/field` (23 statics) | **deleted** — a form is a record; anything else is the element with its attributes |
+| `com.osmig.Jweb.framework.elements.Form` (the small builder) | **deleted** — `form(…)` the element, or `form(SomeRecord.class)` |
+| `Form.create().text("name", f -> …).email(…).submit("Go").build()` | `form(Contact.class).action(url).field("name", f -> …).submit("Go")` |
+| `FormModel.of(Registration.class)…build()`, `@FormField` / `@FormHidden` / `@FormIgnore`, `FormModel.bindFromParameterMap(...)` | **deleted** — `form(Registration.class)`, `@Form.Required` / `@Form.Email` / `@Form.Password` / `@Form.Multiline` / `@Form.Label` / `@Form.Length`, `Form.bind(Registration.class, req)` |
+| `Csrf.getOrCreateToken(req)` passed into the page, `Csrf.tokenField(token)` per form | the record form adds the hidden field from the current request; `.csrf(token)` overrides |
+| hand-written `if (isBlank(name) …) return error(...)` in the route | `Form.bind(...)`, then `bound.ok()` / `bound.errors()` |
+| no field-level error rendering anywhere | `form(X.class).errors(bound)` — per-field message, `aria-invalid`, a summary, and the values as typed |
+
+`jweb.Form` is now a real class (it used to be an alias for `forms/Form`), and it is
+generic: `jweb.Form<T extends Record>`. `jweb.When` is the new chained-conditional type;
+`jweb.Form.Bound<T>` is what `Form.bind` returns. `Form.styles()` is a drop-in stylesheet
+for the class names the form emits.
+
 
 ## CSS
 
@@ -289,6 +329,9 @@ remain as `@Deprecated` aliases so existing source keeps compiling.
 | `com.osmig.Jweb.framework.styles.Supports` | `jweb.css.Supports` | subclass alias (statics) |
 | `com.osmig.Jweb.framework.three.Three` | `jweb.Three` (the real facade) | subclass alias (statics) |
 | `com.osmig.Jweb.framework.three.*` (every node, `ThreePatch`, `ThreeRuntime`, `ThreeAssets`, `SceneSetting`) | `jweb.three.*` | **no alias** — never a documented import |
+| `com.osmig.Jweb.framework.forms.Form` (the fluent builder), `com.osmig.Jweb.framework.forms.FormModel`, `com.osmig.Jweb.framework.elements.Form` | `jweb.Form<T extends Record>` (a new class, not an alias) | **deleted** |
+| — | `jweb.Form.Bound<T>`, `jweb.Form.Field`, and the `@Form.Required/Email/Password/Multiline/Label/Length` hints | new |
+| `com.osmig.Jweb.framework.elements.Elements.Condition` (the `when(c)` chain) | `jweb.When` | **deleted** |
 
 Also in this pass:
 
@@ -379,13 +422,26 @@ These still compile and now mean something else. Search for them:
    renders exactly as before.
 13. **`state.update(l -> { l.add(x); return l; })` now notifies** — regions and bindings
    re-render where they silently did nothing.
+14. **`attrs().classIf("active", isActive)`** still compiles — the old
+   `(String, boolean)` order is deprecated and delegates to `classIf(boolean, String)`,
+   so the meaning is unchanged, but new code should read condition-first.
+15. **`when(cond)`** returns `jweb.When` instead of the deleted `Elements.Condition`.
+   A chain that ended in `.end()` or `.elif(...)` is a compile error; a
+   `.then(...).otherwise(...)` chain keeps working and now also renders on its own
+   without `otherwise(...)`.
+16. **`button(title("x"), …)`** compiled before and compiles now, and still nests a
+   `<title>` element rather than setting the tooltip. It is now loud: the renderer logs
+   a warning for a `<title>` outside a head or SVG parent. Use `attrs().title("x")`.
 
 Everything else is a compile error with an obvious fix, or a deprecation warning:
 deleted `abbr(text, title)` / `blockquote(cite, …)` / `datalist(id, …)` / `optgroup(label, …)`,
 `data_` / `var_` / `title_` / `style_` / `template_`, `Css.raw`, the Selector starters in
 `Css`, `Async.fetch(String)` / `Async.sleep`, the `_`-suffixed JS names, `Suspense.of(Supplier)`,
 `submitButton` / `resetButton`, the Actions template engine and its `script/query/queryAll`
-aliases. `Template.onMount/onUnmount/scripts` change return type, so overrides fail loudly.
+aliases, `Attributes.style()` / `InlineStyle.done()` / `InlineStyle.toAttrs()`,
+`match` / `cond` / `otherwise` / `CondCase` / `Condition` / `ifElse`, `jweb.Input`,
+`jweb.Button`, `jweb.el.DialogHelper` / `DetailsHelper` / `FormEnhancements`,
+`elements/Form`, `forms/FormModel`, and the 23 typed-input statics. `Template.onMount/onUnmount/scripts` change return type, so overrides fail loudly.
 
 The release is **source- and binary-incompatible** — recompile downstream code.
 

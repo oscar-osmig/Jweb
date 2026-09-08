@@ -19,10 +19,10 @@ h4("Sub-subsection")
 h5("Minor heading")
 h6("Smallest heading")
 
-// Paragraphs and text
+// Paragraphs and text — a bare String child is already an escaped text node
 p("A paragraph of text")
 span("Inline text")
-text("Raw text node")
+raw("<b>trusted html</b>")   // the one thing a String cannot say on its own
 
 // Text formatting
 strong("Bold/important text")

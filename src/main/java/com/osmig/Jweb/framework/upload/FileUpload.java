@@ -39,11 +39,28 @@ import java.util.Optional;
  * });
  * }</pre>
  *
- * <h2>HTML Form</h2>
+ * <h2>The form</h2>
+ * An {@link jweb.UploadedFile} component makes a record's form a file form: the
+ * control is a file input and the form's enctype becomes multipart, with no
+ * enctype to remember.
  * <pre>{@code
- * form(attrs().action("/upload").method("post").enctype("multipart/form-data"),
- *     input(attrs().type("file").name("document")),
- *     button(attrs().type("submit"), text("Upload"))
+ * public record Attachment(@Form.Required String title, UploadedFile document) {}
+ *
+ * form(Attachment.class).action("/upload").submit("Upload")
+ *
+ * app.post("/upload", req -> {
+ *     Form.Bound<Attachment> bound = Form.bind(Attachment.class, req);
+ *     if (!bound.ok()) return form(Attachment.class).action("/upload").errors(bound).submit("Upload");
+ *     bound.value().document().saveTo(Path.of("uploads"));
+ *     return Response.redirect("/gallery");
+ * });
+ * }</pre>
+ *
+ * Outside a record form it is the element with its attributes:
+ * <pre>{@code
+ * form(action("/upload"), method("post"), attrs().enctype("multipart/form-data"),
+ *     input(type("file"), name("document")),
+ *     button(type("submit"), "Upload")
  * )
  * }</pre>
  *

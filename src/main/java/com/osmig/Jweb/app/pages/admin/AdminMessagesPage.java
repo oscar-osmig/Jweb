@@ -60,12 +60,12 @@ public class AdminMessagesPage implements Template {
                 .marginBottom(SP_8),
             div(
                 h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
-                    text("Messages")),
+                    "Messages"),
                 p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_1),
-                    text(messages.size() + " submission" + (messages.size() != 1 ? "s" : "")),
-                    text(" · "),
+                    messages.size() + " submission" + (messages.size() != 1 ? "s" : ""),
+                    " · ",
                     orderLink(Order.NEWEST, "newest first"),
-                    text(" · "),
+                    " · ",
                     orderLink(Order.OLDEST, "oldest first"))
             ),
             logoutButton()
@@ -83,16 +83,16 @@ public class AdminMessagesPage implements Template {
 
     // Logout is a POST (with CSRF token) so a cross-site link can't trigger it
     private Element logoutButton() {
-        return form(attrs().action("/only-admin/logout").method("post")
-                .style().margin(zero).done(),
+        return form(action("/only-admin/logout"), method("post"),
+                style().margin(zero),
             Csrf.tokenField(csrfToken),
-            button(attrs().type("submit").title("Logout").style()
+            button(attrs().type("submit").title("Logout"),
+                style()
                     .apply(center())
                     .width(px(40)).height(px(40))
                     .backgroundColor(transparent).border(none).cursor(pointer)
                     .borderRadius(ROUNDED).color(TEXT_LIGHT)
-                    .transitionColors(s(0.2))
-                .done(),
+                    .transitionColors(s(0.2)),
                 // Logout door icon (SVG)
                 svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
                     path(attrs().d("M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4")),
@@ -117,9 +117,9 @@ public class AdminMessagesPage implements Template {
         return div(style()
                 .textAlign(center).padding(rem(4))
                 .color(TEXT_LIGHT).fontSize(TEXT_LG),
-            p(text("No messages yet")),
+            p("No messages yet"),
             p(style().fontSize(TEXT_SM).marginTop(SP_2),
-                text("Contact form submissions will appear here"))
+                "Contact form submissions will appear here")
         );
     }
 
@@ -139,19 +139,19 @@ public class AdminMessagesPage implements Template {
                         .marginBottom(SP_3),
                     span(style()
                             .fontSize(TEXT_LG).fontWeight(600).color(TEXT),
-                        text(msg.getString("name"))),
+                        msg.getString("name")),
                     span(style()
                             .fontSize(TEXT_SM).color(TEXT_LIGHT),
-                        text(formatDate(msg.get("createdAt"))))
+                        formatDate(msg.get("createdAt")))
                 ),
                 // Email
                 p(style()
                         .fontSize(TEXT_SM).color(PRIMARY).marginBottom(SP_3),
-                    text(msg.getString("email"))),
+                    msg.getString("email")),
                 // Message body
                 p(style()
                         .fontSize(TEXT_BASE).color(TEXT).lineHeight(1.7),
-                    text(msg.getString("message")))
+                    msg.getString("message"))
             )
         );
     }

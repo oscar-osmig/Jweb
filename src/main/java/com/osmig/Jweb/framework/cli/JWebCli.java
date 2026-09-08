@@ -488,30 +488,30 @@ public class JWebCli {
                 @Override
                 public Element render() {
                     return MainLayout.wrap(
-                        div(attrs().style()
+                        div(style()
                                 .textCenter()
                                 .padding(rem(4)),
-                            h1(attrs().style()
+                            h1(style()
                                     .fontSize(rem(3))
                                     .fontWeight(700)
                                     .marginBottom(rem(1)),
-                                text("Welcome to %s")),
-                            p(attrs().style()
+                                "Welcome to %s"),
+                            p(style()
                                     .fontSize(rem(1.25))
                                     .color(hex("#6b7280"))
                                     .marginBottom(rem(2)),
-                                text("Built with JWeb - Java Web Framework")),
+                                "Built with JWeb - Java Web Framework"),
                             a(attrs()
                                     .href("https://github.com/osmig/jweb")
-                                    .style()
-                                    .display(inlineBlock)
-                                    .backgroundColor(hex("#6366f1"))
-                                    .color(white)
-                                    .padding(rem(0.75), rem(1.5))
-                                    .rounded(px(8))
-                                    .textDecoration(none)
-                                    .fontWeight(500),
-                                text("Get Started")))
+                                    .style(s -> s
+                                        .display(inlineBlock)
+                                        .backgroundColor(hex("#6366f1"))
+                                        .color(white)
+                                        .padding(rem(0.75), rem(1.5))
+                                        .rounded(px(8))
+                                        .textDecoration(none)
+                                        .fontWeight(500)),
+                                "Get Started"))
                     );
                 }
             }
@@ -536,10 +536,10 @@ public class JWebCli {
                             meta(attrs()
                                 .name("viewport")
                                 .content("width=device-width, initial-scale=1.0")),
-                            title(text("JWeb App")),
-                            style(text(globalStyles()))
+                            title("JWeb App"),
+                            style(globalStyles())
                         ),
-                        body(attrs().style()
+                        body(style()
                                 .margin(zero)
                                 .fontFamily("system-ui, -apple-system, sans-serif")
                                 .minHeight(vh(100))

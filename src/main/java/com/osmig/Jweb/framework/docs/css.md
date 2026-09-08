@@ -5,9 +5,7 @@ JWeb provides a type-safe DSL for writing CSS in Java.
 ## Basic Usage
 
 ```java
-import static com.osmig.Jweb.framework.styles.CSS.*;
-import static com.osmig.Jweb.framework.styles.CSSUnits.*;
-import static com.osmig.Jweb.framework.styles.CSSColors.*;
+import static jweb.Css.*;
 
 // Single rule
 String css = rule(".btn")
@@ -226,7 +224,8 @@ Opt a document into cross-document View Transitions (a plain multi-page navigati
 not the SPA-style `document.startViewTransition()`):
 
 ```java
-import static com.osmig.Jweb.framework.styles.ViewTransitions.*;
+import jweb.css.Stylesheet;
+import static jweb.Css.*;
 
 Stylesheet.stylesheet().add(viewTransitions())
 // @view-transition{navigation:auto}
@@ -270,12 +269,8 @@ For element-specific styles:
 
 ```java
 div(
-    style(CSS.style()
-        .backgroundColor(blue)
-        .color(white)
-        .padding(px(10))
-    ),
-    text("Styled div")
+    style().backgroundColor(blue).color(white).padding(px(10)),
+    "Styled div"
 )
 ```
 
@@ -299,7 +294,7 @@ String css = sheet.build();
 Use `@supports` for progressive enhancement:
 
 ```java
-import static com.osmig.Jweb.framework.styles.Supports.*;
+import static jweb.css.Supports.*;
 
 // Simple property check
 String css = supports("display", "grid")
@@ -341,39 +336,38 @@ supportsClamp()             // clamp() function
 
 Build CSS with native nesting syntax:
 
-```java
-import static com.osmig.Jweb.framework.styles.CSS.*;
+Kept qualified (`CSSNested.rule()`) because it clashes with `Css.rule()`. Child
+rules open with `.nest("...")` — use `&` for the parent — and close with
+`.parent()` (or `.root()` to jump all the way back to the top):
 
-String css = nested(".card")
+```java
+import jweb.css.CSSNested;
+
+String css = CSSNested.rule(".card")
     .prop("padding", "1rem")
     .prop("background", "#fff")
-    .hover()                           // &:hover
-        .prop("box-shadow", "0 4px 12px rgba(0,0,0,0.15)")
-    .end()
-    .focus()                           // &:focus
-        .prop("outline", "2px solid blue")
-    .end()
-    .child(".title")                   // & .title
-        .prop("font-size", "1.5rem")
-    .end()
-    .direct(".icon")                   // & > .icon
-        .prop("width", "24px")
-    .end()
-    .and(".active")                    // &.active
-        .prop("border-color", "green")
-    .end()
-    .build();
 
-// Pseudo-class shortcuts
-.hover()           // &:hover
-.focus()           // &:focus
-.active()          // &:active
-.disabled()        // &:disabled
-.firstChild()      // &:first-child
-.lastChild()       // &:last-child
-.before()          // &::before
-.after()           // &::after
-.placeholder()     // &::placeholder
+    .nest("&:hover")
+        .prop("box-shadow", "0 4px 12px rgba(0,0,0,0.15)")
+    .parent()
+
+    .nest("&:focus")
+        .prop("outline", "2px solid blue")
+    .parent()
+
+    .nest("& .title")                  // & .title
+        .prop("font-size", "1.5rem")
+    .parent()
+
+    .nest("& > .icon")                 // & > .icon
+        .prop("width", "24px")
+    .parent()
+
+    .nest("&.active")                  // &.active
+        .prop("border-color", "green")
+    .parent()
+
+    .build();
 ```
 
 ## Using in Templates

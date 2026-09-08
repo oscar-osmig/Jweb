@@ -102,14 +102,20 @@ class BuilderStyleTest {
     @Test
     void classHelpersMatchAcrossStyles() {
         String builder = El.div()
-            .class_("btn").addClass("primary").classIf("active", true)
-            .classIf("muted", false).classToggle(false, "open", "closed").toHtml();
+            .cls("btn").addClass("primary").classIf(true, "active")
+            .classIf(false, "muted").classToggle(false, "open", "closed").toHtml();
         String attrs = El.div(El.attrs()
-            .class_("btn").addClass("primary").classIf("active", true)
-            .classIf("muted", false).classToggle(false, "open", "closed")).toHtml();
+            .cls("btn").addClass("primary").classIf(true, "active")
+            .classIf(false, "muted").classToggle(false, "open", "closed")).toHtml();
 
         assertEquals("<div class=\"btn primary active closed\"></div>", builder);
         assertEquals(builder, attrs);
+
+        // the deprecated (name, condition) order still means the same thing
+        String legacyOrder = El.div()
+            .class_("btn").addClass("primary").classIf("active", true)
+            .classIf("muted", false).classToggle(false, "open", "closed").toHtml();
+        assertEquals(builder, legacyOrder);
     }
 
     @Test

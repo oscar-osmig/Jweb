@@ -17,8 +17,55 @@ public final class VElement implements VNode {
         "link", "meta", "param", "source", "track", "wbr"
     );
 
+    /**
+     * The SVG elements whose names are camelCase. Tag names are otherwise
+     * folded to lower case (HTML is case-insensitive), which would spell
+     * {@code <lineargradient>} — a name only the HTML parser's own fix-up table
+     * rescues, and nothing rescues in a standalone SVG or XHTML document.
+     */
+    private static final Map<String, String> SVG_CAMEL_CASE = Map.ofEntries(
+        Map.entry("lineargradient", "linearGradient"),
+        Map.entry("radialgradient", "radialGradient"),
+        Map.entry("clippath", "clipPath"),
+        Map.entry("textpath", "textPath"),
+        Map.entry("foreignobject", "foreignObject"),
+        Map.entry("animatetransform", "animateTransform"),
+        Map.entry("animatemotion", "animateMotion"),
+        Map.entry("fegaussianblur", "feGaussianBlur"),
+        Map.entry("fedropshadow", "feDropShadow"),
+        Map.entry("fecolormatrix", "feColorMatrix"),
+        Map.entry("feblend", "feBlend"),
+        Map.entry("fecomposite", "feComposite"),
+        Map.entry("feflood", "feFlood"),
+        Map.entry("feimage", "feImage"),
+        Map.entry("femerge", "feMerge"),
+        Map.entry("femergenode", "feMergeNode"),
+        Map.entry("femorphology", "feMorphology"),
+        Map.entry("feoffset", "feOffset"),
+        Map.entry("feturbulence", "feTurbulence"),
+        Map.entry("fetile", "feTile"),
+        Map.entry("fedisplacementmap", "feDisplacementMap"),
+        Map.entry("fespecularlighting", "feSpecularLighting"),
+        Map.entry("fediffuselighting", "feDiffuseLighting"),
+        Map.entry("fepointlight", "fePointLight"),
+        Map.entry("fespotlight", "feSpotLight"),
+        Map.entry("fedistantlight", "feDistantLight"),
+        Map.entry("fecomponenttransfer", "feComponentTransfer"),
+        Map.entry("feconvolvematrix", "feConvolveMatrix"),
+        Map.entry("fefuncr", "feFuncR"),
+        Map.entry("fefuncg", "feFuncG"),
+        Map.entry("fefuncb", "feFuncB"),
+        Map.entry("fefunca", "feFuncA")
+    );
+
+    /** Lower case, except the SVG elements whose canonical name is camelCase. */
+    private static String normalizeTag(String tag) {
+        String lower = tag.toLowerCase(Locale.ROOT);
+        return SVG_CAMEL_CASE.getOrDefault(lower, lower);
+    }
+
     private VElement(String tag, Map<String, String> attributes, List<VNode> children) {
-        this.tag = tag.toLowerCase();
+        this.tag = normalizeTag(tag);
         this.attributes = attributes == null
             ? Collections.emptyMap()
             : Collections.unmodifiableMap(new LinkedHashMap<>(attributes));

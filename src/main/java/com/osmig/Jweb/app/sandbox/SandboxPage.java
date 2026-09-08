@@ -38,8 +38,8 @@ public class SandboxPage implements Template {
                         div(class_("sandbox-code-head"),
                             button(attrs().id("sandbox-tree-toggle").class_("sandbox-tree-toggle")
                                 .type("button").title("hide files")
-                                .aria("label", "Toggle file tree"), text("«")),
-                            span(attrs().id("sandbox-path"), text("☕ " + f.path()))),
+                                .aria("label", "Toggle file tree"), "«"),
+                            span(attrs().id("sandbox-path"), "☕ " + f.path())),
                         div(class_("sandbox-editwrap"),
                             div(attrs().id("sandbox-lines").class_("sandbox-lines")
                                 .aria("hidden", "true")),
@@ -47,11 +47,11 @@ public class SandboxPage implements Template {
                                     .set("spellcheck", "false").set("autocomplete", "off")
                                     .set("autocapitalize", "off")
                                     .aria("label", "Code editor"),
-                                text(f.source())),
+                                f.source()),
                             div(attrs().id("sandbox-mirror").class_("sandbox-mirror")
                                 .aria("hidden", "true"))),
                         div(attrs().id("sandbox-status").class_("sandbox-status ok"),
-                            text("✓ ready — edit the code, the preview follows"))),
+                            "✓ ready — edit the code, the preview follows")),
                     div(attrs().id("sandbox-gutter").class_("sandbox-gutter")
                         .aria("hidden", "true")),
                     div(attrs().id("sandbox-preview").class_("sandbox-preview"),
@@ -62,7 +62,7 @@ public class SandboxPage implements Template {
                                 .title("restore").aria("label", "Exit full screen")),
                             button(attrs().class_("sandbox-dot sandbox-dot-g").type("button")
                                 .title("full screen").aria("label", "Toggle full screen")),
-                            span(class_("sandbox-url"), text("localhost:8085"))),
+                            span(class_("sandbox-url"), "localhost:8085")),
                         div(class_("sandbox-stage"),
                             div(attrs().id("sandbox-view"),
                                 SandboxPanes.initialView(f, r)))))),
@@ -92,13 +92,13 @@ public class SandboxPage implements Template {
             div(class_("sandbox-tree-foot"),
                 button(attrs().id("sandbox-tree-collapse").class_("sandbox-tree-collapse")
                     .type("button").title("hide files")
-                    .aria("label", "Hide file tree"), text("«"))));
+                    .aria("label", "Hide file tree"), "«")));
     }
 
     private Element folder(int depth, String key, String name) {
-        return div(attrs().class_("sandbox-folder sandbox-depth-" + depth).data("folder", key),
-            span(class_("sandbox-chev"), text("▾ ")),
-            text("📁 " + name));
+        return div(attrs().cls("sandbox-folder sandbox-depth-" + depth).data("folder", key),
+            span(class_("sandbox-chev"), "▾ "),
+            "📁 " + name);
     }
 
     private Element kids(String key, Element... children) {
@@ -108,10 +108,10 @@ public class SandboxPage implements Template {
     private Element file(int depth, String id, String name, String activeId) {
         SandboxFile f = SandboxFiles.byId(id);
         return div(attrs()
-                .class_("sandbox-file sandbox-depth-" + depth)
-                .classIf("active", id.equals(activeId))
+                .cls("sandbox-file sandbox-depth-" + depth)
+                .classIf(id.equals(activeId), "active")
                 .data("file", id).data("path", f.path()),
-            text(name));
+            name);
     }
 
     // ==================== styles ====================

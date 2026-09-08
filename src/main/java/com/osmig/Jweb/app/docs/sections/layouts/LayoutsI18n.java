@@ -78,7 +78,7 @@ form(method("post"), action("/language"),
         each(locales, locale -> {
             var a = attrs();
             if (locale.code().equals(I18n.current().getLanguage())) {
-                a.set("selected", "");
+                a.selected();
             }
             return option(value(locale.code()), a, locale.nativeName());  // "Español" for Spanish
         })

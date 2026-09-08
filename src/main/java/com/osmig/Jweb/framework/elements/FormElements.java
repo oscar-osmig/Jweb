@@ -4,13 +4,9 @@ import jweb.Tag;
 import jweb.Attributes;
 
 /**
- * HTML form elements with helper methods for common input types.
- *
- * <p>The {@code xxxInput} helpers here are thin delegates to the canonical
- * implementations in {@link Elements}, so every entry point produces byte-identical
- * markup. See {@link Elements} for the id policy (id defaults to name).</p>
+ * The HTML form elements. Every one is {@code name(Object...)}; a lone String
+ * is text.
  */
-@SuppressWarnings("deprecation")
 public final class FormElements {
     private FormElements() {}
 
@@ -40,41 +36,7 @@ public final class FormElements {
     public static Tag datalist(Object... children) { return Tag.create("datalist", children); }
     public static Tag output(Object... children) { return Tag.create("output", children); }
 
-    // ==================== Input Helpers ====================
-    // One canonical implementation lives in Elements; these delegate so both
-    // entry points always agree. ID POLICY: id defaults to name (so
-    // label(name, ...) pairs with it); radio ids are "name-value" because a
-    // radio group shares one name; hiddenInput sets no id.
-
-    /** Text input; id defaults to name. */
-    public static Tag textInput(String name) { return Elements.textInput(name); }
-    /** Text input with placeholder; id defaults to name. */
-    public static Tag textInput(String name, String placeholder) { return Elements.textInput(name, placeholder); }
-    /** Email input; id defaults to name. */
-    public static Tag emailInput(String name) { return Elements.emailInput(name); }
-    /** Password input; id defaults to name. */
-    public static Tag passwordInput(String name) { return Elements.passwordInput(name); }
-    /** Number input; id defaults to name. */
-    public static Tag numberInput(String name) { return Elements.numberInput(name); }
-    /** Checkbox; id defaults to name. */
-    public static Tag checkbox(String name, String value) { return Elements.checkbox(name, value); }
-    /** Radio button; id is {@code name-value}. */
-    public static Tag radio(String name, String value) { return Elements.radio(name, value); }
-    /** Hidden input; no id. */
-    public static Tag hiddenInput(String name, String value) { return Elements.hiddenInput(name, value); }
-    /** File input; id defaults to name. */
-    public static Tag fileInput(String name) { return Elements.fileInput(name); }
-    /** Date input; id defaults to name. */
-    public static Tag dateInput(String name) { return Elements.dateInput(name); }
-    /** Search input; id defaults to name. */
-    public static Tag searchInput(String name, String placeholder) { return Elements.searchInput(name, placeholder); }
-
-    // ==================== Button Helpers ====================
-
-    /** @deprecated Use {@code button(type("submit"), text)} instead. */
-    @Deprecated
-    public static Tag submitButton(String text) { return button(new Attributes().type("submit"), text); }
-    /** @deprecated Use {@code button(type("reset"), text)} instead. */
-    @Deprecated
-    public static Tag resetButton(String text) { return button(new Attributes().type("reset"), text); }
+    // The xxxInput/field helper family is gone: a form is a record
+    // ({@code form(Contact.class)}, see {@link jweb.Form}) and anything outside
+    // one is {@code input(type("text"), name("q"), id("q"))}.
 }

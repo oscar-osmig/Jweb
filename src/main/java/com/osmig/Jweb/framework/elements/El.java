@@ -208,10 +208,10 @@ public final class El {
     public static Tag dfn(Object... c) { return InteractiveElements.dfn(c); }
     public static Tag cite(Object... c) { return InteractiveElements.cite(c); }
     public static Tag q(Object... c) { return InteractiveElements.q(c); }
-    /** {@code q("Hello")} renders {@code <q>Hello</q>}. For a source URL use {@code q(attr("cite", url), ...)}. */
+    /** {@code q("Hello")} renders {@code <q>Hello</q>}. For a source URL use {@code q(attrs().cite(url), ...)}. */
     public static Tag q(String text) { return Tag.create("q", TextElement.of(text)); }
     public static Tag blockquote(Object... c) { return InteractiveElements.blockquote(c); }
-    /** {@code blockquote("Quote")} renders {@code <blockquote>Quote</blockquote>}. For a source URL use {@code blockquote(attr("cite", url), ...)}. */
+    /** {@code blockquote("Quote")} renders {@code <blockquote>Quote</blockquote>}. For a source URL use {@code blockquote(attrs().cite(url), ...)}. */
     public static Tag blockquote(String text) { return Tag.create("blockquote", TextElement.of(text)); }
     public static Tag blockquote(Attributes a, Object... c) { return InteractiveElements.blockquote(a, c); }
     public static Tag kbd(Object... c) { return InteractiveElements.kbd(c); }
@@ -232,14 +232,14 @@ public final class El {
     public static Tag datalist(Object... c) { return Tag.create("datalist", c); }
     /** {@code datalist("Browsers")} renders {@code <datalist>Browsers</datalist>}. For the id use {@code datalist(id("browsers"), ...)}. */
     public static Tag datalist(String text) { return Tag.create("datalist", TextElement.of(text)); }
-    public static Tag datalist(Attributes a, Object... c) { return FormEnhancements.datalist(a, c); }
+    public static Tag datalist(Attributes a, Object... c) { return Tag.create("datalist", a, c); }
     public static Tag optgroup(Object... c) { return Tag.create("optgroup", c); }
-    /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. For the label use {@code optgroup(attr("label", "Cars"), ...)}. */
+    /** {@code optgroup("Cars")} renders {@code <optgroup>Cars</optgroup>}. For the label use {@code optgroup(attrs().label("Cars"), ...)}. */
     public static Tag optgroup(String text) { return Tag.create("optgroup", TextElement.of(text)); }
-    public static Tag fieldset(Object... c) { return FormEnhancements.fieldset(c); }
-    public static Tag fieldset(Attributes a, Object... c) { return FormEnhancements.fieldset(a, c); }
-    public static Tag legend(Object... c) { return FormEnhancements.legend(c); }
-    public static Tag legend(Attributes a, Object... c) { return FormEnhancements.legend(a, c); }
+    public static Tag fieldset(Object... c) { return Tag.create("fieldset", c); }
+    public static Tag fieldset(Attributes a, Object... c) { return Tag.create("fieldset", a, c); }
+    public static Tag legend(Object... c) { return Tag.create("legend", c); }
+    public static Tag legend(Attributes a, Object... c) { return Tag.create("legend", a, c); }
 
     // ==================== Popovers ====================
     public static Attr popover() { return PopoverElements.popover(); }
@@ -270,11 +270,6 @@ public final class El {
     // ==================== Conditionals ====================
     public static Element when(boolean condition, Element element) { return Elements.when(condition, element); }
     public static Element when(boolean condition, java.util.function.Supplier<Element> element) { return Elements.when(condition, element); }
-    public static Element match(Elements.CondCase... cases) { return Elements.match(cases); }
-    public static Elements.CondCase cond(boolean condition, Element element) { return Elements.cond(condition, element); }
-    public static Elements.CondCase cond(boolean condition, java.util.function.Supplier<Element> element) { return Elements.cond(condition, element); }
-    public static Elements.CondCase otherwise(Element element) { return Elements.otherwise(element); }
-    public static Elements.CondCase otherwise(java.util.function.Supplier<Element> element) { return Elements.otherwise(element); }
     public static Element errorBoundary(java.util.function.Supplier<Element> content, Function<Throwable, Element> fallback) { return Elements.errorBoundary(content, fallback); }
     public static Element errorBoundary(java.util.function.Supplier<Element> content, Element fallback) { return Elements.errorBoundary(content, fallback); }
 
