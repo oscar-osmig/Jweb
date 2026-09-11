@@ -289,6 +289,10 @@ public final class Form<T extends Record> implements Element {
 
     @Override
     public VNode toVNode() {
+        // The form's base rules ride the page's collected stylesheet, so no
+        // page has to remember to include them (Form.styles() stays available
+        // for a render outside any request context).
+        com.osmig.Jweb.framework.styles.PageStyles.add(styles());
         Attributes attributes = new Attributes(formAttrs.toMap());
         if (multipart) attributes.enctype("multipart/form-data");
 
@@ -316,7 +320,8 @@ public final class Form<T extends Record> implements Element {
      * A drop-in stylesheet for the classes this form emits — {@code jweb-form},
      * {@code jweb-field}, {@code jweb-label}, {@code jweb-control},
      * {@code jweb-help}, {@code jweb-error}, {@code jweb-errors},
-     * {@code jweb-submit}. Put it in the head once: {@code style(Form.styles())}.
+     * {@code jweb-submit}. A rendering form adds it to the page's collected stylesheet
+     * by itself; call this only for a render outside any request context.
      *
      * @return the CSS text
      */

@@ -28,42 +28,42 @@ public class SandboxPage implements Template {
     public Element render() {
         SandboxFile f = SandboxFiles.byId(file);
         Result r = f.mode() == Mode.DSL ? SandboxDsl.run(f.source()) : null;
-        return div(class_("sandbox-layout"),
+        return div(cls("sandbox-layout"),
             tree(f.id()),
-            div(class_("sandbox-panes"),
-                div(attrs().id("sandbox-dynbar").class_("sandbox-knobs"),
+            div(cls("sandbox-panes"),
+                div(attrs().id("sandbox-dynbar").cls("sandbox-knobs"),
                     SandboxPanes.initialDynbar(f, r)),
-                div(attrs().id("sandbox-split").class_("sandbox-split"),
-                    div(attrs().id("sandbox-code").class_("sandbox-code"),
-                        div(class_("sandbox-code-head"),
-                            button(attrs().id("sandbox-tree-toggle").class_("sandbox-tree-toggle")
+                div(attrs().id("sandbox-split").cls("sandbox-split"),
+                    div(attrs().id("sandbox-code").cls("sandbox-code"),
+                        div(cls("sandbox-code-head"),
+                            button(attrs().id("sandbox-tree-toggle").cls("sandbox-tree-toggle")
                                 .type("button").title("hide files")
                                 .aria("label", "Toggle file tree"), "«"),
                             span(attrs().id("sandbox-path"), "☕ " + f.path())),
-                        div(class_("sandbox-editwrap"),
-                            div(attrs().id("sandbox-lines").class_("sandbox-lines")
+                        div(cls("sandbox-editwrap"),
+                            div(attrs().id("sandbox-lines").cls("sandbox-lines")
                                 .aria("hidden", "true")),
-                            textarea(attrs().id("sandbox-editor").class_("sandbox-editor")
+                            textarea(attrs().id("sandbox-editor").cls("sandbox-editor")
                                     .set("spellcheck", "false").set("autocomplete", "off")
                                     .set("autocapitalize", "off")
                                     .aria("label", "Code editor"),
                                 f.source()),
-                            div(attrs().id("sandbox-mirror").class_("sandbox-mirror")
+                            div(attrs().id("sandbox-mirror").cls("sandbox-mirror")
                                 .aria("hidden", "true"))),
-                        div(attrs().id("sandbox-status").class_("sandbox-status ok"),
+                        div(attrs().id("sandbox-status").cls("sandbox-status ok"),
                             "✓ ready — edit the code, the preview follows")),
-                    div(attrs().id("sandbox-gutter").class_("sandbox-gutter")
+                    div(attrs().id("sandbox-gutter").cls("sandbox-gutter")
                         .aria("hidden", "true")),
-                    div(attrs().id("sandbox-preview").class_("sandbox-preview"),
-                        div(class_("sandbox-preview-head"),
-                            button(attrs().class_("sandbox-dot sandbox-dot-r").type("button")
+                    div(attrs().id("sandbox-preview").cls("sandbox-preview"),
+                        div(cls("sandbox-preview-head"),
+                            button(attrs().cls("sandbox-dot sandbox-dot-r").type("button")
                                 .title("nice try").aria("label", "Close (not really)")),
-                            button(attrs().class_("sandbox-dot sandbox-dot-y").type("button")
+                            button(attrs().cls("sandbox-dot sandbox-dot-y").type("button")
                                 .title("restore").aria("label", "Exit full screen")),
-                            button(attrs().class_("sandbox-dot sandbox-dot-g").type("button")
+                            button(attrs().cls("sandbox-dot sandbox-dot-g").type("button")
                                 .title("full screen").aria("label", "Toggle full screen")),
-                            span(class_("sandbox-url"), "localhost:8085")),
-                        div(class_("sandbox-stage"),
+                            span(cls("sandbox-url"), "localhost:8085")),
+                        div(cls("sandbox-stage"),
                             div(attrs().id("sandbox-view"),
                                 SandboxPanes.initialView(f, r)))))),
             inlineScript(SandboxScript.build())
@@ -73,8 +73,8 @@ public class SandboxPage implements Template {
     // ==================== file tree ====================
 
     private Element tree(String activeId) {
-        return div(class_("sandbox-tree"),
-            div(class_("sandbox-tree-inner"),
+        return div(cls("sandbox-tree"),
+            div(cls("sandbox-tree-inner"),
                 folder(0, "root", "demo/"),
                 kids("root",
                     file(1, "pom", "📄 pom.xml", activeId),
@@ -89,20 +89,20 @@ public class SandboxPage implements Template {
                         kids("comp",
                             file(3, "greeting", "☕ GreetingCard.java", activeId),
                             file(3, "buttons", "☕ Buttons.java", activeId))))),
-            div(class_("sandbox-tree-foot"),
-                button(attrs().id("sandbox-tree-collapse").class_("sandbox-tree-collapse")
+            div(cls("sandbox-tree-foot"),
+                button(attrs().id("sandbox-tree-collapse").cls("sandbox-tree-collapse")
                     .type("button").title("hide files")
                     .aria("label", "Hide file tree"), "«")));
     }
 
     private Element folder(int depth, String key, String name) {
         return div(attrs().cls("sandbox-folder sandbox-depth-" + depth).data("folder", key),
-            span(class_("sandbox-chev"), "▾ "),
+            span(cls("sandbox-chev"), "▾ "),
             "📁 " + name);
     }
 
     private Element kids(String key, Element... children) {
-        return div(attrs().class_("sandbox-kids").data("kids", key), fragment(children));
+        return div(attrs().cls("sandbox-kids").data("kids", key), fragment(children));
     }
 
     private Element file(int depth, String id, String name, String activeId) {

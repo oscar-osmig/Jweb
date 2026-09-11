@@ -5,7 +5,10 @@ import jweb.Template;
 
 import static jweb.El.*;
 import static jweb.Css.*;
-import static jweb.css.Selectors.*;
+import static jweb.css.Selectors.scrollbar;
+import static jweb.css.Selectors.scrollbarThumb;
+import static jweb.css.Selectors.scrollbarThumbHover;
+import static jweb.css.Selectors.scrollbarTrack;
 import static com.osmig.Jweb.app.layout.Theme.*;
 import com.osmig.Jweb.app.subheader.SubheaderSidebar;
 import com.osmig.Jweb.app.subheader.SubheaderScript;
@@ -30,15 +33,15 @@ public class DocsPage implements Template {
     public Element render() {
         // The layout rules live in styles() — the render collects them and
         // emits them in <head>.
-        return div(class_("docs-layout"),
-            new DocSidebar(section, version).render(),
-            div(class_("docs-content"), style()
+        return div(cls("docs-layout"),
+            new DocSidebar(section, version),
+            div(cls("docs-content"), style()
                     .flex(1).minWidth(zero).minHeight(num(0))
                     .padding(SP_8, clamp(SP_4, vw(5), SP_12))
                     .overflowY(auto),
                 versionBanner(),
                 DocContent.get(section, version)),
-            new SubheaderSidebar().render(),
+            new SubheaderSidebar(),
             inlineScript(DocsNavScript.build()),
             inlineScript(SubheaderScript.build()),
             inlineScript(CodeCopyScript.build())

@@ -231,7 +231,6 @@ app/
 | `README.md` | User-facing overview (this doc set) | current |
 | `readme/*.md` | The 12 detailed docs | current |
 | `STANDARD.md` | Coding standards for JWeb apps (file size, DSL-only, separation) | current |
-| `framework/MODERN_ELEMENTS.md` | Modern HTML5 elements guide | ⚠️ contains non-compiling `attrs().onclick(...)` examples |
 | `dsl-todos.md` | DSL improvement tracker | ⚠️ several "remaining" items actually shipped (anchor positioning, scroll snap, popover, IndexedDB, …) |
 | `PLAN.md` | Original design doc (2025-12) | historical — describes aspirational WebSocket state sync |
 | `JWEB_EXAMPLES.md` | 20-level DSL tutorial | ⚠️ stale imports (`Elements.*` vs `El.*`) |

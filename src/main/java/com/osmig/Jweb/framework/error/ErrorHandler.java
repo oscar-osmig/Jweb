@@ -1,5 +1,8 @@
 package com.osmig.Jweb.framework.error;
 
+import jweb.JWebException;
+import jweb.ValidationException;
+
 import com.osmig.Jweb.framework.core.Element;
 import com.osmig.Jweb.framework.util.Json;
 import jweb.ValidationResult;

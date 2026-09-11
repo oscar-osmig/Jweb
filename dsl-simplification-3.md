@@ -302,6 +302,8 @@ remain as `@Deprecated` aliases so existing source keeps compiling.
 | `com.osmig.Jweb.framework.security.Principal` | `jweb.Principal` | subclass alias (statics) |
 | `com.osmig.Jweb.framework.upload.UploadedFile` | `jweb.UploadedFile` | subclass alias |
 | `com.osmig.Jweb.framework.middleware.Middleware` | `jweb.Middleware` | sub-interface alias |
+| `com.osmig.Jweb.framework.error.JWebException` | `jweb.JWebException` (+ an `int` status constructor, no Spring import) | subclass alias |
+| `com.osmig.Jweb.framework.error.ValidationException` | `jweb.ValidationException` | subclass alias |
 | `com.osmig.Jweb.framework.routing.RouteHandler` | `jweb.RouteHandler` | sub-interface alias |
 | `com.osmig.Jweb.framework.seo.Seo` | `jweb.Seo` (`Seo.of(title, description)` works) | subclass alias |
 | `com.osmig.Jweb.framework.db.mongo.Doc` | `jweb.Doc` | subclass alias |

@@ -71,6 +71,25 @@ By design (know them, don't "fix" them):
   OpenAI-compatible endpoint). Don't uncomment them unless you actually want the Spring AI
   stack as an alternative.
 
+## 2026-09-11 — the 3.0 DSL pass, in one place
+
+Six batches landed on `main` between `fe4e331` and the commit that carries this note; the
+before → after detail is in [Migrating to 3.0](../dsl-simplification-3.md). What each one
+guards itself with:
+
+| Batch | What changed | Guard |
+|---|---|---|
+| Short names are the real names | every type an author can name is the real class under `jweb.*` (`Tag`, `Attributes`, `Event`, `Action`, `Val`, `Func`, `Request`, `Response`, `JWebException`, `jweb.css.*`, `jweb.three.*`…); the old FQNs are `@Deprecated` aliases | `jweb/JwebSurfaceTest`, `jweb/NoLongImportsTest` |
+| CSS | page-owned stylesheets (`Template.styles()`, one nonce-stamped `<style>`), `:hover`/`:focus`/`dark`/media on inline styles via generated classes, the `row/stack/center/card/…` mixins, one custom-property `Theme`, the modern modules folded into `Css` and typed, `@starting-style` and friends | `jweb/CssMixinsTest`, `PageStyles*` tests, `DslPass3Test` |
+| JS | behaviors as Actions (`copy`, `scrollSpy`, `navigate().prefetch()`, `splitPane`, `lineGutter`…), `return_()`/`preventDefault()` as statements, custom elements, `jweb.js.Pwa`, `syncState`; the app's own scripts contain no raw JavaScript | `jweb/js/GeneratedJsSyntaxTest`, `JsModuleFacadeTest` |
+| State, routing, API | `live(state, s -> el)` regions, `bind(state)` renders its value, `jweb.Session`, record-bound action routes, `:param` page routes, `app.guard`, Spring-free `jweb.api` parameter annotations, no global handler fallback | `jweb/state/LiveRegionTest`, `NoSpringInAppApiTest` |
+| HTML + forms | `cls`/`classes`/`classIf`, `when(c, a, b)` and `when(c).then().otherwise()`, `text()` deprecated, `.done()` gone, the whole SVG set, one record-bound `form(X.class)` | `jweb/AppDslHygieneTest` |
+| Docs | every Java sample in the docs site, the readmes and the framework's topic files compiles | `jweb/DocSamplesCompileTest`, `ReadmeSamplesCompileTest` |
+
+The rule behind the first row — and the one to keep when adding anything new — is in the
+short-import section below: if the IDE would auto-import `com.osmig…` for a type an author
+writes down, the job is not finished.
+
 ## The handler capability model
 
 Server event handlers (`onClick(e -> ...)`) are not routes: nothing maps a URL to them. Each

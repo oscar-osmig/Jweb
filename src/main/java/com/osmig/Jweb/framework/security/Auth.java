@@ -1,7 +1,7 @@
 package com.osmig.Jweb.framework.security;
 
 import jweb.Principal;
-import com.osmig.Jweb.framework.error.JWebException;
+import jweb.JWebException;
 import jweb.Middleware;
 import jweb.Request;
 import jakarta.servlet.http.HttpSession;

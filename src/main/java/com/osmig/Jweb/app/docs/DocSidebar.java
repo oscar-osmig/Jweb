@@ -24,9 +24,9 @@ public class DocSidebar implements Template {
     public Element render() {
         // Layout props (width, padding, border, overflow) live in DocsPage's
         // .docs-sidebar rules so the phone breakpoint can reshape them.
-        return aside(class_("docs-sidebar"), style()
+        return aside(cls("docs-sidebar"), style()
                 .backgroundColor(hex("#fafafa")),
-            div(class_("docs-sidebar-inner"),
+            div(cls("docs-sidebar-inner"),
                 navSection("Basics",
                     link("intro", "Introduction"),
                     link("setup", "Getting Started"),
@@ -71,8 +71,8 @@ public class DocSidebar implements Template {
      * navigating. Opening a tab as well would just leave an empty one behind.
      */
     private Element aiDocsLink() {
-        return div(class_("docs-nav-section"),
-            h2(class_("docs-nav-title"), style()
+        return div(cls("docs-nav-section"),
+            h2(cls("docs-nav-title"), style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), "For AI"),
@@ -101,12 +101,12 @@ public class DocSidebar implements Template {
     }
 
     private Element navSection(String title, Element... links) {
-        return div(class_("docs-nav-section"),
-            h2(class_("docs-nav-title"), style()
+        return div(cls("docs-nav-section"),
+            h2(cls("docs-nav-title"), style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), title),
-            nav(class_("docs-nav-links"), fragment(links)));
+            nav(cls("docs-nav-links"), fragment(links)));
     }
 
     /**

@@ -547,10 +547,10 @@ public class JWebController {
         // A record that would not bind (req.bind(...)): 400 with the message
         if (e instanceof jweb.BindException bind) {
             return com.osmig.Jweb.framework.error.ErrorHandler.toResponse(
-                com.osmig.Jweb.framework.error.JWebException.badRequest(bind.getMessage()), path, accept);
+                jweb.JWebException.badRequest(bind.getMessage()), path, accept);
         }
         // Framework exceptions carry their status (Auth.requireRole → 401/403, ...)
-        if (e instanceof com.osmig.Jweb.framework.error.JWebException jweb) {
+        if (e instanceof jweb.JWebException jweb) {
             if (jweb.getStatusCode() >= 500) {
                 com.osmig.Jweb.framework.util.Log.error("Unhandled error while handling request: {}", e.getMessage(), e);
             }

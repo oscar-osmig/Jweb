@@ -2,7 +2,7 @@ package com.osmig.Jweb.framework.api;
 
 import com.osmig.Jweb.framework.JWeb;
 import com.osmig.Jweb.framework.error.ErrorHandler;
-import com.osmig.Jweb.framework.error.JWebException;
+import jweb.JWebException;
 import com.osmig.Jweb.framework.routing.Guards;
 import com.osmig.Jweb.framework.server.CurrentRequest;
 import com.osmig.Jweb.framework.server.JWebController;

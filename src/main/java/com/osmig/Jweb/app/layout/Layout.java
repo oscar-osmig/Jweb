@@ -80,9 +80,8 @@ public class Layout implements Template {
                 .at(0, style().backgroundPosition(percent(0), percent(50)))
                 .at(50, style().backgroundPosition(percent(100), percent(50)))
                 .at(100, style().backgroundPosition(percent(0), percent(50))))
-            // The record-driven forms ship their own class names; this is the
-            // one place the app dresses them.
-            .raw(jweb.Form.styles())
+            // The record-driven forms bring their own base rules and class
+            // names; this is the one place the app dresses them.
             .rule(".jweb-label", style().color(Theme.TEXT))
             .rule(".jweb-control", style().border(px(1), solid, Theme.BORDER))
             .rule(".jweb-control:focus", style().borderColor(Theme.PRIMARY))

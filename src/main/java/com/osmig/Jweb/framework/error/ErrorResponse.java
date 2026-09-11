@@ -1,5 +1,8 @@
 package com.osmig.Jweb.framework.error;
 
+import jweb.JWebException;
+import jweb.ValidationException;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.Instant;

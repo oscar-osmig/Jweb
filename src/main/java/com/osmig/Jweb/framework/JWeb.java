@@ -311,7 +311,7 @@ public class JWeb {
                 params = RecordBinder.bind(type, request);
             } catch (BindException e) {
                 return com.osmig.Jweb.framework.error.ErrorHandler.toResponse(
-                    com.osmig.Jweb.framework.error.JWebException.badRequest(e.getMessage()),
+                    jweb.JWebException.badRequest(e.getMessage()),
                     request.path(), request.header("Accept"));
             }
             return handler.handle(request, params);
