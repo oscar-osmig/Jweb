@@ -8,7 +8,7 @@ public final class FormsBuilders {
 
     public static Element render() {
         return section(
-            before("v3.0.0",
+            before("v3.0.1",
                 h3Title("Form Input Builders"),
                 para("JWeb provides type-safe input builders with validation and styling built-in."),
                 codeBlock("""
@@ -23,7 +23,7 @@ Input.password("password").minLength(8).required()
 field("Full Name", textInput("name"))
 field("Email Address", emailInput("email", "user@example.com"))""")),
 
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("A Form Is a Record"),
                 para("form(SomeRecord.class) renders the whole form: one labelled field per "
                      + "record component, the control type read from the Java type, the CSRF "

@@ -13,7 +13,7 @@ class DocVersionsTest {
 
     @Test
     void latestIsNewestFirstInTheRegistry() {
-        assertEquals("v3.0.0", DocVersions.latest());
+        assertEquals("v3.0.1", DocVersions.latest());
         assertEquals(DocVersions.latest(), DocVersions.all().get(0),
             "the registry must be newest-first — latest() and the dropdown depend on it");
         assertTrue(DocVersions.all().contains("v2.0.0"));
@@ -21,9 +21,9 @@ class DocVersionsTest {
 
     @Test
     void normalizeMapsMissingAndUnknownToLatest() {
-        assertEquals("v3.0.0", DocVersions.normalize(null));
-        assertEquals("v3.0.0", DocVersions.normalize(""));
-        assertEquals("v3.0.0", DocVersions.normalize("v9.9.9"));
+        assertEquals("v3.0.1", DocVersions.normalize(null));
+        assertEquals("v3.0.1", DocVersions.normalize(""));
+        assertEquals("v3.0.1", DocVersions.normalize("v9.9.9"));
         assertEquals("v2.0.0", DocVersions.normalize("v2.0.0"));
     }
 
@@ -38,7 +38,7 @@ class DocVersionsTest {
 
     @Test
     void latestHrefStaysCanonical() {
-        assertEquals("/docs?section=setup", DocVersions.href("setup", "v3.0.0"));
+        assertEquals("/docs?section=setup", DocVersions.href("setup", "v3.0.1"));
         assertEquals("/docs?section=setup&v=v2.0.0", DocVersions.href("setup", "v2.0.0"));
     }
 
@@ -61,7 +61,7 @@ class DocVersionsTest {
         String html = SetupSection.render("v2.0.0").toHtml();
         assertTrue(html.contains("ver-picker"), "chip present on the dependency block");
         assertTrue(html.contains("v2.0.0 ▾"), "chip shows the selected version");
-        assertTrue(html.contains("v3.0.0 (latest)"), "dropdown labels the latest");
+        assertTrue(html.contains("v3.0.1 (latest)"), "dropdown labels the latest");
         assertTrue(html.contains("ver-picker-item current"), "current version marked");
         assertTrue(html.contains("href=\"/docs?section=setup\""), "latest entry canonical");
         assertTrue(html.contains("href=\"/docs?section=setup&amp;v=v2.0.0\""),
@@ -92,7 +92,7 @@ class DocVersionsTest {
         assertFalse(old.contains("3D Scenes"), "gated section hidden from nav");
         assertTrue(old.contains("/docs?section=elements&amp;v=v2.0.0"), "links keep the version");
 
-        String latest = new DocSidebar("setup", "v3.0.0").render().toHtml();
+        String latest = new DocSidebar("setup", "v3.0.1").render().toHtml();
         assertTrue(latest.contains("3D Scenes"));
         assertTrue(latest.contains("href=\"/docs?section=elements\""), "latest links canonical");
     }
@@ -176,7 +176,7 @@ class DocVersionsTest {
     void docsPageShowsABannerOnlyForOldVersions() {
         String old = new DocsPage("setup", "v2.0.0").render().toHtml();
         assertTrue(old.contains("Viewing documentation for v2.0.0"), "banner on old version");
-        assertTrue(old.contains("Switch to v3.0.0"), "banner offers the latest");
+        assertTrue(old.contains("Switch to v3.0.1"), "banner offers the latest");
 
         String latest = new DocsPage("setup", null).render().toHtml();
         assertFalse(latest.contains("Viewing documentation for"), "no banner on latest");

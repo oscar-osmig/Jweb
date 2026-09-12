@@ -15,7 +15,7 @@ public final class ConditionalsSection {
                  "and handle multiple cases cleanly."),
 
             docSubtitle("Overview"),
-            before("v3.0.0",
+            before("v3.0.1",
                 para("Use when() for optional content, cond() for either/or choices, " +
                      "and each() for list iteration."),
                 codeBlock("""
@@ -29,7 +29,7 @@ when(condition)
 
 // Iterate
 each(list, item -> renderItem(item))""")),
-            since("v3.0.0",
+            since("v3.0.1",
                 para("Two shapes: when(condition, element) for optional content and " +
                      "when(condition, ifTrue, ifFalse) for a choice — the same call, one " +
                      "argument longer. When a branch is long enough that the argument list " +

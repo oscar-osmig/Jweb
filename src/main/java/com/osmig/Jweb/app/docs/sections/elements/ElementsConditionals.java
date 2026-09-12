@@ -35,7 +35,7 @@ div(
     when(hasNotifications, () -> notificationBadge(count))
 )"""),
 
-            before("v3.0.0",
+            before("v3.0.1",
                 h3Title("when().then().otherwise() - If/Else"),
                 para("Render different content for true and false conditions."),
                 codeBlock("""
@@ -97,7 +97,7 @@ div(
     )
 )""")),
 
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("Either/Or"),
                 para("Render different content for true and false conditions with a Java ternary."),
                 codeBlock("""

@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 3.0.0** | **Last Updated: 2026-09-04**
+**Version 3.0.1** | **Last Updated: 2026-09-11**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v3.0.0</version>
+    <version>v3.0.1</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.0' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.1' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -91,7 +91,7 @@ Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest co
 
 ### Upgrading to 3.0
 
-3.0.0 is a syntax release: handlers, swaps and state bindings are plain element arguments,
+3.0.1 is a syntax release: handlers, swaps and state bindings are plain element arguments,
 a String argument is always text, the four DSL imports (`El`, `Css`, `Js`, `Three`) coexist
 without ambiguity, and everything that emits JavaScript is an `Action` rather than a String.
 Recompile against the new jar.

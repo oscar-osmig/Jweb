@@ -42,7 +42,7 @@ when(cart.hasItems(), () ->
     )
 )"""),
 
-            before("v3.0.0",
+            before("v3.0.1",
                 h3Title("Inverse Conditions"),
                 para("Negate the condition to show elements only when it is false."),
                 codeBlock("""
@@ -61,7 +61,7 @@ div(
     when(!isLoggedIn, () -> loginButton())
 )""")),
 
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("Inverse Conditions"),
                 para("A one-sided when() takes a negated condition; two branches are one " +
                      "call, so the predicate is never written twice."),
@@ -82,7 +82,7 @@ when(items.isEmpty(), emptyState(), itemList(items))
 // Same for a menu
 when(isLoggedIn, userMenu(), loginButton())""")),
 
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("Conditional Text and Classes"),
                 para("A String branch is text, so when() also composes class names: " +
                      "classes(...) joins its parts and skips the ones that did not match."),

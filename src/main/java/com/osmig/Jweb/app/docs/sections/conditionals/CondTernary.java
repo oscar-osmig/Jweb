@@ -8,7 +8,7 @@ public final class CondTernary {
 
     public static Element render() {
         return section(
-            before("v3.0.0",
+            before("v3.0.1",
                 h3Title("Either/Or"),
                 para("Choose between two elements with when().then().otherwise()."),
                 codeBlock("""
@@ -31,7 +31,7 @@ when(isPremium)
     .otherwise(when(isRegistered)
         .then(basicContent())
         .otherwise(guestContent()))""")),
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("Either/Or"),
                 para("when(condition, ifTrue, ifFalse) is the choice: the same call as the "
                      + "one-sided form with one more argument. Each branch may be an "

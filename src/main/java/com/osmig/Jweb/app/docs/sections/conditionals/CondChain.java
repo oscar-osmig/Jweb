@@ -8,7 +8,7 @@ public final class CondChain {
 
     public static Element render() {
         return section(
-            before("v3.0.0",
+            before("v3.0.1",
                 h3Title("If-Elif-Else Chains"),
                 para("Handle multiple conditions with fluent chain."),
                 codeBlock("""
@@ -48,7 +48,7 @@ match(
     otherwise(unknown())
 )""")),
 
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("Multi-Way Choices"),
                 para("when() covers one branch or two. Branching on a value is what Java's " +
                      "switch expression is for, so there is no elif chain and no match() — " +

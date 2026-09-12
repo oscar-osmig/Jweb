@@ -241,7 +241,7 @@ picture(
     img(attrs().src("/small.jpg").alt("Responsive image"))
 )"""),
 
-            before("v3.0.0",
+            before("v3.0.1",
                 h3Title("Event Handlers"),
                 para("Attach JavaScript event handlers."),
                 codeBlock("""
@@ -276,7 +276,7 @@ button(attrs().onClick(show("panel")), "Show")
 button(attrs().onClick(hide("modal")), "Close")
 button(attrs().onClick(toggle("dropdown")), "Toggle")""")),
 
-            since("v3.0.0",
+            since("v3.0.1",
                 h3Title("Event Handlers"),
                 para("Handlers are plain element arguments — no attrs() bridge needed."),
                 codeBlock("""

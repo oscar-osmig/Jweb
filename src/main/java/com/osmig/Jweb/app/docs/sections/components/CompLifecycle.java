@@ -61,7 +61,7 @@ public String pageTitle() {
 public String description() {
     return product.getDescription().substring(0, 150);
 }"""),
-            before("v3.0.0",
+            before("v3.0.1",
                 para("Before 3.0 these returned Optional<String> (pageTitle() / metaDescription()); " +
                      "an Optional metaDescription() override still feeds description().")),
 

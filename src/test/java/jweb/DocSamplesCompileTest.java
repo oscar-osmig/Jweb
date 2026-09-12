@@ -62,7 +62,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * <p><b>What is not compiled.</b> A block tagged with a language
  * ({@code codeBlock("bash", …)}, or {@code // lang: bash} above a constant) is that
- * language, not Java. A block gated behind {@code before("v3.0.0", …)} is the old syntax
+ * language, not Java. A block gated behind {@code before("v3.0.1", …)} is the old syntax
  * on purpose. A block with a bare {@code ...} or {@code …} elision cannot be Java by
  * construction. {@code codeBlock("style", …)} is the one middle case: a chain of
  * {@link jweb.Style} methods whose receiver the sample elides, compiled with
@@ -148,7 +148,7 @@ class DocSamplesCompileTest {
             // the marker must sit on the line directly above the declaration, or it would
             // be picked up by the next constant down the file
             "(?s).*//\\s*lang:\\s*(\\w+)[^\\n]*\\n[^\\n]*String\\s+[A-Z][A-Z0-9_]*\\s*=\\s*$");
-    /** {@code before("v3.0.0", …)} — content kept for readers of an older release. */
+    /** {@code before("v3.0.1", …)} — content kept for readers of an older release. */
     static final Pattern BEFORE_CALL = Pattern.compile("(?<![.\\w])before\\s*\\(\\s*\"");
     /** A bare {@code ...} or {@code …}: the sample is a fragment on purpose. */
     static final Pattern ELISION = Pattern.compile("(?<![\\w>\\]])\\.\\.\\.|\\u2026");

@@ -14,14 +14,14 @@ public final class JavaScriptSection {
                  "compile-time checks, and no context switching."),
 
             docSubtitle("Import Statements"),
-            before("v3.0.0",
+            before("v3.0.1",
                 codeBlock("""
 // Core JS DSL — script building, DOM, events, async/fetch
 import static jweb.Js.*;
 
 // High-level UI actions (separate import — shares names with Js)
 import static jweb.Actions.*;""")),
-            since("v3.0.0",
+            since("v3.0.1",
                 codeBlock("""
 // One import — Actions and Js are the same surface now: script building,
 // DOM, events, async/fetch, and the high-level UI actions

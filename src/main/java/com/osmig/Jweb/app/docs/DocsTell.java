@@ -288,7 +288,7 @@ public final class DocsTell {
 
             ## Do not emit 1.x or 2.x syntax
 
-            Version 3.0.0 is source- and binary-incompatible with 2.x, and these changes do
+            Version 3.0.1 is source- and binary-incompatible with 2.x, and these changes do
             not produce a compile error:
 
             - `a("/home", "Home")` now renders the text `/homeHome`. Emit
