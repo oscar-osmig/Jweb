@@ -1,37 +1,14 @@
 package com.osmig.Jweb.framework.middleware;
 
-import jweb.Request;
-
 /**
- * Represents the continuation of the middleware chain.
+ * The pre-3.0 spelling of the middleware continuation.
  *
- * <p>Middleware implementations call {@code chain.next()} to pass
- * control to the next middleware or the final route handler.</p>
- *
- * <p>Usage in middleware:</p>
- * <pre>
- * (req, chain) -> {
- *     // Before request processing
- *     logger.info("Received: " + req.path());
- *
- *     // Continue to next middleware or handler
- *     Object result = chain.next();
- *
- *     // After request processing
- *     logger.info("Completed");
- *
- *     return result;
- * }
- * </pre>
+ * @deprecated Replaced by {@link jweb.MiddlewareChain} — the type
+ *             {@code Middleware.handle} receives. A class that implements
+ *             {@code Middleware} declares that parameter as
+ *             {@code jweb.MiddlewareChain}.
  */
+@Deprecated
 @FunctionalInterface
-public interface MiddlewareChain {
-
-    /**
-     * Continues to the next middleware or route handler.
-     *
-     * @return the result from the route handler
-     * @throws Exception if the handler throws
-     */
-    Object next() throws Exception;
+public interface MiddlewareChain extends jweb.MiddlewareChain {
 }

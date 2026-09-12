@@ -544,28 +544,198 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
     }
     /** Sets the d attribute for SVG path. @param value path data @return this for chaining */
     default SELF d(String value) { return set("d", value); }
+
+    // Every SVG coordinate and length takes an int, a double or a String:
+    // circle(attrs().cx(32).cy(32).r(28)), rect(attrs().x("10%").width(180.5))
+
     /** Sets the cx attribute for SVG circles. @param value center x @return this for chaining */
     default SELF cx(String value) { return set("cx", value); }
+    /** Sets the cx attribute from a number. */
+    default SELF cx(int value) { return set("cx", String.valueOf(value)); }
+    /** Sets the cx attribute from a number. */
+    default SELF cx(double value) { return set("cx", String.valueOf(value)); }
     /** Sets the cy attribute for SVG circles. @param value center y @return this for chaining */
     default SELF cy(String value) { return set("cy", value); }
+    /** Sets the cy attribute from a number. */
+    default SELF cy(int value) { return set("cy", String.valueOf(value)); }
+    /** Sets the cy attribute from a number. */
+    default SELF cy(double value) { return set("cy", String.valueOf(value)); }
     /** Sets the r attribute for SVG circles. @param value radius @return this for chaining */
     default SELF r(String value) { return set("r", value); }
+    /** Sets the r attribute from a number. */
+    default SELF r(int value) { return set("r", String.valueOf(value)); }
+    /** Sets the r attribute from a number. */
+    default SELF r(double value) { return set("r", String.valueOf(value)); }
+    /** Sets the rx attribute (x radius, or a rect's corner radius). */
+    default SELF rx(String value) { return set("rx", value); }
+    /** Sets the rx attribute from a number. */
+    default SELF rx(int value) { return set("rx", String.valueOf(value)); }
+    /** Sets the rx attribute from a number. */
+    default SELF rx(double value) { return set("rx", String.valueOf(value)); }
+    /** Sets the ry attribute (y radius, or a rect's corner radius). */
+    default SELF ry(String value) { return set("ry", value); }
+    /** Sets the ry attribute from a number. */
+    default SELF ry(int value) { return set("ry", String.valueOf(value)); }
+    /** Sets the ry attribute from a number. */
+    default SELF ry(double value) { return set("ry", String.valueOf(value)); }
     /** Sets the x attribute for SVG elements. @param value x coordinate @return this for chaining */
     default SELF x(String value) { return set("x", value); }
+    /** Sets the x attribute from a number. */
+    default SELF x(int value) { return set("x", String.valueOf(value)); }
+    /** Sets the x attribute from a number. */
+    default SELF x(double value) { return set("x", String.valueOf(value)); }
     /** Sets the y attribute for SVG elements. @param value y coordinate @return this for chaining */
     default SELF y(String value) { return set("y", value); }
+    /** Sets the y attribute from a number. */
+    default SELF y(int value) { return set("y", String.valueOf(value)); }
+    /** Sets the y attribute from a number. */
+    default SELF y(double value) { return set("y", String.valueOf(value)); }
     /** Sets the x1 attribute for SVG lines. @param value start x @return this for chaining */
     default SELF x1(String value) { return set("x1", value); }
+    /** Sets the x1 attribute from a number. */
+    default SELF x1(int value) { return set("x1", String.valueOf(value)); }
+    /** Sets the x1 attribute from a number. */
+    default SELF x1(double value) { return set("x1", String.valueOf(value)); }
     /** Sets the y1 attribute for SVG lines. @param value start y @return this for chaining */
     default SELF y1(String value) { return set("y1", value); }
+    /** Sets the y1 attribute from a number. */
+    default SELF y1(int value) { return set("y1", String.valueOf(value)); }
+    /** Sets the y1 attribute from a number. */
+    default SELF y1(double value) { return set("y1", String.valueOf(value)); }
     /** Sets the x2 attribute for SVG lines. @param value end x @return this for chaining */
     default SELF x2(String value) { return set("x2", value); }
+    /** Sets the x2 attribute from a number. */
+    default SELF x2(int value) { return set("x2", String.valueOf(value)); }
+    /** Sets the x2 attribute from a number. */
+    default SELF x2(double value) { return set("x2", String.valueOf(value)); }
     /** Sets the y2 attribute for SVG lines. @param value end y @return this for chaining */
     default SELF y2(String value) { return set("y2", value); }
+    /** Sets the y2 attribute from a number. */
+    default SELF y2(int value) { return set("y2", String.valueOf(value)); }
+    /** Sets the y2 attribute from a number. */
+    default SELF y2(double value) { return set("y2", String.valueOf(value)); }
+    /** Sets the dx attribute (a text run's x offset). */
+    default SELF dx(String value) { return set("dx", value); }
+    /** Sets the dx attribute from a number. */
+    default SELF dx(int value) { return set("dx", String.valueOf(value)); }
+    /** Sets the dx attribute from a number. */
+    default SELF dx(double value) { return set("dx", String.valueOf(value)); }
+    /** Sets the dy attribute (a text run's y offset). */
+    default SELF dy(String value) { return set("dy", value); }
+    /** Sets the dy attribute from a number. */
+    default SELF dy(int value) { return set("dy", String.valueOf(value)); }
+    /** Sets the dy attribute from a number. */
+    default SELF dy(double value) { return set("dy", String.valueOf(value)); }
+    /** Sets the width attribute from a fractional number. */
+    default SELF width(double value) { return set("width", String.valueOf(value)); }
+    /** Sets the height attribute from a fractional number. */
+    default SELF height(double value) { return set("height", String.valueOf(value)); }
     /** Sets the points attribute for SVG polygons/polylines. @param value coordinate pairs @return this for chaining */
     default SELF points(String value) { return set("points", value); }
     /** Sets the transform attribute for SVG transformations. @param value transform functions @return this for chaining */
     default SELF transform(String value) { return set("transform", value); }
+    /** Sets the pathLength attribute. */
+    default SELF pathLength(String value) { return set("pathLength", value); }
+    /** Sets the pathLength attribute from a number. */
+    default SELF pathLength(int value) { return set("pathLength", String.valueOf(value)); }
+    /** Sets the pathLength attribute from a number. */
+    default SELF pathLength(double value) { return set("pathLength", String.valueOf(value)); }
+
+    // SVG paint
+
+    /** Sets the stroke-width attribute from a fractional number. */
+    default SELF strokeWidth(double value) { return set("stroke-width", String.valueOf(value)); }
+    /** Sets the stroke-linecap attribute: {@code butt}, {@code round} or {@code square}. */
+    default SELF strokeLinecap(String value) { return set("stroke-linecap", value); }
+    /** Sets the stroke-linejoin attribute: {@code miter}, {@code round} or {@code bevel}. */
+    default SELF strokeLinejoin(String value) { return set("stroke-linejoin", value); }
+    /** Sets the stroke-dasharray attribute, e.g. {@code "4 2"}. */
+    default SELF strokeDasharray(String value) { return set("stroke-dasharray", value); }
+    /** Sets the stroke-dashoffset attribute. */
+    default SELF strokeDashoffset(String value) { return set("stroke-dashoffset", value); }
+    /** Sets the stroke-dashoffset attribute from a number. */
+    default SELF strokeDashoffset(double value) { return set("stroke-dashoffset", String.valueOf(value)); }
+    /** Sets the opacity attribute. */
+    default SELF opacity(String value) { return set("opacity", value); }
+    /** Sets the opacity attribute from a number in {@code 0..1}. */
+    default SELF opacity(double value) { return set("opacity", String.valueOf(value)); }
+    /** Sets the fill-opacity attribute. */
+    default SELF fillOpacity(String value) { return set("fill-opacity", value); }
+    /** Sets the fill-opacity attribute from a number in {@code 0..1}. */
+    default SELF fillOpacity(double value) { return set("fill-opacity", String.valueOf(value)); }
+    /** Sets the stroke-opacity attribute. */
+    default SELF strokeOpacity(String value) { return set("stroke-opacity", value); }
+    /** Sets the stroke-opacity attribute from a number in {@code 0..1}. */
+    default SELF strokeOpacity(double value) { return set("stroke-opacity", String.valueOf(value)); }
+    /** Sets the fill-rule attribute: {@code nonzero} or {@code evenodd}. */
+    default SELF fillRule(String value) { return set("fill-rule", value); }
+    /** Sets the clip-rule attribute: {@code nonzero} or {@code evenodd}. */
+    default SELF clipRule(String value) { return set("clip-rule", value); }
+
+    // SVG text
+
+    /** Sets the text-anchor attribute: {@code start}, {@code middle} or {@code end}. */
+    default SELF textAnchor(String value) { return set("text-anchor", value); }
+    /** Sets the dominant-baseline attribute, e.g. {@code middle}. */
+    default SELF dominantBaseline(String value) { return set("dominant-baseline", value); }
+    /** Sets the font-size attribute. */
+    default SELF fontSize(String value) { return set("font-size", value); }
+    /** Sets the font-size attribute from a number. */
+    default SELF fontSize(int value) { return set("font-size", String.valueOf(value)); }
+    /** Sets the font-size attribute from a number. */
+    default SELF fontSize(double value) { return set("font-size", String.valueOf(value)); }
+    /** Sets the font-family attribute. */
+    default SELF fontFamily(String value) { return set("font-family", value); }
+    /** Sets the font-weight attribute. */
+    default SELF fontWeight(String value) { return set("font-weight", value); }
+    /** Sets the font-weight attribute from a number. */
+    default SELF fontWeight(int value) { return set("font-weight", String.valueOf(value)); }
+
+    // SVG gradients, filters and references
+
+    /** Sets a gradient stop's offset attribute, e.g. {@code "50%"}. */
+    default SELF offset(String value) { return set("offset", value); }
+    /** Sets a gradient stop's offset attribute from a number in {@code 0..1}. */
+    default SELF offset(double value) { return set("offset", String.valueOf(value)); }
+    /** Sets a gradient stop's stop-color attribute. */
+    default SELF stopColor(String value) { return set("stop-color", value); }
+    /** Sets a gradient stop's stop-opacity attribute. */
+    default SELF stopOpacity(String value) { return set("stop-opacity", value); }
+    /** Sets a gradient stop's stop-opacity attribute from a number in {@code 0..1}. */
+    default SELF stopOpacity(double value) { return set("stop-opacity", String.valueOf(value)); }
+    /** Sets the xlink:href attribute (the pre-SVG 2 spelling of href). */
+    default SELF xlinkHref(String value) { return set("xlink:href", value); }
+    /** Sets a blur filter's stdDeviation attribute. */
+    default SELF stdDeviation(String value) { return set("stdDeviation", value); }
+    /** Sets a blur filter's stdDeviation attribute from a number. */
+    default SELF stdDeviation(double value) { return set("stdDeviation", String.valueOf(value)); }
+
+    // SVG animation (animate, animateTransform, animateMotion)
+
+    /** Sets the attributeName attribute of an animation element. */
+    default SELF attributeName(String value) { return set("attributeName", value); }
+    /** Sets the from attribute of an animation element. */
+    default SELF from(String value) { return set("from", value); }
+    /** Sets the from attribute from a number. */
+    default SELF from(double value) { return set("from", String.valueOf(value)); }
+    /** Sets the to attribute of an animation element. */
+    default SELF to(String value) { return set("to", value); }
+    /** Sets the to attribute from a number. */
+    default SELF to(double value) { return set("to", String.valueOf(value)); }
+    /** Sets the dur attribute, e.g. {@code "2s"}. */
+    default SELF dur(String value) { return set("dur", value); }
+    /** Sets the repeatCount attribute, e.g. {@code "indefinite"}. */
+    default SELF repeatCount(String value) { return set("repeatCount", value); }
+    /** Sets the repeatCount attribute from a number. */
+    default SELF repeatCount(int value) { return set("repeatCount", String.valueOf(value)); }
+    /** Sets the begin attribute, e.g. {@code "0s"} or {@code "click"}. */
+    default SELF begin(String value) { return set("begin", value); }
+    /** Sets the values attribute, a {@code ;}-separated list. */
+    default SELF values(String value) { return set("values", value); }
+    /** Sets the keyTimes attribute. */
+    default SELF keyTimes(String value) { return set("keyTimes", value); }
+    /** Sets the calcMode attribute. */
+    default SELF calcMode(String value) { return set("calcMode", value); }
 
     // ==================== Microdata Attributes ====================
 

@@ -1,6 +1,7 @@
 package com.osmig.Jweb.framework.middleware;
 
 import jweb.Middleware;
+import jweb.MiddlewareChain;
 import jweb.Request;
 
 import java.util.ArrayList;

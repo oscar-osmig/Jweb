@@ -248,24 +248,22 @@ a ready queue behaviors install through, and `swap()` gained `opts.push`, `opts.
 shared TTL cache (`data-swap-cache`), and a `pushState`-before-dispatch order so a
 `jweb:swap` listener sees the URL it navigated to.
 
-### The ten most-used browser modules under `jweb.Js.*`
+### The browser modules take their own import
 
-`JSClipboard`, `JSObservers`, `JSStorage`, `JSHistory`, `JSUrl`, `JSFormData`,
-`JSAnimation`, `JSWebAnimations`, `JSMedia` and `JSIndexedDB` are re-exported from
-`jweb.Js`, so `local()`, `cookie("theme")`, `replaceState("/x")`, `openDB("app", 1)`,
-`intersection()` and `writeText(...)` need no second import. Their own imports still work
-and are unchanged.
+The pass briefly re-exported the ten most-used browser modules (`JSClipboard`,
+`JSObservers`, `JSStorage`, `JSHistory`, `JSUrl`, `JSFormData`, `JSAnimation`,
+`JSWebAnimations`, `JSMedia`, `JSIndexedDB`) from `jweb.Js`. The docs compile test showed
+what that costs: the documented `import static jweb.js.JSStorage.*` next to
+`import static jweb.Js.*` became an "ambiguous reference" for every shared name, because
+Java has no way to tell two identical statics apart and a class cannot inherit from ten.
+The re-exports are gone again (the `Modules` layer and `JsModuleFacadeTest` with them):
+`Js.*` is the page-level DSL, and a browser API is reached through its module's own import,
+exactly as the module guides show. `jweb.js.ModuleImportsCoexistTest` compiles all ten
+module imports together with the four DSL wildcards.
 
-**Nothing was renamed.** Where forwarding a name would have captured a call that means
-something else, the name stays module-only instead: `get`, `delete`, `pushState`,
-`onPopState`, `eventKey` (the Actions layer owns those); `animate`, `currentTime`,
-`currentUrl`, `disconnect`, `getQueryParam`, `pause`, `play`, `playbackRate`,
-`setCurrentTime`, `setPlaybackRate`, `toObject` (two of the ten declare each); `audio`,
-`video`, `src`, `href`, `url`, `search`, `duration`, `onAnimationEnd`, `onCancel`,
-`onTransitionEnd` (the HTML or CSS DSL owns those under the four-wildcard import).
-Renaming any of them would have broken a module's own readable API to buy an alias.
-`JsModuleFacadeTest` fails if a module grows a static the facade does not forward, or if
-an excluded name has no collision to justify it.
+| Was (briefly, unreleased) | Now |
+|---|---|
+| `import static jweb.Js.*;` alone for `local()`, `cookie("theme")`, `replaceState("/x")`, `openDB("app", 1)` | add `import static jweb.js.JSStorage.*;` (or `JSHistory`, `JSIndexedDB`, …) — the import the module guides always showed |
 
 ## Async
 
@@ -334,6 +332,15 @@ remain as `@Deprecated` aliases so existing source keeps compiling.
 | `com.osmig.Jweb.framework.forms.Form` (the fluent builder), `com.osmig.Jweb.framework.forms.FormModel`, `com.osmig.Jweb.framework.elements.Form` | `jweb.Form<T extends Record>` (a new class, not an alias) | **deleted** |
 | — | `jweb.Form.Bound<T>`, `jweb.Form.Field`, and the `@Form.Required/Email/Password/Multiline/Label/Length` hints | new |
 | `com.osmig.Jweb.framework.elements.Elements.Condition` (the `when(c)` chain) | `jweb.When` | **deleted** |
+| `com.osmig.Jweb.framework.routing.Query<T>` | `jweb.QueryParam<T>` (renamed: `Query` is the `@Query` annotation in `jweb.api`) | subclass alias with covariant `of`/`orElse`/`required` |
+| `com.osmig.Jweb.framework.ai.AI` / `Chat` / `Agent` / `Tool` | `jweb.AI` / `jweb.Chat` / `jweb.Agent` / `jweb.Tool` | subclass aliases |
+| `com.osmig.Jweb.framework.security.RateLimit` / `Cors` / `OAuth2` | `jweb.RateLimit` / `jweb.Cors` / `jweb.OAuth2` (the nested `RateLimitBuilder`, `CorsBuilder`, `Provider`… move with them) | subclass aliases (statics and nested types inherited) |
+| `com.osmig.Jweb.framework.server.Cookie` | `jweb.http.Cookie` (a sub-package: `Cookie` is the `@Cookie` annotation in `jweb.api`) | subclass alias |
+| `com.osmig.Jweb.framework.middleware.MiddlewareChain` | `jweb.MiddlewareChain` — what `Middleware.handle` receives | sub-interface alias |
+| `com.osmig.Jweb.framework.health.Health` / `HealthStatus` / `HealthCheck` | `jweb.Health` / `jweb.HealthStatus` / `jweb.HealthCheck` | subclass / sub-interface aliases |
+| `com.osmig.Jweb.framework.metrics.Metrics` | `jweb.Metrics` (`Counter`, `Gauge`, `Timer` nested) | subclass alias |
+| `com.osmig.Jweb.framework.context.Context` / `ContextKey<T>` | `jweb.Context` / `jweb.ContextKey<T>` | subclass alias / **deleted** (a record cannot be aliased) |
+| `com.osmig.Jweb.framework.navigation.Link` / `Navigation` | `jweb.Link` / `jweb.Navigation` | subclass aliases |
 
 Also in this pass:
 
@@ -386,6 +393,22 @@ a `ResponseEntity<Void>` — existing declarations keep compiling.
 `title(...)` element factory inside every Template class (a member shadows a static import
 by simple name, whatever the arity) — `head(title("x"))` would stop compiling. So the plain
 hooks are `pageTitle()` and `description()`.
+
+---
+
+## What the docs compile test found (2026-09-11)
+
+Compiling every documentation sample turned up gaps that were each a violation of a rule
+above. Fixed at the source:
+
+| Was | Now |
+|---|---|
+| `State<Integer> clicks = useState(0);` under `import jweb.*` — "type State does not take parameters", because `jweb.State` is the hooks facade and owns the simple name | unchanged by design: the value type is `jweb.state.State<T>` and takes its own import (`import jweb.state.State;`) next to `import jweb.*`, which shadows the facade for the type position while `import static jweb.State.*` still supplies the hooks; `jweb.State`'s Javadoc now shows exactly that |
+| `app.post("/x", req -> …)` — ambiguous between `post(String, RouteHandler)` and `post(String, Function<Request,Object>)`; the framework's own app cast every lambda to `(RouteHandler)` | the `Function` overload is **deleted**; a lambda is a `RouteHandler`. (`get` was never ambiguous: `() -> …` is the `Supplier` form, `ctx -> …` the handler.) |
+| `Query.of("page", Integer.class)`, `AI.chat()`, `Tool.of(…)`, `RateLimit.perMinute(n)`, `Cors.allowAll()`, `OAuth2.google()`, `Cookie.of(…)`, `MiddlewareChain`, `Health.register(…)`, `HealthStatus.up()`, `Metrics.counter(…)`, `Context.key(…)`, `ContextKey<T>`, `Link.to(…)`, `Navigation.script()` — long names only | the `jweb.*` spellings listed in the table above; `Query` became `QueryParam` and `Cookie` went to `jweb.http` so neither collides with the `jweb.api` annotation of the same name |
+| `style().transform("rotate(45deg)")`, `style().animationPlayState(paused)` — no such overloads | added, with the String twin of every remaining `CSSValue`-only setter (`borderTop`…`borderLeft`, `size`, `transitionAll`/`Colors`/`Background`/`Transform`/`Opacity`, `scrollbarWidth`/`Gutter`, `textBoxTrim`/`Edge`, `interpolateSize`) and a typed twin for `transformOrigin`, `objectPosition`, `textShadow`, `fontFamily`; `jweb/StylePropertyPairsTest` checks the pairing both ways by reflection, with an allow-list for the free-text properties |
+| `circle(attrs().cx(32))` — `cx`/`cy`/`r`/`x`/`y`/`x1`…`y2` were String-only and `offset`, `strokeLinecap`, `opacity`, `stopColor`, `fontSize`… were missing from `attrs()`; the free-static form `circle(cx(50), …)` needed `jweb.el.SVGElements.*`, which is ambiguous with `El.*` | every SVG coordinate and length on `attrs()` takes `int`, `double` or `String`, the paint/text/gradient/filter/animation attributes are there too, and the same set is on `jweb.El` as free statics: `svg(viewBox(0, 0, 100, 100), circle(cx(50), cy(50), r(40), opacity(0.5)))` under `El.*` alone |
+| `import static jweb.Js.*` + `import static jweb.js.JSStorage.*` → "reference to local is ambiguous" | the ten re-exports are gone — see "The browser modules take their own import" above |
 
 ---
 

@@ -20,7 +20,7 @@ in one language your team already knows.
 | Next.js streaming SSR + Suspense | `Streamed.of(() -> page)` — shell flushes instantly, blocks stream in parallel |
 | HTMX fragment swaps | `attrs().swap(url, target)` / `swapForm` / `swapMorph` — typed, built in |
 | idiomorph DOM morphing | `swapMorph` + morphing hot reload — focus and input state survive |
-| TanStack type-safe routing | `TypedRoute.path("/users/:id", Long.class)` + `Query.of("page", Integer.class)` |
+| TanStack type-safe routing | `TypedRoute.path("/users/:id", Long.class)` + `QueryParam.of("page", Integer.class)` |
 | Astro zero-JS default | One small cached runtime; pages are HTML-first by design |
 | View Transitions | Automatic on every swap |
 | SvelteKit progressive forms | `swapForm` + native POST fallback — works with JS disabled |

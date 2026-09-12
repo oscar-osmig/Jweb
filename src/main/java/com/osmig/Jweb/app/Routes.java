@@ -5,7 +5,6 @@ import jweb.JWeb;
 import jweb.JWebRoutes;
 import jweb.Middlewares;
 import jweb.OpenApi;
-import jweb.RouteHandler;
 import jweb.Csrf;
 import jweb.Form;
 import jweb.Response;
@@ -90,7 +89,7 @@ public class Routes implements JWebRoutes {
         // swaps into #form-status (works without JS as a plain POST too).
         // ContactForm's annotations are the whole validation: no hand-written
         // null checks, no length checks.
-        app.post("/contact/submit", (RouteHandler) ctx -> {
+        app.post("/contact/submit", ctx -> {
             if (!Csrf.isValid(ctx)) {
                 return ContactStatus.error("Your session expired — reload the page and try again.");
             }
@@ -168,7 +167,7 @@ public class Routes implements JWebRoutes {
             new com.osmig.Jweb.app.sandbox.SandboxPage(ctx.query("file"))
         ));
 
-        app.post("/sandbox/render", (RouteHandler) ctx ->
+        app.post("/sandbox/render", ctx ->
             com.osmig.Jweb.app.sandbox.SandboxPanes.renderFragment(
                 ctx.formParam("file"), ctx.formParam("code")));
 
@@ -213,7 +212,7 @@ public class Routes implements JWebRoutes {
 
         // Admin login handler: the form binds to the AdminLogin record; a
         // blank or malformed submit re-renders the form with its field errors
-        app.post("/only-admin/log/in", (RouteHandler) ctx -> {
+        app.post("/only-admin/log/in", ctx -> {
             Form.Bound<AdminLogin> submitted = Form.bind(AdminLogin.class, ctx);
             String error = null;
             if (!Csrf.isValid(ctx)) {
@@ -243,7 +242,7 @@ public class Routes implements JWebRoutes {
         });
 
         // Admin logout — POST with CSRF token so a cross-site link can't trigger it
-        app.post("/only-admin/logout", (RouteHandler) ctx -> {
+        app.post("/only-admin/logout", ctx -> {
             if (Csrf.isValid(ctx)) {
                 adminApi.logout(ctx);
                 Session.of(ctx).flash("notice", "You have been signed out.");

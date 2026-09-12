@@ -7,7 +7,6 @@ import com.osmig.Jweb.framework.template.Template;
 
 import java.util.List;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -159,12 +158,6 @@ public class JWeb extends com.osmig.Jweb.framework.JWeb {
 
     @Override
     public JWeb post(String path, RouteHandler handler) {
-        super.post(path, handler);
-        return this;
-    }
-
-    @Override
-    public JWeb post(String path, Function<Request, Object> handler) {
         super.post(path, handler);
         return this;
     }

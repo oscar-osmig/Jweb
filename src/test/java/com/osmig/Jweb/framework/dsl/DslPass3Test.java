@@ -110,12 +110,15 @@ class DslPass3Test {
     }
 
     /**
-     * The behavior verbs and the ten re-exported browser modules join the same
-     * four-wildcard import, so every name here has to stay unambiguous against
-     * {@code El}, {@code Css} and {@code Three}.
+     * The behavior verbs join the same four-wildcard import, so every name
+     * here has to stay unambiguous against {@code El}, {@code Css} and
+     * {@code Three}. (The browser-API modules are not re-exported by
+     * {@code Js} — each takes its own import, and
+     * {@code jweb.js.ModuleImportsCoexistTest} proves that import sits next
+     * to these four.)
      */
     @Test
-    void behaviorsAndModulesJoinTheFourImports() {
+    void behaviorsJoinTheFourImports() {
         Object copied = copy("x").feedback("Copied!");
         Object fromEl = copyFrom("pre");
         Object nav = navigate("/x").target("#main").prefetch();
@@ -130,23 +133,11 @@ class DslPass3Test {
         Object stateRead = syncState("s1");
         Object stateWatch = onStateChange("s1", callback("now").log(v("now")));
 
-        // re-exported module statics, under all four wildcards
-        Object clip = writeText("hi");
-        Object store = local();
-        Object history = replaceState("/x");
-        Object params = queryParamsObject();
-        Object fd = formData();
-        Object frames = raf(callback("t").log(v("t")));
-        Object db = openDB("app", 1);
-        Object watch = intersection();
-
         assertNotNull(copied); assertNotNull(fromEl); assertNotNull(nav);
         assertNotNull(warm); assertNotNull(marked); assertNotNull(spy);
         assertNotNull(pane); assertNotNull(gutter); assertNotNull(grow);
         assertNotNull(element); assertNotNull(stmt); assertNotNull(stateRead);
-        assertNotNull(stateWatch); assertNotNull(clip); assertNotNull(store);
-        assertNotNull(history); assertNotNull(params); assertNotNull(fd);
-        assertNotNull(frames); assertNotNull(db); assertNotNull(watch);
+        assertNotNull(stateWatch);
     }
 
     /** Any action is a statement in any builder body, through {@code does(...)}. */
@@ -183,6 +174,12 @@ class DslPass3Test {
         Tag svgFilter = filter(id("blur"), feGaussianBlur(attr("stdDeviation", "2")));
         Tag svgMask = mask(id("m"), rect(attrs().width(10).height(10)));
         Tag clip = clipPath(id("c"), circle(attrs().r("5")));
+        // SVG attributes are free statics that take numbers — vs Css.scale/rotate,
+        // which stay CSS transform functions, and attrs() carries the same set
+        Tag dot = circle(cx(50), cy(50.5), r(4), strokeWidth(1.5), opacity(0.5), stroke("#000"));
+        Tag stopEl = stop(offset(0.5), stopColor("#fff"), stopOpacity(0.8));
+        Tag sized = rect(x("10%"), y(10), width(180.5), height(80), rx(4));
+        Tag viaAttrs = circle(attrs().cx(32).cy(32).r(28).strokeLinecap("round").offset(0.25));
         Object dialogAction = openDialog("confirm");
         Object detailsAction = toggleDetails("faq");
 
@@ -198,6 +195,10 @@ class DslPass3Test {
         assertTrue(svgFilter.toHtml().contains("<feGaussianBlur"), svgFilter.toHtml());
         assertTrue(svgMask.toHtml().startsWith("<mask id=\"m\">"), svgMask.toHtml());
         assertTrue(clip.toHtml().startsWith("<clipPath id=\"c\">"), clip.toHtml());
+        assertEquals("<circle cx=\"50\" cy=\"50.5\" r=\"4\" stroke-width=\"1.5\" opacity=\"0.5\" stroke=\"#000\"></circle>", dot.toHtml());
+        assertEquals("<stop offset=\"0.5\" stop-color=\"#fff\" stop-opacity=\"0.8\"></stop>", stopEl.toHtml());
+        assertEquals("<rect x=\"10%\" y=\"10\" width=\"180.5\" height=\"80\" rx=\"4\"></rect>", sized.toHtml());
+        assertEquals("<circle cx=\"32\" cy=\"32\" r=\"28\" stroke-linecap=\"round\" offset=\"0.25\"></circle>", viaAttrs.toHtml());
         assertEquals("document.getElementById('confirm').showModal()",
             ((jweb.Action) dialogAction).build());
         assertTrue(((jweb.Action) detailsAction).build().contains("open=!d.open"));

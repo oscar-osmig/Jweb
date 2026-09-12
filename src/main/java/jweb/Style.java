@@ -706,7 +706,12 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
         return prop("transform", sb.toString());
     }
 
+    /** {@code transform: <value>} from a plain CSS string, e.g. {@code "rotate(45deg) scale(1.2)"}. */
+    public T transform(String value) { return prop("transform", value); }
+
     public T transformOrigin(String value) { return prop("transform-origin", value); }
+    /** {@code transform-origin} from a typed value or keyword, e.g. {@code center}. */
+    public T transformOrigin(CSSValue value) { return prop("transform-origin", value); }
 
     // ==================== Transition ====================
 
@@ -3301,6 +3306,55 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T widows(String value) { return prop("widows", value); }
     /** {@code shape-image-threshold: <value>} from a string. */
     public T shapeImageThreshold(String value) { return prop("shape-image-threshold", value); }
+
+    // --- every typed helper also accepts a string (keywords, var(), calc()) ---
+    // StylePropertyPairsTest checks the pairing both ways.
+
+    /** {@code animation-play-state}: {@code running} or {@code paused}. */
+    public T animationPlayState(CSSValue value) { return prop("animation-play-state", value); }
+    /** {@code animation-play-state} from a string. */
+    public T animationPlayState(String value) { return prop("animation-play-state", value); }
+    /** {@code border-top} shorthand from a string, e.g. {@code "1px solid #ddd"}. */
+    public T borderTop(String value) { return prop("border-top", value); }
+    /** {@code border-right} shorthand from a string. */
+    public T borderRight(String value) { return prop("border-right", value); }
+    /** {@code border-bottom} shorthand from a string. */
+    public T borderBottom(String value) { return prop("border-bottom", value); }
+    /** {@code border-left} shorthand from a string. */
+    public T borderLeft(String value) { return prop("border-left", value); }
+    /** Width and height together, from a string. */
+    public T size(String value) { return width(value).height(value); }
+    /** {@code interpolate-size} from a string. */
+    public T interpolateSize(String value) { return prop("interpolate-size", value); }
+    /** {@code scrollbar-gutter} from a string. */
+    public T scrollbarGutter(String value) { return prop("scrollbar-gutter", value); }
+    /** {@code scrollbar-width} from a string. */
+    public T scrollbarWidth(String value) { return prop("scrollbar-width", value); }
+    /** {@code text-box-edge} from a string. */
+    public T textBoxEdge(String value) { return prop("text-box-edge", value); }
+    /** {@code text-box-trim} from a string. */
+    public T textBoxTrim(String value) { return prop("text-box-trim", value); }
+    /** {@code transition: all <duration>} from a duration string, e.g. {@code "0.3s"}. */
+    public T transitionAll(String duration) { return prop("transition", "all " + duration); }
+    /** Transition color, background-color and border-color together, from a duration string. */
+    public T transitionColors(String duration) {
+        return prop("transition", "color " + duration + ", background-color " + duration + ", border-color " + duration);
+    }
+    /** {@code transition: background-color <duration>} from a duration string. */
+    public T transitionBackground(String duration) { return prop("transition", "background-color " + duration); }
+    /** {@code transition: transform <duration>} from a duration string. */
+    public T transitionTransform(String duration) { return prop("transition", "transform " + duration); }
+    /** {@code transition: opacity <duration>} from a duration string. */
+    public T transitionOpacity(String duration) { return prop("transition", "opacity " + duration); }
+
+    // --- and the string-first helpers take a typed value ---
+
+    /** {@code object-position} from a typed value or keyword, e.g. {@code center}. */
+    public T objectPosition(CSSValue value) { return prop("object-position", value); }
+    /** {@code text-shadow} from a typed value, e.g. {@code none}. */
+    public T textShadow(CSSValue value) { return prop("text-shadow", value); }
+    /** {@code font-family} from a typed value, e.g. a {@code var(--font)} token. */
+    public T fontFamily(CSSValue value) { return prop("font-family", value); }
 
 
     // ==================== Composition ====================

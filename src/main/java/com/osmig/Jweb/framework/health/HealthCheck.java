@@ -1,33 +1,13 @@
 package com.osmig.Jweb.framework.health;
 
 /**
- * Health check interface.
+ * The pre-3.0 spelling of a health check.
  *
- * <h2>Usage</h2>
- * <pre>{@code
- * Health.register("database", () -> {
- *     try {
- *         dataSource.getConnection().isValid(1);
- *         return HealthStatus.up();
- *     } catch (Exception e) {
- *         return HealthStatus.down(e.getMessage());
- *     }
- * });
- *
- * Health.register("redis", () -> {
- *     return redis.ping().equals("PONG")
- *         ? HealthStatus.up()
- *         : HealthStatus.down("Redis not responding");
- * });
- * }</pre>
+ * @deprecated Replaced by {@link jweb.HealthCheck} — the functional interface
+ *             {@code Health.register(name, check)} takes. Existing lambdas
+ *             keep working; a declared variable should use the new name.
  */
+@Deprecated
 @FunctionalInterface
-public interface HealthCheck {
-
-    /**
-     * Performs the health check.
-     *
-     * @return the health status
-     */
-    HealthStatus check();
+public interface HealthCheck extends jweb.HealthCheck {
 }

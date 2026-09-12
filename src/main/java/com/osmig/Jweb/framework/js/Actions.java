@@ -39,7 +39,7 @@ import java.util.Map;
  * @deprecated Replaced by {@code jweb.Actions} — shorter import, same API. Existing code keeps working.
  */
 @Deprecated
-public class Actions extends Modules {
+public class Actions extends Behaviors {
 
     protected Actions() {}
 

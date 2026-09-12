@@ -263,6 +263,9 @@ class JwebSurfaceTest {
             .get("/x", handler)
             .get("/y", () -> p("y"))
             .post("/z", handler)
+            .post("/w", rq -> "posted")     // a lambda POST route needs no (RouteHandler) cast
+            .put("/w", rq -> "put")
+            .delete("/w", rq -> "gone")
             .action("/act/pref", Pref.class, (rq, pref) -> jweb.Response.redirectBack(rq))
             .pages("/users/:id", PageWithParams.class);
 
@@ -278,6 +281,9 @@ class JwebSurfaceTest {
 
         assertTrue(app.getRouter().match("GET", "/x").isPresent());
         assertTrue(app.getRouter().match("POST", "/z").isPresent());
+        assertTrue(app.getRouter().match("POST", "/w").isPresent());
+        assertTrue(app.getRouter().match("PUT", "/w").isPresent());
+        assertTrue(app.getRouter().match("DELETE", "/w").isPresent());
         assertTrue(app.getRouter().match("POST", "/act/pref").isPresent());
         assertTrue(app.getPageRegistry().match("/users/7").isPresent());
         assertEquals(2, app.getGuards().size());
@@ -289,5 +295,61 @@ class JwebSurfaceTest {
 
     public static class PageWithParams implements jweb.Template {
         @Override public jweb.Element render() { return p("user " + pathParam("id")); }
+    }
+
+    // ==================== Routing, security, ops, AI ====================
+
+    /**
+     * The types the docs name that lived only under the long package until
+     * the docs compile test caught them. Each is now the real class under
+     * {@code jweb} (the old name is a deprecated subclass), so the declared
+     * types below are the ones the factories actually return.
+     */
+    @Test
+    void routingSecurityOpsAndAiTypesAreJwebTypes() throws Exception {
+        jweb.Request req = jweb.MockRequest.get("/x").build();
+
+        jweb.QueryParam<Integer> page = jweb.QueryParam.of("page", Integer.class).orElse(1);
+        jweb.MiddlewareChain chain = () -> "next";
+        jweb.Middleware inline = (rq, ch) -> ch.next();
+        jweb.RateLimit.RateLimitBuilder limiter = jweb.RateLimit.perMinute(10).forPath("/api/**");
+        jweb.Middleware limited = limiter.build();
+        jweb.Cors.CorsBuilder cors = jweb.Cors.configure().origins("https://app.example").credentials();
+        jweb.Middleware corsAll = jweb.Cors.allowAll();
+        jweb.OAuth2.ProviderBuilder google = jweb.OAuth2.google();
+        jweb.http.Cookie cookie = jweb.http.Cookie.of("lang", "en").httpOnly().sameSiteLax();
+        jweb.HealthStatus status = jweb.HealthStatus.up("connected").withDetail("latencyMs", 4);
+        jweb.HealthCheck check = () -> jweb.HealthStatus.degraded("slow");
+        jweb.Metrics.Counter counter = jweb.Metrics.counter("surface.test.counter");
+        jweb.Metrics.Timer timer = jweb.Metrics.timer("surface.test.timer");
+        jweb.ContextKey<String> key = jweb.Context.key("surface.test.user");
+        jweb.Link link = jweb.Link.to("/about").text("About").prefetch();
+        jweb.Element navLink = jweb.Link.navLink("/about", "About", "/about");
+        jweb.Element navScript = jweb.Navigation.script();
+        jweb.Chat chat = jweb.AI.chat().system("You are terse");
+        jweb.Tool tool = jweb.Tool.of("echo", "Echoes its argument")
+            .param("text", "What to echo")
+            .handler(args -> args.get("text"));
+        jweb.Agent agent = jweb.AI.agent().tools(tool).maxSteps(2);
+
+        assertEquals(1, page.from(req));
+        assertEquals("next", inline.handle(req, chain));
+        assertTrue(cookie.toHeaderValue().startsWith("lang=en; Path=/"), cookie.toHeaderValue());
+        assertTrue(cookie.toHeaderValue().contains("HttpOnly"), cookie.toHeaderValue());
+        assertEquals(jweb.HealthStatus.Status.UP, status.getStatus());
+        assertEquals(4, status.getDetails().get("latencyMs"));
+        assertEquals(jweb.HealthStatus.Status.DEGRADED, check.check().getStatus());
+        counter.increment();
+        assertTrue(counter.get() >= 1);
+        timer.record(1);
+        assertEquals("surface.test.user", key.name());
+        assertEquals("hi", jweb.Context.provide(key, "hi", () -> jweb.Context.use(key)));
+        assertTrue(link.toHtml().contains("href=\"/about\""), link.toHtml());
+        assertTrue(navLink.toHtml().contains("active"), navLink.toHtml());
+        assertTrue(navScript.toHtml().startsWith("<script"), navScript.toHtml());
+        assertEquals(1, chat.size());
+        assertEquals("echo", tool.name());
+        assertNotNull(agent); assertNotNull(limited); assertNotNull(cors); assertNotNull(corsAll);
+        assertNotNull(google);
     }
 }

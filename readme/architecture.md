@@ -220,8 +220,6 @@ app.useForMethods(List.of("POST","PUT"), mw)       // method-scoped
 app.get(String path, Supplier<Element> page)       // simple page, no request access
 app.get(String path, RouteHandler handler)         // handler: Object handle(Request)
 app.post(String path, RouteHandler handler)
-app.post(String path, Function<Request,Object> fn) // overload — lambdas may need a
-                                                   // (RouteHandler) cast to disambiguate
 app.put(String path, RouteHandler handler)
 app.delete(String path, RouteHandler handler)
 app.route(String path, Supplier<? extends Page>)   // alias for get

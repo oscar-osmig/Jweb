@@ -1,5 +1,8 @@
 package com.osmig.Jweb.framework.ai;
 
+import jweb.AI;
+import jweb.Chat;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

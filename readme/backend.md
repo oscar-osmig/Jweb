@@ -75,8 +75,8 @@ Bad parameter values (e.g. `/users/abc`) return 400, not 500.
 Query parameters get the same treatment:
 
 ```java
-static final Query<Integer> PAGE = Query.of("page", Integer.class).orElse(1);
-static final Query<Long>    USER = Query.of("userId", Long.class).required();
+static final QueryParam<Integer> PAGE = QueryParam.of("page", Integer.class).orElse(1);
+static final QueryParam<Long>    USER = QueryParam.of("userId", Long.class).required();
 
 app.get("/products", req -> productList(PAGE.from(req)));   // parsed, defaulted, no null checks
 ```

@@ -1,4 +1,4 @@
-package com.osmig.Jweb.framework.context;
+package jweb;
 
 /**
  * A type-safe key for Context values.

@@ -54,7 +54,7 @@ public final class RoutingSection {
                     a(href(USER.url(42L)), "Profile")           // "/users/42"
 
                     // Query params: parsed, defaulted, no null checks
-                    static final Query<Integer> PAGE = Query.of("page", Integer.class).orElse(1);
+                    static final QueryParam<Integer> PAGE = QueryParam.of("page", Integer.class).orElse(1);
                     app.get("/products", req -> productList(PAGE.from(req)));"""),
             docTip("Supported param types: String, Integer, Long, Double, Boolean, UUID. " +
                    "Two-param routes use TypedRoute.path(pattern, A.class, B.class).")

@@ -1,5 +1,7 @@
 package com.osmig.Jweb.framework.ai;
 
+import jweb.Chat;
+import jweb.Tool;
 import com.osmig.Jweb.framework.util.Json;
 import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.AfterEach;

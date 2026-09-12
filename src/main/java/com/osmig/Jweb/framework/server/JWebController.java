@@ -165,7 +165,7 @@ public class JWebController {
 
     /** Clears per-request thread-locals (DI context, portals, locale, CSP nonce, request) after a render. */
     private void clearThreadLocals() {
-        com.osmig.Jweb.framework.context.Context.clear();
+        jweb.Context.clear();
         com.osmig.Jweb.framework.portal.Portal.clear();
         com.osmig.Jweb.framework.i18n.I18n.clearCurrent();
         com.osmig.Jweb.framework.security.CspNonce.clear();

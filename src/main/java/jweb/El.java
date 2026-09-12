@@ -225,7 +225,182 @@ public class El extends com.osmig.Jweb.framework.elements.Elements {
     public static Attr viewBox(int a, int b, int c, int d) { return com.osmig.Jweb.framework.elements.El.viewBox(a, b, c, d); }
     public static Attr fill(String a) { return com.osmig.Jweb.framework.elements.El.fill(a); }
     public static Attr stroke(String a) { return com.osmig.Jweb.framework.elements.El.stroke(a); }
-    public static Attr strokeWidth(int a) { return com.osmig.Jweb.framework.elements.El.strokeWidth(a); }
+
+    // ---- SVG attributes as free statics ----
+    // Every coordinate and length takes an int, a double or a String, so
+    // circle(cx(50), cy(50), r(40)) and rect(x("10%"), width(180.5)) both read
+    // as the markup would. (attrs() carries the same set.)
+
+    /** The {@code stroke-width} attribute. */
+    public static Attr strokeWidth(int a) { return svgAttr("stroke-width", a); }
+    /** The {@code stroke-width} attribute. */
+    public static Attr strokeWidth(double a) { return svgAttr("stroke-width", a); }
+    /** The {@code stroke-width} attribute. */
+    public static Attr strokeWidth(String a) { return new Attr("stroke-width", a); }
+    /** The {@code width} attribute — an SVG length, or an {@code img}/{@code video} size. */
+    public static Attr width(int a) { return svgAttr("width", a); }
+    /** The {@code width} attribute. */
+    public static Attr width(double a) { return svgAttr("width", a); }
+    /** The {@code width} attribute. */
+    public static Attr width(String a) { return new Attr("width", a); }
+    /** The {@code height} attribute — an SVG length, or an {@code img}/{@code video} size. */
+    public static Attr height(int a) { return svgAttr("height", a); }
+    /** The {@code height} attribute. */
+    public static Attr height(double a) { return svgAttr("height", a); }
+    /** The {@code height} attribute. */
+    public static Attr height(String a) { return new Attr("height", a); }
+    /** The {@code x} attribute. */
+    public static Attr x(int a) { return svgAttr("x", a); }
+    /** The {@code x} attribute. */
+    public static Attr x(double a) { return svgAttr("x", a); }
+    /** The {@code x} attribute. */
+    public static Attr x(String a) { return new Attr("x", a); }
+    /** The {@code y} attribute. */
+    public static Attr y(int a) { return svgAttr("y", a); }
+    /** The {@code y} attribute. */
+    public static Attr y(double a) { return svgAttr("y", a); }
+    /** The {@code y} attribute. */
+    public static Attr y(String a) { return new Attr("y", a); }
+    /** The {@code cx} attribute (a circle's or ellipse's centre x). */
+    public static Attr cx(int a) { return svgAttr("cx", a); }
+    /** The {@code cx} attribute. */
+    public static Attr cx(double a) { return svgAttr("cx", a); }
+    /** The {@code cx} attribute. */
+    public static Attr cx(String a) { return new Attr("cx", a); }
+    /** The {@code cy} attribute (a circle's or ellipse's centre y). */
+    public static Attr cy(int a) { return svgAttr("cy", a); }
+    /** The {@code cy} attribute. */
+    public static Attr cy(double a) { return svgAttr("cy", a); }
+    /** The {@code cy} attribute. */
+    public static Attr cy(String a) { return new Attr("cy", a); }
+    /** The {@code r} attribute (a circle's radius). */
+    public static Attr r(int a) { return svgAttr("r", a); }
+    /** The {@code r} attribute. */
+    public static Attr r(double a) { return svgAttr("r", a); }
+    /** The {@code r} attribute. */
+    public static Attr r(String a) { return new Attr("r", a); }
+    /** The {@code rx} attribute (an ellipse's x radius, or a rect's corner radius). */
+    public static Attr rx(int a) { return svgAttr("rx", a); }
+    /** The {@code rx} attribute. */
+    public static Attr rx(double a) { return svgAttr("rx", a); }
+    /** The {@code rx} attribute. */
+    public static Attr rx(String a) { return new Attr("rx", a); }
+    /** The {@code ry} attribute (an ellipse's y radius, or a rect's corner radius). */
+    public static Attr ry(int a) { return svgAttr("ry", a); }
+    /** The {@code ry} attribute. */
+    public static Attr ry(double a) { return svgAttr("ry", a); }
+    /** The {@code ry} attribute. */
+    public static Attr ry(String a) { return new Attr("ry", a); }
+    /** The {@code x1} attribute (a line's start x). */
+    public static Attr x1(int a) { return svgAttr("x1", a); }
+    /** The {@code x1} attribute. */
+    public static Attr x1(double a) { return svgAttr("x1", a); }
+    /** The {@code x1} attribute. */
+    public static Attr x1(String a) { return new Attr("x1", a); }
+    /** The {@code y1} attribute (a line's start y). */
+    public static Attr y1(int a) { return svgAttr("y1", a); }
+    /** The {@code y1} attribute. */
+    public static Attr y1(double a) { return svgAttr("y1", a); }
+    /** The {@code y1} attribute. */
+    public static Attr y1(String a) { return new Attr("y1", a); }
+    /** The {@code x2} attribute (a line's end x). */
+    public static Attr x2(int a) { return svgAttr("x2", a); }
+    /** The {@code x2} attribute. */
+    public static Attr x2(double a) { return svgAttr("x2", a); }
+    /** The {@code x2} attribute. */
+    public static Attr x2(String a) { return new Attr("x2", a); }
+    /** The {@code y2} attribute (a line's end y). */
+    public static Attr y2(int a) { return svgAttr("y2", a); }
+    /** The {@code y2} attribute. */
+    public static Attr y2(double a) { return svgAttr("y2", a); }
+    /** The {@code y2} attribute. */
+    public static Attr y2(String a) { return new Attr("y2", a); }
+    /** The {@code dx} attribute (a text run's x offset). */
+    public static Attr dx(int a) { return svgAttr("dx", a); }
+    /** The {@code dx} attribute. */
+    public static Attr dx(double a) { return svgAttr("dx", a); }
+    /** The {@code dx} attribute. */
+    public static Attr dx(String a) { return new Attr("dx", a); }
+    /** The {@code dy} attribute (a text run's y offset). */
+    public static Attr dy(int a) { return svgAttr("dy", a); }
+    /** The {@code dy} attribute. */
+    public static Attr dy(double a) { return svgAttr("dy", a); }
+    /** The {@code dy} attribute. */
+    public static Attr dy(String a) { return new Attr("dy", a); }
+    /** The {@code points} attribute of a polyline or polygon. */
+    public static Attr points(String a) { return new Attr("points", a); }
+    /** The {@code pathLength} attribute. */
+    public static Attr pathLength(int a) { return svgAttr("pathLength", a); }
+    /** The {@code pathLength} attribute. */
+    public static Attr pathLength(double a) { return svgAttr("pathLength", a); }
+    /** The {@code pathLength} attribute. */
+    public static Attr pathLength(String a) { return new Attr("pathLength", a); }
+    /** The SVG {@code transform} attribute, e.g. {@code "rotate(45 50 50)"}. */
+    public static Attr transform(String a) { return new Attr("transform", a); }
+    /** The {@code preserveAspectRatio} attribute, e.g. {@code "xMidYMid meet"}. */
+    public static Attr preserveAspectRatio(String a) { return new Attr("preserveAspectRatio", a); }
+    /** The {@code stroke-linecap} attribute: {@code butt}, {@code round} or {@code square}. */
+    public static Attr strokeLinecap(String a) { return new Attr("stroke-linecap", a); }
+    /** The {@code stroke-linejoin} attribute: {@code miter}, {@code round} or {@code bevel}. */
+    public static Attr strokeLinejoin(String a) { return new Attr("stroke-linejoin", a); }
+    /** The {@code stroke-dasharray} attribute, e.g. {@code "4 2"}. */
+    public static Attr strokeDasharray(String a) { return new Attr("stroke-dasharray", a); }
+    /** The {@code stroke-dashoffset} attribute. */
+    public static Attr strokeDashoffset(double a) { return svgAttr("stroke-dashoffset", a); }
+    /** The {@code stroke-dashoffset} attribute. */
+    public static Attr strokeDashoffset(String a) { return new Attr("stroke-dashoffset", a); }
+    /** The {@code opacity} attribute, {@code 0..1}. */
+    public static Attr opacity(double a) { return svgAttr("opacity", a); }
+    /** The {@code opacity} attribute. */
+    public static Attr opacity(String a) { return new Attr("opacity", a); }
+    /** The {@code fill-opacity} attribute, {@code 0..1}. */
+    public static Attr fillOpacity(double a) { return svgAttr("fill-opacity", a); }
+    /** The {@code fill-opacity} attribute. */
+    public static Attr fillOpacity(String a) { return new Attr("fill-opacity", a); }
+    /** The {@code stroke-opacity} attribute, {@code 0..1}. */
+    public static Attr strokeOpacity(double a) { return svgAttr("stroke-opacity", a); }
+    /** The {@code stroke-opacity} attribute. */
+    public static Attr strokeOpacity(String a) { return new Attr("stroke-opacity", a); }
+    /** The {@code fill-rule} attribute: {@code nonzero} or {@code evenodd}. */
+    public static Attr fillRule(String a) { return new Attr("fill-rule", a); }
+    /** The {@code clip-rule} attribute: {@code nonzero} or {@code evenodd}. */
+    public static Attr clipRule(String a) { return new Attr("clip-rule", a); }
+    /** The {@code text-anchor} attribute: {@code start}, {@code middle} or {@code end}. */
+    public static Attr textAnchor(String a) { return new Attr("text-anchor", a); }
+    /** The {@code dominant-baseline} attribute, e.g. {@code middle}. */
+    public static Attr dominantBaseline(String a) { return new Attr("dominant-baseline", a); }
+    /** The SVG {@code font-size} attribute. */
+    public static Attr fontSize(int a) { return svgAttr("font-size", a); }
+    /** The SVG {@code font-size} attribute. */
+    public static Attr fontSize(double a) { return svgAttr("font-size", a); }
+    /** The SVG {@code font-size} attribute. */
+    public static Attr fontSize(String a) { return new Attr("font-size", a); }
+    /** The SVG {@code font-family} attribute. */
+    public static Attr fontFamily(String a) { return new Attr("font-family", a); }
+    /** The SVG {@code font-weight} attribute. */
+    public static Attr fontWeight(int a) { return svgAttr("font-weight", a); }
+    /** The SVG {@code font-weight} attribute. */
+    public static Attr fontWeight(String a) { return new Attr("font-weight", a); }
+    /** A gradient stop's {@code offset} attribute, {@code 0..1}. */
+    public static Attr offset(double a) { return svgAttr("offset", a); }
+    /** A gradient stop's {@code offset} attribute, e.g. {@code "50%"}. */
+    public static Attr offset(String a) { return new Attr("offset", a); }
+    /** A gradient stop's {@code stop-color} attribute. */
+    public static Attr stopColor(String a) { return new Attr("stop-color", a); }
+    /** A gradient stop's {@code stop-opacity} attribute, {@code 0..1}. */
+    public static Attr stopOpacity(double a) { return svgAttr("stop-opacity", a); }
+    /** A gradient stop's {@code stop-opacity} attribute. */
+    public static Attr stopOpacity(String a) { return new Attr("stop-opacity", a); }
+    /** The {@code xlink:href} attribute (the pre-SVG 2 spelling of {@code href}). */
+    public static Attr xlinkHref(String a) { return new Attr("xlink:href", a); }
+    /** A blur filter's {@code stdDeviation} attribute. */
+    public static Attr stdDeviation(double a) { return svgAttr("stdDeviation", a); }
+    /** A blur filter's {@code stdDeviation} attribute. */
+    public static Attr stdDeviation(String a) { return new Attr("stdDeviation", a); }
+
+    private static Attr svgAttr(String name, Object value) {
+        return new Attr(name, String.valueOf(value));
+    }
     public static Tag meter(Object... a) { return com.osmig.Jweb.framework.elements.El.meter(a); }
     public static Tag meter(double a, double b, double c) { return com.osmig.Jweb.framework.elements.El.meter(a, b, c); }
     public static Tag progress(Object... a) { return com.osmig.Jweb.framework.elements.El.progress(a); }

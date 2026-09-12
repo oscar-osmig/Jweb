@@ -19,21 +19,22 @@ import static jweb.Js.*;
   DOM access. Use it when an Action doesn't cover the shape you need.
 
 `jweb.Actions` is the same surface under its old name (importing both is harmless). Every
-browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) keeps its own
-import and lives at `jweb.js.*` — e.g. `import static jweb.js.JSClipboard.*;`.
+browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) lives at
+`jweb.js.*` and takes its own static import next to `Js.*`:
 
-**The ten most-used modules need no second import.** `JSClipboard`, `JSObservers`,
-`JSStorage`, `JSHistory`, `JSUrl`, `JSFormData`, `JSAnimation`, `JSWebAnimations`,
-`JSMedia` and `JSIndexedDB` are re-exported from `jweb.Js`, so `local()`, `cookie("theme")`,
-`replaceState("/x")`, `openDB("app", 1)`, `intersection()`, `raf(...)` and `writeText(...)`
-are all one import away. Eleven names stay module-only, because forwarding them would
-capture a call that means something else: `get`, `delete`, `pushState`, `onPopState` and
-`eventKey` (the Actions layer owns those); `animate`, `currentTime`, `currentUrl`,
-`disconnect`, `getQueryParam`, `pause`, `play`, `playbackRate`, `setCurrentTime`,
-`setPlaybackRate` and `toObject` (two of the ten declare each); and `audio`, `video`,
-`src`, `href`, `url`, `search`, `duration`, `onAnimationEnd`, `onCancel`,
-`onTransitionEnd` (the HTML or CSS DSL owns those under the four-wildcard import). Import
-the module for those.
+```java
+import static jweb.Js.*;
+import static jweb.js.JSStorage.*;
+
+local().set("token", "abc123")
+```
+
+`Js.*` does not re-export any module. It did briefly (ten of them, during the 3.0 pass), and
+that made the pair of imports above an "ambiguous reference" for every shared name — Java
+cannot tell two identical statics apart, and a facade cannot inherit from ten classes. So the
+rule is one line: **the page-level DSL is `Js.*`; a browser API is its module's import.**
+`jweb.js.ModuleImportsCoexistTest` compiles all ten of the most-used modules together with
+the four DSL wildcards, so the pairing cannot silently break again.
 
 Where the two layers shared a name, the page-level `Action` form owns it: `fetch("/url")`
 is the `.ok(...)/.fail(...)` builder, `call("fn")` and `sleep(ms)` are Actions. The
@@ -442,12 +443,12 @@ sse("/events")
 
 ## Full module inventory (45)
 
-Everything from `Actions` down to `Modules` is reachable from `import static jweb.Js.*`.
+Everything from `Actions` down to `Runtime` is reachable from `import static jweb.Js.*`; each
+`JS*` module takes its own import.
 
 | Module | Purpose |
 |--------|---------|
 | `Actions` | High-level UI DSL — handlers, fetch, DOM actions, messages (main entry) |
-| `Modules` | Re-exports the ten most-used browser modules, so one import covers them |
 | `Behaviors` | copy/navigate/prefetch/activeLink/scrollSpy/splitPane/lineGutter/syncState, Web Components, `if_`/`preventDefault` statements |
 | `JS` | Core expressions/statements — Val/El/Func/Script |
 | `Async` | Fetch builder, async funcs, await, promise combinators |

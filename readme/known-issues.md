@@ -15,6 +15,25 @@ Legend: ✅ fixed 2026-08-09 · 🟡 remaining pitfall (by design or deferred)
 
 By design (know them, don't "fix" them):
 
+- **`State<T>` takes its own import.** `jweb.State` is the hooks facade (`useState`, `live`,
+  `bindAttr`), so it owns the simple name `State` in `jweb`; the value type is
+  `jweb.state.State<T>`. Under `import jweb.*` alone, `State<Integer> n = useState(0)` is
+  "type State does not take parameters" — add `import jweb.state.State;`, which shadows the
+  facade for the type position while `import static jweb.State.*` still supplies the hooks.
+- **A facade wildcard cannot sit next to a wildcard on a class it re-exports.** Java reports
+  "reference to X is ambiguous" for every name declared in both, and nothing but removing one
+  of the two declarations fixes it (a class cannot inherit from ten modules, and deprecating a
+  static does not hide it). Two decisions follow, both 2026-09-11: `jweb.Js` no longer
+  re-exports the ten browser modules — `Js.*` is the page-level DSL and each `jweb.js.JS*`
+  module takes its own static import beside it (`jweb/js/ModuleImportsCoexistTest` compiles
+  all ten with the four wildcards); and `import static jweb.el.SVGElements.*` must not be
+  combined with `El.*` — `jweb.El` now carries every SVG element *and* attribute static
+  itself (`circle(cx(50), cy(50), r(40))`), so that second import is never needed and
+  `jweb.el.SVGElements` remains only for code that imports it alone.
+- **Two `jweb` names dodge a `jweb.api` annotation.** The typed query parameter is
+  `jweb.QueryParam<T>` (not `Query` — `@Query` is the `@REST` parameter annotation) and the
+  Set-Cookie builder is `jweb.http.Cookie` (`@Cookie` likewise), so a REST class that imports
+  `jweb.*` and `jweb.api.*` never sees an ambiguous simple name.
 - **Paths starting with `/api/v` are hard-excluded from the JWeb router** (reserved for Spring
   MVC `@REST` controllers). `app.get("/api/v1/x", ...)` will never be reached — keep REST
   controllers under `/api/v*` and router/page routes elsewhere.
@@ -81,10 +100,11 @@ guards itself with:
 |---|---|---|
 | Short names are the real names | every type an author can name is the real class under `jweb.*` (`Tag`, `Attributes`, `Event`, `Action`, `Val`, `Func`, `Request`, `Response`, `JWebException`, `jweb.css.*`, `jweb.three.*`…); the old FQNs are `@Deprecated` aliases | `jweb/JwebSurfaceTest`, `jweb/NoLongImportsTest` |
 | CSS | page-owned stylesheets (`Template.styles()`, one nonce-stamped `<style>`), `:hover`/`:focus`/`dark`/media on inline styles via generated classes, the `row/stack/center/card/…` mixins, one custom-property `Theme`, the modern modules folded into `Css` and typed, `@starting-style` and friends | `jweb/CssMixinsTest`, `PageStyles*` tests, `DslPass3Test` |
-| JS | behaviors as Actions (`copy`, `scrollSpy`, `navigate().prefetch()`, `splitPane`, `lineGutter`…), `return_()`/`preventDefault()` as statements, custom elements, `jweb.js.Pwa`, `syncState`; the app's own scripts contain no raw JavaScript | `jweb/js/GeneratedJsSyntaxTest`, `JsModuleFacadeTest` |
+| JS | behaviors as Actions (`copy`, `scrollSpy`, `navigate().prefetch()`, `splitPane`, `lineGutter`…), `return_()`/`preventDefault()` as statements, custom elements, `jweb.js.Pwa`, `syncState`; the app's own scripts contain no raw JavaScript | `jweb/js/GeneratedJsSyntaxTest`, `jweb/js/ModuleImportsCoexistTest` |
 | State, routing, API | `live(state, s -> el)` regions, `bind(state)` renders its value, `jweb.Session`, record-bound action routes, `:param` page routes, `app.guard`, Spring-free `jweb.api` parameter annotations, no global handler fallback | `jweb/state/LiveRegionTest`, `NoSpringInAppApiTest` |
 | HTML + forms | `cls`/`classes`/`classIf`, `when(c, a, b)` and `when(c).then().otherwise()`, `text()` deprecated, `.done()` gone, the whole SVG set, one record-bound `form(X.class)` | `jweb/AppDslHygieneTest` |
 | Docs | every Java sample in the docs site, the readmes and the framework's topic files compiles | `jweb/DocSamplesCompileTest`, `ReadmeSamplesCompileTest` |
+| What the docs test found | `app.post(path, req -> …)` unambiguous (the `Function` overload is gone); `jweb.QueryParam`, `jweb.AI`/`Chat`/`Agent`/`Tool`, `jweb.RateLimit`/`Cors`/`OAuth2`, `jweb.http.Cookie`, `jweb.MiddlewareChain`, `jweb.Health`/`HealthStatus`/`HealthCheck`, `jweb.Metrics`, `jweb.Context`/`ContextKey`, `jweb.Link`/`Navigation`; every `Style` property paired typed ↔ String; SVG attributes take numbers on `attrs()` and on `El`; the JS module re-exports removed | `jweb/JwebSurfaceTest`, `jweb/StylePropertyPairsTest`, `jweb/js/ModuleImportsCoexistTest`, `DslPass3Test` |
 
 The rule behind the first row — and the one to keep when adding anything new — is in the
 short-import section below: if the IDE would auto-import `com.osmig…` for a type an author

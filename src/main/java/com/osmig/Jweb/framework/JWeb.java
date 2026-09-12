@@ -17,7 +17,6 @@ import jweb.Request;
 import com.osmig.Jweb.framework.template.Template;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -323,14 +322,6 @@ public class JWeb {
      */
     public JWeb post(String path, RouteHandler handler) {
         router.post(path, handler);
-        return this;
-    }
-
-    /**
-     * POST route with typed handler.
-     */
-    public JWeb post(String path, Function<Request, Object> handler) {
-        router.post(path, handler::apply);
         return this;
     }
 

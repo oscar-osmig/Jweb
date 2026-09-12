@@ -13,9 +13,9 @@ import java.util.Map;
  * Low-level chat-completions client speaking the OpenAI wire format
  * (works with OpenAI, Ollama, Groq, LM Studio, vLLM, ...).
  *
- * <p>Most apps should use {@link AI}, {@link Chat} or {@link Agent} instead.</p>
+ * <p>Most apps should use {@link jweb.AI}, {@link jweb.Chat} or {@link jweb.Agent} instead.</p>
  */
-final class AiClient {
+public final class AiClient {
 
     private AiClient() {}
 
@@ -24,8 +24,8 @@ final class AiClient {
      * (content and any tool calls).
      */
     @SuppressWarnings("unchecked")
-    static AssistantReply complete(AiConfig config, List<Map<String, Object>> messages,
-                                   List<Tool> tools, String modelOverride, Double temperatureOverride) {
+    public static AssistantReply complete(AiConfig config, List<Map<String, Object>> messages,
+                                   List<jweb.Tool> tools, String modelOverride, Double temperatureOverride) {
         if (!config.isEnabled()) {
             throw new AiException("AI is disabled — set jweb.ai.enabled: true and configure jweb.ai.base-url");
         }
@@ -36,7 +36,7 @@ final class AiClient {
         payload.put("temperature", temperatureOverride != null ? temperatureOverride : config.getTemperature());
         if (tools != null && !tools.isEmpty()) {
             List<Map<String, Object>> toolDefs = new ArrayList<>();
-            for (Tool tool : tools) {
+            for (jweb.Tool tool : tools) {
                 toolDefs.add(tool.toApiDefinition());
             }
             payload.put("tools", toolDefs);
@@ -77,10 +77,10 @@ final class AiClient {
     }
 
     /** The assistant's turn: text content and/or requested tool calls. */
-    record AssistantReply(String content, List<Map<String, Object>> toolCalls,
+    public record AssistantReply(String content, List<Map<String, Object>> toolCalls,
                           Map<String, Object> rawMessage) {
 
-        boolean wantsTools() {
+        public boolean wantsTools() {
             return toolCalls != null && !toolCalls.isEmpty();
         }
     }

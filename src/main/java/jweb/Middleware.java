@@ -1,7 +1,5 @@
 package jweb;
 
-import com.osmig.Jweb.framework.middleware.MiddlewareChain;
-
 /**
  * Middleware interface for intercepting and processing HTTP requests.
  *
