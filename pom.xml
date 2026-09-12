@@ -13,7 +13,7 @@
 	</parent>
 	<groupId>com.osmig</groupId>
 	<artifactId>Jweb</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 	<name>Jweb</name>
 	<description>JWeb - Build web apps in pure Java</description>
 	<url>https://github.com/oscar-osmig/Jweb</url>
