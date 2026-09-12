@@ -12,7 +12,7 @@ public final class DevToolsSection {
             para("Hot reload and browser auto-refresh for faster development."),
 
             docSubtitle("Configuration"),
-            codeBlock("""
+            codeBlock("yaml", """
 # application.yaml
 jweb:
   dev:
@@ -40,7 +40,7 @@ public Element render() {
 
             docSubtitle("Spring DevTools"),
             para("Add Spring DevTools for automatic app restart on changes:"),
-            codeBlock("""
+            codeBlock("xml", """
 <!-- pom.xml -->
 <dependency>
     <groupId>org.springframework.boot</groupId>

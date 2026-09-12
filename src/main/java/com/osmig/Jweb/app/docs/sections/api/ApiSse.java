@@ -13,6 +13,8 @@ public final class ApiSse {
             codeBlock("""
 import jweb.SseEmitter;
 
+String getData() { return "tick"; }
+
 // Create SSE endpoint — return the emitter straight from the route
 app.get("/events", req -> {
     SseEmitter emitter = SseEmitter.create();
@@ -20,7 +22,11 @@ app.get("/events", req -> {
     Jobs.run(() -> {
         while (!emitter.isCompleted()) {
             emitter.send(getData());
-            Thread.sleep(1000);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                break;
+            }
         }
     });
 
@@ -29,6 +35,10 @@ app.get("/events", req -> {
 
             h3Title("Event Types"),
             codeBlock("""
+SseEmitter emitter = SseEmitter.create();
+String jsonData = "{count: 1}";
+String data = "hello";
+
 // Named event (client listens with addEventListener)
 emitter.send(SseEvent.of("notification", jsonData));
 
@@ -60,6 +70,9 @@ inlineScript(actions().does(
 
             h3Title("Broadcasting"),
             codeBlock("""
+String jsonData = "{count: 1}";
+Map<String, Object> orderData = Map.of("id", 42);
+
 // Shared broadcaster for all connected clients
 SseBroadcaster broadcaster = new SseBroadcaster();
 
@@ -79,6 +92,9 @@ app.get("/orders/updates", req -> {
 
             h3Title("Complete Example"),
             codeBlock("""
+Map<String, Object> getDashboardData() { return Map.of(); }
+Map<String, Object> getStats() { return Map.of(); }
+
 // Live dashboard updates
 app.get("/dashboard/updates", req -> {
     SseEmitter emitter = SseEmitter.create();
@@ -88,7 +104,11 @@ app.get("/dashboard/updates", req -> {
 
         while (!emitter.isCompleted()) {
             emitter.send(SseEvent.json("stats", getStats()));
-            Thread.sleep(5000);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                break;
+            }
         }
     });
 

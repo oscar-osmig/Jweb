@@ -54,6 +54,25 @@ match(
                      "switch expression is for, so there is no elif chain and no match() — " +
                      "both are gone in 3.0."),
                 codeBlock("""
+enum Role { ADMIN, MODERATOR, EDITOR, USER }
+Role role = Role.ADMIN;
+String status = "success";
+int code = 200;
+Element adminPanel() { return div("Admin"); }
+Element moderatorPanel() { return div("Moderator"); }
+Element editorPanel() { return div("Editor"); }
+Element userPanel() { return div("User"); }
+Element guestPanel() { return div("Guest"); }
+Element greenBadge(String s) { return div(s); }
+Element yellowBadge(String s) { return div(s); }
+Element redBadge(String s) { return div(s); }
+Element grayBadge(String s) { return div(s); }
+Element serverError() { return div("500"); }
+Element clientError() { return div("400"); }
+Element redirect() { return div("300"); }
+Element success() { return div("200"); }
+Element unknown() { return div("?"); }
+
 // Role-based content
 Element panel = switch (role) {
     case ADMIN -> adminPanel();

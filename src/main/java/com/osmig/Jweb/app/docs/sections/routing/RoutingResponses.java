@@ -11,11 +11,18 @@ public final class RoutingResponses {
             h3Title("Response Types"),
             para("Return different response types from handlers."),
             codeBlock("""
+class UserService { List<Object> findAll() { return List.of(); } }
+UserService userService = new UserService();
+boolean authenticate(Request r) { return true; }
+boolean saved = true;
+Element maintenancePage() { return div(); }
+Object item = new Object();
+
 // HTML response (default)
 app.get("/page", () -> div("HTML content"));
 
 // JSON response
-app.get("/api/users", () -> Response.json(userService.findAll()));
+app.get("/api/users", req -> Response.json(userService.findAll()));
 
 // Redirect
 app.get("/old-page", req -> Response.redirect("/new-page"));
@@ -41,6 +48,11 @@ app.get("/made", req -> Response.json(201, item));"""),
 
             h3Title("Custom Responses"),
             codeBlock("""
+String rss = "<rss></rss>";
+String etag = "abc123";
+class FileService { byte[] read(String file) { return new byte[0]; } }
+FileService fileService = new FileService();
+
 // Custom headers
 app.get("/custom", req -> Response.ok()
     .header("X-Custom-Header", "value")

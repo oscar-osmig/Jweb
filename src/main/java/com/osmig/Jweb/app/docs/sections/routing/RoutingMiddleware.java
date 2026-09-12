@@ -11,6 +11,11 @@ public final class RoutingMiddleware {
             h3Title("Middleware"),
             para("Add middleware for authentication, logging, etc."),
             codeBlock("""
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+Logger logger = LoggerFactory.getLogger(getClass());
+
 // Apply to all routes
 app.use((req, chain) -> {
     long start = System.currentTimeMillis();
@@ -30,7 +35,14 @@ app.use("/api", Cors.allowAll());"""),
 
             h3Title("Custom Middleware"),
             codeBlock("""
-public class LoggingMiddleware implements Middleware {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+// A named, reusable Middleware
+class LoggingMiddleware implements Middleware {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Override
     public Object handle(Request req, MiddlewareChain chain) throws Exception {
         logger.info("Request: {} {}", req.method(), req.path());
         try {

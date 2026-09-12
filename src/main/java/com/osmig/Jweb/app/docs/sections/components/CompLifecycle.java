@@ -15,6 +15,9 @@ public final class CompLifecycle {
             h3Title("beforeRender & afterRender"),
             para("Server-side hooks for data loading and cleanup."),
             codeBlock("""
+record User(String getName) {}
+class UserService { User findById(int id) { return new User("Ada"); } }
+
 public class UserPage implements Template {
     private final UserService userService;
     private User user;
@@ -43,6 +46,12 @@ public class UserPage implements Template {
             h3Title("Page Title & Meta"),
             para("Dynamic page title and SEO metadata — plain Strings, null for the default."),
             codeBlock("""
+record Product(String getName, String getDescription) {}
+private Product product = new Product("Widget",
+    "A very fine widget for all your widget needs. Built to last, designed " +
+    "to delight, and priced to make your accountant smile every single quarter, " +
+    "no matter how the market moves or the weather turns outside.");
+
 @Override
 public String pageTitle() {
     return product.getName() + " | Store";
@@ -59,6 +68,9 @@ public String description() {
             h3Title("Extra Head Elements"),
             para("Add custom elements to the HTML head."),
             codeBlock("""
+private String getTitle() { return "Home"; }
+private String getImageUrl() { return "/og-image.png"; }
+
 @Override
 public Optional<Element> extraHead() {
     return Optional.of(fragment(
@@ -85,6 +97,8 @@ public Action onUnmount() {
             h3Title("Caching"),
             para("Control response caching for performance."),
             codeBlock("""
+private Object currentUser = null;
+
 @Override
 public boolean cacheable() {
     return currentUser == null;  // Only cache for anonymous users

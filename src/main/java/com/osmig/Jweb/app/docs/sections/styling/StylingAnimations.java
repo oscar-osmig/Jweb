@@ -28,7 +28,7 @@ String bounceKeyframes = keyframes("bounce")
     .build();"""),
 
             h3Title("Using Animations"),
-            codeBlock("""
+            codeBlock("style", """
 // Apply animation to element
 .animation("fadeIn", s(1), ease)
 //          name, duration, timing
@@ -42,8 +42,8 @@ String bounceKeyframes = keyframes("bounce")
 .animationDirection(directionAlternate)
 .animationFillMode(fillModeForwards)
 
-// Shorthand (raw CSS string)
-.prop("animation", "fadeIn 0.5s ease-out forwards")"""),
+// Shorthand
+.animation("fadeIn 0.5s ease-out forwards")"""),
 
             h3Title("Pre-built Animations"),
             para("Eleven ready-to-use animations. Each one has matching @keyframes in "
@@ -121,7 +121,7 @@ stepStart
 stepEnd"""),
 
             h3Title("Animation State"),
-            codeBlock("""
+            codeBlock("style", """
 // Pause/play
 .animationPlayState(paused)
 .animationPlayState(running)

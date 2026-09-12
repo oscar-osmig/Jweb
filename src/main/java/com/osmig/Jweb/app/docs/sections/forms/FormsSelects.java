@@ -39,7 +39,8 @@ select(name("car"),
 
             h3Title("Dynamic Options"),
             codeBlock("""
-List<Country> countries = countryService.findAll();
+record Country(String code, String name) {}
+List<Country> countries = List.of(new Country("us", "United States"), new Country("ca", "Canada"));
 
 select(name("country"),
     option(value(""), "Select..."),

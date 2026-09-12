@@ -77,6 +77,8 @@ Then annotate your application class — the framework's beans arrive through Sp
 auto-configuration, so you only component-scan your own package:
 
 ```java
+import org.springframework.boot.SpringApplication;
+
 @JWebApplication
 public class App {
     public static void main(String[] args) {
@@ -154,6 +156,17 @@ public class Routes implements JWebRoutes {
         // are reserved for Spring MVC @REST controllers — see architecture doc)
         app.get("/data/users", req -> Response.json(userService.findAll()));
     }
+
+    // Your own pages and services — stubbed here so the snippet stands on its own.
+    static class Layout implements Template { public Element render() { return div(); } }
+    static class HomePage implements Template { public Element render() { return div("Home"); } }
+    static class AboutPage implements Template { public Element render() { return div("About"); } }
+    static class ContactPage implements Template { public Element render() { return div("Contact"); } }
+    record ProfilePage(String id) implements Template {
+        public Element render() { return div("Profile " + id); }
+    }
+    interface UserService { List<String> findAll(); }
+    UserService userService = () -> List.of("Ada", "Grace");
 }
 ```
 
@@ -178,10 +191,12 @@ form(Contact.class)
 // The route validates against the same record and returns a fragment:
 app.post("/contact/submit", ctx -> {
     Form.Bound<Contact> submitted = Form.bind(Contact.class, ctx);
-    if (!submitted.ok()) return ContactStatus.error(submitted.errors().getAllMessages().get(0));
-    messageStore.save(submitted.value());
-    return ContactStatus.success("Message sent!");
+    if (!submitted.ok()) return p(cls("form-error"), submitted.errors().getAllMessages().get(0));
+    save(submitted.value());
+    return p(cls("form-ok"), "Message sent!");
 });
+
+void save(Contact contact) { /* your own persistence */ }
 ```
 
 For richer client behavior the JS DSL is still there (`actions().add(onSubmit(...)...)`) —

@@ -14,7 +14,9 @@ public final class ElementsEnhanced {
             h3Title("Popover API"),
             para("Native popover elements with auto-dismiss and backdrop behavior."),
             codeBlock("""
-import static jweb.el.PopoverElements.*;
+// The core attributes are on El; PopoverElements duplicates them under its
+// own names (importing both is ambiguous), so its extra helpers — like
+// popoverHideButton — are reached by qualifying the type instead.
 import static jweb.El.*;
 
 // Auto popover (dismisses on click outside or Escape)
@@ -29,7 +31,7 @@ div(popover(), id("my-popup"),
 
 // Manual popover (only dismisses programmatically)
 button(popovertarget("info-pop"), popovertargetaction("show"), "Show Info"),
-popoverHideButton("info-pop", "Close"),
+jweb.el.PopoverElements.popoverHideButton("info-pop", "Close"),
 div(popover("manual"), id("info-pop"),
     p("This stays open until explicitly closed.")
 )
@@ -50,8 +52,16 @@ button(popovertarget("custom-pop"),
             h3Title("Responsive Images"),
             para("Art direction and format selection for optimized image delivery."),
             codeBlock("""
-import static jweb.el.PictureElements.*;
+// picture/source/srcset/type/loading are on El already; PictureElements
+// duplicates them under its own names, so importing its wildcard alongside
+// El is ambiguous — import just the attributes El doesn't have by name.
 import static jweb.El.*;
+import static jweb.el.PictureElements.media;
+import static jweb.el.PictureElements.width;
+import static jweb.el.PictureElements.height;
+import static jweb.el.PictureElements.eagerLoad;
+import static jweb.el.PictureElements.fetchpriority;
+import static jweb.el.PictureElements.decoding;
 
 // Art direction: different images per viewport
 picture(

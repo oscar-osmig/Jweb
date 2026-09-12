@@ -11,6 +11,8 @@ public final class StateAdvanced {
             h3Title("Derived State"),
             para("Compute values from other state."),
             codeBlock("""
+record Todo(String text, boolean done) {}
+
 State<List<Todo>> todos = useState(new ArrayList<>());
 
 // Derived values (recomputed on render)
@@ -28,6 +30,8 @@ div(
             h3Title("Shared State"),
             para("Share state between components via constructor."),
             codeBlock("""
+record User(String name) {}
+
 // Parent owns the state
 public class App implements Template {
     private final State<User> user = useState(null);
@@ -55,7 +59,11 @@ public class Header implements Template {
                 () -> span("Welcome, " + user.get().name()))
         );
     }
-}"""),
+}
+
+// Content and Footer follow the same shape as Header
+class Content extends Header { Content(State<User> user) { super(user); } }
+class Footer extends Header { Footer(State<User> user) { super(user); } }"""),
 
             docTip("State changes travel over the WebSocket: bound text, attributes and classes are " +
                    "patched, and live(...) regions are re-rendered on the server and morphed in.")

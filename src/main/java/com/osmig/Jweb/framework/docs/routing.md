@@ -5,6 +5,13 @@ JWeb provides a fluent routing API for defining HTTP endpoints.
 ## Basic Routes
 
 ```java
+record HomePage() implements Template {
+    public Element render() { return div(h1("Home")); }
+}
+record AboutPage() implements Template {
+    public Element render() { return div(h1("About")); }
+}
+
 @Component
 public class Routes implements JWebRoutes {
     @Override
@@ -13,16 +20,22 @@ public class Routes implements JWebRoutes {
            .get("/about", req -> new AboutPage())
            .post("/login", this::handleLogin);
     }
+
+    private Object handleLogin(Request req) {
+        return Response.redirect("/dashboard");
+    }
 }
 ```
 
 ## HTTP Methods
 
 ```java
+RouteHandler handler = req -> "ok";
+
+// PATCH has no app.patch(...) yet — GET/POST/PUT/DELETE only
 app.get("/users", handler)      // GET
    .post("/users", handler)     // POST
    .put("/users/:id", handler)  // PUT
-   .patch("/users/:id", handler) // PATCH
    .delete("/users/:id", handler); // DELETE
 ```
 
@@ -31,6 +44,13 @@ app.get("/users", handler)      // GET
 Use `:paramName` syntax for dynamic segments:
 
 ```java
+record UserPage(String userId) implements Template {
+    public Element render() { return div("User " + userId); }
+}
+record CommentPage(String postId, String commentId) implements Template {
+    public Element render() { return div("Comment " + commentId + " on post " + postId); }
+}
+
 app.get("/users/:id", req -> {
     String userId = req.param("id");
     return new UserPage(userId);
@@ -48,11 +68,27 @@ app.get("/posts/:postId/comments/:commentId", req -> {
 Type-safe parameter extraction with automatic conversion and validation:
 
 ```java
+record UserPage(int userId) implements Template {
+    public Element render() { return div("User " + userId); }
+}
+record ProductPage(long productId) implements Template {
+    public Element render() { return div("Product " + productId); }
+}
+record PriceFilterPage(double price) implements Template {
+    public Element render() { return div("Under $" + price); }
+}
+record PostsPage(boolean published) implements Template {
+    public Element render() { return div(published ? "Published" : "Drafts"); }
+}
+record OrderPage(UUID orderId) implements Template {
+    public Element render() { return div("Order " + orderId); }
+}
+
 app.get("/users/:id", req -> {
     // Integer parameters
-    int userId = req.paramInt("id");                    // Throws if invalid
-    Integer userIdOpt = req.paramIntOpt("id");          // Returns null if invalid
-    int page = req.paramInt("id", 1);                   // Default value if missing/invalid
+    int userId = req.paramInt("id");                             // null (NPEs on unboxing) if missing/invalid
+    Optional<Integer> userIdOpt = req.paramIntOpt("id");         // empty if missing/invalid
+    int page = req.paramInt("id", 1);                            // default value if missing/invalid
 
     return new UserPage(userId);
 });
@@ -60,23 +96,24 @@ app.get("/users/:id", req -> {
 app.get("/products/:id", req -> {
     // Long parameters (for large IDs)
     long productId = req.paramLong("id");
-    Long productIdOpt = req.paramLongOpt("id");
+    Optional<Long> productIdOpt = req.paramLongOpt("id");
 
     return new ProductPage(productId);
 });
 
 app.get("/items/:price", req -> {
-    // Double parameters
+    // Double parameters — there is no paramDoubleOpt(...) yet
     double price = req.paramDouble("price");
-    Double priceOpt = req.paramDoubleOpt("price");
+    Optional<Double> priceOpt = Optional.ofNullable(req.paramDouble("price"));
 
     return new PriceFilterPage(price);
 });
 
 app.get("/posts/:published", req -> {
-    // Boolean parameters
-    boolean published = req.paramBool("published");     // true/false, 1/0, yes/no
-    Boolean publishedOpt = req.paramBoolOpt("published");
+    // Boolean parameters — "true"/"1"/"yes"/"on" parse as true, anything else as false;
+    // there is no paramBoolOpt(...) yet
+    boolean published = req.paramBool("published");
+    Optional<Boolean> publishedOpt = Optional.ofNullable(req.paramBool("published"));
 
     return new PostsPage(published);
 });
@@ -84,7 +121,7 @@ app.get("/posts/:published", req -> {
 app.get("/orders/:uuid", req -> {
     // UUID parameters
     UUID orderId = req.paramUUID("uuid");
-    UUID orderIdOpt = req.paramUUIDOpt("uuid");
+    Optional<UUID> orderIdOpt = req.paramUUIDOpt("uuid");
 
     return new OrderPage(orderId);
 });
@@ -93,13 +130,20 @@ app.get("/orders/:uuid", req -> {
 ### Required Parameters (with Validation)
 
 ```java
+record UserPage(int userId) implements Template {
+    public Element render() { return div("User " + userId); }
+}
+
 app.get("/users/:id", req -> {
-    // Throws ResponseStatusException(400) if missing or invalid
+    // requireParamInt/Long/UUID throw IllegalArgumentException if missing or invalid.
+    // double and boolean have no require* variant yet — Optional::orElseThrow gets there.
     int id = req.requireParamInt("id");
     long bigId = req.requireParamLong("id");
-    double amount = req.requireParamDouble("amount");
-    boolean active = req.requireParamBool("active");
     UUID uuid = req.requireParamUUID("uuid");
+    double amount = Optional.ofNullable(req.paramDouble("amount"))
+        .orElseThrow(() -> new IllegalArgumentException("amount is required"));
+    boolean active = Optional.ofNullable(req.paramBool("active"))
+        .orElseThrow(() -> new IllegalArgumentException("active is required"));
 
     return new UserPage(id);
 });
@@ -108,10 +152,15 @@ app.get("/users/:id", req -> {
 ## Query Parameters
 
 ```java
+record SearchPage(String query, int page, long limit) implements Template {
+    public Element render() { return div("Results for " + query); }
+}
+
 app.get("/search", req -> {
-    String query = req.query("q");           // ?q=hello
-    int page = req.queryInt("page", 1);      // ?page=2 (default: 1)
-    long limit = req.queryLong("limit", 10); // ?limit=50
+    String query = req.query("q");                  // ?q=hello
+    int page = req.queryInt("page", 1);              // ?page=2 (default: 1)
+    Long limitParam = req.queryLong("limit");        // ?limit=50 — no default-value overload yet
+    long limit = limitParam != null ? limitParam : 10;
     return new SearchPage(query, page, limit);
 });
 ```
@@ -119,10 +168,20 @@ app.get("/search", req -> {
 ## Request Body
 
 ```java
-// JSON body
+record User(String id, String name) {}
+class UserService { User save(User u) { return u; } }
+UserService userService = new UserService();
+com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+
+// JSON body — Request has no typed bodyAs(...) yet, so parse the raw body
+// yourself (a @REST class with @Body does bind a type for you)
 app.post("/api/users", req -> {
-    User user = req.bodyAs(User.class);
-    return Response.json(userService.save(user));
+    try {
+        User user = json.readValue(req.body(), User.class);
+        return Response.json(userService.save(user));
+    } catch (Exception e) {
+        return Response.error(400, "Invalid JSON");
+    }
 });
 
 // Raw body
@@ -142,6 +201,8 @@ app.post("/contact", req -> {
 ## Headers
 
 ```java
+Map<String, String> data = Map.of("status", "ok");
+
 app.get("/api/data", req -> {
     String auth = req.header("Authorization");
     String contentType = req.contentType();
@@ -154,6 +215,10 @@ app.get("/api/data", req -> {
 ### HTML Response (Templates)
 
 ```java
+record HomePage() implements Template {
+    public Element render() { return div(h1("Home")); }
+}
+
 app.get("/", req -> new HomePage());  // Returns Element
 app.get("/about", req -> div(h1("About")));  // Inline Element
 ```
@@ -161,6 +226,8 @@ app.get("/about", req -> div(h1("About")));  // Inline Element
 ### JSON Response
 
 ```java
+List<String> users = List.of("ada", "linus");
+
 app.get("/api/users", req -> Response.json(users));
 
 app.get("/api/status", req -> Response.json()
@@ -179,6 +246,10 @@ app.post("/form", req -> Response.seeOther("/success"));  // 303 after POST
 ### Error Responses
 
 ```java
+record User(String id, String name) {}
+class UserService { User find(String id) { return null; } }
+UserService userService = new UserService();
+
 app.get("/api/users/:id", req -> {
     User user = userService.find(req.param("id"));
     if (user == null) {
@@ -204,6 +275,21 @@ Handlers can return:
 For larger applications, organize routes by feature:
 
 ```java
+@Component
+class UserRoutes implements JWebRoutes {
+    @Override
+    public void configure(JWeb app) {
+        app.get("/users", req -> "users");
+    }
+}
+@Component
+class ApiRoutes implements JWebRoutes {
+    @Override
+    public void configure(JWeb app) {
+        app.get("/api/status", req -> "ok");
+    }
+}
+
 @Component
 public class Routes implements JWebRoutes {
     private final UserRoutes userRoutes;

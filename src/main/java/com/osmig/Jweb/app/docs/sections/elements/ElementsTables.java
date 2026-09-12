@@ -20,13 +20,16 @@ table(
         tr(td("Jane"), td("jane@test.com"), td("User"))
     ),
     tfoot(
-        tr(td(attrs().colspan("3"), "2 users total"))
+        tr(td(attrs().colspan(3), "2 users total"))
     )
 )"""),
 
             h3Title("Dynamic Tables"),
             para("Render table rows from data collections."),
             codeBlock("""
+record User(long getId, String getName, String getEmail) {}
+class UserService { List<User> findAll() { return List.of(new User(1, "Ada", "ada@example.com")); } }
+UserService userService = new UserService();
 List<User> users = userService.findAll();
 
 table(

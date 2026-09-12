@@ -36,6 +36,9 @@ dl(
             h3Title("Dynamic Lists"),
             para("Use each() to render lists from collections."),
             codeBlock("""
+record User(String getName, String getEmail) {}
+class UserService { List<User> findAll() { return List.of(new User("Ada", "ada@example.com")); } }
+UserService userService = new UserService();
 List<String> items = List.of("Apple", "Banana", "Cherry");
 ul(each(items, item -> li(item)))
 

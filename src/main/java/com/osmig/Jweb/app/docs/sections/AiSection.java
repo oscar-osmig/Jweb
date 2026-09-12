@@ -15,7 +15,7 @@ public final class AiSection {
                  "OpenAI-compatible endpoint."),
 
             docSubtitle("Configuration"),
-            codeBlock("""
+            codeBlock("yaml", """
                     # application.yaml (disabled by default)
                     jweb:
                       ai:
@@ -28,9 +28,10 @@ public final class AiSection {
 
             docSubtitle("One-liners & Conversations"),
             codeBlock("""
+                    String text = "JWeb is a pure-Java web framework.";
                     String answer = AI.ask("Summarize this: " + text);
 
-                    Chat chat = AI.chat().system("You are a concise support agent");
+                    var chat = AI.chat().system("You are a concise support agent");
                     String a = chat.send("What is JWeb?");
                     String b = chat.send("Show me an example");   // history kept"""),
 
@@ -39,6 +40,10 @@ public final class AiSection {
                  "see results, repeat — until it produces a final answer. Tool errors are " +
                  "fed back as text so the agent can recover; maxSteps bounds the loop."),
             codeBlock("""
+                    interface WeatherService { String lookup(String city); }
+                    WeatherService weatherService = city -> "Sunny, 22°C";
+                    Tool searchDocs = Tool.of("search_docs", "Search the JWeb docs");
+
                     Tool weather = Tool.of("get_weather", "Get the weather for a city")
                         .param("city", "The city name")
                         .handler(args -> weatherService.lookup((String) args.get("city")));
@@ -47,7 +52,7 @@ public final class AiSection {
                         .system("You are a travel assistant")
                         .tools(weather, searchDocs)
                         .maxSteps(8)
-                        .onStep((step, info) -> Log.info("step {}: {}", step, info))
+                        .onStep((step, info) -> System.out.println("step " + step + ": " + info))
                         .run("Should I pack an umbrella for Paris this weekend?");"""),
 
             docSubtitle("Drop-in Chat Widget"),

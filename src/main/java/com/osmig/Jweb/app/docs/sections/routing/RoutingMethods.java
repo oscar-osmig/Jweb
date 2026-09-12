@@ -11,6 +11,16 @@ public final class RoutingMethods {
             h3Title("HTTP Methods"),
             para("Handle different HTTP methods with dedicated methods."),
             codeBlock("""
+class User { long getId() { return 1; } }
+class UserService {
+    User save(String name, String email) { return new User(); }
+    void update(long id, String json) {}
+    void delete(long id) {}
+}
+Element userList() { return div(); }
+Element userDetail(String id) { return div(); }
+UserService userService = new UserService();
+
 // GET - retrieve data
 app.get("/users", () -> userList());
 app.get("/users/:id", req -> userDetail(req.param("id")));

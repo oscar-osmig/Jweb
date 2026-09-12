@@ -34,6 +34,16 @@ new Card("Welcome", "Hello, world!")"""),
             h3Title("Using Components"),
             para("Components are used like any other element."),
             codeBlock("""
+record Card(String title, String content) implements Template {
+    public Element render() { return div(class_("card"), h3(title), p(content)); }
+}
+record Product(String getName) {}
+class ProductService { List<Product> findAll() { return List.of(new Product("Widget")); } }
+ProductService productService = new ProductService();
+record ProductCard(Product product) implements Template {
+    public Element render() { return div(class_("card"), h3(product.getName())); }
+}
+
 div(
     h1("Dashboard"),
     new Card("Users", "Manage your users"),

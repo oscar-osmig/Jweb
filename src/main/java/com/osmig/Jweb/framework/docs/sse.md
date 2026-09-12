@@ -5,9 +5,6 @@ JWeb provides SSE support for real-time server-to-client streaming.
 ## Basic Usage
 
 ```java
-import com.osmig.Jweb.framework.sse.SseEmitter;
-import com.osmig.Jweb.framework.sse.SseEvent;
-
 app.get("/events", req -> {
     SseEmitter emitter = SseEmitter.create();
 
@@ -26,8 +23,8 @@ app.get("/events", req -> {
 SseEmitter emitter = SseEmitter.create();
 
 // Custom timeout (0 = no timeout)
-SseEmitter emitter = SseEmitter.create(60000);  // 60 seconds
-SseEmitter emitter = SseEmitter.create(0);      // No timeout
+SseEmitter emitterWithTimeout = SseEmitter.create(60000);  // 60 seconds
+SseEmitter emitterNoTimeout = SseEmitter.create(0);        // No timeout
 ```
 
 ## Sending Events
@@ -35,45 +32,52 @@ SseEmitter emitter = SseEmitter.create(0);      // No timeout
 ### Simple Text
 
 ```java
+SseEmitter emitter = SseEmitter.create();
 emitter.send("Hello, World!");
 ```
 
 ### Structured Events
 
 ```java
-SseEvent event = SseEvent.of("New message received");
-emitter.send(event);
+SseEmitter emitter = SseEmitter.create();
+
+SseEvent simpleEvent = SseEvent.of("New message received");
+emitter.send(simpleEvent);
 
 // With event name
-SseEvent event = SseEvent.create()
+SseEvent namedEvent = SseEvent.create()
     .name("message")
     .data("Hello!")
     .build();
-emitter.send(event);
+emitter.send(namedEvent);
 
 // With ID and retry
-SseEvent event = SseEvent.create()
+SseEvent fullEvent = SseEvent.create()
     .id("123")
     .name("update")
     .data("{\"count\": 42}")
     .retry(3000)  // Retry after 3 seconds on disconnect
     .build();
-emitter.send(event);
+emitter.send(fullEvent);
 ```
 
 ### JSON Data
 
 ```java
+SseEmitter emitter = SseEmitter.create();
+
 Map<String, Object> data = Map.of(
     "type", "notification",
     "message", "You have a new message"
 );
-emitter.send(SseEvent.of(Json.stringify(data)));
+emitter.send(SseEvent.json(data));
 ```
 
 ### Keep-Alive Comments
 
 ```java
+SseEmitter emitter = SseEmitter.create();
+
 // Send a comment (doesn't trigger event on client)
 emitter.sendComment("keep-alive");
 ```
@@ -81,6 +85,8 @@ emitter.sendComment("keep-alive");
 ## Completing Emitters
 
 ```java
+SseEmitter emitter = SseEmitter.create();
+
 // Normal completion
 emitter.complete();
 
@@ -96,14 +102,14 @@ if (emitter.isCompleted()) {
 ## Event Callbacks
 
 ```java
-SseEmitter emitter = SseEmitter.create()
-    .onComplete(e -> {
-        System.out.println("Client disconnected");
-        // Cleanup resources
-    })
-    .onError(error -> {
-        System.err.println("Error: " + error.getMessage());
-    });
+SseEmitter emitter = SseEmitter.create();
+emitter.onComplete(e -> {
+    System.out.println("Client disconnected");
+    // Cleanup resources
+});
+emitter.onError(error -> {
+    System.err.println("Error: " + error.getMessage());
+});
 ```
 
 ## Broadcasting
@@ -111,15 +117,13 @@ SseEmitter emitter = SseEmitter.create()
 Use `SseBroadcaster` to send events to multiple clients:
 
 ```java
-import com.osmig.Jweb.framework.sse.SseBroadcaster;
-
 // Create a broadcaster
 SseBroadcaster broadcaster = new SseBroadcaster();
 
 // Add clients
 app.get("/events", req -> {
     SseEmitter emitter = SseEmitter.create();
-    broadcaster.add(emitter);
+    broadcaster.subscribe(emitter);
     return emitter.toResponse();
 });
 
@@ -150,7 +154,7 @@ public class NotificationRoutes implements JWebRoutes {
                 System.out.println("User " + userId + " disconnected");
             });
 
-            notifications.add(emitter);
+            notifications.subscribe(emitter);
             emitter.send("Connected to notification stream");
 
             return emitter.toResponse();
@@ -161,10 +165,10 @@ public class NotificationRoutes implements JWebRoutes {
             String message = req.formParam("message");
             notifications.broadcast(SseEvent.create()
                 .name("notification")
-                .data(Json.stringify(Map.of(
+                .data(Map.of(
                     "message", message,
                     "timestamp", System.currentTimeMillis()
-                )))
+                ))
                 .build()
             );
             return Response.json(Map.of("sent", true));
@@ -202,6 +206,11 @@ eventSource.close();
 ## Live Updates Example
 
 ```java
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+
 @Component
 public class LiveStatsRoutes implements JWebRoutes {
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -221,7 +230,7 @@ public class LiveStatsRoutes implements JWebRoutes {
                     );
                     emitter.send(SseEvent.create()
                         .name("stats")
-                        .data(Json.stringify(stats))
+                        .data(stats)
                         .build()
                     );
                 }
@@ -233,6 +242,9 @@ public class LiveStatsRoutes implements JWebRoutes {
             return emitter.toResponse();
         });
     }
+
+    private int getActiveUserCount() { return 0; }
+    private double getRequestRate() { return 0; }
 }
 ```
 

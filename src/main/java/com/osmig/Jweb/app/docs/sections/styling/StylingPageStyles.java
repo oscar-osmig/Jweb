@@ -22,6 +22,8 @@ public class Card implements Template {
 
     @Override
     public Element render() {
+        String title = "Welcome";
+        String body = "Hello World!";
         return div(class_("card"), h3(title), p(body));
     }
 
@@ -38,12 +40,21 @@ public class Card implements Template {
                 + "tokens, so no page has to remember to include them."),
 
             codeBlock("""
+static final CSSValue TEXT = hex("#1e293b");
+static final CSSValue BG = hex("#ffffff");
+static final Theme TOKENS = Theme.light().color("text", TEXT).color("bg", BG);
+
 public class Layout implements Template {
+
+    @Override
+    public Element render() {
+        return body();
+    }
 
     @Override
     public Stylesheet styles() {
         return stylesheet()
-            .add(Theme.TOKENS)
+            .add(TOKENS)
             .rule("*, *::before, *::after", style().boxSizing(borderBox).margin(zero))
             .rule("body", style().color(TEXT).backgroundColor(BG));
     }
@@ -56,6 +67,13 @@ public class Layout implements Template {
                 + "stylesheet, and the plain declarations still ride the style attribute."),
 
             codeBlock("""
+CSSValue PRIMARY = hex("#4f46e5");
+CSSValue SP_2 = rem(0.5);
+CSSValue SP_3 = rem(0.75);
+CSSValue SP_4 = rem(1);
+CSSValue SP_6 = rem(1.5);
+CSSValue ROUNDED = px(8);
+
 a(href("/docs"), style()
         .color(PRIMARY).padding(SP_2, SP_4).borderRadius(ROUNDED)
         .hover(style().backgroundColor(hex("#eef2ff")))
@@ -77,6 +95,10 @@ a(href("/docs"), style()
 
             h3Title("The conditional vocabulary"),
             codeBlock("""
+import static jweb.css.ContainerQuery.*;
+
+Style<?> s = style();
+
 style()
     .hover(s)              // :hover
     .focus(s)              // :focus
@@ -101,6 +123,12 @@ style()
                 + "apply() carries them, so a mixin can bring its own hover state."),
 
             codeBlock("""
+static final CSSValue ROUNDED = px(8);
+static final CSSValue TEXT = hex("#1a1a1a");
+static final CSSValue SP_1 = rem(0.25);
+static final CSSValue SP_2 = rem(0.5);
+static final CSSValue SP_3 = rem(0.75);
+
 static Style<?> chip() {
     return row(SP_2).padding(SP_1, SP_3).borderRadius(ROUNDED)
                     .hover(style().backgroundColor(hex("#eef2ff")));

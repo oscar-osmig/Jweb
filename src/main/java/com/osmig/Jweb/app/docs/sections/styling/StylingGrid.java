@@ -10,7 +10,7 @@ public final class StylingGrid {
         return section(
             h3Title("CSS Grid"),
             para("Two-dimensional grid layout system."),
-            codeBlock("""
+            codeBlock("style", """
 // Basic grid
 .display(grid)
 .gridTemplateColumns(repeat(3, fr(1)))  // 3 equal columns
@@ -18,7 +18,7 @@ public final class StylingGrid {
 .gap(rem(2))"""),
 
             h3Title("Grid Column Patterns"),
-            codeBlock("""
+            codeBlock("style", """
 // Fixed columns
 .gridTemplateColumns(px(200), px(200), px(200))
 
@@ -32,7 +32,7 @@ public final class StylingGrid {
 .gridTemplateColumns(px(250), fr(1), px(300))  // sidebar, content, aside"""),
 
             h3Title("Grid Areas"),
-            codeBlock("""
+            codeBlock("style", """
 // Define areas
 .gridTemplateAreas(
     "header header header",
@@ -48,7 +48,7 @@ public final class StylingGrid {
 .gridArea("content")"""),
 
             h3Title("Grid Item Placement"),
-            codeBlock("""
+            codeBlock("style", """
 // Span columns/rows
 .gridColumn("span 2")
 .gridRow("span 3")

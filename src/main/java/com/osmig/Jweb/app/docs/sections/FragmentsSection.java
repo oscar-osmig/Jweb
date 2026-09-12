@@ -17,6 +17,9 @@ public final class FragmentsSection {
             docSubtitle("Basic Swap"),
             para("The server route returns a fragment; any element triggers the swap on click."),
             codeBlock("""
+                    QueryParam<Integer> PAGE = QueryParam.of("page", Integer.class).orElse(1);
+                    Element productList(int page) { return div("Page " + page); }
+
                     // Server: returns just the list markup
                     app.get("/products/list", req ->
                         productList(PAGE.from(req)));

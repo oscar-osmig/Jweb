@@ -94,6 +94,12 @@ button(attrs().style(s -> s.padding(SP_3).apply(brandFlow()).color(white)), ...)
 Related helpers that kill common `prop("...")` strings:
 
 ```java
+static Style<?> brandFlow() {
+    return style().background(hex("#ff00aa"))
+                  .backgroundSize(percent(300), percent(100))
+                  .animation("gradientShift", s(3), linear, s(0), infinite);
+}
+
 style().content()        // content: '' — for ::before/::after rules
 style().inset(zero)      // top/right/bottom/left in one call
 style().borderMask()     // mask so only the padding ring shows — gradient borders:
@@ -161,8 +167,10 @@ shortcuts, and it is now the only spelling: the `attrs().style()` starter and th
 `.done()` that ended it are gone in 3.0.
 
 ```java
-// Before (2.2.3)
-div(attrs().style().padding(SP_4).color(TEXT).done(), text("hi"))
+CSSValue SP_4 = rem(1);
+CSSValue TEXT = hex("#1e293b");
+
+// Before (2.2.3): div(attrs().style().padding(SP_4).color(TEXT).done(), text("hi"))
 
 // After
 div(style().padding(SP_4).color(TEXT), "hi")
@@ -186,6 +194,10 @@ instances of a card contribute one copy.
 
 ```java
 public class Card implements Template {
+    private final String title;
+    private final String body;
+
+    public Card(String title, String body) { this.title = title; this.body = body; }
 
     @Override
     public Element render() { return div(class_("card"), h3(title), p(body)); }
@@ -204,13 +216,22 @@ A layout's stylesheet is where the reset and the design tokens belong, so no pag
 remember to include them:
 
 ```java
+class Theme {
+    static final CSSValue TEXT = hex("#1e293b");
+    static final CSSValue BG = hex("#ffffff");
+    static final jweb.css.Theme TOKENS = jweb.css.Theme.light().color("text", TEXT).color("bg", BG);
+}
+
 public class Layout implements Template {
+    @Override
+    public Element render() { return body(); }
+
     @Override
     public Stylesheet styles() {
         return stylesheet()
             .add(Theme.TOKENS)
             .rule("*, *::before, *::after", style().boxSizing(borderBox).margin(zero))
-            .rule("body", style().color(TEXT).backgroundColor(BG));
+            .rule("body", style().color(Theme.TEXT).backgroundColor(Theme.BG));
     }
 }
 ```
@@ -229,6 +250,13 @@ generated class named after a content hash of the rules, the rules go into the p
 collected stylesheet, and the plain declarations still ride the attribute.
 
 ```java
+CSSValue PRIMARY = hex("#4f46e5");
+CSSValue SP_2 = rem(0.5);
+CSSValue SP_3 = rem(0.75);
+CSSValue SP_4 = rem(1);
+CSSValue SP_6 = rem(1.5);
+CSSValue ROUNDED = px(8);
+
 a(href("/docs"), style()
         .color(PRIMARY).padding(SP_2, SP_4).borderRadius(ROUNDED)
         .hover(style().backgroundColor(hex("#eef2ff")))
@@ -264,6 +292,12 @@ They nest — a `hover` inside an `at(...)` is wrapped by that query too — and
 carries them, so a mixin can bring its own hover state:
 
 ```java
+static final CSSValue ROUNDED = px(8);
+static final CSSValue TEXT = hex("#1a1a1a");
+static final CSSValue SP_1 = rem(0.25);
+static final CSSValue SP_2 = rem(0.5);
+static final CSSValue SP_3 = rem(0.75);
+
 static Style<?> chip() {
     return row(SP_2).padding(SP_1, SP_3).borderRadius(ROUNDED)
                     .hover(style().backgroundColor(hex("#eef2ff")));
@@ -279,6 +313,9 @@ named. Each returns a `Style`, so it composes with `apply()`, with tokens, and w
 conditional rules above.
 
 ```java
+CSSValue SP_2 = rem(0.5);
+CSSValue SP_4 = rem(1);
+
 row()                  // flex, items centred
 row(SP_4)              // …with a gap
 stack()                // flex column
@@ -292,7 +329,8 @@ truncate(3)            // three lines, ellipsis
 srOnly()               // visually hidden, still read aloud
 fullBleed()            // break out of the container to the viewport width
 aspect(16, 9)          // a fixed ratio
-cover() / contain()    // fill or fit a box — images and video
+cover()                // fill a box — images and video
+contain()              // or fit it, instead of filling it
 grid(3, SP_4)          // three equal columns
 autoGrid(px(240))      // as many columns as fit — no breakpoints needed
 autoGrid(px(240), SP_4)
@@ -344,6 +382,13 @@ String css = styles(
 
 ```java
 import jweb.css.Stylesheet;
+
+Theme TOKENS = Theme.light()
+    .color("primary", hex("#4f46e5"))
+    .color("text",    hex("#1e293b"))
+    .color("bg",      hex("#ffffff"))
+    .space("4",       rem(1))
+    .radius("md",     px(6));
 
 Stylesheet sheet = Stylesheet.stylesheet()
     .add(TOKENS)                                  // a Theme
@@ -421,8 +466,6 @@ lightDark(white, black)           // theme-aware
 ## Media Queries (`MediaQuery`)
 
 ```java
-import static jweb.css.MediaQuery.*;
-
 media().minWidth(px(768)).rule(".container", style().maxWidth(px(720))).build()
 md().rule(".sidebar", style().display(block)).build()      // presets: xs sm md lg xl xxl
 
@@ -517,12 +560,14 @@ rule(".card:hover")
 rule("li:nth-child(2n+1)")
 
 // 2. The Selector builder, when you are composing one — chainable, keeps its type
+import jweb.css.Selectors;
 import static jweb.css.Selectors.*;          // the starters live here, not in Css:
-                                             // id/tag/select are also HTML DSL names
-rule(cls("card").hover())                    // .card:hover
-rule(cls("input").focusVisible())
+                                             // id/tag/select/cls are also HTML DSL names —
+                                             // cls needs the Selectors. prefix to disambiguate
+rule(Selectors.cls("card").hover())          // .card:hover
+rule(Selectors.cls("input").focusVisible())
 rule(tag("li").nthChild("2n+1"))
-rule(cls("form").has("input:invalid"))       // :has()
+rule(Selectors.cls("form").has("input:invalid"))       // :has()
 // starters: select() tag() cls() id() all(); then pseudo-classes, pseudo-elements,
 // attribute matches, and the combinators child()/descendant()/adjacent()/sibling()
 
@@ -572,6 +617,8 @@ Groups and their prefixes: `color` → `--color-*`, `space` → `--space-*`,
 other name verbatim.
 
 ```java
+static final Theme TOKENS = Theme.light().color("primary", hex("#4f46e5")).space("4", rem(1));
+
 // emit — a layout's stylesheet is the natural home
 public Stylesheet styles() { return stylesheet().add(TOKENS); }
 
@@ -608,6 +655,8 @@ the `hover:`, `dark:` and responsive variant builders emitted class names for wh
 
 ```java
 import static jweb.Css.*;   // CSSAnimations is folded into the Css facade
+
+int index = 0;      // e.g. this element's position in a list
 
 // 11 presets, each with matching @keyframes in `Keyframes`: fadeIn, fadeOut,
 // slideInLeft, slideInRight, zoomIn, zoomOut, pulse, bounce, spin, shake, plus
@@ -735,15 +784,18 @@ At-rules and selectors:
 
 ```java
 // @starting-style — the values a transition animates FROM on first render
-div(style().opacity(1).transition(propAll, ms(200), ease)
+div(style().opacity(1).transition(all, ms(200), ease)
            .startingStyle(style().opacity(0)), "I fade in")
 
-stylesheet().rule(".toast", style().opacity(1).transition(propAll, ms(200), ease))
+stylesheet().rule(".toast", style().opacity(1).transition(all, ms(200), ease))
             .startingStyle(".toast", style().opacity(0))
 
 // :popover-open / :open
-cls("menu").popoverOpen()          // .menu:popover-open
-tag("details").open()              // details:open
+import jweb.css.Selectors;
+import static jweb.css.Selectors.*;    // cls is ambiguous with the HTML DSL — qualify it
+
+Selectors.cls("menu").popoverOpen()   // .menu:popover-open
+tag("details").open()                 // details:open
 div(popover("auto"), style().opacity(0).popoverOpen(style().opacity(1)), "menu")
 ```
 
@@ -755,7 +807,7 @@ style().transition("opacity 0.3s ease")
 style().transitionProperty("transform").transitionDuration(ms(300))
 
 // CSS facade helpers
-style().transition(trans(propTransform, ms(300), timingEaseOut))
+style().transition(transitions(trans(propTransform, ms(300), easeOut)))
 style().transition(transitions(trans(propOpacity, ms(200)), trans(propColor, ms(150))))
 
 // Attribute-level builder (attrs().transition())

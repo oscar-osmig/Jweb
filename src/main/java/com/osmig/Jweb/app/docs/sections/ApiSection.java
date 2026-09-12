@@ -18,28 +18,33 @@ public final class ApiSection {
 import jweb.Request;
 import jweb.api.*;
 
+record User(long id, String name) {}
+
 @REST("/api/v1/users")
 public class UserApi {
 
+    private final List<User> users = new ArrayList<>(List.of(new User(1, "Ada")));
+
     @GET
     public List<User> list() {
-        return userService.findAll();
+        return users;
     }
 
     @GET("/{id}")
     public User get(@Param long id) {
-        return userService.findById(id);
+        return users.stream().filter(u -> u.id() == id).findFirst().orElseThrow();
     }
 
     @GET("/search")
     public List<User> search(@Query String q,
                              @Query(value = "limit", defaultValue = "10") int limit) {
-        return userService.search(q, limit);
+        return users.stream().filter(u -> u.name().contains(q)).limit(limit).toList();
     }
 
     @POST
     public User create(@Body User user) {
-        return userService.save(user);
+        users.add(user);
+        return user;
     }
 
     @POST("/{id}/avatar")
@@ -54,7 +59,7 @@ public class UserApi {
 }"""),
 
             docSubtitle("Annotations"),
-            codeBlock("""
+            codeBlock("text", """
 @REST("/api/v1/x")   // Controller with base path (must start with /api/v)
 @GET  @POST  @UPDATE  @PATCH  @DEL     // one per method; @GET("/{id}") adds a path
 

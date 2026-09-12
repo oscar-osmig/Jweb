@@ -98,14 +98,7 @@ new Card("User Profile",
 ## Level 3: Factory Methods
 
 ```java
-public class Alert implements Template {
-    private final String message;
-    private final String type;
-
-    private Alert(String message, String type) {
-        this.message = message;
-        this.type = type;
-    }
+public record Alert(String message, String type) implements Template {
 
     public static Alert success(String message) {
         return new Alert(message, "success");
@@ -139,6 +132,20 @@ Alert.error("Something went wrong")
 Templates support lifecycle hooks for data loading and setup:
 
 ```java
+record User(String name, String bio) {
+    String getName() { return name; }
+    String getBio() { return bio; }
+}
+record Post(String title) {}
+record PostCard(Post post) implements Template {
+    @Override
+    public Element render() { return div(post.title()); }
+}
+interface UserService {
+    User findById(int id);
+    List<Post> getPostsForUser(int id);
+}
+
 public class UserPage implements Template {
     private final UserService userService;
     private User user;
@@ -180,7 +187,16 @@ public class UserPage implements Template {
 ## Level 5: Page Title & Meta
 
 ```java
+record Product(String name, String description) {
+    String getName() { return name; }
+    String getDescription() { return description; }
+}
+interface ProductService {
+    Product findById(int id);
+}
+
 public class ProductPage implements Template {
+    private final ProductService productService = id -> new Product("Widget", "A very useful widget.".repeat(10));
     private Product product;
 
     @Override
@@ -190,14 +206,14 @@ public class ProductPage implements Template {
 
     // Dynamic page title
     @Override
-    public Optional<String> pageTitle() {
-        return Optional.of(product.getName() + " | MyStore");
+    public String pageTitle() {
+        return product.getName() + " | MyStore";
     }
 
     // SEO meta description
     @Override
-    public Optional<String> metaDescription() {
-        return Optional.of(product.getDescription().substring(0, 150));
+    public String description() {
+        return product.getDescription().substring(0, 150);
     }
 
     @Override
@@ -222,15 +238,15 @@ public class AnalyticsPage implements Template {
     public Optional<Element> extraHead() {
         return Optional.of(fragment(
             // Open Graph tags
-            meta(name("og:title"), content(getTitle())),
-            meta(name("og:image"), content(getImageUrl())),
-            meta(name("og:description"), content(getDescription())),
+            meta(name("og:title"), attrs().content(getTitle())),
+            meta(name("og:image"), attrs().content(getImageUrl())),
+            meta(name("og:description"), attrs().content(getDescription())),
 
             // Preconnect for performance
-            link(rel("preconnect"), href("https://fonts.googleapis.com")),
+            link(attrs().rel("preconnect"), href("https://fonts.googleapis.com")),
 
             // Page-specific CSS
-            link(rel("stylesheet"), href("/css/analytics.css")),
+            link(attrs().rel("stylesheet"), href("/css/analytics.css")),
 
             // Inline critical CSS
             style(criticalCss())
@@ -239,10 +255,14 @@ public class AnalyticsPage implements Template {
 
     @Override
     public Element render() {
-        return div(class_("analytics-dashboard"),
-            // Dashboard content...
-        );
+        // Dashboard content...
+        return div(class_("analytics-dashboard"));
     }
+
+    private String getTitle() { return "Analytics Dashboard"; }
+    private String getImageUrl() { return "/og-image.png"; }
+    private String getDescription() { return "Real-time analytics dashboard"; }
+    private String criticalCss() { return "body{margin:0}"; }
 }
 ```
 
@@ -255,15 +275,13 @@ public class InteractivePage implements Template {
 
     // Inline scripts at end of body
     @Override
-    public Optional<String> scripts() {
+    public Optional<Action> scripts() {
         return Optional.of(
-            script()
-                .withHelpers()
+            actions()
                 .add(onClick("toggle-btn").then(toggle("panel")))
                 .add(onSubmit("form")
                     .post("/api/submit")
                     .ok(showMessage("status").success("Saved!")))
-                .build()
         );
     }
 
@@ -273,7 +291,7 @@ public class InteractivePage implements Template {
             button(id("toggle-btn"), "Toggle Panel"),
             div(id("panel"), "Panel content..."),
             form(id("form"),
-                // form fields...
+                input(type("text"), name("field"))
             ),
             div(id("status"))
         );
@@ -339,7 +357,16 @@ public class StaticPage implements Template {
 }
 
 // Dynamic page - no caching
+record DashboardUser(String name) {
+    String getName() { return name; }
+}
+
 public class UserDashboard implements Template {
+    private final DashboardUser user;
+
+    public UserDashboard(DashboardUser user) {
+        this.user = user;
+    }
 
     @Override
     public boolean cacheable() {
@@ -360,11 +387,36 @@ public class UserDashboard implements Template {
 ## Level 10: Full Page Template
 
 ```java
+record Author(String name) {
+    String getName() { return name; }
+}
+record Comment(Author author, String content, java.time.Instant createdAt) {
+    Author getAuthor() { return author; }
+    String getContent() { return content; }
+    java.time.Instant getCreatedAt() { return createdAt; }
+}
+record BlogPost(String id, String title, String slug, String excerpt, String coverImage,
+                 String htmlContent, Author author, java.time.Instant publishedAt) {
+    String getId() { return id; }
+    String getTitle() { return title; }
+    String getSlug() { return slug; }
+    String getExcerpt() { return excerpt; }
+    String getCoverImage() { return coverImage; }
+    String getHtmlContent() { return htmlContent; }
+    Author getAuthor() { return author; }
+    java.time.Instant getPublishedAt() { return publishedAt; }
+}
+interface BlogService {
+    BlogPost findBySlug(String slug);
+    List<Comment> getComments(String postId);
+    void incrementViewCount(String postId);
+}
+
 public class BlogPostPage implements Template {
     private final BlogService blogService;
     private BlogPost post;
     private List<Comment> comments;
-    private User currentUser;
+    private Principal currentUser;
 
     public BlogPostPage(BlogService blogService) {
         this.blogService = blogService;
@@ -376,7 +428,7 @@ public class BlogPostPage implements Template {
         post = blogService.findBySlug(slug);
         comments = blogService.getComments(post.getId());
         currentUser = Auth.isAuthenticated(request)
-            ? Auth.getPrincipal(request).as(User.class)
+            ? Auth.getPrincipal(request)
             : null;
     }
 
@@ -386,22 +438,22 @@ public class BlogPostPage implements Template {
     }
 
     @Override
-    public Optional<String> pageTitle() {
-        return Optional.of(post.getTitle() + " | My Blog");
+    public String pageTitle() {
+        return post.getTitle() + " | My Blog";
     }
 
     @Override
-    public Optional<String> metaDescription() {
-        return Optional.of(post.getExcerpt());
+    public String description() {
+        return post.getExcerpt();
     }
 
     @Override
     public Optional<Element> extraHead() {
         return Optional.of(fragment(
-            meta(name("og:title"), content(post.getTitle())),
-            meta(name("og:image"), content(post.getCoverImage())),
-            meta(name("article:published_time"), content(post.getPublishedAt().toString())),
-            link(rel("canonical"), href("https://myblog.com/posts/" + post.getSlug()))
+            meta(name("og:title"), attrs().content(post.getTitle())),
+            meta(name("og:image"), attrs().content(post.getCoverImage())),
+            meta(name("article:published_time"), attrs().content(post.getPublishedAt().toString())),
+            link(attrs().rel("canonical"), href("https://myblog.com/posts/" + post.getSlug()))
         ));
     }
 
@@ -422,7 +474,6 @@ public class BlogPostPage implements Template {
                         call("refreshComments")
                     ))
                     .fail(responseError("comment-error")))
-                .build()
         );
     }
 
@@ -474,6 +525,10 @@ public class BlogPostPage implements Template {
             button(type("submit"), "Post Comment")
         );
     }
+
+    private String formatDate(java.time.Instant date) {
+        return date.toString();
+    }
 }
 ```
 
@@ -496,9 +551,9 @@ public class MainLayout implements Template {
         return html(
             head(
                 meta(attr("charset", "UTF-8")),
-                meta(name("viewport"), content("width=device-width, initial-scale=1")),
+                meta(name("viewport"), attrs().content("width=device-width, initial-scale=1")),
                 title(title),
-                link(rel("stylesheet"), href("/css/main.css"))
+                link(attrs().rel("stylesheet"), href("/css/main.css"))
             ),
             body(
                 header(class_("site-header"),
@@ -562,8 +617,7 @@ public class Nav implements Template {
         boolean active = currentPath.equals(path);
         return a(
             href(path),
-            class_("nav-link"),
-            class_("active", active),
+            classes("nav-link", when(active, "active")),
             label
         );
     }
@@ -638,8 +692,23 @@ public class FormField implements Template {
     private final Element input;
     private final String error;
 
-    // ...
+    public FormField(String label, Element input, String error) {
+        this.label = label;
+        this.input = input;
+        this.error = error;
+    }
+
+    @Override
+    public Element render() {
+        return div(class_("field"),
+            label(for_(label), label),
+            input,
+            when(error != null, () -> span(class_("error"), error))
+        );
+    }
 }
+
+Map<String, String> errors = Map.of("email", "Required", "password", "Too short");
 
 // Use in multiple forms
 new FormField("Email", input(type("email"), name("email"), id("email")), errors.get("email"))

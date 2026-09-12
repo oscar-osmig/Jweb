@@ -43,7 +43,7 @@ form(Contact.class)
 
                 h3Title("Component Type to Control"),
                 para("The Java type picks the control; the hints refine it."),
-                codeBlock("""
+                codeBlock("text", """
 String                       -> <input type="text">
 @Form.Email String           -> <input type="email">   + email validation
 @Form.Password String        -> <input type="password">
@@ -62,6 +62,11 @@ UploadedFile                 -> <input type="file">, form becomes multipart"""),
                      + "email, length) stay on the record, so the browser and the server "
                      + "can never disagree about them."),
                 codeBlock("""
+record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+
 form(Contact.class)
     .action("/contact")
     .field("email", f -> f.label("Your email")
@@ -76,6 +81,14 @@ form(Contact.class)
                      + "to errors(...) re-renders the form with the user's input, per-field "
                      + "messages, aria-invalid on the controls, and a summary."),
                 codeBlock("""
+record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+
+class MessageStore { void save(Contact c) {} }
+MessageStore messages = new MessageStore();
+
 app.post("/contact", req -> {
     Form.Bound<Contact> submitted = Form.bind(Contact.class, req);
     if (!submitted.ok()) {
@@ -93,6 +106,11 @@ app.post("/contact", req -> {
                 para("swapForm posts over fetch and swaps the returned fragment into a "
                      + "target; the plain action() keeps working with JavaScript off."),
                 codeBlock("""
+record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+
 form(Contact.class)
     .id("contact-form")
     .action("/contact/submit")                    // no-JS fallback
@@ -105,6 +123,8 @@ form(Contact.class)
                      + "Form.styles() is a ready-made stylesheet for them; drop it in the head "
                      + "once and override what you like."),
                 codeBlock("""
+CSSValue BRAND = hex("#6366f1");
+
 head(
     style(Form.styles()),
     style(stylesheet()
@@ -115,6 +135,8 @@ head(
             h3Title("Selects Without a Record"),
             para("Outside a record form, a select is elements all the way down."),
             codeBlock("""
+List<String> skillsList = List.of("Java", "SQL", "Docker");
+
 select(name("car"), id("car"),
     optgroup(attrs().label("Swedish Cars"),
         option(value("volvo"), "Volvo"),

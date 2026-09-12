@@ -26,7 +26,7 @@ rule(":root")
     .var("radius", px(8))"""),
 
             h3Title("Using Variables"),
-            codeBlock("""
+            codeBlock("style", """
 // Reference variable
 .color(var("primary-color"))
 .padding(var("spacing-md"))
@@ -69,12 +69,10 @@ rule(":root")
     .var("border-color", hex("#e5e7eb"))
 
 // Dark theme
-media().prefersDark().rules(
-    rule(":root")
-        .var("bg-color", hex("#1f2937"))
-        .var("text-color", hex("#f9fafb"))
-        .var("border-color", hex("#374151"))
-)
+media().prefersDark().rule(":root", style()
+    .var("bg-color", hex("#1f2937"))
+    .var("text-color", hex("#f9fafb"))
+    .var("border-color", hex("#374151")))
 
 // Components automatically adapt
 rule("body")
@@ -89,9 +87,9 @@ rule(".card")
                  + "are gone in 3.0 — they were four naming schemes for the same job. "
                  + "jweb.css.Theme is the one that stayed; see Design tokens above."),
             codeBlock("""
-// Before (3 competing builders)
-String tokens = designSystem().spacing(rem(0.5), rem(1)).colors("primary", blue).build();
-String themes = theme().light("bg", white).dark("bg", black).buildBoth();
+// Before (3 competing builders) — designSystem(), theme() and the scoped()/component() helpers are gone
+// String tokens = designSystem().spacing(rem(0.5), rem(1)).colors("primary", blue).build();
+// String themes = theme().light("bg", white).dark("bg", black).buildBoth();
 
 // After
 Theme TOKENS = Theme.light()

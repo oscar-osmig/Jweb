@@ -23,6 +23,12 @@ div(
 
             docSubtitle("User Card"),
             codeBlock("""
+class User {
+    String getName() { return "Ada"; }
+    String getEmail() { return "ada@example.com"; }
+    boolean isAdmin() { return true; }
+}
+
 public class UserCard implements Template {
     private final User user;
 
@@ -34,13 +40,20 @@ public class UserCard implements Template {
                 .borderRadius(px(8)).boxShadow(px(0), px(2), px(8), rgba(0,0,0,0.1)),
             h3(user.getName()),
             p(user.getEmail()),
-            when(user.isAdmin(), () -> badge("Admin"))
+            when(user.isAdmin(), () -> UI.badge("Admin"))
         );
     }
 }"""),
 
             docSubtitle("Data Table"),
             codeBlock("""
+class User {
+    String getName() { return "Ada"; }
+    String getEmail() { return "ada@example.com"; }
+    long getId() { return 1; }
+}
+List<User> users = List.of(new User());
+
 table(
     thead(tr(th("Name"), th("Email"), th("Actions"))),
     tbody(each(users, user -> tr(

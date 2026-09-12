@@ -5,7 +5,17 @@ JWeb provides utilities for running background tasks and scheduled jobs.
 ## Basic Usage
 
 ```java
-import com.osmig.Jweb.framework.async.Jobs;
+import jweb.Jobs;
+import java.util.concurrent.CompletableFuture;
+
+record User(String name) {}
+record Report(String content) {}
+
+void sendEmail(User user) {}
+Report generateReport() { return new Report("Report contents"); }
+void saveReport(Report report) {}
+
+User user = new User("Ada");
 
 // Fire and forget
 Jobs.run(() -> sendEmail(user));
@@ -20,6 +30,12 @@ future.thenAccept(report -> saveReport(report));
 ### Fire and Forget
 
 ```java
+record User(String name) {}
+void sendNotification(User user) {}
+void updateAnalytics() {}
+
+User user = new User("Ada");
+
 Jobs.run(() -> {
     // This runs in background
     sendNotification(user);
@@ -30,6 +46,17 @@ Jobs.run(() -> {
 ### With CompletableFuture
 
 ```java
+import java.util.concurrent.CompletableFuture;
+
+record User(String name) {
+    String getName() { return name; }
+}
+interface UserService {
+    User fetchUser(String id);
+}
+UserService userService = id -> new User("Ada");
+String userId = "42";
+
 CompletableFuture<User> future = Jobs.submit(() -> {
     return userService.fetchUser(userId);
 });
@@ -52,6 +79,13 @@ Run a task after a delay:
 
 ```java
 import java.time.Duration;
+import java.util.concurrent.ScheduledFuture;
+
+record User(String name) {}
+void sendReminderEmail(User user) {}
+void cleanupTempFiles() {}
+
+User user = new User("Ada");
 
 // Run after 30 seconds
 Jobs.delay(Duration.ofSeconds(30), () -> {
@@ -72,6 +106,9 @@ future.cancel(false);
 Run recurring tasks:
 
 ```java
+void cleanupExpiredSessions() {}
+void syncDataWithExternalService() {}
+
 // Run every 5 minutes
 Jobs.schedule("cleanup", Duration.ofMinutes(5), () -> {
     cleanupExpiredSessions();
@@ -96,7 +133,10 @@ Jobs.cancel("cleanup");
 Track long-running tasks:
 
 ```java
-import com.osmig.Jweb.framework.async.BackgroundTask;
+import jweb.BackgroundTask;
+
+record Report(String content) {}
+Report generateLargeReport() { return new Report("Report contents"); }
 
 BackgroundTask<Report> task = Jobs.track("Generate Report", () -> {
     return generateLargeReport();
@@ -119,8 +159,12 @@ Jobs.getTask(taskId).ifPresent(t -> {
 Track progress for long operations:
 
 ```java
+record ImportRow(String data) {}
+List<ImportRow> loadRecords() { return List.of(new ImportRow("a"), new ImportRow("b")); }
+void processRecord(ImportRow record) {}
+
 BackgroundTask<Integer> task = Jobs.trackWithProgress("Import Data", progress -> {
-    List<Record> records = loadRecords();
+    List<ImportRow> records = loadRecords();
     int processed = 0;
 
     for (int i = 0; i < records.size(); i++) {
@@ -147,6 +191,10 @@ Jobs.getTask(task.getId()).ifPresent(t -> {
 Expose task status via API:
 
 ```java
+record Report(String content) {}
+interface ReportService { Report generate(String type); }
+ReportService reportService = type -> new Report("Report for " + type);
+
 app.post("/api/reports/generate", req -> {
     BackgroundTask<Report> task = Jobs.track("Generate Report", () -> {
         return reportService.generate(req.query("type"));
@@ -193,6 +241,8 @@ Jobs.schedule("task-cleanup", Duration.ofHours(1), () -> {
 Shutdown job executors when application stops:
 
 ```java
+import jakarta.annotation.PreDestroy;
+
 @PreDestroy
 public void onShutdown() {
     Jobs.shutdown();
@@ -202,9 +252,19 @@ public void onShutdown() {
 ## Complete Example
 
 ```java
+interface ReportService {
+    Object fetchData(String type);
+    Object process(Object data);
+    String savePdf(Object report);
+}
+
 @Component
 public class ReportRoutes implements JWebRoutes {
     private final ReportService reportService;
+
+    public ReportRoutes(ReportService reportService) {
+        this.reportService = reportService;
+    }
 
     @Override
     public void configure(JWeb app) {

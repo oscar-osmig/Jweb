@@ -93,7 +93,7 @@ onClick("search-btn").then(all(
     dom("#search-input").addClass("loading"),
     fetch("/api/search?q=").appendVar("searchQuery")
         .ok(all(
-            dom("#results").setHtml(response("html")),
+            dom("#results").setHtml(v(response("html").toJs())),
             dom("#search-input").removeClass("loading")
         ))
 ))"""),

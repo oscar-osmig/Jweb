@@ -7,44 +7,50 @@ JWeb provides testing utilities for testing routes, handlers, and templates.
 Create mock HTTP requests for testing:
 
 ```java
-import com.osmig.Jweb.framework.testing.MockRequest;
-
 // GET request
-Request req = MockRequest.get("/users").build();
+Request getReq = MockRequest.get("/users").build();
 
 // With query parameters
-Request req = MockRequest.get("/users")
+Request queryReq = MockRequest.get("/users")
     .queryParam("page", "1")
     .queryParam("limit", "10")
     .build();
 
 // With headers
-Request req = MockRequest.get("/api/data")
+Request headerReq = MockRequest.get("/api/data")
     .header("Authorization", "Bearer token123")
     .header("Accept", "application/json")
     .build();
 
 // POST with JSON body
-Request req = MockRequest.post("/api/users")
+Request jsonReq = MockRequest.post("/api/users")
     .json("{\"name\": \"John\", \"email\": \"john@example.com\"}")
     .build();
 
-// POST with form data
-Request req = MockRequest.post("/login")
-    .formParam("username", "john")
-    .formParam("password", "secret")
+// POST with form data — formData(...) takes the whole map at once
+Request formReq = MockRequest.post("/login")
+    .formData(Map.of("username", "john", "password", "secret"))
     .build();
 
-// Other methods
+// Other methods — PATCH has no dedicated factory, use request(method, path)
 MockRequest.put("/users/1")
-MockRequest.patch("/users/1")
+MockRequest.request("PATCH", "/users/1")
 MockRequest.delete("/users/1")
 ```
 
 ## Testing Routes
 
 ```java
-import com.osmig.Jweb.framework.testing.JWebTest;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class Routes implements JWebRoutes {
+    @Override
+    public void configure(JWeb app) {
+        app.get("/", req -> "Welcome");
+        app.get("/api/users", req -> Response.json(List.of("users")));
+    }
+}
 
 @Test
 void testHomePage() {
@@ -77,6 +83,9 @@ void testApiEndpoint() {
 Test individual handlers:
 
 ```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 @Test
 void testUserHandler() {
     RouteHandler handler = req -> {
@@ -84,7 +93,8 @@ void testUserHandler() {
         return Response.json(Map.of("id", id, "name", "John"));
     };
 
-    Request req = MockRequest.get("/users/123").build();
+    // testHandler(...) takes the MockRequest itself, not a built Request
+    MockRequest req = MockRequest.get("/users/123");
     JWebTest.TestResult result = JWebTest.testHandler(handler, req);
 
     assertTrue(result.isSuccess());
@@ -95,6 +105,8 @@ void testUserHandler() {
 ## TestResult Methods
 
 ```java
+JWeb app = JWeb.create();
+MockRequest request = MockRequest.get("/");
 JWebTest.TestResult result = JWebTest.test(app, request);
 
 // Status checks
@@ -103,10 +115,9 @@ result.getStatus();      // HTTP status code
 
 // Body checks
 result.bodyContains("text");
+result.getBody();        // the raw body String
 
-// Headers
-result.getHeaders();
-result.getHeader("Content-Type");
+// TestResult does not capture response headers yet
 ```
 
 ## HTML Assertions
@@ -114,6 +125,7 @@ result.getHeader("Content-Type");
 Assert HTML content:
 
 ```java
+Element element = div(cls("container"), h1("Welcome"));
 String html = element.toHtml();
 
 // Content assertions
@@ -132,6 +144,19 @@ JWebTest.assertHasTag(html, "button");
 ## Testing Templates
 
 ```java
+import org.junit.jupiter.api.Test;
+
+record HomePage() implements Template {
+    public Element render() {
+        return div(nav(), h1("Welcome"), cls("hero"));
+    }
+}
+record Card(String title, String content) implements Template {
+    public Element render() {
+        return div(cls("card"), h2(title), p(content));
+    }
+}
+
 @Test
 void testHomePage() {
     HomePage page = new HomePage();
@@ -158,16 +183,18 @@ void testCardComponent() {
 Test session-based features:
 
 ```java
-import com.osmig.Jweb.framework.testing.MockSession;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Test
 void testAuthenticatedRequest() {
-    MockSession session = new MockSession();
-    session.setAttribute("user", new Principal("user123", "john@example.com"));
+    JWeb app = JWeb.create();
+    app.get("/dashboard", req -> "Dashboard");
 
-    Request req = MockRequest.get("/dashboard")
-        .session(session)
-        .build();
+    MockSession session = new MockSession();
+    session.setAttribute("user", Principal.of("user123", "john@example.com"));
+
+    MockRequest req = MockRequest.get("/dashboard").session(session);
 
     JWebTest.TestResult result = JWebTest.test(app, req);
     assertTrue(result.isSuccess());
@@ -177,6 +204,13 @@ void testAuthenticatedRequest() {
 ## Testing with Authentication
 
 ```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+record AdminPage() implements Template {
+    public Element render() { return div(h1("Admin")); }
+}
+
 @Test
 void testProtectedRoute() {
     JWeb app = JWeb.create();
@@ -187,9 +221,11 @@ void testProtectedRoute() {
     JWebTest.TestResult result = JWebTest.test(app, MockRequest.get("/admin"));
     assertEquals(401, result.getStatus());
 
-    // With auth
+    // With auth — Auth.login(...) takes a built Request, so log in on a request
+    // that shares the same session, then reuse that session for the real call
     MockSession session = new MockSession();
-    Auth.login(session, Principal.of("1", "admin@example.com", "admin"));
+    Auth.login(MockRequest.get("/admin").session(session).build(),
+        Principal.of("1", "admin@example.com", "admin"));
 
     result = JWebTest.test(app, MockRequest.get("/admin").session(session));
     assertTrue(result.isSuccess());
@@ -199,22 +235,24 @@ void testProtectedRoute() {
 ## Testing Validation
 
 ```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 @Test
 void testFormValidation() {
+    JWeb app = JWeb.create();
+    app.post("/register", req -> Response.redirect("/welcome"));
+
     // Test valid input
-    Request validReq = MockRequest.post("/register")
-        .formParam("email", "john@example.com")
-        .formParam("password", "securepass123")
-        .build();
+    MockRequest validReq = MockRequest.post("/register")
+        .formData(Map.of("email", "john@example.com", "password", "securepass123"));
 
     JWebTest.TestResult result = JWebTest.test(app, validReq);
     assertTrue(result.isSuccess());
 
     // Test invalid input
-    Request invalidReq = MockRequest.post("/register")
-        .formParam("email", "invalid")
-        .formParam("password", "short")
-        .build();
+    MockRequest invalidReq = MockRequest.post("/register")
+        .formData(Map.of("email", "invalid", "password", "short"));
 
     result = JWebTest.test(app, invalidReq);
     assertEquals(400, result.getStatus());
@@ -225,8 +263,17 @@ void testFormValidation() {
 ## Testing JSON APIs
 
 ```java
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 @Test
 void testJsonApi() {
+    JWeb app = JWeb.create();
+    app.post("/api/users", req -> Response.json(201, Map.of("name", "John")));
+    app.get("/api/users/:id", req -> "1".equals(req.param("id"))
+        ? Response.json(Map.of("id", "1"))
+        : Response.notFound("User not found"));
+
     // Create
     JWebTest.TestResult result = JWebTest.test(app,
         MockRequest.post("/api/users")
@@ -249,6 +296,11 @@ void testJsonApi() {
 ## Integration Test Example
 
 ```java
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
 @SpringBootTest
 class RoutesIntegrationTest {
 
@@ -260,22 +312,22 @@ class RoutesIntegrationTest {
         // Register
         JWebTest.TestResult result = JWebTest.test(app,
             MockRequest.post("/register")
-                .formParam("email", "test@example.com")
-                .formParam("password", "password123")
+                .formData(Map.of("email", "test@example.com", "password", "password123"))
         );
         assertEquals(302, result.getStatus());  // Redirect
 
         // Login
         result = JWebTest.test(app,
             MockRequest.post("/login")
-                .formParam("email", "test@example.com")
-                .formParam("password", "password123")
+                .formData(Map.of("email", "test@example.com", "password", "password123"))
         );
         assertEquals(302, result.getStatus());
 
-        // Access dashboard
+        // Access dashboard — Auth.login(...) takes a built Request, so log in on
+        // a request that shares the session, then reuse that session below
         MockSession session = new MockSession();
-        Auth.login(session, Principal.of("1", "test@example.com", "user"));
+        Auth.login(MockRequest.get("/dashboard").session(session).build(),
+            Principal.of("1", "test@example.com", "user"));
 
         result = JWebTest.test(app,
             MockRequest.get("/dashboard").session(session)

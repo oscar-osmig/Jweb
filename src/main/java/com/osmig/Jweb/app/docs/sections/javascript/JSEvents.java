@@ -98,6 +98,9 @@ sse("/api/events")
 
             h3Title("Custom Events"),
             codeBlock("""
+long itemId = 42;
+String itemName = "Widget";
+
 // Create and dispatch custom event (target element first)
 dispatchCustomEvent(
     byId("item-list"),

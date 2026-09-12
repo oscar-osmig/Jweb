@@ -13,6 +13,7 @@ public final class StateLists {
                  "counts as a change — update() and mutate() both notify."),
             codeBlock("""
 State<List<String>> items = useState(new ArrayList<>());
+int index = 0;
 
 // Add item
 items.mutate(list -> list.add("New item"));
@@ -34,7 +35,7 @@ import static jweb.State.*;
 
 record Todo(String text, boolean done) {}
 
-State<List<Todo>> todos = useState(new ArrayList<>());
+private State<List<Todo>> todos = useState(new ArrayList<>());
 
 // Add todo
 void addTodo(String text) {

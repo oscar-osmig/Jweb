@@ -14,6 +14,14 @@ public final class ElementsConditionals {
             h3Title("when() - Simple Conditional"),
             para("Render content only when a condition is true."),
             codeBlock("""
+boolean isLoggedIn = true;
+String username = "Ada";
+boolean isAdmin = false;
+boolean hasNotifications = true;
+int count = 3;
+Element adminPanel() { return div("Admin"); }
+Element notificationBadge(int n) { return span(String.valueOf(n)); }
+
 // Lazy evaluation (recommended for expensive operations)
 when(isLoggedIn, () -> span("Welcome back!"))
 
@@ -93,6 +101,10 @@ div(
                 h3Title("Either/Or"),
                 para("Render different content for true and false conditions with a Java ternary."),
                 codeBlock("""
+boolean isLoggedIn = true;
+Element userMenu() { return div("Menu"); }
+Element loginButton() { return button("Log in"); }
+
 // If/else pattern
 isLoggedIn ? userMenu() : loginButton()
 
@@ -112,6 +124,25 @@ header(
                      "content; Java's switch expression covers branching on a value. " +
                      "There is no separate chain or match() to learn."),
                 codeBlock("""
+enum Role { ADMIN, MODERATOR, USER, GUEST }
+Role role = Role.ADMIN;
+String statusCode = "success";
+boolean showPromo = true;
+record User(boolean isPremium, boolean isVerified) {}
+User user = new User(true, false);
+Element adminPanel() { return div("Admin"); }
+Element modPanel() { return div("Moderator"); }
+Element userPanel() { return div("User"); }
+Element guestPanel() { return div("Guest"); }
+Element successMessage() { return div("Success"); }
+Element warningMessage() { return div("Warning"); }
+Element errorMessage() { return div("Error"); }
+Element infoMessage() { return div("Info"); }
+Element promoBanner() { return div("Promo"); }
+Element premiumBadge() { return span("Premium"); }
+Element verifiedBadge() { return span("Verified"); }
+Element standardBadge() { return span("Standard"); }
+
 // Multiple conditions
 Element panel = switch (role) {
     case ADMIN -> adminPanel();
@@ -141,6 +172,11 @@ div(
             h3Title("Inline Ternary Conditions"),
             para("Java's native ternary operator works for simple inline conditions."),
             codeBlock("""
+boolean isActive = true;
+boolean hasError = false;
+String errorMessage = "Something went wrong.";
+boolean isDark = false;
+
 // Ternary pattern
 span(isActive ? "Active" : "Inactive")
 
@@ -155,6 +191,10 @@ div(class_(isDark ? "dark-theme" : "light-theme"))"""),
             h3Title("each() - Iteration"),
             para("Render a list of items."),
             codeBlock("""
+record User(String getAvatar, String getName, String getEmail, boolean isVerified) {}
+List<User> getUsers() { return List.of(new User("/a.png", "Ada", "ada@example.com", true)); }
+Element verifiedBadge() { return span("Verified"); }
+
 // Basic iteration
 List<String> items = List.of("Apple", "Banana", "Cherry");
 
@@ -189,6 +229,20 @@ ul(
             h3Title("Combining Conditionals"),
             para("Use conditionals together for complex UIs."),
             codeBlock("""
+record User(String getName) {}
+User currentUser = new User("Ada");
+Element userDropdown(User u) { return div(u.getName()); }
+enum Role { ADMIN, EDITOR, VIEWER }
+Role role = Role.ADMIN;
+Element adminContent() { return div("Admin content"); }
+Element editorContent() { return div("Editor content"); }
+Element viewerContent() { return div("Viewer content"); }
+boolean showSidebar = true;
+record Link(String getUrl, String getTitle) {}
+List<Link> quickLinks = List.of(new Link("/docs", "Docs"));
+boolean showDebugInfo = false;
+Element debugPanel() { return div("Debug"); }
+
 // Complex dashboard
 div(class_("dashboard"),
     // Header with conditional user display
@@ -226,6 +280,12 @@ div(class_("dashboard"),
             h3Title("Null Safety"),
             para("Handle potentially null values safely."),
             codeBlock("""
+record Address(String getCity) {}
+record User(String getName, String getBio, Address getAddress) {}
+User user = new User("Ada", "Building things.", new Address("NYC"));
+long id = 1;
+Optional<User> findUser(long uid) { return Optional.of(new User("Ada", "Building things.", new Address("NYC"))); }
+
 // Using when() for null checks
 when(user != null, () ->
     div(
@@ -237,8 +297,8 @@ when(user != null, () ->
 // With Optional
 Optional<User> maybeUser = findUser(id);
 
-maybeUser.map(user ->
-    div(h2(user.getName()))
+maybeUser.map(u ->
+    div(h2(u.getName()))
 ).orElse(
     div(p("User not found"))
 )

@@ -116,12 +116,8 @@ button(
 
 // Form submission with validation
 form(
-    onSubmit(all(
-        preventDefault(),
-        validate("myForm"),
-        fetch("/api/submit").post().ok(call("onSuccess"))
-    )),
-    // form fields...
+    onSubmit(fetch("/api/submit").post().ok(call("onSuccess"))),
+    input(type("text"), name("field"))
 )
 ```
 
@@ -171,11 +167,13 @@ An input outside a `<form>` is just the element with its attributes — no
 builder needed:
 
 ```java
+String token = "csrf-token-value";
+
 input(type("email"), name("email"), id("email"), placeholder("you@example.com"), required())
 input(type("checkbox"), name("remember"), id("remember"), value("yes")), label(for_("remember"), "Remember me")
 input(type("radio"), name("plan"), id("plan-basic"), value("basic")), label(for_("plan-basic"), "Basic Plan")
 input(type("hidden"), name("csrf"), value(token))
-input(type("range"), name("volume"), min("0"), max("100"))
+input(type("range"), name("volume"), attrs().min("0"), attrs().max("100"))
 ```
 
 ## Batch Class Application
@@ -184,6 +182,11 @@ Apply multiple classes at once using `classes()`, which joins parts and skips
 nulls, blanks, and non-matching `when(...)` branches:
 
 ```java
+boolean isActive = true;
+boolean isPrimary = false;
+boolean isFeatured = true;
+boolean isDisabled = false;
+
 // Multiple classes
 div(classes("card", "featured", "animate"),
     h2("Featured Item")
@@ -207,6 +210,10 @@ div(
 ## Conditional Rendering
 
 ```java
+boolean isAdmin = true;
+boolean isLoggedIn = false;
+String username = "Ada";
+
 // Using when()
 div(
     h1("Dashboard"),
@@ -230,17 +237,23 @@ when(isLoggedIn)
 ## Loops
 
 ```java
+record User(String name) {
+    String getName() { return name; }
+}
+List<User> users = List.of(new User("Ada"), new User("Grace"));
+List<User> items = users;
+
 // Render a list of items
 ul(
     each(users, user -> li(user.getName()))
 )
 
 // With index
-ul(
-    eachIndexed(items, (item, index) ->
-        li(class_(index % 2 == 0 ? "even" : "odd"), item.getName())
-    )
-)
+List<Element> rows = new ArrayList<>();
+for (int i = 0; i < items.size(); i++) {
+    rows.add(li(class_(i % 2 == 0 ? "even" : "odd"), items.get(i).getName()));
+}
+ul(fragment(rows.toArray()))
 ```
 
 ## Raw HTML

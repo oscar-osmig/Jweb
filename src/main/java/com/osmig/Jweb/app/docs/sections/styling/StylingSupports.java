@@ -29,6 +29,8 @@ supports().not().property("display", "grid")
             h3Title("Combining Conditions"),
             para("Use and/or to combine feature queries."),
             codeBlock("""
+import static jweb.css.Supports.*;
+
 // AND condition - both must be supported
 supports("display", "flex").and().property("gap", "1rem")
     .rule(".flex-gap", style()
@@ -43,6 +45,8 @@ supports("backdrop-filter", "blur(10px)")
             h3Title("Selector Support"),
             para("Test for CSS selector support."),
             codeBlock("""
+import static jweb.css.Supports.*;
+
 // Check if :has() is supported
 supportsSelector(":has(> img)")
     .rule(".card:has(> img)", style()
@@ -55,6 +59,8 @@ supportsSelector(":focus-visible")
 
             h3Title("Complete Example"),
             codeBlock("""
+import static jweb.css.Supports.*;
+
 String css = styles(
     // Base styles
     rule(".container")
@@ -70,7 +76,7 @@ String css = styles(
     .build()
 // Modern color functions
 + supports("color", "oklch(0.5 0.2 240)")
-    .rule(".accent", style().prop("color", "oklch(0.7 0.15 200)"))
+    .rule(".accent", style().color("oklch(0.7 0.15 200)"))
     .build();"""),
 
             docTip("Use @supports for progressive enhancement - base styles first, then enhancements.")

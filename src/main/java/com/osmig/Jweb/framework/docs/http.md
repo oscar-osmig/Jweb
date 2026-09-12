@@ -5,8 +5,10 @@ JWeb provides a fluent HTTP client for consuming external APIs.
 ## Basic Usage
 
 ```java
-import com.osmig.Jweb.framework.http.Fetch;
-import com.osmig.Jweb.framework.http.FetchResult;
+import jweb.Fetch;
+import jweb.FetchResult;
+
+record User(String name, String email) {}
 
 // Simple GET request
 FetchResult result = Fetch.get("https://api.example.com/users").send();
@@ -16,6 +18,9 @@ List<User> users = result.asList(User.class);
 ## HTTP Methods
 
 ```java
+Object user = Map.of("name", "Ada");
+Object updates = Map.of("name", "New Name");
+
 // GET
 Fetch.get("https://api.example.com/users").send();
 
@@ -45,6 +50,8 @@ FetchResult result = Fetch.get("https://api.example.com/data")
 ### Common Header Shortcuts
 
 ```java
+String url = "https://api.example.com/data";
+
 // Bearer token authentication
 Fetch.get(url).bearer("your-jwt-token").send();
 
@@ -63,6 +70,8 @@ Fetch.get(url).accept("application/json").send();
 ### JSON Body
 
 ```java
+record User(String name, String email) {}
+
 User user = new User("John", "john@example.com");
 
 FetchResult result = Fetch.post("https://api.example.com/users")
@@ -105,6 +114,7 @@ FetchResult result = Fetch.get("https://api.example.com/slow")
 ### FetchResult Methods
 
 ```java
+String url = "https://api.example.com/users";
 FetchResult result = Fetch.get(url).send();
 
 // Status code
@@ -127,6 +137,9 @@ Optional<String> contentType = result.header("Content-Type");
 ### Parse JSON Response
 
 ```java
+record User(String name, String email) {}
+FetchResult result = Fetch.get("https://api.example.com/users/1").send();
+
 // Parse as object
 User user = result.as(User.class);
 
@@ -137,12 +150,15 @@ List<User> users = result.asList(User.class);
 Map<String, Object> data = result.asMap();
 
 // Safe parsing (returns Optional)
-Optional<User> user = result.tryAs(User.class);
+Optional<User> maybeUser = result.tryAs(User.class);
 ```
 
 ## Error Handling
 
 ```java
+record User(String name, String email) {}
+record ErrorResponse(String message) {}
+
 FetchResult result = Fetch.get("https://api.example.com/users/123").send();
 
 if (result.isOk()) {
@@ -174,6 +190,8 @@ try {
 ```java
 import java.util.concurrent.CompletableFuture;
 
+record User(String name, String email) {}
+
 CompletableFuture<FetchResult> future = Fetch.get("https://api.example.com/users")
     .sendAsync();
 
@@ -188,6 +206,12 @@ future.thenAccept(result -> {
 ### Multiple Async Requests
 
 ```java
+import java.util.concurrent.CompletableFuture;
+
+record User(String name, String email) {}
+record Post(String title) {}
+String baseUrl = "https://api.example.com";
+
 CompletableFuture<FetchResult> users = Fetch.get(baseUrl + "/users").sendAsync();
 CompletableFuture<FetchResult> posts = Fetch.get(baseUrl + "/posts").sendAsync();
 
@@ -203,6 +227,8 @@ CompletableFuture.allOf(users, posts).thenRun(() -> {
 ### REST API Client
 
 ```java
+record User(String name, String email) {}
+
 public class UserApiClient {
     private final String baseUrl = "https://api.example.com";
     private final String token;
@@ -261,7 +287,8 @@ public class Routes implements JWebRoutes {
     @Override
     public void configure(JWeb app) {
         app.get("/weather", req -> {
-            String city = req.query("city", "London");
+            String city = req.query("city");
+            if (city == null || city.isBlank()) city = "London";
 
             FetchResult result = Fetch.get("https://api.weather.com/v1/current")
                 .header("API-Key", System.getenv("WEATHER_API_KEY"))
@@ -273,5 +300,13 @@ public class Routes implements JWebRoutes {
             return new ErrorPage("Could not fetch weather data");
         });
     }
+}
+
+record WeatherPage(Map<String, Object> data) implements Template {
+    public Element render() { return div(data.toString()); }
+}
+
+record ErrorPage(String message) implements Template {
+    public Element render() { return div(message); }
 }
 ```

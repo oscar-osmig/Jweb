@@ -9,6 +9,8 @@ it clean (no script injection). Declarative swap attributes fetch and insert fra
 wrapped in a View Transition when the browser supports it:
 
 ```java
+static Element productList(int page) { return div(); }
+
 // Server: a route returning a fragment
 app.get("/products/list", req -> productList(req.queryInt("page", 1)));
 
@@ -19,7 +21,7 @@ button(swap("/products/list?page=2", "#products"),
 
 // Progressive forms: POST + swap the response fragment
 form(swapForm("/comments", "#comment-list"),
-    Input.text("message"), button("Post"))
+    input(type("text"), name("message")), button("Post"))
 ```
 
 `swapOuter(url, sel)` replaces the target element itself; `swapMorph(url, sel)` **morphs
@@ -42,6 +44,16 @@ into the page the moment its data resolves** — blocks load in parallel, arrive
 completion order, and no JavaScript is written:
 
 ```java
+class Layout implements Template {
+    Element content;
+    Layout(String title, Element content) { this.content = content; }
+    public Element render() { return html(body(content)); }
+}
+class Reports { Object slowQuery() { return "data"; } }
+Reports reports = new Reports();
+static Element spinner(String text) { return div(text); }
+static Element reportTable(Object data) { return div(String.valueOf(data)); }
+
 app.get("/dashboard", req -> Streamed.of(() -> new Layout("Dashboard", div(
     header(),                                        // paints immediately
     Suspense.of(() -> reports.slowQuery())           // streams in when ready
@@ -60,6 +72,9 @@ Declare a route's path and parameter types once; registration and every link are
 type-checked (String, Integer, Long, Double, Boolean, UUID):
 
 ```java
+static Element userPage(Long id) { return div(); }
+static Element comments(String slug, Integer page) { return div(); }
+
 static final TypedRoute.Path1<Long> USER = TypedRoute.path("/users/:id", Long.class);
 static final TypedRoute.Path2<String, Integer> POST =
     TypedRoute.path("/blog/:slug/comments/:page", String.class, Integer.class);
@@ -75,6 +90,8 @@ Bad parameter values (e.g. `/users/abc`) return 400, not 500.
 Query parameters get the same treatment:
 
 ```java
+static Element productList(Integer page) { return div(); }
+
 static final QueryParam<Integer> PAGE = QueryParam.of("page", Integer.class).orElse(1);
 static final QueryParam<Long>    USER = QueryParam.of("userId", Long.class).required();
 
@@ -110,6 +127,14 @@ paths still resolve by lookup and win over patterns. The page reads its paramete
 `beforeRender(req)` or through the `pathParam(name)` / `params()` accessors:
 
 ```java
+class Layout implements Template { public Element render() { return div(); } }
+class HomePage implements Template { public Element render() { return div(); } }
+class PostPage implements Template { public Element render() { return div(); } }
+class DocsPage implements Template { public Element render() { return div(); } }
+record User(String name, String bio) {}
+static class Users { User find(long id) { return new User("", ""); } }
+static Users users = new Users();
+
 app.layout(Layout.class).pages(
     "/", HomePage.class,
     "/users/:id", UserPage.class,
@@ -160,6 +185,11 @@ import jweb.api.Range;
 enum Setting { EBB, SLACK, FLOOD }
 record Vane(@Range(min = 1, max = 3) int n, Setting set) {}
 record Pref(Optional<Setting> sound, Optional<Boolean> motion) {}
+class Visit {
+    Map<Integer, Setting> vanes = new HashMap<>();
+    boolean soundOn;
+    boolean vanesAligned() { return vanes.size() == 3; }
+}
 
 app.action("/act/tide/vane", Vane.class, (req, vane) -> {      // GET /act/tide/vane?n=2&set=flood
     Visit v = Session.of(Visit.class, req);
@@ -259,6 +289,9 @@ What that implies:
 ```java
 import jweb.OpenApi;
 
+class UserApi {}
+class ContactApi {}
+
 OpenApi.create()
     .title("JWeb Example API")
     .version("1.0.0")
@@ -321,6 +354,13 @@ MongoDB auto-connects when `jweb.data.enabled: true` via `JWebConfiguration.mong
 import jweb.Mongo;
 import jweb.Doc;
 
+record User(String name) {}
+String existingId = "000000000000000000000000";
+String email = "john@example.com";
+String input = "john";
+Object entry = Map.of("action", "created");
+User userPojo = new User("John Doe");
+
 // Create
 Doc user = Doc.of("users")
     .set("name", "John Doe")
@@ -330,8 +370,8 @@ Doc user = Doc.of("users")
 Mongo.save(user);                            // insert (no id) or replace (has id)
 
 // Read by id — use findById, NOT find().where("id", ...)
-Doc found = Mongo.findById("users", id);
-Optional<Doc> maybe = Mongo.findByIdOptional("users", id);
+Doc found = Mongo.findById("users", existingId);
+Optional<Doc> maybe = Mongo.findByIdOptional("users", existingId);
 
 // Query
 List<Doc> adults = Mongo.find("users")
@@ -358,18 +398,18 @@ long n = Mongo.find("users").where("active", true).count();
 
 // Update ("id" IS translated to _id here)
 Mongo.update("users")
-    .where("id", id)
+    .where("id", existingId)
     .set("name", "Jane Doe")
     .inc("loginCount", 1)
     .push("history", entry)
     .execute();
-Mongo.update("users").where("id", id).set("verified", true).upsert().execute();
-Doc updated = Mongo.update("users").where("id", id).set("x", 1).returnNew().executeAndGet();
+Mongo.update("users").where("id", existingId).set("verified", true).upsert().execute();
+Doc updated = Mongo.update("users").where("id", existingId).set("x", 1).returnNew().executeAndGet();
 
 // Delete ("id" IS translated to _id here)
 Mongo.delete("users").where("status", "inactive").execute();
 Mongo.delete("logs").where("age").gt(30).execute();      // comparisons: gt/gte/lt/lte/ne/in
-Mongo.deleteById("users", id);
+Mongo.deleteById("users", existingId);
 
 // POJOs
 String id = Mongo.save("users", userPojo);
@@ -402,6 +442,8 @@ overloads), `getDateTime` (⚠️ not `getDate`), `getList`, `getDoc`, `get(dott
 ```java
 import jweb.Auth;
 import jweb.Principal;
+
+Request request = req;
 
 // Login — stores principal in session, regenerates the CSRF token
 Auth.login(request, Principal.of("admin", "admin@example.com", "admin"));
@@ -446,7 +488,7 @@ Principal.of("user-id", "john@example.com", "user", "editor");
 
 Principal.builder()
     .id("user-123").name("john@example.com")
-    .role("admin").role("editor")
+    .roles("admin", "editor")
     .attribute("department", "engineering")
     .build();
 ```
@@ -455,6 +497,8 @@ Principal.builder()
 
 ```java
 import jweb.Jwt;
+
+Request request = req;
 
 Jwt.init("your-256-bit-secret-key-minimum-32-chars");   // or Jwt.init() → env JWT_SECRET
 
@@ -497,6 +541,7 @@ head(..., Csrf.tokenMeta(request))                // <meta name="csrf-token"> fo
 ```java
 import jweb.Password;
 
+String pw = "userPassword123";
 String hashed = Password.hash("userPassword123");
 boolean ok = Password.verify("userPassword123", hashed);
 Password.needsRehash(hashed);                     // strength upgraded since hashing?
@@ -508,14 +553,9 @@ Password.isStrong(pw); Password.validate(pw);      // strength checks
 ### CORS
 
 ```java
-app.use(Cors.allowAll());
-app.use(Cors.origins("https://app.example.com", "https://admin.example.com"));
-app.use(Cors.configure()
-    .origins("https://app.example.com")
-    .methods("GET", "POST")
-    .credentials()                     // throws if combined with wildcard origin
-    .maxAge(Duration.ofHours(1))
-    .build());
+app.use(Middlewares.cors());                                            // "*", all methods
+app.use(Middlewares.cors("https://app.example.com, https://admin.example.com"));
+app.use(Middlewares.cors("https://app.example.com", "GET, POST", "Content-Type, Authorization"));
 ```
 
 ### Rate Limiting
@@ -536,8 +576,8 @@ app.use(RateLimit.requests(10).per(Duration.ofSeconds(30))
 
 ```java
 OAuth2.Provider google = OAuth2.google()
-    .clientId(env("GOOGLE_CLIENT_ID"))
-    .clientSecret(env("GOOGLE_CLIENT_SECRET"))
+    .clientId(System.getenv("GOOGLE_CLIENT_ID"))
+    .clientSecret(System.getenv("GOOGLE_CLIENT_SECRET"))
     .redirectUri("https://app.example.com/oauth/callback")
     .scopes("openid", "email", "profile")
     .build();
@@ -546,10 +586,14 @@ app.get("/oauth/login", req -> Response.redirect(google.authorizationUrl()));
 
 app.get("/oauth/callback", req -> {
     if (!OAuth2.verifyState(req.query("state"))) return Response.forbidden("Bad state");
-    var tokens = google.exchangeCode(req.query("code"));
-    var info   = google.getUserInfo(tokens.accessToken());
-    Auth.login(req, Principal.of(info.id(), info.email(), "user"));
-    return Response.redirect("/dashboard");
+    try {
+        var tokens = google.exchangeCode(req.query("code"));
+        var info   = google.getUserInfo(tokens.accessToken());
+        Auth.login(req, Principal.of(info.id(), info.email(), "user"));
+        return Response.redirect("/dashboard");
+    } catch (OAuth2.OAuth2Exception e) {
+        return Response.serverError("OAuth login failed");
+    }
 });
 ```
 
@@ -559,9 +603,24 @@ in-memory, single-use, 10-minute expiry (not cluster-safe). No PKCE yet.
 ### Real-World Example: Admin Authentication (from the sample app)
 
 ```java
+import jweb.api.Value;
+
+class Layout implements Template { Layout(String title, Element content) {} public Element render() { return div(); } }
+class AdminLoginPage implements Template {
+    AdminLoginPage(String error, CsrfToken token) {}
+    AdminLoginPage(String error, String notice, CsrfToken token) {}
+    public Element render() { return div(); }
+}
+class AdminMessagesPage implements Template {
+    enum Order { NEWEST, OLDEST; List<Doc> apply(List<Doc> docs, int limit) { return docs; } }
+    AdminMessagesPage(List<Doc> messages, CsrfToken token, Order order) {}
+    public Element render() { return div(); }
+}
+static AdminApi adminApi = new AdminApi();
+
 // AdminApi.java — session-based admin auth with env config (jweb.api.Component / Value)
 @Component
-public class AdminApi {
+public static class AdminApi {
 
     @Value("${jweb.admin.token:}") private String adminToken;
     @Value("${jweb.admin.email:}") private String adminEmail;
@@ -575,6 +634,8 @@ public class AdminApi {
         Auth.login(request, Principal.of("admin", email, "admin"));
         return true;
     }
+
+    private static boolean isRateLimited(String ip) { return false; }   // 5 failures / 15 min, by IP
 
     private static boolean constantTimeEquals(String expected, String actual) {
         if (expected == null || actual == null) return false;
@@ -618,7 +679,7 @@ app.get("/only-admin/messages", MessagesView.class, (ctx, view) -> {   // ?order
         new AdminMessagesPage(messages, Csrf.getOrCreateToken(ctx), order).render()).render());
 });
 
-app.post("/only-admin/logout", (RouteHandler) ctx -> {
+app.post("/only-admin/logout", ctx -> {
     if (Csrf.isValid(ctx)) {
         adminApi.logout(ctx);
         Session.of(ctx).flash("notice", "You have been signed out.");
@@ -643,8 +704,14 @@ app.post("/only-admin/logout", (RouteHandler) ctx -> {
 ```java
 import static jweb.Validators.*;
 
-// Composable validators
-Validator<String> emailValidator = required().and(email()).and(maxLength(100));
+String value = "user@example.com";
+String email = "user@example.com";
+String password = "hunter2000";
+String site = "https://example.com";
+Number parsedAge = 30;
+
+// Composable validators (required() collides with the HTML DSL's required() attribute — qualify it)
+Validator<String> emailValidator = Validators.required().and(email()).and(maxLength(100));
 ValidationResult result = emailValidator.validate(value, "email");
 if (!result.isValid()) {
     List<String> errors = result.getErrors("email");    // NOT result.errors()
@@ -662,7 +729,7 @@ ValidationResult form = FormValidator.create()
 ValidationResult age = NumberValidators.range(18, 120).validate(parsedAge, "age");
 
 // Failing fast with a 422
-if (!form.isValid()) throw new ValidationException(form);
+// if (!form.isValid()) throw new ValidationException(form);
 ```
 
 ---
@@ -677,6 +744,8 @@ rendering side.
 ```java
 import jweb.Form;
 
+enum Plan { FREE, PRO, TEAM }
+
 public record Registration(
     @Form.Required @Form.Label("Full name") String name,
     @Form.Required @Form.Email String email,
@@ -688,6 +757,8 @@ public record Registration(
 form(Registration.class).action("/register").submit("Sign up")
 
 // Bind a submission
+class Users { void create(Registration r) {} }
+Users users = new Users();
 app.post("/register", req -> {
     Form.Bound<Registration> submitted = Form.bind(Registration.class, req);
     if (!submitted.ok()) {
@@ -714,18 +785,25 @@ The 2.2.3 `Form.create()` fluent builder and `FormModel` (POJO ⇄ form, `@FormF
 ```java
 import jweb.FileUpload;
 import jweb.UploadedFile;
+import java.nio.file.Path;
 
-UploadedFile file = FileUpload.getFile(req, "avatar");        // never null (empty wrapper)
-Optional<UploadedFile> f = FileUpload.getFileOptional(req, "avatar");
-List<UploadedFile> files = FileUpload.getFiles(req, "photos");
+app.post("/avatar", req -> {
+    UploadedFile file = FileUpload.getFile(req, "avatar");        // never null (empty wrapper)
+    Optional<UploadedFile> f = FileUpload.getFileOptional(req, "avatar");
+    List<UploadedFile> files = FileUpload.getFiles(req, "photos");
 
-var validation = FileUpload.validate(file)
-    .required().maxSizeMB(5).imagesOnly();                    // or allowedExtensions("pdf")
-if (!validation.isValid()) return Response.badRequest(validation.getFirstError());
+    var validation = FileUpload.validate(file)
+        .required().maxSizeMB(5).imagesOnly();                    // or allowedExtensions("pdf")
+    if (!validation.isValid()) return Response.badRequest(validation.getFirstError());
 
-Path saved = file.saveTo(Path.of("uploads"));                 // UUID filename
-file.saveTo(dir, "custom-name.png");
-file.isImage(); file.getExtension(); file.getSize();
+    Path dir = Path.of("uploads");
+    try {
+        Path saved = file.saveTo(Path.of("uploads"));             // UUID filename
+        file.saveTo(dir, "custom-name.png");
+    } catch (java.io.IOException e) { return Response.serverError(e.getMessage()); }
+    file.isImage(); file.getExtension(); file.getSize();
+    return Response.noContent();
+});
 ```
 
 Requires multipart requests (Spring `MultipartHttpServletRequest`). There is no
@@ -735,6 +813,8 @@ An `UploadedFile` component in a form record renders the file input and switches
 to `multipart/form-data` on its own, so there is no enctype to remember:
 
 ```java
+import java.nio.file.Path;
+
 public record Attachment(@Form.Required String title, UploadedFile document) {}
 
 form(Attachment.class).action("/upload").submit("Upload")
@@ -762,9 +842,11 @@ uv pip install --python .tools/markitdown/bin/python "markitdown[all]"
 
 ```java
 import jweb.Markitdown;
+import java.nio.file.Path;
 
+byte[] bytes = new byte[0];
 String md = Markitdown.convert(Path.of("report.pdf"));   // from disk
-String md = Markitdown.convert(bytes, "docx");           // in-memory (temp file under the hood)
+String md2 = Markitdown.convert(bytes, "docx");          // in-memory (temp file under the hood)
 Markitdown.isAvailable();                                 // CLI installed?
 ```
 
@@ -797,6 +879,10 @@ for large PDFs.
 import jweb.I18n;
 import jweb.Messages;
 
+record User(String name) {}
+Request request = req;
+User user = new User("Ola");
+
 // Register bundles programmatically (no properties-file auto-loading yet)
 Messages.setDefaultLocale(Locale.ENGLISH);
 Messages.load("en", Map.of("greeting", "Hello, {0}!"));
@@ -824,6 +910,11 @@ import jweb.MockRequest;
 import jweb.Request;
 import jweb.TestClient;
 
+record User(String name) {}
+RouteHandler handler = r -> Response.ok().build();
+Element element = div();
+String token = "test-token";
+
 // Unit-test a handler with a mock request
 Request req = MockRequest.get("/users/42").pathParam("id", "42").build();
 JWebTest.TestResult result = JWebTest.testHandler(handler, MockRequest.get("/x"));
@@ -835,6 +926,7 @@ JWebTest.assertHasClass(element.toHtml(), "card");
 JWebTest.assertHasAttribute(element.toHtml(), "data-id", "42");
 
 // Integration tests against a running server
+Object newUser = Map.of("email", "john@example.com");
 TestClient client = TestClient.localhost(8085).withAuth(token);
 client.get("/api/v1/users")
     .assertOk()
@@ -870,13 +962,14 @@ jweb:
 **One-liners:**
 
 ```java
+String text = "JWeb is a Java web framework.";
 String answer = AI.ask("Summarize this: " + text);
 ```
 
 **Conversations** (history kept between sends):
 
 ```java
-Chat chat = AI.chat().system("You are a concise support agent");
+var chat = AI.chat().system("You are a concise support agent");
 String a = chat.send("What is JWeb?");
 String b = chat.send("Show me an example");   // remembers the topic
 ```
@@ -885,6 +978,11 @@ String b = chat.send("Show me an example");   // remembers the topic
 results → repeat until it has an answer:
 
 ```java
+class WeatherService { String lookup(String city) { return "sunny"; } }
+class DocsIndex { String search(String query) { return ""; } }
+WeatherService weatherService = new WeatherService();
+DocsIndex docsIndex = new DocsIndex();
+
 Tool weather = Tool.of("get_weather", "Get the weather for a city")
     .param("city", "The city name")
     .handler(args -> weatherService.lookup((String) args.get("city")));
@@ -897,7 +995,7 @@ String result = AI.agent()
     .system("You are a support agent for this app")
     .tools(weather, search)
     .maxSteps(8)
-    .onStep((step, info) -> Log.info("agent step {}: {}", step, info))
+    .onStep((step, info) -> System.out.println("agent step " + step + ": " + info))
     .run("Should I pack an umbrella for Paris this weekend?");
 ```
 

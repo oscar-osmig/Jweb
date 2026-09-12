@@ -27,6 +27,8 @@ form(action("/submit"), method("POST"),
             h3Title("Input Types"),
             para("All HTML5 input types are supported."),
             codeBlock("""
+String token = "csrf-token-abc123";
+
 // Text inputs
 input(type("text"), name("username"))
 input(type("password"), name("pwd"))

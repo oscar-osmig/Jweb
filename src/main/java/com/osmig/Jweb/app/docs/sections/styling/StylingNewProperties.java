@@ -50,13 +50,13 @@ style().borderRight(none)"""),
             codeBlock("""
 // On an inline style
 div(style()
-        .opacity(1).transition(propAll, ms(200), ease)
+        .opacity(1).transition(all, ms(200), ease)
         .startingStyle(style().opacity(0)),
     "I fade in")
 
 // On a stylesheet
 stylesheet()
-    .rule(".toast", style().opacity(1).transition(propAll, ms(200), ease))
+    .rule(".toast", style().opacity(1).transition(all, ms(200), ease))
     .startingStyle(".toast", style().opacity(0))"""),
 
             h3Title("Container style queries"),
@@ -64,6 +64,8 @@ stylesheet()
                 + "size — one variant flag on the container restyles everything in it."),
 
             codeBlock("""
+import static jweb.css.ContainerQuery.*;
+
 container("card").style("variant", "featured")
     .rule(".title", style().fontWeight(700))
     .rule(".badge", style().display(block))
@@ -72,9 +74,9 @@ container("card").style("variant", "featured")
 
             h3Title(":popover-open and :open"),
             codeBlock("""
-// On the Selector builder
-cls("menu").popoverOpen()        // .menu:popover-open
-tag("details").open()            // details:open
+// On the Selector builder — Selectors.cls/tag, since cls()/tag() are also El's
+Selectors.cls("menu").popoverOpen()        // .menu:popover-open
+Selectors.tag("details").open()            // details:open
 
 // Or straight on an inline style
 div(popover("auto"), style()

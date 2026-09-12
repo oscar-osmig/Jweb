@@ -11,7 +11,7 @@ public final class StylingBoxModel {
             h3Title("Box Model"),
             para("Control dimensions, spacing, and borders."),
 
-            codeBlock("""
+            codeBlock("style", """
 // Dimensions
 .width(px(300))
 .height(px(200))
@@ -26,7 +26,7 @@ public final class StylingBoxModel {
 
             h3Title("Margin"),
             para("External spacing around elements."),
-            codeBlock("""
+            codeBlock("style", """
 // All sides
 .margin(rem(1))
 
@@ -54,7 +54,7 @@ public final class StylingBoxModel {
 
             h3Title("Padding"),
             para("Internal spacing inside elements."),
-            codeBlock("""
+            codeBlock("style", """
 // All sides
 .padding(rem(1))
 
@@ -73,7 +73,7 @@ public final class StylingBoxModel {
 
             h3Title("Border"),
             para("Element borders with various styles."),
-            codeBlock("""
+            codeBlock("style", """
 // Full border
 .border(px(1), solid, gray)
 
@@ -89,7 +89,7 @@ public final class StylingBoxModel {
 .borderRight(px(1), solid, black)
 
 // Border styles
-solid, dashed, dotted, double, none
+solid, dashed, dotted, double_, none
 
 // Border radius
 .borderRadius(px(8))
@@ -107,7 +107,7 @@ solid, dashed, dotted, double, none
 
             h3Title("Box Sizing"),
             para("Control how dimensions are calculated."),
-            codeBlock("""
+            codeBlock("style", """
 // Include padding/border in width/height
 .boxSizing(borderBox)
 
@@ -119,7 +119,7 @@ rule("*").boxSizing(borderBox)"""),
 
             h3Title("Display"),
             para("Control element rendering."),
-            codeBlock("""
+            codeBlock("style", """
 .display(block)
 .display(inline)
 .display(inlineBlock)

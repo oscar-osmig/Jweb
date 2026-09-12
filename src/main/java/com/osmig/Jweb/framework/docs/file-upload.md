@@ -7,6 +7,8 @@ JWeb provides utilities for handling file uploads.
 ```java
 import jweb.FileUpload;
 import jweb.UploadedFile;
+import java.io.IOException;
+import java.nio.file.Path;
 
 app.post("/upload", req -> {
     UploadedFile file = FileUpload.getFile(req, "document");
@@ -15,8 +17,12 @@ app.post("/upload", req -> {
         return Response.badRequest("No file provided");
     }
 
-    Path saved = file.saveTo(Path.of("uploads"));
-    return Response.json(Map.of("path", saved.toString()));
+    try {
+        Path saved = file.saveTo(Path.of("uploads"));
+        return Response.json(Map.of("path", saved.toString()));
+    } catch (IOException e) {
+        return Response.serverError("Could not save file");
+    }
 });
 ```
 
@@ -41,12 +47,14 @@ form(
 UploadedFile file = FileUpload.getFile(req, "document");
 
 // Or with Optional
-Optional<UploadedFile> file = FileUpload.getFileOptional(req, "document");
+Optional<UploadedFile> maybeFile = FileUpload.getFileOptional(req, "document");
 ```
 
 ### Multiple Files
 
 ```java
+import java.nio.file.Path;
+
 List<UploadedFile> files = FileUpload.getFiles(req, "images");
 
 for (UploadedFile file : files) {
@@ -63,21 +71,31 @@ List<UploadedFile> allFiles = FileUpload.getAllFiles(req);
 ## File Properties
 
 ```java
-UploadedFile file = FileUpload.getFile(req, "document");
+import java.io.IOException;
+import java.io.InputStream;
 
-// Check if empty
-if (file.isEmpty()) {
-    return Response.badRequest("No file");
-}
+app.post("/upload", req -> {
+    UploadedFile file = FileUpload.getFile(req, "document");
 
-// File info
-String name = file.getFilename();           // "report.pdf"
-String contentType = file.getContentType(); // "application/pdf"
-long size = file.getSize();                 // bytes
+    // Check if empty
+    if (file.isEmpty()) {
+        return Response.badRequest("No file");
+    }
 
-// Get content
-byte[] bytes = file.getBytes();
-InputStream stream = file.getInputStream();
+    // File info
+    String name = file.getFilename();           // "report.pdf"
+    String contentType = file.getContentType(); // "application/pdf"
+    long size = file.getSize();                 // bytes
+
+    try {
+        // Get content
+        byte[] bytes = file.getBytes();
+        InputStream stream = file.getInputStream();
+        return Response.ok().body(bytes);
+    } catch (IOException e) {
+        return Response.serverError();
+    }
+});
 ```
 
 ## File Type Checks
@@ -99,47 +117,58 @@ if (file.hasExtension("pdf", "doc", "docx")) {
 ## Saving Files
 
 ```java
+import java.nio.file.Path;
+
+UploadedFile file = FileUpload.getFile(req, "document");
+
 // Save to directory with a generated, collision-proof filename
 Path saved = file.saveTo(Path.of("uploads"));
 // Result: uploads/<uuid>.pdf
 
 // Save preserving the original filename (sanitized)
-Path saved = file.saveWithOriginalName(Path.of("uploads"));
+Path savedOriginal = file.saveWithOriginalName(Path.of("uploads"));
 // Result: uploads/report.pdf
 
 // Save with a specific filename
-Path saved = file.saveTo(Path.of("uploads"), "custom-name.pdf");
+Path savedNamed = file.saveTo(Path.of("uploads"), "custom-name.pdf");
 ```
 
 ## Validation
 
 ```java
-UploadedFile file = FileUpload.getFile(req, "image");
+Object handleUpload(Request req) {
+    UploadedFile file = FileUpload.getFile(req, "image");
 
-FileUpload.FileValidation validation = FileUpload.validate(file)
-    .required()
-    .maxSizeMB(10)
-    .imagesOnly();
+    FileUpload.FileValidation validation = FileUpload.validate(file)
+        .required()
+        .maxSizeMB(10)
+        .imagesOnly();
 
-if (!validation.isValid()) {
-    return Response.badRequest(validation.getFirstError());
+    if (!validation.isValid()) {
+        return Response.badRequest(validation.getFirstError());
+    }
+    return Response.ok().build();
 }
 ```
 
 ### Validation Rules
 
 ```java
+UploadedFile file = FileUpload.getFile(req, "document");
+
 FileUpload.validate(file)
-    .required()                              // File must be present
-    .maxSize(5 * 1024 * 1024)               // Max 5MB (in bytes)
-    .maxSizeMB(10)                           // Max 10MB
-    .imagesOnly()                            // PNG, JPG, GIF only
-    .allowedExtensions("pdf", "doc", "docx") // Specific extensions
+    .required()                               // File must be present
+    .maxSize(5 * 1024 * 1024)                 // Max 5MB (in bytes)
+    .maxSizeMB(10)                            // Max 10MB
+    .imagesOnly()                             // PNG, JPG, GIF only
+    .allowedExtensions("pdf", "doc", "docx"); // Specific extensions
 ```
 
 ### Getting Errors
 
 ```java
+UploadedFile file = FileUpload.getFile(req, "document");
+
 FileUpload.FileValidation validation = FileUpload.validate(file)
     .required()
     .maxSizeMB(5);
@@ -153,10 +182,13 @@ if (!validation.isValid()) {
 ## Check Multipart Request
 
 ```java
-if (FileUpload.isMultipart(req)) {
-    // Handle file upload
-} else {
-    return Response.badRequest("Expected multipart request");
+Object handleUpload(Request req) {
+    if (FileUpload.isMultipart(req)) {
+        // Handle file upload
+        return Response.ok().build();
+    } else {
+        return Response.badRequest("Expected multipart request");
+    }
 }
 ```
 
@@ -178,6 +210,10 @@ spring.servlet.multipart.location=/tmp/uploads
 ## Complete Example
 
 ```java
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 @Component
 public class UploadRoutes implements JWebRoutes {
     private static final Path UPLOAD_DIR = Path.of("uploads");
@@ -205,11 +241,15 @@ public class UploadRoutes implements JWebRoutes {
                 return uploadForm(validation.getFirstError(), null);
             }
 
-            // Save with unique name
-            String filename = UUID.randomUUID() + "_" + file.getFilename();
-            Path saved = file.saveTo(UPLOAD_DIR, filename);
+            try {
+                // Save with unique name
+                String filename = UUID.randomUUID() + "_" + file.getFilename();
+                Path saved = file.saveTo(UPLOAD_DIR, filename);
 
-            return uploadForm(null, "File uploaded: " + saved.getFileName());
+                return uploadForm(null, "File uploaded: " + saved.getFileName());
+            } catch (IOException e) {
+                return uploadForm("Could not save file", null);
+            }
         });
 
         // Serve uploaded files
@@ -221,12 +261,16 @@ public class UploadRoutes implements JWebRoutes {
                 return Response.notFound();
             }
 
-            byte[] content = Files.readAllBytes(file);
-            String contentType = Files.probeContentType(file);
+            try {
+                byte[] content = Files.readAllBytes(file);
+                String contentType = Files.probeContentType(file);
 
-            return Response.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(content);
+                return Response.ok()
+                    .contentType(contentType)
+                    .body(content);
+            } catch (IOException e) {
+                return Response.serverError();
+            }
         });
     }
 
@@ -257,6 +301,9 @@ public class UploadRoutes implements JWebRoutes {
 ## Multiple File Upload
 
 ```java
+import java.io.IOException;
+import java.nio.file.Path;
+
 app.post("/gallery/upload", req -> {
     List<UploadedFile> images = FileUpload.getFiles(req, "images");
 
@@ -273,9 +320,13 @@ app.post("/gallery/upload", req -> {
             .imagesOnly();
 
         if (validation.isValid()) {
-            String filename = UUID.randomUUID() + "_" + image.getFilename();
-            image.saveTo(Path.of("uploads/gallery"), filename);
-            uploaded.add(filename);
+            try {
+                String filename = UUID.randomUUID() + "_" + image.getFilename();
+                image.saveTo(Path.of("uploads/gallery"), filename);
+                uploaded.add(filename);
+            } catch (IOException e) {
+                // skip this file
+            }
         }
     }
 

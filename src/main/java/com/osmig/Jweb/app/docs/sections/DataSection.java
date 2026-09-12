@@ -42,6 +42,8 @@ int age = user.getInt("age");"""),
             docSubtitle("Queries"),
             para("Fluent query builder with filters, sorting, and pagination."),
             codeBlock("""
+String id = "507f1f77bcf86cd799439011";
+
 // Find by ID
 Doc user = Mongo.findById("users", id);
 
@@ -60,6 +62,9 @@ Doc admin = Mongo.find("users")
 
             docSubtitle("Updates"),
             codeBlock("""
+String id = "507f1f77bcf86cd799439011";
+String visitorId = "507f191e810c19729de860ea";
+
 // Update fields
 Mongo.update("users")
     .where("id", id)
@@ -75,6 +80,8 @@ Mongo.update("users")
 
             docSubtitle("Deletes"),
             codeBlock("""
+String userId = "507f1f77bcf86cd799439011";
+
 // Delete by ID
 Mongo.delete("users")
     .where("id", userId)

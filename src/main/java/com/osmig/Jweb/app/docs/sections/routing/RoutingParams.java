@@ -11,6 +11,16 @@ public final class RoutingParams {
             h3Title("Path Parameters"),
             para("Capture dynamic segments from the URL path."),
             codeBlock("""
+record User(long id) {}
+class UserService { User findById(long id) { return new User(id); } }
+UserService userService = new UserService();
+Element userProfile(User user) { return div(); }
+record Post(String slug) {}
+class PostService { Post findBySlug(String category, String slug) { return new Post(slug); } }
+PostService postService = new PostService();
+Element postPage(Post post) { return div(); }
+Element blogListing(int page) { return div(); }
+
 // Single parameter
 app.get("/users/:id", req -> {
     String id = req.param("id");
@@ -35,6 +45,17 @@ app.get("/blog/:page", req -> {
             h3Title("Typed Parameters"),
             para("Get parameters with automatic type conversion and validation."),
             codeBlock("""
+class UserService { Object findById(int id) { return "user-" + id; } }
+UserService userService = new UserService();
+class OrderService { Object findById(long orderId) { return "order-" + orderId; } }
+OrderService orderService = new OrderService();
+class ProductService { Object findUnder(double maxPrice) { return List.of(); } }
+ProductService productService = new ProductService();
+class PostService { Object findByFeatured(boolean featured) { return List.of(); } }
+PostService postService = new PostService();
+class FileService { Object findById(UUID fileId) { return null; } }
+FileService fileService = new FileService();
+
 // Integer parameters
 app.get("/users/:id", req -> {
     int id = req.paramInt("id");        // Throws if not a number
@@ -68,6 +89,12 @@ app.get("/files/:fileId", req -> {
             h3Title("Query Parameters"),
             para("Access query string parameters from the URL."),
             codeBlock("""
+record Result(String title) {}
+class SearchService { List<Result> search(String q, int page, String sort) { return List.of(); } }
+SearchService searchService = new SearchService();
+Element searchResults(List<Result> results, String query, int page) { return div(); }
+Element productListing(String category, boolean inStock) { return div(); }
+
 // GET /search?q=java&page=2&sort=date
 app.get("/search", req -> {
     String query = req.query("q");            // null when absent

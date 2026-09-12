@@ -26,7 +26,7 @@ public final class SetupSection {
             para("Maven — the JitPack repository plus the dependency:"),
             dependencyBlock(v),
             para("Gradle:"),
-            codeBlock("""
+            codeBlock("groovy", """
                     repositories { maven { url 'https://jitpack.io' } }
                     dependencies { implementation 'com.github.oscar-osmig:Jweb:%s' }""".formatted(v)),
             docTip("Requires Java 21+. Spring Boot's web starter arrives transitively — "
@@ -41,7 +41,7 @@ public final class SetupSection {
             docSubtitle("2. Project Structure"),
             para("Three files. Java allows one public class per file, so each of these is "
                  + "its own file — putting them in one file will not compile:"),
-            codeBlock("""
+            codeBlock("text", """
                     src/main/java/org/example/
                         App.java              <- starts the application
                         Routes.java           <- maps URLs to pages
@@ -73,8 +73,9 @@ public final class SetupSection {
                     import jweb.JWeb;
                     import jweb.JWebRoutes;
                     import jweb.Middlewares;
-                    import org.example.pages.HomePage;
-                    import org.springframework.stereotype.Component;
+                    import jweb.api.Component;
+                    // HomePage lives in org.example.pages — see step 5
+                    class HomePage implements Template { public Element render() { return div("Home"); } }
 
                     @Component
                     public class Routes implements JWebRoutes {
@@ -114,7 +115,7 @@ public final class SetupSection {
                  + "are not JWeb."),
 
             docSubtitle("6. Run It"),
-            codeBlock("""
+            codeBlock("bash", """
                     mvn spring-boot:run
 
                     #  /       -> your page
@@ -126,6 +127,9 @@ public final class SetupSection {
             para("Once you have more than one page, a layout gives them a common shell. "
                  + "It is a Template that takes the page content:"),
             codeBlock("""
+                    class HomePage implements Template { public Element render() { return div("Home"); } }
+                    class AboutPage implements Template { public Element render() { return div("About"); } }
+
                     public class MainLayout implements Template {
                         private final Element content;
                         public MainLayout(Element content) { this.content = content; }
@@ -146,7 +150,7 @@ public final class SetupSection {
 
             docSubtitle("Configuration (optional)"),
             para("Everything has a working default — set only what you need:"),
-            codeBlock("""
+            codeBlock("yaml", """
                     server:
                       port: 8080
 
@@ -165,7 +169,7 @@ public final class SetupSection {
 
             docSubtitle("Skip the Setup"),
             para("The CLI generates this whole structure, wired and ready to run:"),
-            codeBlock("""
+            codeBlock("bash", """
                     jweb new myapp --package=com.mycompany.myapp
                     cd myapp && mvn spring-boot:run"""),
 

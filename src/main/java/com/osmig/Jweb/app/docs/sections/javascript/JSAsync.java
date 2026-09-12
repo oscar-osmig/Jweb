@@ -13,6 +13,8 @@ public final class JSAsync {
             codeBlock("""
 import static jweb.Js.*;
 
+Action processData() { return log("Data loaded"); }
+
 // Simple await
 await(fetch("/api/data").ok(processData()))
 
@@ -29,6 +31,8 @@ asyncFunc("loadDashboard")
             h3Title("Try-Catch-Finally"),
             para("Handle errors in async operations."),
             codeBlock("""
+Action processData() { return log("Data loaded"); }
+
 asyncTry(
     await(fetch("/api/data").ok(processData()))
 )

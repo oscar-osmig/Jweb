@@ -5,6 +5,11 @@ Middleware provides a way to process requests before they reach your route handl
 ## Basic Usage
 
 ```java
+record HomePage() implements Template {
+    @Override
+    public Element render() { return div("Home"); }
+}
+
 @Component
 public class Routes implements JWebRoutes {
     @Override
@@ -38,8 +43,8 @@ Enables Cross-Origin Resource Sharing:
 ```java
 app.use(Middlewares.cors());
 
-// With custom origins
-app.use(Middlewares.cors("https://example.com", "https://api.example.com"));
+// With custom origins (comma-separated)
+app.use(Middlewares.cors("https://example.com,https://api.example.com"));
 ```
 
 ### CSRF Protection
@@ -144,10 +149,10 @@ app.useForMethods(List.of("POST", "PUT", "DELETE"), Middlewares.csrf());
 ## Conditional Middleware
 
 ```java
-app.useIf(
+app.use(Middleware.when(
     req -> req.path().startsWith("/api"),
     Middlewares.cors()
-);
+));
 ```
 
 ## Custom Middleware
@@ -210,11 +215,9 @@ app.use(Middlewares.logging())      // 1. Logs request
 Combine multiple middleware:
 
 ```java
-Middleware security = Middleware.compose(
-    Middlewares.securityHeaders(),
-    Middlewares.csrf(),
-    Auth.requireAuth()
-);
+Middleware security = Middlewares.securityHeaders()
+    .then(Middlewares.csrf())
+    .then(Auth.requireAuth());
 
 app.use("/secure", security);
 ```
@@ -243,7 +246,7 @@ Return early without calling `chain.next()`:
 
 ```java
 Middleware authCheck = (req, chain) -> {
-    if (!isAuthenticated(req)) {
+    if (!Auth.isAuthenticated(req)) {
         return Response.unauthorized();  // Short-circuit
     }
     return chain.next();  // Continue to handler

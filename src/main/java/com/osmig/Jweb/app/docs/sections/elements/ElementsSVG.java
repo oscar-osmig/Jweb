@@ -12,13 +12,12 @@ public final class ElementsSVG {
             para("Create scalable vector graphics inline with type-safe methods."),
 
             codeBlock("""
-// Import SVG elements
+// Every SVG element is on jweb.El — one import covers HTML and SVG alike.
 import static jweb.El.*;
-import static jweb.el.SVGElements.*;
 
-// Three elements are renamed to avoid clashing with the CSS DSL under these
-// wildcard imports: svgText (the SVG <text> — plain text is a text node),
-// svgLinearGradient and svgRadialGradient (the plain names are CSS values)."""),
+// jweb.El also carries the SVG attributes (x, y, cx, cy, r, width, height,
+// stroke-*, ...) with int, double and String overloads. Don't also
+// wildcard-import jweb.el.SVGElements — its element names collide with El's."""),
 
             h3Title("Basic SVG"),
             para("Create an SVG container with viewBox."),
@@ -129,24 +128,24 @@ svg(viewBox("0 0 24 24"), width(24), height(24),
             codeBlock("""
 // Group elements
 svg(viewBox("0 0 200 200"),
-    g(transform(translate(100, 100)),
+    g(transform("translate(100, 100)"),
         circle(cx(0), cy(0), r(50), fill("blue")),
         circle(cx(30), cy(30), r(20), fill("red"))
     )
 )
 
 // Multiple transforms (space-separated string)
-g(transform(translate(50, 50) + " " + rotate(45) + " " + scale(1.5)),
+g(transform("translate(50, 50) rotate(45) scale(1.5)"),
     rect(x(-25), y(-25), width(50), height(50), fill("purple"))
 )
 
-// Transform functions
-translate(100, 50)     // Move position
-rotate(45)             // Rotate degrees
-scale(1.5)             // Uniform scale
-scale(2, 0.5)          // Non-uniform scale
-skewX(10)              // Skew horizontally
-skewY(10)              // Skew vertically"""),
+// The transform attribute is a plain string — compose it by hand
+"translate(100, 50)"   // Move position
+"rotate(45)"            // Rotate degrees
+"scale(1.5)"            // Uniform scale
+"scale(2, 0.5)"         // Non-uniform scale
+"skewX(10)"             // Skew horizontally
+"skewY(10)"             // Skew vertically"""),
 
             h3Title("Definitions & Reuse"),
             para("Define reusable elements and gradients. Gradients are svgLinearGradient / " +
@@ -217,10 +216,10 @@ svg(viewBox("0 0 100 100"),
         filter(id("blur"),
             feGaussianBlur(attr("in", "SourceGraphic"), stdDeviation(3))),
         filter(id("shadow"),
-            feDropShadow(attr("dx", "2"), attr("dy", "2"), stdDeviation(2)))
+            feDropShadow(dx(2), dy(2), stdDeviation(2)))
     ),
-    circle(cx(30), cy(50), r(20), fill("blue"), filterRef("blur")),
-    circle(cx(70), cy(50), r(20), fill("green"), filterRef("shadow"))
+    circle(cx(30), cy(50), r(20), fill("blue"), attr("filter", "url(#blur)")),
+    circle(cx(70), cy(50), r(20), fill("green"), attr("filter", "url(#shadow)"))
 )
 
 // Clip and mask
@@ -229,7 +228,7 @@ svg(viewBox("0 0 100 100"),
         clipPath(id("circle-clip"), circle(cx(50), cy(50), r(30)))
     ),
     image(href("/photo.jpg"), x(0), y(0), width(100), height(100),
-        clipPathRef("circle-clip"))
+        attr("clip-path", "url(#circle-clip)"))
 )"""),
 
             h3Title("Animation"),
@@ -238,20 +237,20 @@ svg(viewBox("0 0 100 100"),
             codeBlock("""
 // Fade in
 circle(cx(50), cy(50), r(20), fill("blue"),
-    animate(attributeName("opacity"), from("0"), to("1"), dur("1s"))
+    animate(attr("attributeName", "opacity"), attr("from", "0"), attr("to", "1"), attr("dur", "1s"))
 )
 
 // Spin forever
 rect(x(40), y(40), width(20), height(20), fill("red"),
-    animateTransform(attributeName("transform"), type("rotate"),
-        from("0 50 50"), to("360 50 50"), dur("2s"), repeatCount("indefinite"))
+    animateTransform(attr("attributeName", "transform"), attr("type", "rotate"),
+        attr("from", "0 50 50"), attr("to", "360 50 50"), attr("dur", "2s"), attr("repeatCount", "indefinite"))
 )
 
 // Move along a path
 svg(viewBox("0 0 200 100"),
     circle(r(6), fill("purple"),
         animateMotion(attr("path", "M10 90 Q100 10 190 90"),
-            dur("3s"), repeatCount("indefinite")))
+            attr("dur", "3s"), attr("repeatCount", "indefinite")))
 )"""),
 
             h3Title("Icon Example"),

@@ -10,7 +10,7 @@ public final class StylingFlexbox {
         return section(
             h3Title("Flexbox"),
             para("Flexible box layout for one-dimensional layouts."),
-            codeBlock("""
+            codeBlock("style", """
 // Basic flex container
 .display(flex)
 .flexDirection(row)      // row, column, rowReverse, columnReverse
@@ -47,7 +47,7 @@ Style stack = style()
     .gap(rem(1));"""),
 
             h3Title("Flex Item Properties"),
-            codeBlock("""
+            codeBlock("style", """
 // Flex item sizing
 .flexGrow(1)       // grow to fill space
 .flexShrink(0)     // don't shrink

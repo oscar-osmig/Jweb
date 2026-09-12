@@ -32,6 +32,9 @@ fetch("").urlFromVar("'/api/users/' + userId + '/posts'")
             h3Title("Dynamic Headers"),
             para("Set headers from variables for authentication and custom headers."),
             codeBlock("""
+Action processResponse() { return log("Response ready"); }
+Action processData() { return log("Data ready"); }
+
 // Auth token from variable
 fetch("/api/protected")
     .headerFromVar("Authorization", "authToken")
@@ -56,6 +59,9 @@ fetch("/api/resource")
             h3Title("Status Code Handling"),
             para("Handle specific HTTP status codes with custom actions."),
             codeBlock("""
+Action processData() { return log("Data ready"); }
+long userId = 42;
+
 // Handle specific statuses
 fetch("/api/data")
     .onStatus(401, navigateTo("/login"))

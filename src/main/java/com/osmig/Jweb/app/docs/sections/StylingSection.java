@@ -28,6 +28,9 @@ import jweb.Style;"""),
                  "argument — no attrs() ceremony. It composes with Attr shortcuts like " +
                  "class_() and id()."),
             codeBlock("""
+                    CSSValue SP_4 = rem(1);
+                    CSSValue TEXT = hex("#1e293b");
+
                     div(style().padding(SP_4).color(TEXT), "hi")
 
                     div(class_("card"), id("hero"),

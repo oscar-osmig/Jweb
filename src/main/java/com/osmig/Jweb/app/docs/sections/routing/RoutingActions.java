@@ -48,6 +48,8 @@ Search search = req.bind(Search.class);"""),
             codeBlock("""
 import jweb.Session;
 
+class Visit { String name = "Guest"; }
+
 Visit visit = Session.of(Visit.class, req);        // created on first use, shared after
 Session session = Session.of(req);
 session.put("theme", "dark");

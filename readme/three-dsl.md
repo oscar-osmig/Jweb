@@ -504,6 +504,12 @@ Three composition helpers keep scene-building declarative when the scene
 depends on state:
 
 ```java
+List<Box> myListOfNodes = List.of(box(), box());
+boolean doorOpen = true;
+boolean aligned = true;
+Box doorway() { return box(); }
+Box whale() { return box(); }
+
 group(myListOfNodes)                  // any Iterable — no toArray ceremony
 
 when(doorOpen, doorway())             // the node, or nothing; null vanishes
@@ -574,6 +580,8 @@ sphere().name("product")
 `onClick(...)` on an element, over the live WebSocket:
 
 ```java
+State<Integer> rolls = useState(0);
+
 box().name("die").onClick(e -> rolls.set(rolls.get() + 1))
 ```
 

@@ -116,7 +116,7 @@ rule("p")
 
 ```java
 rule(".card")
-    .border(px(1), "solid", gray)
+    .border(px(1), solid, gray)
     .borderRadius(px(8))
     .boxShadow("0 2px 4px rgba(0,0,0,0.1)")
 ```
@@ -174,20 +174,12 @@ rule(".card").property("interpolate-size", "allow-keywords")
 ## Media Queries
 
 ```java
-String css = styles(
-    rule(".container")
-        .padding(px(10)),
+Stylesheet sheet = stylesheet()
+    .add(Rule.of(".container", style().padding(px(10))))
+    .add(media().minWidth(px(768)).rule(".container", style().padding(px(20))))
+    .add(media().minWidth(px(1024)).rule(".container", style().padding(px(40))));
 
-    media("(min-width: 768px)",
-        rule(".container")
-            .padding(px(20))
-    ),
-
-    media("(min-width: 1024px)",
-        rule(".container")
-            .padding(px(40))
-    )
-);
+String css = sheet.build();
 ```
 
 ### Predefined Breakpoints
@@ -196,23 +188,18 @@ String css = styles(
 MediaQuery.mobile()      // max-width: 767px
 MediaQuery.tablet()      // min-width: 768px
 MediaQuery.desktop()     // min-width: 1024px
-MediaQuery.largeDesktop() // min-width: 1280px
+MediaQuery.xl()          // min-width: 1200px
 ```
 
 ## Keyframes (Animations)
 
 ```java
-String animation = keyframes("fadeIn",
-    frame("0%")
-        .opacity("0")
-        .transform("translateY(-10px)"),
-    frame("100%")
-        .opacity("1")
-        .transform("translateY(0)")
-);
+String animation = keyframes("fadeIn")
+    .from(style().opacity("0").transform(CSSValue.of("translateY(-10px)")))
+    .to(style().opacity("1").transform(CSSValue.of("translateY(0)")))
+    .build();
 
-String css = styles(
-    animation,
+String css = animation + "\n" + styles(
     rule(".fade-in")
         .animation("fadeIn 0.3s ease-out")
 );
@@ -279,12 +266,10 @@ div(
 Combine multiple rules into a stylesheet:
 
 ```java
-Stylesheet sheet = Stylesheet.create()
-    .add(rule("body").margin(zero))
-    .add(rule(".container").maxWidth(px(1200)))
-    .add(media("(min-width: 768px)",
-        rule(".container").padding(px(40))
-    ));
+Stylesheet sheet = stylesheet()
+    .add(Rule.of("body", style().margin(zero)))
+    .add(Rule.of(".container", style().maxWidth(px(1200))))
+    .add(media().minWidth(px(768)).rule(".container", style().padding(px(40))));
 
 String css = sheet.build();
 ```
@@ -297,12 +282,12 @@ Use `@supports` for progressive enhancement:
 import static jweb.css.Supports.*;
 
 // Simple property check
-String css = supports("display", "grid")
+String css1 = supports("display", "grid")
     .rule(".container", style().display(grid))
     .build();
 
 // Multiple conditions
-String css = supports()
+String css2 = supports()
     .property("display", "grid")
     .and()
     .property("gap", "1rem")
@@ -310,14 +295,14 @@ String css = supports()
     .build();
 
 // NOT condition (fallback)
-String css = supports()
+String css3 = supports()
     .not()
     .property("display", "grid")
     .rule(".fallback", style().display(flex))
     .build();
 
 // Selector support check
-String css = supportsSelector(":has(> img)")
+String css4 = supportsSelector(":has(> img)")
     .rule(".card:has(> img)", style().padding(zero))
     .build();
 
@@ -343,7 +328,7 @@ rules open with `.nest("...")` — use `&` for the parent — and close with
 ```java
 import jweb.css.CSSNested;
 
-String css = CSSNested.rule(".card")
+String css = CSSNested.nest(".card")
     .prop("padding", "1rem")
     .prop("background", "#fff")
 
@@ -374,6 +359,12 @@ String css = CSSNested.rule(".card")
 
 ```java
 public class Layout implements Template {
+    private final Element children;
+
+    public Layout(Element children) {
+        this.children = children;
+    }
+
     @Override
     public Element render() {
         return html(
@@ -389,7 +380,9 @@ public class Layout implements Template {
     }
 
     private String getStyles() {
-        return styles(
+        // Qualified: Template declares its own no-arg styles(), which shadows
+        // the free Css.styles(StyleBuilder...) combiner by simple name here.
+        return Css.styles(
             rule("body")
                 .margin(zero)
                 .fontFamily("system-ui"),

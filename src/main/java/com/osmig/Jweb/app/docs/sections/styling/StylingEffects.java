@@ -12,7 +12,7 @@ public final class StylingEffects {
             para("Shadows, filters, transforms, and transitions."),
 
             h3Title("Box Shadow"),
-            codeBlock("""
+            codeBlock("style", """
 // Basic shadow
 .boxShadow(px(0), px(4), px(6), rgba(0, 0, 0, 0.1))
 //         x-offset, y-offset, blur, color
@@ -36,7 +36,7 @@ public final class StylingEffects {
 
             h3Title("Transforms"),
             para("2D and 3D transformations."),
-            codeBlock("""
+            codeBlock("style", """
 // Translate (move)
 .transform(translateX(px(10)))
 .transform(translateY(px(20)))
@@ -65,7 +65,7 @@ public final class StylingEffects {
 
             h3Title("Transitions"),
             para("Animate property changes."),
-            codeBlock("""
+            codeBlock("style", """
 // Simple transition
 .transition(all, s(0.3), ease)
 //          property, duration, timing
@@ -96,7 +96,7 @@ ease, linear, easeIn, easeOut, easeInOut
 
             h3Title("Filters"),
             para("Image and element filters."),
-            codeBlock("""
+            codeBlock("style", """
 // Blur
 .filter(blur(px(5)))
 
@@ -126,7 +126,7 @@ ease, linear, easeIn, easeOut, easeInOut
 
             h3Title("Backdrop Filter"),
             para("Filter the area behind an element (for glass effects)."),
-            codeBlock("""
+            codeBlock("style", """
 // Frosted glass effect
 .backgroundColor(rgba(255, 255, 255, 0.7))
 .backdropFilter(blur(px(10)))
@@ -139,13 +139,13 @@ style()
     .border(px(1), solid, rgba(255, 255, 255, 0.3))"""),
 
             h3Title("Opacity"),
-            codeBlock("""
+            codeBlock("style", """
 .opacity(1)         // Fully visible
 .opacity(0.5)       // Half transparent
 .opacity(0)         // Invisible"""),
 
             h3Title("Cursor & Interaction"),
-            codeBlock("""
+            codeBlock("style", """
 // Cursor styles
 .cursor(pointer)    // Hand cursor (clickable)
 .cursor(notAllowed) // Disabled cursor

@@ -37,6 +37,13 @@ each(list, item -> renderItem(item))""")),
                      "thing down the page. Both branches take an Element, a lambda, or a " +
                      "String; each() iterates."),
                 codeBlock("""
+boolean condition = true;
+Element element() { return div("content"); }
+Element trueElement() { return div("yes"); }
+Element falseElement() { return div("no"); }
+List<String> list = List.of("a", "b", "c");
+Element renderItem(String item) { return li(item); }
+
 // Show if true
 when(condition, element())
 

@@ -5,10 +5,8 @@ JWeb provides a type-safe DSL for generating JavaScript without writing raw JS.
 ## Basic Usage
 
 ```java
-import static com.osmig.Jweb.framework.js.Actions.*;
-
 // Simple script
-String js = script()
+String js = actions()
     .add(onClick("btn").then(toggle("panel")))
     .build();
 ```
@@ -53,9 +51,11 @@ onClick("save-btn").then(all(
 // Click with function call
 onClick("delete-btn").then(call("deleteItem", "itemId"))
 
+void handleDoubleClick() {}
+
 // Double-click — same two flavours (server handler / Action) everywhere onClick
 // appears: attrs()/element handler attrs, the El facade, and Button.
-button(onDblClick(e -> zoomIn()), "Zoom")
+button(onDblClick(e -> handleDoubleClick()), "Zoom")
 button(onDblClick(toggle("fullscreen-panel")), "Zoom")
 ```
 
@@ -101,7 +101,7 @@ onSubmit("register-form")
 
 ```java
 // Complete script with helpers and state
-String js = script()
+String js = actions()
     .withHelpers()  // Add $_, show, hide, toggle helpers
 
     // Define state variables
@@ -191,11 +191,15 @@ fetch("/api/items/").appendVar("itemId")
 fetch("").urlFromVar("apiEndpoint + '/search?q=' + query")
     .ok(assignVar("results", "_data"))
 
+Action processResponse() { return noop(); }
+
 // Headers from variables
 fetch("/api/protected")
     .headerFromVar("Authorization", "authToken")
     .headerFromVar("X-Request-ID", "requestId")
     .ok(processResponse())
+
+Action processData() { return noop(); }
 
 // Handle specific status codes
 fetch("/api/data")
@@ -215,6 +219,8 @@ fetch("/api/resource").delete()
 ## Level 7: Async/Await
 
 ```java
+Action processData() { return noop(); }
+
 // Simple await
 await(fetch("/api/data").ok(processData()))
 
@@ -228,18 +234,15 @@ asyncFunc("loadDashboard")
         call("renderDashboard")
     )
 
-// Try-catch-finally
+// Try-catch-finally — the error is bound as '_err' inside catch_
 asyncTry(
     await(fetch("/api/data").ok(processData()))
 )
-.catch_("error",
-    logError("error"),
-    showMessage("status").error("Failed to load")
-)
-.finally_(
+.catch_(showMessage("status").error("Failed to load"))
+.finally_(all(
     hide("loading"),
     assignVar("isLoading", "false")
-)
+))
 
 // Promise.all for parallel requests
 promiseAll(
@@ -259,25 +262,25 @@ sleep(500)   // Wait 500ms
 
 ```java
 // Single element query
-query("#status")
+dom("#status")
     .setText("Updated!")
     .addClass("success")
 
 // Query with attribute selector
-query("[data-active='true']")
+dom("[data-active='true']")
     .removeClass("hidden")
     .addClass("visible")
 
 // Query all matching elements
-queryAll(".notification")
-    .forEach(el -> el.addClass("fade-out"))
+domAll(".notification")
+    .addClass("fade-out")
 
 // Chained operations
-query("#user-panel")
+dom("#user-panel")
     .removeClass("loading")
     .addClass("loaded")
     .attr("data-ready", "true")
-    .show("flex")
+    .show()
 ```
 
 ---
@@ -289,12 +292,10 @@ query("#user-panel")
 onEvent("click").on("close-btn").then(hideModal("modal"))
 
 // Document event
-onEvent("keydown").onDocument().then(
-    raw("if(e.key==='Escape')hideModal('modal')")
-)
+onEvent("keydown").onDocument().when("e.key==='Escape'").then(hideModal("modal"))
 
-// Window event
-onEvent("resize").onWindow().then(call("handleResize"))
+// Window event (the default target is already "window")
+onEvent("resize").then(call("handleResize"))
 
 // Conditional event
 onEvent("click").on("logout-btn")
@@ -302,7 +303,7 @@ onEvent("click").on("logout-btn")
     .then(call("logout"))
 
 // Multiple event listeners
-script()
+actions()
     .add(onEvent("click").on("modal-overlay").then(hideOnBackdropClick("modal-overlay")))
     .add(onEvent("popstate").when("isLoggedIn").then(call("clearSession")))
     .add(onEvent("visibilitychange").onDocument().when("document.hidden").then(call("pauseUpdates")))
@@ -339,7 +340,7 @@ confirmDialog("delete-modal")
 alertModal("modal-overlay", "modal-body")
     .success("Operation completed!")
     .detail("Your changes have been saved.")
-    .button("Close", "hideModal('modal-overlay')")
+    .button("Close", "hideModal('modal-overlay')", "#6366f1")
 ```
 
 ---
@@ -381,6 +382,9 @@ removed in 3.0. Rendering belongs on the server: build the markup with the HTML 
 return it as a fragment, and swap it in — no JavaScript written:
 
 ```java
+record Item(int id, String name, String description) {}
+List<Item> items() { return List.of(new Item(1, "Widget", "A basic widget")); }
+
 // Route returning a fragment
 app.get("/items/list", req -> ul(each(items(), item ->
     li(strong(item.name()), " — ", item.description(),
@@ -494,7 +498,13 @@ public class AdminScripts {
 ## Using in Templates
 
 ```java
+class AdminScripts {
+    static String handlers() { return ""; }
+}
+
 public class AdminPage implements Template {
+    private String getStyles() { return ""; }
+
     @Override
     public Element render() {
         return html(
@@ -504,7 +514,8 @@ public class AdminPage implements Template {
             ),
             body(
                 div(id("container"),
-                    // Page content...
+                    // Page content goes here
+                    p("Welcome")
                 ),
                 div(id("modal-overlay"), class_("modal"),
                     div(id("modal-body"))
@@ -521,14 +532,12 @@ public class AdminPage implements Template {
 ## Viewport, Media Queries & Web Audio
 
 ```java
-import static jweb.Js.*;
-
 // Viewport & media queries (Val expressions)
 matchMedia("(min-width: 768px)")   // window.matchMedia(query)
 reducedMotion()                    // window.matchMedia('(prefers-reduced-motion: reduce)').matches
-viewportWidth(); viewportHeight()  // window.innerWidth / window.innerHeight
+viewportWidth(); viewportHeight(); // window.innerWidth / window.innerHeight
 
-// Web Audio synthesis (jweb.js.JSMedia)
+// Web Audio synthesis — JSMedia is a separate module, not re-exported from jweb.Js.
 import static jweb.js.JSMedia.*;
 
 Val ctx = audioContext();

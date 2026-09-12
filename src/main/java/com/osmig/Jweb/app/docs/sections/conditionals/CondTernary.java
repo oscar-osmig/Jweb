@@ -37,6 +37,16 @@ when(isPremium)
                      + "one-sided form with one more argument. Each branch may be an "
                      + "Element, a lambda (only the taken branch is built), or a String."),
                 codeBlock("""
+boolean isAdmin = true;
+Element adminDashboard() { return div("Admin dashboard"); }
+Element userDashboard() { return div("User dashboard"); }
+class CurrentUser { boolean isActive() { return true; } }
+CurrentUser user = new CurrentUser();
+boolean isExpanded = false;
+boolean isPremium = true;
+Element premiumContent() { return div("Premium content"); }
+Element guestContent() { return div("Guest content"); }
+
 // condition ? ifTrue : ifFalse
 when(isAdmin, adminDashboard(), userDashboard())
 
@@ -57,6 +67,14 @@ when(isPremium, () -> premiumContent(), () -> guestContent())"""),
                      + "without otherwise() is still an element — it renders the matched "
                      + "branch, or nothing."),
                 codeBlock("""
+boolean active = true;
+String name = "java";
+boolean isPremium = true;
+Element premiumContent() { return div("Premium content"); }
+boolean isRegistered = true;
+Element basicContent() { return div("Basic content"); }
+Element guestContent() { return div("Guest content"); }
+
 when(active)
     .then(span(cls("chip chip-on"), name))
     .otherwise(a(href("/tag/" + name), cls("chip"), name))
@@ -70,6 +88,11 @@ when(isPremium)
                 para("For a value rather than an element — a colour token, a number — the "
                      + "ternary is shorter and stays in the language."),
                 codeBlock("""
+boolean isError = false;
+CSSValue RED = hex("#dc2626");
+CSSValue GREEN = hex("#16a34a");
+String message = "Saved";
+
 // A style value
 div(style().color(isError ? RED : GREEN), message)
 

@@ -47,7 +47,7 @@ turn(0.5)           // 0.5turn - half rotation"""),
 
             h3Title("CSS Functions"),
             para("Mathematical functions for dynamic values."),
-            codeBlock("""
+            codeBlock("style", """
 // calc() - calculations
 .width(calc("100% - 200px"))
 .height(calc("100vh - 60px"))
@@ -68,7 +68,7 @@ turn(0.5)           // 0.5turn - half rotation"""),
 
             h3Title("Common Constants"),
             para("Pre-defined values for common CSS keywords."),
-            codeBlock("""
+            codeBlock("style", """
 zero                // 0
 auto                // auto
 inherit             // inherit

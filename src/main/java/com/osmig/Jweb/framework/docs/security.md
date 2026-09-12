@@ -16,7 +16,7 @@ Add the CSRF token to forms:
 
 ```java
 form(method("post"), action("/submit"),
-    Csrf.tokenField(request),  // Hidden CSRF token field
+    Csrf.tokenField(req),  // Hidden CSRF token field
     input(type("text"), name("message")),
     button("Submit")
 )
@@ -38,7 +38,7 @@ For JavaScript requests, include the token in headers:
 
 ```java
 // Get token for JS
-String token = Csrf.getToken(request);
+String token = Csrf.getToken(req).getValue();
 ```
 
 ```javascript
@@ -56,6 +56,12 @@ fetch('/api/data', {
 ### Session-Based Auth
 
 ```java
+record User(String id, String email, String[] roles) {}
+class UserService {
+    User authenticate(String email, String password) { return new User("1", email, new String[]{"user"}); }
+}
+UserService userService = new UserService();
+
 // Login
 app.post("/login", req -> {
     String email = req.formParam("email");
@@ -67,7 +73,7 @@ app.post("/login", req -> {
     }
 
     // Create principal and login
-    Principal principal = Principal.of(user.getId(), user.getEmail(), user.getRoles());
+    Principal principal = Principal.of(user.id(), user.email(), user.roles());
     Auth.login(req, principal);
 
     return Response.redirect("/dashboard");
@@ -86,6 +92,10 @@ app.post("/logout", req -> {
 ### Check Authentication
 
 ```java
+record ProfilePage(Principal user) implements Template {
+    public Element render() { return div("Profile: " + user.getName()); }
+}
+
 app.get("/profile", req -> {
     if (!Auth.isAuthenticated(req)) {
         return Response.redirect("/login");
@@ -118,6 +128,10 @@ app.use("/manage", Auth.requireAnyRole("admin", "manager"));
 ### Check Roles in Handlers
 
 ```java
+record AdminPage() implements Template {
+    public Element render() { return div("Admin"); }
+}
+
 app.get("/admin", req -> {
     Principal user = Auth.getPrincipal(req);
 
@@ -139,7 +153,7 @@ Principal user = Principal.of("user123", "john@example.com", "user", "admin");
 
 // Access properties
 String id = user.getId();
-String email = user.getEmail();
+String email = user.getName();  // the second Principal.of argument (often an email)
 Set<String> roles = user.getRoles();
 
 // Check roles
@@ -152,13 +166,19 @@ boolean canManage = user.hasAnyRole("admin", "manager");
 For API authentication:
 
 ```java
+record User(String id, String email, String[] roles) {}
+class TokenService {
+    User validateToken(String token) { return new User("1", "user@example.com", new String[]{"user"}); }
+}
+TokenService tokenService = new TokenService();
+
 app.use("/api", Auth.bearerAuth(token -> {
     // Validate token and return Principal
     User user = tokenService.validateToken(token);
     if (user == null) {
         return null;  // Returns 401
     }
-    return Principal.of(user.getId(), user.getEmail(), user.getRoles());
+    return Principal.of(user.id(), user.email(), user.roles());
 }));
 ```
 
@@ -190,24 +210,50 @@ This adds:
 For password storage, use Spring Security's `PasswordEncoder` or BCrypt:
 
 ```java
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-
-BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+String rawPassword = "correct horse battery staple";
 
 // Hash password
-String hashed = encoder.encode(rawPassword);
+String hashed = Password.hash(rawPassword);
 
 // Verify password
-boolean matches = encoder.matches(rawPassword, hashedPassword);
+boolean matches = Password.verify(rawPassword, hashed);
 ```
 
 ## Complete Auth Example
 
 ```java
+record User(String id, String email, String[] roles) {}
+
+class UserService {
+    User authenticate(String email, String password) { return new User("1", email, new String[]{"user"}); }
+}
+
+class TokenService {
+    Principal validate(String token) { return Principal.of("1", "user@example.com", "user"); }
+}
+
+record HomePage() implements Template {
+    public Element render() { return div("Home"); }
+}
+
+record LoginPage(String error) implements Template {
+    LoginPage() { this(null); }
+    public Element render() { return div("Login", error == null ? "" : error); }
+}
+
+record DashboardPage(Principal user) implements Template {
+    public Element render() { return div("Dashboard: " + user.getName()); }
+}
+
+record AdminPage() implements Template {
+    public Element render() { return div("Admin"); }
+}
+
 @Component
 public class Routes implements JWebRoutes {
 
-    private final UserService userService;
+    private final UserService userService = new UserService();
+    private final TokenService tokenService = new TokenService();
 
     @Override
     public void configure(JWeb app) {
@@ -238,7 +284,7 @@ public class Routes implements JWebRoutes {
             return new LoginPage("Invalid credentials");
         }
 
-        Auth.login(req, Principal.of(user.getId(), email, user.getRoles()));
+        Auth.login(req, Principal.of(user.id(), email, user.roles()));
         return Response.redirect("/dashboard");
     }
 

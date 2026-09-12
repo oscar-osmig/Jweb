@@ -37,6 +37,8 @@ onSubmit("register-form")
 
             h3Title("Click Handlers"),
             codeBlock("""
+long id = 42;
+
 // Simple click
 onClick("save-btn")
     .post("/api/save")
@@ -95,6 +97,8 @@ dom("#section-id").scrollIntoView()"""),
 
             h3Title("Fetch Requests"),
             codeBlock("""
+String token = "abc123";
+
 // GET request (fetch defaults to GET)
 fetch("/api/users")
     .ok(setInnerHtml("user-list").fromVar("_data.html"))
@@ -119,6 +123,8 @@ fetch("/api/protected")
 
             h3Title("Modals & Dialogs"),
             codeBlock("""
+long id = 42;
+
 // Show modal
 showModal("confirm-dialog")
 hideModal("confirm-dialog")

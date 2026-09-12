@@ -50,10 +50,10 @@ deleteDB("myApp")"""),
             codeBlock("""
 import static jweb.js.JSHistory.*;
 
-// Navigate without reload — same argument order as the platform's
-// history.pushState(state, title, url), minus the ignored title
-pushState(obj("page", str("dashboard")), "/dashboard")
-pushState("/users/42")  // URL-only
+// pushState is qualified below — Js already has pushState(String) and
+// most of the rest of the History API through the same ancestry
+JSHistory.pushState(obj("page", str("dashboard")), "/dashboard")
+JSHistory.pushState("/users/42")  // URL-only
 
 // Replace current entry (no back button)
 replaceState("/settings")
@@ -63,15 +63,15 @@ back()
 forward()
 go(-2)  // Go back 2 steps
 
-// Listen for back/forward navigation
-onPopState(callback("e")
+// Listen for back/forward navigation (qualified — Js already has onPopState(Func))
+JSHistory.onPopState(callback("e")
     .log(v("e").dot("state")))
 
 // Navigation guard (prompt before leaving)
 navigationGuard("You have unsaved changes. Leave?")
 
-// Query parameter helpers
-getQueryParam("page")          // Read ?page=...
+// Query parameter helpers (qualified — JSUrl has the same name)
+JSHistory.getQueryParam("page")          // Read ?page=...
 setQueryParam("sort", "name")  // Update URL param
 removeQueryParam("filter")     // Remove param
 queryParamsObject()             // All params as object"""),

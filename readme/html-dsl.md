@@ -23,6 +23,8 @@ without an ambiguous name between them.
 `style()` builder and children mix freely, in any order:
 
 ```java
+void save() {}
+
 div(cls("card"), id("main"),
     h1("Title"),
     p("Body"))
@@ -184,6 +186,8 @@ trailing-underscore keyword rule. `classes(...)` joins its parts and drops the o
 did not match, so a class list is never built with `+` and a ternary:
 
 ```java
+boolean active = true;
+
 div(cls("card"))
 
 String size = "lg";
@@ -256,6 +260,11 @@ public record Contact(
 ```
 
 ```java
+record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+
 form(Contact.class)
     .id("contact-form")
     .action("/contact/submit")                    // works with JavaScript off
@@ -292,6 +301,13 @@ request.
 ### Binding and errors
 
 ```java
+record Contact(
+    @Form.Required String name,
+    @Form.Required @Form.Email String email,
+    @Form.Required @Form.Multiline(rows = 4) String message) {}
+class ContactStore { void save(Contact c) {} }
+ContactStore store = new ContactStore();
+
 app.post("/contact/submit", req -> {
     Form.Bound<Contact> submitted = Form.bind(Contact.class, req);
     if (!submitted.ok()) {
@@ -325,6 +341,16 @@ is a ready-made stylesheet for them — put it in the head once and override wha
 Every element factory returns a `Tag`, which is itself fluent:
 
 ```java
+record Item(String name) {}
+class ItemView implements Template {
+    ItemView(Item item) {}
+    public Element render() { return li(); }
+}
+List<Item> list = List.of(new Item("Widget"));
+List<Item> users = list;
+boolean isAdmin = true;
+Tag adminBadge() { return span("Admin"); }
+
 div()
     .addClass("card")
     .data("id", "42")
@@ -345,6 +371,15 @@ element under a counter-based `jweb-N` class, are gone in 3.0.
 A `Template` is an `Element`, so components drop straight into a tree — no `.render()`:
 
 ```java
+class Head implements Template {
+    Head(String title) {}
+    public Element render() { return tag("head"); }
+}
+class Nav implements Template { public Element render() { return nav(); } }
+class Footer implements Template { public Element render() { return footer(); } }
+String title = "Page";
+Element content = div();
+
 html(new Head(title), body(new Nav(), main(content), new Footer()))
 ```
 
@@ -387,8 +422,10 @@ div(popover("manual"), id("pinned"), p("Stays until explicitly closed"))
 button(popovertarget("tips"), "Toggle tips")
 button(popovertarget("tips"), popovertargetaction("show"), "Show")
 
-// Actions, for when a button isn't the trigger
-import static jweb.el.PopoverElements.*;
+// Actions, for when a button isn't the trigger — a selective import: the
+// module's own popover(String) would otherwise collide with jweb.El's
+import static jweb.el.PopoverElements.showPopover;
+import static jweb.el.PopoverElements.hidePopover;
 div(onMouseEnter(showPopover("tips")), onMouseLeave(hidePopover("tips")), "Hover me")
 ```
 
@@ -471,6 +508,13 @@ negated. Branches take an `Element`, a `Supplier` lambda (only the taken branch 
 or a String (text):
 
 ```java
+class User { String getName() { return "Ada"; } }
+boolean isLoggedIn = true;
+User user = new User();
+int unread = 3;
+Element userMenu() { return div(); }
+Element loginButton() { return button("Log in"); }
+
 when(isLoggedIn, () -> span("Welcome, " + user.getName()))   // one branch
 when(isLoggedIn, userMenu(), loginButton())                  // two
 when(unread > 0, unread + " new", "All caught up")           // Strings are text
@@ -480,6 +524,9 @@ When a branch is long enough that the argument list stops reading, the chain say
 thing down the page. A chain without `otherwise(...)` is still an element:
 
 ```java
+boolean active = true;
+String name = "java";
+
 when(active)
     .then(span(cls("chip chip-on"), name))
     .otherwise(a(href("/tag/" + name), cls("chip"), name))
@@ -488,11 +535,17 @@ when(active)
 Several branches are what Java's `switch` expression is for:
 
 ```java
-switch (role) {
+enum Role { ADMIN, MODERATOR, GUEST }
+Role role = Role.GUEST;
+Element adminPanel() { return div("Admin"); }
+Element modPanel() { return div("Moderator"); }
+Element guestPanel() { return div("Guest"); }
+
+Element panel = switch (role) {
     case ADMIN -> adminPanel();
     case MODERATOR -> modPanel();
     default -> guestPanel();
-}
+};
 ```
 
 `null` children render nothing, so a conditional branch never needs a placeholder.
@@ -502,6 +555,12 @@ switch (role) {
 ## Collection Iteration & Fragments
 
 ```java
+class ListUser {
+    String getName() { return "Ada"; }
+    String getEmail() { return "ada@example.com"; }
+}
+List<ListUser> users = List.of(new ListUser());
+
 ul(each(users, user ->
     li(cls("user-item"),
         strong(user.getName()),
@@ -518,14 +577,17 @@ fragment(
 ## Error Boundaries
 
 ```java
+class RiskyComponent { Element render() { return div(); } }
+RiskyComponent riskyComponent = new RiskyComponent();
+
 errorBoundary(() -> riskyComponent.render(),
               error -> p("Error: " + error.getMessage()))
 tryCatch(() -> riskyComponent.render())   // silent empty fallback
 
 import jweb.ErrorBoundary;
-ErrorBoundary.of(() -> riskyComponent.render())
+ErrorBoundary.of((Supplier<Element>) () -> riskyComponent.render())
     .fallback(err -> div(cls("error"), p(err.getMessage())))
-    .onError(err -> Log.framework().error("render failed", err));
+    .onError(err -> System.err.println("render failed: " + err.getMessage()));
 ```
 
 ## Layout mixins (`jweb.Css`)
@@ -556,6 +618,6 @@ raw("<b>trusted html</b>")           // no escaping, use with care
 tag("custom-element", attrs().set("prop", "x"), span("child"))
 
 // Full-response raw payloads (from route handlers):
-RawContent.json("{\"ok\":true}")     // application/json response
-RawContent.html("<h1>hi</h1>")       // text/html response
+Response.ok().contentType("application/json").body("{\"ok\":true}")   // application/json response
+Response.html("<h1>hi</h1>")                                          // text/html response
 ```

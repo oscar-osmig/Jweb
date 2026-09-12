@@ -28,7 +28,7 @@ white, black, red, blue, green, yellow,
 gray, transparent, currentColor, inherit"""),
 
             h3Title("Using Colors"),
-            codeBlock("""
+            codeBlock("style", """
 .color(hex("#1e293b"))
 .backgroundColor(rgba(255, 255, 255, 0.9))
 .borderColor(hex("#e2e8f0"))

@@ -14,6 +14,12 @@ public final class StylingResponsive {
                  + "stylesheet."),
 
             codeBlock("""
+CSSValue SP_4 = rem(1);
+CSSValue SP_8 = rem(2);
+CSSValue GUTTER = rem(1.5);
+List<Element> cards = List.of();
+Element content = div();
+
 // On an inline style — the breakpoint gets a generated class,
 // the plain declarations stay inline
 h1(style()
@@ -74,7 +80,7 @@ String css = stylesheet()
 
             h3Title("Dark Mode"),
             para("Support dark color scheme."),
-            codeBlock("""
+            codeBlock("style", """
 // Detect system preference
 media().prefersDark()
     .rule(":root", style()
@@ -131,7 +137,7 @@ rule(".card-container")
     .containerName("card")
 
 // Query the container
-container("card").minWidth(px(400))
+ContainerQuery.container("card").minWidth(px(400))
     .rule(".card", style()
         .display(grid)
         .gridTemplateColumns(fr(1), fr(2)))

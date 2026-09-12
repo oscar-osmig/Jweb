@@ -14,6 +14,8 @@ public final class ElementsModern {
             h3Title("Dialog (Modal)"),
             para("Native modal dialogs with backdrop and close behavior, driven by Actions on jweb.El."),
             codeBlock("""
+void handleResult(Event e) {}
+
 // Define the dialog
 dialog(id("confirm-dialog"),
     h2("Confirm Action"),
@@ -180,6 +182,8 @@ p("Price: ", tag("data", value("99.99"), "$99.99"))"""),
             h3Title("Text Direction"),
             para("Control text direction for internationalization."),
             codeBlock("""
+String username = "jane_doe";
+
 // BDI - Bi-Directional Isolation
 // Isolates text that might have different direction
 p("User ", bdi(username), " posted this comment")

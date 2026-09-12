@@ -42,7 +42,7 @@ public final class PerformanceSection {
             para("The client runtime and prefetch script are served as external files with "
                  + "a content-hash version, so browsers cache them across every navigation "
                  + "and only the page HTML travels on each request."),
-            codeBlock("""
+            codeBlock("html", """
                     <script src="/jweb/runtime.js?v=67f7c91e"></script>
                     Cache-Control: max-age=31536000, public, immutable"""),
 

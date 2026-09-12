@@ -31,6 +31,13 @@ a(href("/home"), "Home")  // Just href"""),
             para("Add classes individually, conditionally, or as a list."),
             codeBlock("""
 // Add classes
+boolean isActive = true;
+boolean isDisabled = false;
+boolean isOpen = false;
+boolean expanded = true;
+record Product(boolean isFeatured, int getStock) {}
+Product product = new Product(true, 0);
+
 attrs().class_("btn").addClass("primary").addClass("lg")
 
 // Multiple classes at once
@@ -83,6 +90,11 @@ div(cardStyle, content)"""),
             h3Title("Layout Shortcuts"),
             para("Quick flexbox and grid setup."),
             codeBlock("""
+Element card1 = div("Card 1");
+Element card2 = div("Card 2");
+Element card3 = div("Card 3");
+List<String> products = List.of("Widget", "Gadget", "Gizmo");
+
 // Flexbox helpers
 attrs().flexCenter()              // Flex + center items
 attrs().flexColumn("1rem")        // Column with gap
@@ -101,7 +113,7 @@ div(attrs().flexRow("1rem"),
 )
 
 div(attrs().gridCols(3, "2rem"),
-    each(products, this::renderCard)
+    each(products, p -> div(p))
 )"""),
 
             h3Title("Data & ARIA Attributes"),
@@ -269,23 +281,36 @@ button(attrs().onClick(toggle("dropdown")), "Toggle")""")),
                 para("Handlers are plain element arguments — no attrs() bridge needed."),
                 codeBlock("""
 // Click handlers
+String id = "42";
 button(onClick(call("handleClick")), "Click")
 button(onClick(call("deleteItem", id)), "Delete")
 
 // Form events (server-side Java handlers)
+void handleSubmit(Event e) {}
+void updateValue(String value) {}
+void runSearch(String query) {}
+void showHint() {}
+void hideHint() {}
+
 form(onSubmit(e -> handleSubmit(e)))
 input(onChange(e -> updateValue(e.value())))
-input(onInput(e -> search(e.value())))
+input(onInput(e -> runSearch(e.value())))
 input(onFocus(e -> showHint()))
 input(onBlur(e -> hideHint()))
 
 // Mouse events
+void showTooltip() {}
+void hideTooltip() {}
+
 div(
     onMouseEnter(e -> showTooltip()),
     onMouseLeave(e -> hideTooltip())
 )
 
 // Keyboard events
+void handleKey(Event e) {}
+void handleKeyUp(Event e) {}
+
 input(onKeyDown(e -> handleKey(e)))
 input(onKeyUp(e -> handleKeyUp(e)))
 

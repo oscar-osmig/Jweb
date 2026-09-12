@@ -10,7 +10,7 @@ public final class StylingTypography {
         return section(
             h3Title("Typography"),
             para("Font and text styling properties."),
-            codeBlock("""
+            codeBlock("style", """
 // Font family
 .fontFamily("Inter, system-ui, sans-serif")
 .fontFamily("'Fira Code', monospace")
@@ -33,7 +33,7 @@ public final class StylingTypography {
 .letterSpacing(em(0.05))"""),
 
             h3Title("Text Properties"),
-            codeBlock("""
+            codeBlock("style", """
 // Text alignment
 .textAlign(center)   // left, center, right, justify
 
@@ -50,7 +50,7 @@ public final class StylingTypography {
 
 // Or individually
 .overflow(hidden)
-.prop("text-overflow", "ellipsis")
+.textOverflow("ellipsis")
 .whiteSpace(nowrap)
 
 // Word wrapping

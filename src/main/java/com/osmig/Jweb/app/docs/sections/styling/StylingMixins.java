@@ -16,7 +16,7 @@ public final class StylingMixins {
                 + "These are that, named. Each returns a Style, so it composes with "
                 + "apply(), with tokens, and with the conditional rules above."),
 
-            codeBlock("""
+            codeBlock("text", """
 row()                  // flex, items centred
 row(SP_4)              // …with a gap
 stack()                // flex column
@@ -82,7 +82,7 @@ style().color(Theme.color("text")).padding(Theme.space("4"))"""),
                 + "wins), and the same dark values under [data-theme=dark] so a toggle "
                 + "overrides the system setting in both directions."),
 
-            codeBlock("""
+            codeBlock("css", """
 :root{--color-text:#1e293b;--color-bg:#ffffff;…}
 @media (prefers-color-scheme: dark){
   :root:not([data-theme=light]){--color-text:#e2e8f0;--color-bg:#0f172a;}

@@ -16,18 +16,22 @@ import jweb.ValidationResult;
 import jweb.Validator;
 import jweb.Validators;
 
-ValidationResult result = FormValidator.create()
-    .field("email", request.formParam("email"))
-        .required()
-        .email()
-    .field("password", request.formParam("password"))
-        .required()
-        .minLength(8)
-    .validate();
+Object registerHandler(Request req) {
+    ValidationResult result = FormValidator.create()
+        .field("email", req.formParam("email"))
+            .required()
+            .email()
+        .field("password", req.formParam("password"))
+            .required()
+            .minLength(8)
+        .validate();
 
-if (result.hasErrors()) {
-    // Handle validation errors
-    return Response.badRequest(result.getAllErrors());
+    if (result.hasErrors()) {
+        // Handle validation errors
+        return Response.json(400, result.getAllErrors());
+    }
+
+    return Response.redirect("/welcome");
 }
 ```
 
@@ -36,54 +40,81 @@ if (result.hasErrors()) {
 ### Presence
 
 ```java
-.required()      // Field must have a value
-.notNull()       // Field must not be null
-.optional()      // Skip validation if empty
+String value = "example";
+
+FormValidator.create().field("x", value)
+    .required();       // Field must have a value
+
+Validators.notNull();  // Field must not be null — a Validator<String>, pair with .custom(...)
+
+FormValidator.create().field("x", value)
+    .optional();        // Skip validation if empty
 ```
 
 ### String Length
 
 ```java
-.minLength(8)              // Minimum 8 characters
-.maxLength(100)            // Maximum 100 characters
-.lengthBetween(8, 100)     // Between 8 and 100 characters
+String value = "example";
+
+FormValidator.create().field("x", value)
+    .minLength(8)              // Minimum 8 characters
+    .maxLength(100)            // Maximum 100 characters
+    .lengthBetween(8, 100);    // Between 8 and 100 characters
 ```
 
 ### Format
 
 ```java
-.email()         // Valid email format
-.url()           // Valid URL format
-.phone()         // Valid phone number
+String value = "example";
+
+FormValidator.create().field("x", value)
+    .email()         // Valid email format
+    .url()           // Valid URL format
+    .phone();        // Valid phone number
 ```
 
 ### Character Types
 
 ```java
-.numeric()       // Only digits
-.alpha()         // Only letters
-.alphanumeric()  // Letters and digits only
+String value = "example";
+
+FormValidator.create().field("x", value)
+    .numeric()       // Only digits
+    .alpha()         // Only letters
+    .alphanumeric(); // Letters and digits only
 ```
 
 ### Custom Patterns
 
 ```java
-.pattern("^[A-Z]{2}\\d{4}$", "Must be 2 letters followed by 4 digits")
+String value = "example";
+
+FormValidator.create().field("x", value)
+    .pattern("^[A-Z]{2}\\d{4}$", "Must be 2 letters followed by 4 digits");
 ```
 
 ### Numeric Ranges
 
 ```java
-.min(0)          // Minimum value
-.max(100)        // Maximum value
-.range(1, 10)    // Between 1 and 10
-.positive()      // Greater than 0
-.negative()      // Less than 0
+// FormValidator's field chain validates Strings and has no numeric-range
+// methods; min/max/range/positive/negative are Validator<Number> factories
+// on Validators instead — compose them with .and(...) (see "Composing
+// Validators" below) or hand one to .custom(...) once a field's value is
+// parsed to a number.
+Validators.min(0);          // Minimum value
+Validators.max(100);        // Maximum value
+Validators.range(1, 10);    // Between 1 and 10
+Validators.positive();      // Greater than 0
+Validators.negative();      // Less than 0
 ```
 
 ## Validation Result
 
 ```java
+// var here — the lambda-configured field(...) overload currently returns
+// FormValidator's internal supertype, not the jweb.FormValidator create() gave you
+var validator = FormValidator.create()
+    .field("email", req.formParam("email"), f -> f.required().email());
 ValidationResult result = validator.validate();
 
 // Check if valid
@@ -106,7 +137,10 @@ if (result.hasErrors()) {
 
 ## Form Validation Example
 
-```java
+record RegisterPage(Map<String, List<String>> errors) implements Template {
+    public Element render() { return div("Register"); }
+}
+
 app.post("/register", req -> {
     ValidationResult result = FormValidator.create()
         .field("username", req.formParam("username"))
@@ -122,12 +156,12 @@ app.post("/register", req -> {
             .minLength(8)
         .field("confirmPassword", req.formParam("confirmPassword"))
             .required()
-            .custom(val -> val.equals(req.formParam("password")),
+            .check(val -> val.equals(req.formParam("password")),
                 "Passwords must match")
         .field("age", req.formParam("age"))
             .optional()
             .numeric()
-            .min(18)
+            .check(val -> Integer.parseInt(val) >= 18, "Must be 18 or older")
         .validate();
 
     if (result.hasErrors()) {
@@ -144,7 +178,12 @@ app.post("/register", req -> {
 ### Inline Custom Validation
 
 ```java
-.custom(value -> isUnique(value), "Username already taken")
+boolean isUnique(String value) { return true; }
+
+// custom(...) takes a Validator<String> directly; a predicate + message goes
+// through check(...) instead
+FormValidator.create().field("username", req.formParam("username"))
+    .check(value -> isUnique(value), "Username already taken");
 ```
 
 ### Reusable Validators
@@ -157,7 +196,7 @@ Validator<String> usernameValidator = Validator.of(
 
 FormValidator.create()
     .field("username", req.formParam("username"))
-        .apply(usernameValidator)
+        .custom(usernameValidator)
 ```
 
 ### Composing Validators
@@ -181,7 +220,7 @@ For an API route, throwing carries the messages to the error middleware, which
 turns them into a 422 with the field errors in the body:
 
 ```java
-import com.osmig.Jweb.framework.error.ValidationException;   // no short name yet
+import jweb.ValidationException;
 
 app.post("/api/users", req -> {
     ValidationResult result = FormValidator.create()
@@ -191,6 +230,7 @@ app.post("/api/users", req -> {
     if (result.hasErrors()) throw new ValidationException(result);
 
     // Process valid data...
+    return Response.json(Map.of("status", "created"));
 });
 ```
 
@@ -201,20 +241,31 @@ instead of an error page.
 ## JSON API Validation
 
 ```java
+record User(String email, String name) {}
+class UserService { User save(User u) { return u; } }
+UserService userService = new UserService();
+com.fasterxml.jackson.databind.ObjectMapper json = new com.fasterxml.jackson.databind.ObjectMapper();
+
+// Request has no typed bodyAs(...) yet, so parse the raw body yourself
 app.post("/api/users", req -> {
-    User user = req.bodyAs(User.class);
+    User user;
+    try {
+        user = json.readValue(req.body(), User.class);
+    } catch (Exception e) {
+        return Response.error(400, "Invalid JSON");
+    }
 
     ValidationResult result = FormValidator.create()
-        .field("email", user.getEmail())
+        .field("email", user.email())
             .required()
             .email()
-        .field("name", user.getName())
+        .field("name", user.name())
             .required()
             .minLength(2)
         .validate();
 
     if (result.hasErrors()) {
-        return Response.json(HttpStatus.BAD_REQUEST, Map.of(
+        return Response.json(400, Map.of(
             "error", "Validation failed",
             "fields", result.getAllErrors()
         ));
@@ -232,6 +283,7 @@ gets its message, `aria-invalid`, a summary, and the value the user typed:
 ```java
 public record Register(@Form.Required @Form.Email String email) {}
 
+Form.Bound<Register> bound = Form.bind(Register.class, req);
 form(Register.class).action("/register").errors(bound).submit("Register")
 ```
 

@@ -32,6 +32,11 @@ State<Integer> named = StateManager.createState("cart-count", 0);
 ### Using state
 
 ```java
+class Log { static Logger framework() { return new Logger(); } static class Logger { void info(String f, Object... a) {} } }
+State<Integer> count = useState(0);
+State<List<Integer>> items = useState(new ArrayList<>());
+int x = 1;
+
 count.get();                 // read
 count.set(5);                // write (no-op if value unchanged); marks dirty; notifies
 count.update(n -> n + 1);    // transform — returning the same instance (a list you added to) still notifies
@@ -44,6 +49,10 @@ count.toJson();              // {"id":"state_1","value":5}
 ### Hooks
 
 ```java
+class Log { static Logger framework() { return new Logger(); } static class Logger { void info(String f, Object... a) {} } }
+State<Integer> price = useState(10);
+State<Integer> qty = useState(2);
+
 // Computed state — re-evaluates whenever a dependency changes
 State<Integer> total = useComputed(
     () -> price.get() * qty.get(), price, qty);
@@ -70,6 +79,22 @@ wildcards coexist.
 import static jweb.El.*;
 import static jweb.State.*;
 
+record Person(String name) {}
+record Todo(String text) {}
+List<Todo> visible(List<Todo> list, String f) { return list; }
+
+State<Integer> clicks = useState(0);
+State<String> name = useState("");
+State<Boolean> saving = useState(false);
+State<Boolean> active = useState(true);
+Runnable save = () -> saving.set(false);
+State<List<Integer>> items = useState(new ArrayList<>());
+State<Person> user = useState(new Person("Ada"));
+State<List<Todo>> todos = useState(new ArrayList<>());
+State<String> filter = useState("all");
+State<String> first = useState("Ada");
+State<String> last = useState("Lovelace");
+
 // Text: bind renders the value AND patches it on every change
 p("Clicks: ", span(bind(clicks)))               // <span data-state-bind="state_1">0</span>
 span(bind(clicks), "Total: " + clicks.get())    // other content? then bind is just the attribute
@@ -78,7 +103,7 @@ span(bind(clicks), "Total: " + clicks.get())    // other content? then bind is j
 input(type("text"), bindInput(name))
 
 // Attribute and class, by truthiness (true / non-zero / non-empty set it; false / 0 / "" / null clear it)
-button(bindAttr(saving, "disabled"), onClick(e -> save()), "Save")
+button(bindAttr(saving, "disabled"), onClick(e -> save.run()), "Save")
 li(bindClass(active, "on"), class_("tab"), "Home")   // put bindClass before class_(...)
 
 // A region: re-rendered on the server from the state, morphed into the page
@@ -113,6 +138,8 @@ The client contract, for reference:
 `data-state-bind`; `bind(state)` renders the value itself, so a live counter is one line:
 
 ```java
+State<Integer> clicks = useState(0);
+
 p("Clicks: ", span(bind(clicks)))
 button(onClick(e -> clicks.update(n -> n + 1)), "Click me")
 ```
@@ -122,6 +149,8 @@ of a state and listens for those patches without touching the event by hand:
 
 ```java
 import static jweb.Js.*;
+
+State<Integer> clicks = useState(0);
 
 syncState(clicks)                                     // a Val — JWeb.getState('state_1')
 button(onClick(setText("total", syncState(clicks).plus(1))), "+1")
@@ -137,6 +166,8 @@ The whole protocol lives in one runtime function (`initLive`) and one server cla
 Attach Java lambdas to DOM events; the framework registers them and renders a JS call:
 
 ```java
+State<Integer> count = useState(0);
+
 button(onClick(e -> count.update(n -> n + 1)), "Increment")
 // renders: <button onclick="JWeb.call('h_1_9f3c2a…', event)">Increment</button>
 ```
@@ -247,6 +278,12 @@ import jweb.SseEmitter;
 import jweb.SseBroadcaster;
 import jweb.SseEvent;
 
+Object payload = Map.of("count", 1);
+Object obj = Map.of("count", 1);
+Object data = Map.of("count", 1);
+SseEvent event = SseEvent.of("Breaking!");
+boolean someCondition = true;
+
 SseBroadcaster broadcaster = new SseBroadcaster();       // 15s heartbeat comments
 SseBroadcaster quiet = new SseBroadcaster(0);            // heartbeat disabled
 
@@ -269,6 +306,8 @@ broadcaster.getSubscriberCount(); broadcaster.shutdown();
 > streaming. Spring `@RestController`s work too.
 
 ```java
+SseBroadcaster broadcaster = new SseBroadcaster();
+
 // JWeb router route
 app.get("/events", req -> {
     SseEmitter emitter = SseEmitter.create(0);   // 0 = no timeout
@@ -285,10 +324,13 @@ Client side, use `sse("/api/v1/events").onMessage(...).build()` from the JS DSL
 ```java
 import jweb.Transition;
 
+boolean isVisible = true;
+Element content = div();
+
 // Conditional show/hide with enter animation classes
 Transition.when(isVisible)
     .enter("jweb-fade-enter", 300)
-    .render(() -> modal())
+    .render(() -> content)
 
 Transition.fade(isVisible, () -> content);       // presets: fade, slideDown, scale
 style(Transition.css());                          // emits the .jweb-fade-*/-slide-*/-scale-* rules
@@ -331,6 +373,7 @@ Portal.toast(content);     // "toasts"
 
 Type-safe element references whose methods are `Action`s, so they plug into any handler:
 
+<!-- nocompile: Ref has no jweb.* alias yet (framework.ref.Ref only), and a docs sample may not name a long framework package -->
 ```java
 Ref inputRef = Ref.create();          // id "jweb-ref-<n>"; or Ref.of("existing-id")
 
@@ -415,6 +458,16 @@ architecture doc.
 import jweb.Suspense;
 import static jweb.Suspense.*;
 
+record User(String name) { String getName() { return name; } }
+class UserService { List<User> getUsers() { return List.of(); } }
+UserService userService = new UserService();
+UserService slowApi = new UserService();
+Element userList(List<User> users) { return ul(each(users, u -> li(u.getName()))); }
+Supplier<Integer> loader = () -> 1;
+var loadingElement = UI.spinner();
+Function<Integer, Element> contentFn = n -> div(String.valueOf(n));
+Function<Throwable, Element> errorFn = e -> UI.errorAlert(e.getMessage());
+
 // Blocking (default): loader runs inline during render
 Suspense.of(() -> userService.getUsers())
     .loading(() -> UI.spinner())                  // shown only in non-blocking timeout mode
@@ -438,6 +491,22 @@ suspendSilent(loader, contentFn);                 // render nothing on failure
 ## Background Jobs (`async/Jobs`, `async/Scheduler`)
 
 ```java
+import java.util.concurrent.CompletableFuture;
+
+class Log { static Logger framework() { return new Logger(); } static class Logger { void info(String f, Object... a) {} void error(String f, Object... a) {} } }
+record User(String email) {}
+record Report(String body) {}
+User user = new User("a@b.com");
+void sendEmail(User u) {}
+Report generateReport() { return new Report(""); }
+Report doImport() { return new Report(""); }
+void sendReminder() {}
+void cleanupTempFiles() {}
+void generateDailyReport() {}
+void cleanupFiles() {}
+void sendDigest() {}
+void sync() {}
+
 // Fire-and-forget on virtual threads
 Jobs.run(() -> sendEmail(user));
 CompletableFuture<Report> f = Jobs.submit(() -> generateReport());
@@ -454,7 +523,10 @@ Jobs.cleanupCompletedTasks();    // call periodically — the task map is not se
 // Simple scheduling
 Jobs.delay(Duration.ofSeconds(30), () -> sendReminder());
 Jobs.schedule("cleanup", Duration.ofMinutes(5), () -> cleanupTempFiles());
+```
 
+<!-- nocompile: Scheduler has no jweb.* alias yet (framework.async.Scheduler only), and a docs sample may not name a long framework package -->
+```java
 // Cron scheduling (5-field: min hour dom month dow, 0=Sunday; supports * , - /)
 Scheduler.cron("daily-report", "0 9 * * *", () -> generateDailyReport());
 Scheduler.job("cleanup").cron("0 3 * * *").timezone("America/New_York")
@@ -470,9 +542,16 @@ Scheduler.getAllJobs();          // List<JobInfo(name, schedule, paused, lastRun
 ## Cache (`cache/Cache`)
 
 ```java
-Cache<String, User> users = Cache.create(Duration.ofMinutes(10));
-Cache<String, Object> global = Cache.global();            // shared singleton, 5-min default TTL
-Cache<String, Report> reports = Cache.named("reports", Duration.ofHours(1));
+import jweb.Cache;                                        // Js.Cache (a JS runtime module) collides otherwise
+
+record User(String name) {}
+record Report(String body) {}
+static User user = new User("Ada");
+static User load(String id) { return user; }
+
+var users = Cache.<String, User>create(Duration.ofMinutes(10));
+var global = Cache.<Object>global();                      // shared singleton, 5-min default TTL
+var reports = Cache.<String, Report>named("reports", Duration.ofHours(1));
 
 users.set("42", user);
 users.set("42", user, Duration.ofMinutes(1));             // per-entry TTL

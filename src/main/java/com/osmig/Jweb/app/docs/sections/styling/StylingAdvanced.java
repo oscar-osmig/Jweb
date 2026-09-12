@@ -9,7 +9,7 @@ public final class StylingAdvanced {
     public static Element render() {
         return section(
             h3Title("Borders & Shadows"),
-            codeBlock("""
+            codeBlock("style", """
 // Borders
 .border(px(1), solid, hex("#e2e8f0"))
 .borderTop(px(2), solid, hex("#6366f1"))
@@ -24,7 +24,7 @@ public final class StylingAdvanced {
 .boxShadow("0 1px 2px rgba(0,0,0,0.05), 0 4px 6px rgba(0,0,0,0.1)")"""),
 
             h3Title("Transforms & Transitions"),
-            codeBlock("""
+            codeBlock("style", """
 // Transforms
 .transform(translateY(px(-2)))
 .transform(scale(1.05))
@@ -38,7 +38,7 @@ public final class StylingAdvanced {
 .transitionTimingFunction(easeOut)"""),
 
             h3Title("Positioning"),
-            codeBlock("""
+            codeBlock("style", """
 // Position types
 .position(relative)
 .position(absolute)

@@ -120,9 +120,12 @@ when(isLoggedIn)
     .otherwise(button("Login"))
 
 // Combining iteration with conditionals
+record User(String name, boolean isAdmin) {}
+List<User> users = List.of(new User("Ada", true), new User("Bob", false));
+
 ul(each(users, user ->
     li(
-        span(user.getName()),
+        span(user.name()),
         when(user.isAdmin(), () -> span(class_("badge"), "Admin"))
     )
 ))
@@ -133,6 +136,11 @@ ul(each(users, user ->
 ## Level 5: Event Handlers
 
 ```java
+// Handlers named below (they'd normally live on the enclosing Template)
+State<String> searchTerm = useState("");
+void handleSubmit(Map<String, String> formData) {}
+void doSearch() {}
+
 // Click handler
 button(attrs()
     .class_("btn")
@@ -188,10 +196,12 @@ public class CounterPage implements Template {
 
 ```java
 public class ShoppingCart implements Template {
+    record Item(String name, double price) {}
+
     private final State<List<Item>> items = useState(new ArrayList<>());
     private final State<Double> total = useComputed(
         () -> items.get().stream()
-            .mapToDouble(Item::getPrice)
+            .mapToDouble(Item::price)
             .sum(),
         items  // dependency
     );
@@ -208,7 +218,7 @@ public class ShoppingCart implements Template {
         return div(
             h2("Shopping Cart"),
             ul(each(items.get(), item ->
-                li(item.getName() + " - $" + item.getPrice())
+                li(item.name() + " - $" + item.price())
             )),
             p(strong("Total: $" + total.get()))
         );
@@ -277,15 +287,10 @@ public class Card implements Template {
             fragment(children)
         );
     }
-
-    // Factory method for fluent API
-    public static Card card(String title, Element... children) {
-        return new Card(title, children);
-    }
 }
 
 // Usage
-card("User Profile",
+new Card("User Profile",
     p("Name: John Doe"),
     p("Email: john@example.com"),
     button("Edit Profile")
@@ -298,6 +303,10 @@ card("User Profile",
 
 ```java
 // Stylesheet rules
+// cls() here is jweb.css.Selectors.cls() — kept qualified because the plain
+// name is already the class-attribute helper under El.*
+import jweb.css.Selectors;
+
 String styles = styles(
     rule("*").boxSizing(borderBox),
 
@@ -313,7 +322,7 @@ String styles = styles(
         .cursor(pointer)
         .transition(all, s(0.2), ease),
 
-    rule(cls("btn").hover())
+    rule(Selectors.cls("btn").hover())
         .transform(translateY(px(-2)))
         .boxShadow(px(0), px(4), px(12), rgba(0, 0, 0, 0.15)),
 
@@ -321,7 +330,7 @@ String styles = styles(
         .backgroundColor(hex("#3b82f6"))
         .color(white),
 
-    rule(cls("btn-primary").hover())
+    rule(Selectors.cls("btn-primary").hover())
         .backgroundColor(hex("#2563eb"))
 );
 
@@ -338,6 +347,15 @@ rule(".grid")
 
 ```java
 public class TodoApp implements Template {
+    static final class Todo {
+        private final String text;
+        private boolean done;
+        Todo(String text) { this.text = text; }
+        String text() { return text; }
+        boolean done() { return done; }
+        void setDone(boolean done) { this.done = done; }
+    }
+
     private final State<List<Todo>> todos = useState(new ArrayList<>());
     private final State<String> newTodo = useState("");
     private final State<String> filter = useState("all");
@@ -556,6 +574,9 @@ form(RegisterForm.class)
     .submit("Register")
 
 // Handle — bind, then either use the value or re-render with the errors
+class UserService { void create(RegisterForm form) {} }
+UserService userService = new UserService();
+
 app.post("/register", req -> {
     Form.Bound<RegisterForm> bound = Form.bind(RegisterForm.class, req);
     if (!bound.ok()) {
@@ -613,6 +634,12 @@ button(attrs()
 )
 
 // Stacking conditions on a base class
+boolean isSuccess = false;
+boolean isError = false;
+boolean isWarning = true;
+boolean shouldAnimate = true;
+String message = "Settings saved";
+
 div(attrs()
         .cls("notification")
         .classIf(isSuccess, "success")
@@ -623,7 +650,7 @@ div(attrs()
 )
 
 // Complex conditional styling
-List<String> items = getItems();
+List<String> items = List.of("Apple", "Banana", "Cherry");
 div(attrs()
         .cls("list")
         .classIf(items.isEmpty(), "empty")
@@ -644,6 +671,8 @@ div(classes("list", when(items.isEmpty(), "empty"), when(items.size() == 1, "sin
 ## Level 15: CSS Feature Queries (@supports)
 
 ```java
+import static jweb.css.Supports.*;
+
 // Progressive enhancement with @supports.
 // styles(...) only takes rule() builders — join the @supports blocks
 // (each .build() returns a String) alongside it:
@@ -701,12 +730,12 @@ String css = String.join("\n",
 ## Level 16: Nested CSS
 
 ```java
-// Modern CSS nesting — CSSNested.rule(), kept qualified because it clashes
-// with CSS.rule(). Child rules open with .nest("...") (use & for the parent)
-// and close with .parent() (or .root() to jump all the way back up).
+// Modern CSS nesting — CSSNested.nest(), kept qualified because it clashes
+// with CSS.rule(). Child rules open with another .nest("...") (use & for the
+// parent) and close with .parent() (or .root() to jump all the way back up).
 import jweb.css.CSSNested;
 
-String styles = CSSNested.rule(".card")
+String styles = CSSNested.nest(".card")
     .prop("padding", "1.5rem")
     .prop("background", "#fff")
     .prop("border-radius", "12px")
@@ -838,7 +867,9 @@ public class DashboardScripts {
 ## Level 18: Async/Await & Fetch Builder
 
 ```java
-// Async operations with proper error handling
+// Async operations with proper error handling — chained onto an actions()
+// builder, same as Level 17
+actions()
 .add(asyncFunc("submitOrder")
     .params("orderId")
     .does(
@@ -895,7 +926,8 @@ public class DashboardScripts {
 ## Level 19: DOM Query Builder
 
 ```java
-// Type-safe DOM queries
+// Type-safe DOM queries — chained onto an actions() builder, same as Level 17
+actions()
 .add(define("updateUI")
     .does(
         // Single element query
@@ -935,7 +967,15 @@ public class DashboardScripts {
 ```java
 // Request is jweb.Request; the title/description/head/script hooks return Optionals.
 public class AdvancedPage implements Template {
-    private final UserService userService;
+    record User(String id, String name) {}
+    record Notification(String id, String text) {}
+    static final class UserService {
+        User getCurrentUser(Request request) { return new User("1", "Ada"); }
+        List<Notification> getNotifications(String userId) { return List.of(); }
+        void markNotificationsSeen(String userId) {}
+    }
+
+    private final UserService userService = new UserService();
     private User user;
     private List<Notification> notifications;
 
@@ -943,20 +983,20 @@ public class AdvancedPage implements Template {
     @Override
     public void beforeRender(Request request) {
         user = userService.getCurrentUser(request);
-        notifications = userService.getNotifications(user.getId());
+        notifications = userService.getNotifications(user.id());
     }
 
     // Called after render - cleanup
     @Override
     public void afterRender(Request request) {
         // Mark notifications as seen
-        userService.markNotificationsSeen(user.getId());
+        userService.markNotificationsSeen(user.id());
     }
 
     // Page title for <title> tag (merged in by layouts); null keeps the default
     @Override
     public String pageTitle() {
-        return user != null ? "Dashboard - " + user.getName() : "Dashboard";
+        return user != null ? "Dashboard - " + user.name() : "Dashboard";
     }
 
     // Meta description for SEO; null emits none
@@ -975,11 +1015,19 @@ public class AdvancedPage implements Template {
         ));
     }
 
+    private String customStyles() {
+        return ".dashboard { padding: 2rem; }";
+    }
+
     // Inline script code appended at the end of <body>
     // (an Action — an actions() builder is one)
     @Override
     public Optional<Action> scripts() {
         return Optional.of(dashboardHandlers());
+    }
+
+    private Action dashboardHandlers() {
+        return actions();
     }
 
     // Disable caching for user-specific content
@@ -992,13 +1040,17 @@ public class AdvancedPage implements Template {
     public Element render() {
         return div(class_("dashboard"),
             header(
-                h1("Welcome, " + user.getName()),
+                h1("Welcome, " + user.name()),
                 span(class_("notification-badge"), String.valueOf(notifications.size()))
             ),
             main(
                 each(notifications, n -> notificationCard(n))
             )
         );
+    }
+
+    private Element notificationCard(Notification n) {
+        return div(class_("notification"), n.text());
     }
 
     // Client-side mount/unmount hooks (for script generation)
@@ -1052,6 +1104,11 @@ div(class_("showcase"),
 Server-side click handlers use the same event pipeline as any element:
 
 ```java
+import static jweb.Three.*;
+import static jweb.State.*;
+
+State<Integer> rolls = useState(0);
+
 box().name("die").onClick(e -> rolls.set(rolls.get() + 1))
 ```
 

@@ -14,6 +14,14 @@ public final class RoutingBasics {
             codeBlock("""
 import jweb.api.Component;
 
+record User(String name) {}
+class Users { User find(long id) { return new User("Guest"); } }
+private Users users = new Users();
+class HomePage implements Template { public Element render() { return div(); } }
+class AboutPage implements Template { public Element render() { return div(); } }
+class ContactPage implements Template { public Element render() { return div(); } }
+class DocsPage implements Template { public Element render() { return div(); } }
+
 @Component
 public class Routes implements JWebRoutes {
     public void configure(JWeb app) {

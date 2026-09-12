@@ -50,6 +50,8 @@ Mechanics worth knowing:
 ## Application Entry Point
 
 ```java
+import org.springframework.boot.SpringApplication;
+
 @JWebApplication  // = @SpringBootApplication + @PropertySource("classpath:jweb.yaml");
                   //   framework beans arrive via auto-configuration (JWebAutoConfiguration
                   //   carries @ComponentScan("com.osmig.Jweb.framework"))
@@ -182,6 +184,12 @@ A layout is a `Template` whose constructor accepts the page content. The control
 `(String title, Element content)` constructor first, then `(Element content)`:
 
 ```java
+class Head implements Template { String title; Head(String title) { this.title = title; } public Element render() { return head(title(title)); } }
+class Nav implements Template { public Element render() { return nav(); } }
+class Footer implements Template { public Element render() { return footer(); } }
+class HomePage implements Template { public Element render() { return div(); } }
+class AboutPage implements Template { public Element render() { return div(); } }
+
 public class Layout implements Template {
     private final String title;
     private final Element content;
@@ -208,6 +216,7 @@ app.layout(Layout.class)
 
 ## JWeb API (route registration)
 
+<!-- nocompile: API index — method signatures without bodies, not real statements -->
 ```java
 JWeb app = JWeb.create();                          // done for you by auto-config
 
@@ -317,6 +326,7 @@ Map<String, String> headers = req.headers();    // first value per name
 String body = req.body();                       // raw body, read verbatim (cached)
 
 // There is NO req.bodyAs(Class) — deserialize with the Json utility:
+record User(String name) {}
 User user = Json.parse(req.body(), User.class);
 
 String name = req.formParam("name");
@@ -326,11 +336,14 @@ Map<String, String[]> form = req.formParams();
 **Cookies, session, attributes:**
 
 ```java
+import jakarta.servlet.http.HttpSession;
+
+Object value = "example";
 String token = req.cookie("auth_token");
 Map<String, String> cookies = req.cookies();
 HttpSession session = req.session();            // creates; session(false) does not
-T val = req.sessionAttr("user");  req.sessionAttr("user", value);
-T attr = req.attr("key");         req.attr("key", value);   // request-scoped
+String val = req.sessionAttr("user");  req.sessionAttr("user", value);
+String attr = req.attr("key");         req.attr("key", value);   // request-scoped
 ```
 
 **Request/client info:**
@@ -348,6 +361,12 @@ req.raw();           // escape hatch: HttpServletRequest
 All factories return Spring `ResponseEntity` values:
 
 ```java
+import org.springframework.http.HttpStatus;
+
+Element element = div();
+String htmlString = "<p>Hi</p>";
+Object object = Map.of("key", "value");
+
 // HTML
 Response.html(element)                          // 200, rendered Element
 Response.html(htmlString)
@@ -394,6 +413,9 @@ Response.error(418, "..")
 ## Health & Metrics
 
 ```java
+List<Object> queue = new ArrayList<>();
+void renderReport() {}
+
 Health.register("db", () -> HealthStatus.up("connected").withDetail("latencyMs", 4));
 Health.registerLiveness("app", () -> HealthStatus.up());
 Health.setupEndpoints(app);      // GET /health, /health/live, /health/ready (200/503 JSON)
@@ -410,6 +432,13 @@ Metrics middleware sees page-route and 404 traffic too (everything runs through 
 ## Server-side HTTP Client (`http/Fetch`)
 
 ```java
+import java.util.concurrent.CompletableFuture;
+
+record User(String id) {}
+String token = "abc123";
+String url = "https://api.example.com/users";
+Object payload = Map.of("name", "Ada");
+
 FetchResult res = Fetch.get("https://api.example.com/users")
     .bearer(token)
     .timeout(Duration.ofSeconds(10))
@@ -432,7 +461,12 @@ CompletableFuture<FetchResult> f = Fetch.get(url).sendAsync();
 Thread-local dependency passing without prop drilling:
 
 ```java
+record User(String name) {}
+class Page { Element render() { return div("Home"); } }
 static final ContextKey<User> CURRENT_USER = Context.key("currentUser");
+Page page = new Page();
+User user = new User("Ada");
+User guest = new User("Guest");
 
 Context.provide(CURRENT_USER, user, () -> page.render());   // scoped provide
 User u = Context.use(CURRENT_USER);                          // throws if absent

@@ -11,6 +11,18 @@ public final class CondWhen {
             h3Title("when() - Conditional Display"),
             para("Show elements only when a condition is true."),
             codeBlock("""
+class CurrentUser {
+    String getAvatar() { return "/avatar.png"; }
+    String getName() { return "Ada"; }
+}
+class Cart {
+    boolean hasItems() { return true; }
+    int getItemCount() { return 3; }
+}
+boolean isLoggedIn = true;
+CurrentUser user = new CurrentUser();
+Cart cart = new Cart();
+
 // Basic when
 when(isLoggedIn, () -> span("Welcome back!"))
 
@@ -54,6 +66,13 @@ div(
                 para("A one-sided when() takes a negated condition; two branches are one " +
                      "call, so the predicate is never written twice."),
                 codeBlock("""
+boolean isLoggedIn = true;
+List<String> items = List.of("Apple", "Banana");
+Element emptyState() { return div("No items"); }
+Element itemList(List<String> list) { return ul(each(list, item -> li(item))); }
+Element userMenu() { return div("Menu"); }
+Element loginButton() { return button("Log in"); }
+
 // Show login link when NOT logged in
 when(!isLoggedIn, a(href("/login"), "Please log in"))
 
@@ -68,6 +87,11 @@ when(isLoggedIn, userMenu(), loginButton())""")),
                 para("A String branch is text, so when() also composes class names: " +
                      "classes(...) joins its parts and skips the ones that did not match."),
                 codeBlock("""
+int unread = 3;
+boolean active = true;
+String tag = "java";
+String url = "/tag/java";
+
 // Text
 span(when(unread > 0, unread + " new", "All caught up"))
 

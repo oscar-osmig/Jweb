@@ -13,6 +13,8 @@ public final class LayoutsI18n {
             codeBlock("""
 import jweb.I18n;
 
+String username = "John";
+
 // Get translated message
 String title = I18n.t("page.title");
 
@@ -22,7 +24,7 @@ String greeting = I18n.t("welcome", username);
 
             h3Title("Message Files"),
             para("Create message files in src/main/resources/messages/:"),
-            codeBlock("""
+            codeBlock("properties", """
 // messages_en.properties
 page.title=Welcome
 nav.home=Home
@@ -87,6 +89,8 @@ form(method("post"), action("/language"),
 
             h3Title("Switch Language"),
             codeBlock("""
+import jweb.http.Cookie;
+
 // Via session
 app.post("/language", req -> {
     String lang = req.formParam("lang");
@@ -94,10 +98,13 @@ app.post("/language", req -> {
     return Response.redirect(req.header("Referer"));
 });
 
-// Via cookie (persistent)
-Cookie.of("lang", lang)
-    .maxAge(Duration.ofDays(365))
-    .addTo(response);"""),
+// Via cookie (persistent) — the builder renders the Set-Cookie value
+app.post("/language/cookie", req -> Response.status(204)
+    .header("Set-Cookie", Cookie.of("lang", req.formParam("lang"))
+        .maxAge(Duration.ofDays(365))
+        .path("/")
+        .toHeaderValue())
+    .build());"""),
 
             docTip("Use nativeName() in language pickers - users recognize their language better.")
         );

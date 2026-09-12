@@ -11,6 +11,8 @@ public final class CompComposition {
             h3Title("Component Composition"),
             para("Build complex UIs by composing smaller components."),
             codeBlock("""
+record User(String getAvatar, String getName) {}
+
 // Small, focused components
 public class Avatar implements Template {
     private final String src, alt;
@@ -42,6 +44,19 @@ public class UserBadge implements Template {
 
             h3Title("Component Reuse"),
             codeBlock("""
+record User(String getAvatar, String getName) {}
+class Logo implements Template { public Element render() { return img("/logo.png", "Logo"); } }
+class Navigation implements Template { public Element render() { return nav(a(href("/"), "Home")); } }
+record UserBadge(User user) implements Template {
+    public Element render() { return div(class_("user-badge"), user.getName()); }
+}
+User currentUser = new User("/a.png", "Ada");
+record Comment(User getAuthor, String getText, String getCreatedAt) {}
+List<Comment> comments = List.of(new Comment(currentUser, "Nice!", "2026-01-01"));
+record Timestamp(String value) implements Template {
+    public Element render() { return span(class_("timestamp"), value); }
+}
+
 // Reusable across the app
 header(
     new Logo(),

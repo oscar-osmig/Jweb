@@ -25,8 +25,9 @@ browser-API module (`JSCanvas`, `JSClipboard`, `JSCrypto`, `JSStorage`, ...) liv
 ```java
 import static jweb.Js.*;
 import static jweb.js.JSStorage.*;
+import jweb.js.JSStorage;
 
-local().set("token", "abc123")
+JSStorage.local().set("token", "abc123")
 ```
 
 `Js.*` does not re-export any module. It did briefly (ten of them, during the 3.0 pass), and
@@ -62,7 +63,7 @@ and `delay(ms)`.
 button(onClick(reload()), "Retry")
 button(onClick(toggle("panel")), "Menu")
 button(onClick(Toast.success("Saved!")), "Save")      // typed Toast actions
-button(onClick(inputRef.focus()), "Focus")            // Ref methods are Actions
+button(onClick(dom("#search-input").focus()), "Focus")   // dom(...) methods are Actions too
 ```
 
 ## Handlers take a `Func`, and `does(...)` fills it
@@ -84,8 +85,9 @@ The same `does(...)` is on `actions()`, `script()`, `iife()`, `guard()` and
 Statements that used to need raw JS:
 
 ```java
-preventDefault(); stopPropagation(); stopImmediatePropagation()  // on the callback's event, named e
-return_(); return_(value)                                        // early return
+preventDefault(); stopPropagation(); stopImmediatePropagation(); // on the callback's event, named e
+Object value = "x";
+return_(); return_(value);                                       // early return
 if_(v("stale").eq(true), return_())                              // a guard, anywhere a statement goes
 ```
 
@@ -130,11 +132,12 @@ scrollSpy("#toc", "h2, h3")
 lineGutter("#editor", "#lines").mirror("#mirror").errorClass("errline")
 splitPane("#gutter", "#code").container("#split").minPercent(20).maxPercent(80).persist("split")
 resizeToContent("textarea.grow")
-relineGutter("#editor"); markLine("#editor", v("n")); insertText("#editor", "    ")
+relineGutter("#editor"); markLine("#editor", v("n")); insertText("#editor", "    ");
 
 // The client's copy of a server State
-syncState(count)                               // a Val — JWeb.getState('<id>')
-onStateChange(count, callback("now", "before").log(v("now")))
+State<Integer> count = useState(0);
+syncState(count.getId())                       // a Val — JWeb.getState('<id>')
+onStateChange(count.getId(), callback("now", "before").log(v("now")))
 ```
 
 `prefetch(...)` and `navigate(...).cache(ttl)` share one store, so a link warmed on hover
@@ -158,8 +161,8 @@ customElement("user-card")
     .attributeChanged(callback("name", "oldValue", "newValue")
         .does(dom(".card").setText(v("newValue"))))
 
-attachShadow(v("host")); shadowRoot(v("host"))
-assignSlot(v("child"), "footer"); assignedElements(v("slot"))
+attachShadow(v("host")); shadowRoot(v("host"));
+assignSlot(v("child"), "footer"); assignedElements(v("slot"));
 onSlotChange(v("slot"), callback("e").log("changed"))
 ```
 
@@ -324,11 +327,11 @@ Full chain: `get/post/put/patch/delete/fetch(method, url)`, `.urlFromVar`, `.app
 ## DOM Query Builder (`Actions`)
 
 ```java
-query("#myDiv").hide()
-query("#panel").addClass("visible")
-query("#title").setText("Hello World")
-queryAll(".item").addClass("processed")
-queryAll(".temp").remove()
+dom("#myDiv").hide()
+dom("#panel").addClass("visible")
+dom("#title").setText("Hello World")
+domAll(".item").addClass("processed")
+domAll(".temp").remove()
 ```
 
 ## Core JS Module (`JS`)
@@ -500,7 +503,6 @@ Everything from `Actions` down to `Runtime` is reachable from `import static jwe
 
 ```java
 import static jweb.js.JSIndexedDB.*;
-import static jweb.Js.*;
 
 // onUpgrade takes a lambda: the database is the parameter, the store
 // work is the return value
@@ -527,18 +529,20 @@ cursorQuery(v("db"), "users")
 ### History API
 
 ```java
-import static jweb.js.JSHistory.*;
+// Several of these names are also declared elsewhere in jweb.Js (the Actions layer, or
+// another module), so this section qualifies every call with JSHistory. to stay unambiguous.
+import jweb.js.JSHistory;
 
-pushState(obj("page", str("dashboard")), "/dashboard")   // platform order: (state, url)
-replaceState("/login", obj("page", "login"))
-onPopState(callback("e").log(v("e").dot("state")))
+JSHistory.pushState(obj("page", str("dashboard")), "/dashboard")   // platform order: (state, url)
+JSHistory.replaceState(obj("page", "login"), "/login")
+JSHistory.onPopState(callback("e").log(v("e").dot("state")))
 
 // Navigation guards
-navigationGuard("You have unsaved changes!")
-navigationGuardWhen(v("formDirty"), "You have unsaved changes!")  // conditional form
+JSHistory.navigationGuard("You have unsaved changes!")
+JSHistory.navigationGuardWhen(v("formDirty"), "You have unsaved changes!")  // conditional form
 
 // Query params
-getQueryParam("page"); setQueryParam("page", "2"); removeQueryParam("filter")
+JSHistory.getQueryParam("page"); JSHistory.setQueryParam("page", "2"); JSHistory.removeQueryParam("filter");
 ```
 
 ### Drag and Drop
@@ -642,8 +646,8 @@ import static jweb.js.JSWebSocket.*;
 webSocket(wsUrl("/live"))
     .onOpen(callback().log("connected"))
     .onMessage(callback("e").log(v("e").dot("data")))
-    .autoReconnect()
-    .build();
+    .autoReconnect(3000)
+    .build("ws");
 ```
 
 ## How generated JS reaches the page

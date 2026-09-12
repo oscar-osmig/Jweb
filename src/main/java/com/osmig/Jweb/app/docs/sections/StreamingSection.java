@@ -17,6 +17,14 @@ public final class StreamingSection {
 
             docSubtitle("Usage"),
             codeBlock("""
+                    class Layout implements Template {
+                        Layout(String title, Element content) {}
+                        public Element render() { return div(); }
+                    }
+                    class Reports { List<String> slowQuery() { return List.of("Q1", "Q2"); } }
+                    Reports reports = new Reports();
+                    Element reportTable(List<String> data) { return ul(each(data, row -> li(row))); }
+
                     app.get("/dashboard", req -> Streamed.of(() ->
                         new Layout("Dashboard", div(
                             header(),                              // paints immediately

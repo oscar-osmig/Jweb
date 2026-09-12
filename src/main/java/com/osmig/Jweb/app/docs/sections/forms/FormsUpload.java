@@ -13,6 +13,8 @@ public final class FormsUpload {
             codeBlock("""
 import jweb.FileUpload;
 import jweb.UploadedFile;
+import java.io.IOException;
+import java.nio.file.Path;
 
 app.post("/upload", req -> {
     UploadedFile file = FileUpload.getFile(req, "document");
@@ -21,8 +23,12 @@ app.post("/upload", req -> {
         return Response.badRequest("No file provided");
     }
 
-    Path saved = file.saveTo(Path.of("uploads"));
-    return Response.json(Map.of("path", saved.toString()));
+    try {
+        Path saved = file.saveTo(Path.of("uploads"));    // saveTo throws IOException
+        return Response.json(Map.of("path", saved.toString()));
+    } catch (IOException e) {
+        return Response.error(500, "Could not store the upload");
+    }
 });"""),
 
             h3Title("Upload Form"),
@@ -35,10 +41,12 @@ form(action("/upload"), method("post"), attrs().enctype("multipart/form-data"),
 
             h3Title("File Properties"),
             codeBlock("""
+import java.io.InputStream;
+
 UploadedFile file = FileUpload.getFile(req, "document");
 
 // Check if file was uploaded
-if (file.isEmpty()) return error("No file");
+if (file.isEmpty()) { /* no file was uploaded */ }
 
 // File info
 String name = file.getFilename();     // "report.pdf"
@@ -55,14 +63,16 @@ if (file.hasExtension("pdf", "doc")) { /* document */ }"""),
 
             h3Title("Validation"),
             codeBlock("""
+UploadedFile file = FileUpload.getFile(req, "document");
+
 var validation = FileUpload.validate(file)
     .required()                     // must be present
     .maxSizeMB(10)                 // max 10MB
     .imagesOnly();                 // PNG, JPG, GIF only
 
-if (!validation.isValid()) {
-    return Response.badRequest(validation.getFirstError());
-}
+Object result = validation.isValid()
+    ? Response.ok()
+    : Response.badRequest(validation.getFirstError());
 
 // Or with specific extensions
 FileUpload.validate(file)
@@ -72,6 +82,8 @@ FileUpload.validate(file)
 
             h3Title("Multiple Files"),
             codeBlock("""
+import java.nio.file.Path;
+
 // HTML
 input(type("file"), name("images"), attrs().multiple().accept("image/*"))
 
@@ -88,6 +100,10 @@ for (UploadedFile image : images) {
 
             h3Title("Save Options"),
             codeBlock("""
+import java.nio.file.Path;
+
+UploadedFile file = FileUpload.getFile(req, "document");
+
 // Save to directory (generates a unique name)
 file.saveTo(Path.of("uploads"));
 

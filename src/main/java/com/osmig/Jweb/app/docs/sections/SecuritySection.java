@@ -21,6 +21,12 @@ public final class SecuritySection {
 
             docSubtitle("JWT Authentication"),
             codeBlock("""
+                    class CurrentUser {
+                        String getId() { return "42"; }
+                        String getRole() { return "admin"; }
+                    }
+                    CurrentUser user = new CurrentUser();
+
                     // Configure the signing key once at startup
                     Jwt.init(System.getenv("JWT_SECRET"));
 
@@ -37,6 +43,8 @@ public final class SecuritySection {
 
             docSubtitle("Protected Routes"),
             codeBlock("""
+                        Element profilePage(Principal user) { return div("Hi, " + user.getName()); }
+
                         app.use("/admin", Auth.requireAuth("/login"));
                         app.use("/api", Jwt.protect());
 

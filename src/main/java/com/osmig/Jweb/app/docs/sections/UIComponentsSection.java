@@ -13,18 +13,22 @@ public final class UIComponentsSection {
 
             docSubtitle("Modal"),
             codeBlock("""
-                    Modal.create("confirm-modal")
+                    UI.Modal.create("confirm-modal")
                         .title("Confirm Action")
                         .body(p("Are you sure?"))
                         .footer(
-                            button(onClick(Modal.close("confirm-modal")), "Cancel"),
+                            button(onClick(UI.Modal.close("confirm-modal")), "Cancel"),
                             button(onClick(call("handleConfirm")), "Confirm")
                         )
                         .build()"""),
 
             docSubtitle("Tabs"),
             codeBlock("""
-                        Tabs.create("main-tabs")
+                        Element overviewContent() { return div("Overview"); }
+                        Element detailsContent() { return div("Details"); }
+                        Element settingsContent() { return div("Settings"); }
+
+                        UI.Tabs.create("main-tabs")
                             .tab("overview", "Overview", overviewContent())
                             .tab("details", "Details", detailsContent())
                             .tab("settings", "Settings", settingsContent())
@@ -32,7 +36,11 @@ public final class UIComponentsSection {
 
             docSubtitle("Dropdown"),
             codeBlock("""
-                        Dropdown.create("actions-menu")
+                        void editItem() {}
+                        void deleteItem() {}
+                        void openSettings() {}
+
+                        UI.Dropdown.create("actions-menu")
                             .trigger("Actions")
                             .item("Edit", e -> editItem())
                             .item("Delete", e -> deleteItem())

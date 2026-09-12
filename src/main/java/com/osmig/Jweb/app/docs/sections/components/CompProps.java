@@ -11,6 +11,10 @@ public final class CompProps {
             h3Title("Props via Constructor"),
             para("Pass data to components through constructor parameters."),
             codeBlock("""
+record User(String getAvatar, String getName, String getEmail, boolean isAdmin) {}
+Element badge(String text) { return span(class_("badge"), text); }
+User user = new User("/a.png", "Ada", "ada@example.com", false);
+
 public class UserCard implements Template {
     private final User user;
     private final boolean showEmail;

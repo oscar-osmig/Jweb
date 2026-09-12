@@ -23,6 +23,7 @@ public final class DocExamples {
 
     // ==================== Setup Section ====================
 
+    // lang: text
     public static final String SETUP_PROJECT_STRUCTURE = """
                     src/main/java/com/yourapp/
                     ├── App.java           # Spring Boot entry point
@@ -39,18 +40,28 @@ public final class DocExamples {
                         └── Card.java      # Reusable card component""";
 
     public static final String SETUP_FIRST_ROUTE = """
+                    import jweb.api.Component;
+
                     @Component
                     public class Routes implements JWebRoutes {
                         @Override
                         public void configure(JWeb app) {
                             // Simple route returning an element
                             app.get("/", () -> h1("Hello World"));
-                    
+
                             // Route with a page component
-                            app.get("/about", ctx ->
-                                new Layout("About", new AboutPage().render()).render()
+                            app.get("/about", req ->
+                                new Layout("About", new AboutPage())
                             );
                         }
+                    }
+
+                    record AboutPage() implements Template {
+                        public Element render() { return div("About"); }
+                    }
+
+                    record Layout(String pageTitle, Element content) implements Template {
+                        public Element render() { return html(head(title(pageTitle)), body(content)); }
                     }""";
 
     public static final String SETUP_IMPORTS = """
@@ -58,6 +69,7 @@ public final class DocExamples {
                     import static jweb.El.*;
                     import static jweb.Css.*;""";
 
+    // lang: bash
     public static final String SETUP_RUN = """
                     mvn spring-boot:run
                     
@@ -71,7 +83,11 @@ public final class DocExamples {
                 app.get("/about", () -> div(h1("About"), p("Learn more...")));
                 app.post("/submit", req -> handleSubmit(req));
                 app.put("/users/:id", req -> updateUser(req));
-                app.delete("/users/:id", req -> deleteUser(req));""";
+                app.delete("/users/:id", req -> deleteUser(req));
+
+                private Object handleSubmit(Request req) { return Response.redirect("/thanks"); }
+                private Object updateUser(Request req) { return Response.json(Map.of("status", "updated")); }
+                private Object deleteUser(Request req) { return Response.noContent(); }""";
 
     public static final String ROUTING_PATH_PARAMS = """
                 // Route: /users/:id
@@ -108,7 +124,11 @@ public final class DocExamples {
                     Map<String, String[]> formData = req.formParams();
 
                     return authenticate(email, password);
-                });""";
+                });
+
+                private Object authenticate(String email, String password) {
+                    return Response.redirect("/dashboard");
+                }""";
 
     public static final String ROUTING_HANDLERS = """
                 // Return an Element (rendered as HTML)
@@ -116,6 +136,10 @@ public final class DocExamples {
                 
                 // Return a Template
                 app.get("/home", () -> new HomePage());
+
+                record HomePage() implements Template {
+                    public Element render() { return div("Home"); }
+                }
                 
                 // Return a Response object for more control
                 app.get("/api/data", req ->
@@ -128,20 +152,32 @@ public final class DocExamples {
                 );""";
 
     public static final String ROUTING_LAYOUTS = """
-                app.get("/about", ctx ->
-                    new Layout("About Us", new AboutPage().render()).render()
+                app.get("/about", req ->
+                    new Layout("About Us", new AboutPage())
                 );
-                
+
                 // Or create a helper method:
-                private Element withLayout(String title, Element content) {
-                    return new Layout(title, content).render();
+                private Element withLayout(String pageTitle, Element content) {
+                    return new Layout(pageTitle, content);
                 }
-                
-                app.get("/contact", ctx ->
-                    withLayout("Contact", new ContactPage().render())
-                );""";
+
+                app.get("/contact", req ->
+                    withLayout("Contact", new ContactPage())
+                );
+
+                record AboutPage() implements Template {
+                    public Element render() { return div("About Us"); }
+                }
+                record ContactPage() implements Template {
+                    public Element render() { return div("Contact"); }
+                }
+                record Layout(String pageTitle, Element content) implements Template {
+                    public Element render() { return html(head(title(pageTitle)), body(content)); }
+                }""";
 
     public static final String ROUTING_MIDDLEWARE = """
+                boolean isProd = false;
+
                 // Apply middleware globally
                 app.use(Middlewares.logging());
                 app.use(Middlewares.csrf());
@@ -163,6 +199,11 @@ public final class DocExamples {
                 public class Card implements Template {
                     private final String title;
                     private final String content;
+                    static final CSSValue SP_2 = rem(0.5);
+                    static final CSSValue SP_4 = rem(1);
+                    static final CSSValue TEXT_LG = rem(1.125);
+                    static final CSSValue TEXT_LIGHT = hex("#64748b");
+                    static final CSSValue ROUNDED = px(6);
 
                     public Card(String title, String content) {
                         this.title = title;
@@ -188,10 +229,19 @@ public final class DocExamples {
                     new Card("Welcome", "Hello World!"),
                     new Card("Features", "Build apps in pure Java"),
                     new Card("Learn More", "Read the documentation")
-                )""";
+                )
+
+                record Card(String title, String content) implements Template {
+                    public Element render() { return div(cls("card"), h3(title), p(content)); }
+                }""";
 
     public static final String TEMPLATES_COMPOSITION = """
+                record Card(String title) implements Template {
+                    public Element render() { return div(title); }
+                }
+
                 public class CardGrid implements Template {
+                    static final CSSValue SP_4 = rem(1);
                     private final List<Card> cards;
                 
                     public CardGrid(List<Card> cards) {
@@ -210,6 +260,13 @@ public final class DocExamples {
                 }""";
 
     public static final String TEMPLATES_LAYOUT = """
+                record Nav() implements Template {
+                    public Element render() { return nav("Nav"); }
+                }
+                record Footer() implements Template {
+                    public Element render() { return footer("Footer"); }
+                }
+
                 public class Layout implements Template {
                     private final String title;
                     private final Element content;
@@ -236,6 +293,10 @@ public final class DocExamples {
                 }""";
 
     public static final String TEMPLATES_CONDITIONAL = """
+            boolean isLoggedIn = true;
+            String userName = "Ada";
+            boolean isAdmin = false;
+
             // Show element only if condition is true
             when(isLoggedIn, () ->
                 span("Welcome, " + userName)
@@ -251,11 +312,15 @@ List<User> users = getUsers();
 
 ul(each(users, user ->
     li(
-        strong(user.getName()),
-        span(" - " + user.getEmail())
+        strong(user.name()),
+        span(" - " + user.email())
     )
-))""";
+))
 
+record User(String name, String email) {}
+List<User> getUsers() { return List.of(new User("Ada Lovelace", "ada@example.com")); }""";
+
+    // lang: text
     public static final String TEMPLATES_ORGANIZATION = """
 app/
 ├── layout/      # Layouts wrap entire pages
@@ -330,6 +395,8 @@ transparent
 currentColor""";
 
     public static final String STYLING_LAYOUT = """
+CSSValue SP_4 = rem(1);
+
 // Flexbox
 div(style()
     .display(flex)
@@ -388,22 +455,21 @@ public final class Theme {
     public static final CSSValue ROUNDED = px(6);
 }
 
-// Usage:
-import static com.yourapp.layout.Theme.*;
-
+// Usage (from another file): import static com.yourapp.layout.Theme.*;
 div(style()
-    .color(PRIMARY)
-    .padding(SP_4)
-    .fontSize(TEXT_LG))""";
+    .color(Theme.PRIMARY)
+    .padding(Theme.SP_4)
+    .fontSize(Theme.TEXT_LG))""";
 
+    // lang: style
     public static final String STYLING_TRANSITIONS = """
 // Simple transition
-.transition(propBackgroundColor, s(0.2), ease)
+.transition(CSSValue.of("background-color"), s(0.2), ease)
 
 // Multiple transitions
 .transition(transitions(
-    trans(propColor, s(0.2), ease),
-    trans(propTransform, s(0.3), easeOut)
+    trans(CSSValue.of("color"), s(0.2), ease),
+    trans(CSSValue.of("transform"), s(0.3), easeOut)
 ))
 
 // Transforms
@@ -411,6 +477,7 @@ div(style()
 .transform(rotate(deg(45)))
 .transform(scale(1.1))""";
 
+    // lang: style
     public static final String STYLING_GRADIENTS = """
 // Linear gradient
 .background(linearGradient(red, blue))
@@ -422,6 +489,7 @@ div(style()
 // Conic gradient
 .background(conicGradient(red, yellow, green, blue, red))""";
 
+    // lang: style
     public static final String STYLING_CUSTOM_PROPS = """
 // Reference a CSS variable
 .color(var("primary-color"))
@@ -474,10 +542,11 @@ items.update(list -> {
 State<String> searchTerm = useState("");
 
 // Subscribe to changes
-searchTerm.subscribe(newValue -> {
+Consumer<String> subscriber = newValue -> {
     System.out.println("Search changed to: " + newValue);
     // Trigger side effects, API calls, etc.
-});
+};
+searchTerm.subscribe(subscriber);
 
 // Unsubscribe when done
 searchTerm.unsubscribe(subscriber);""";
@@ -502,6 +571,10 @@ public class LoginForm implements Template {
         e.preventDefault();
         authenticate(email.get(), password.get());
     }
+
+    private void authenticate(String email, String password) {
+        // check credentials
+    }
 }""";
 
     public static final String STATE_PATTERNS = """
@@ -515,19 +588,25 @@ State<List<Todo>> todos = useState(new ArrayList<>());
 
 // Add item
 todos.update(list -> {
-    list.add(new Todo("New task"));
+    list.add(new Todo("t1", "New task"));
     return list;
 });
 
 // Remove item
+String id = "t1";
 todos.update(list -> {
-    list.removeIf(t -> t.getId().equals(id));
+    list.removeIf(t -> t.id().equals(id));
     return list;
 });
 
 // Object state
 State<User> user = useState(new User("John", "john@example.com"));
-user.update(u -> u.withName("Jane")); // immutable update""";
+user.update(u -> u.withName("Jane")); // immutable update
+
+record Todo(String id, String title) {}
+record User(String name, String email) {
+    User withName(String newName) { return new User(newName, email); }
+}""";
 
     public static final String STATE_SERIALIZATION = """
 State<Integer> count = useState(0);
@@ -580,6 +659,7 @@ input(type("radio"), name("plan"), value("basic"))
 input(type("file"), name("avatar"))
 
 // Hidden fields
+String token = "csrf-token";
 input(type("hidden"), name("csrf"), value(token))""";
 
     public static final String FORMS_VALIDATION = """
@@ -607,8 +687,12 @@ app.post("/register", req -> {
     }
 
     return createUser(req);
-});""";
+});
 
+private Object showErrors(Map<String, List<String>> errors) { return Response.badRequest(errors.toString()); }
+private Object createUser(Request req) { return Response.redirect("/welcome"); }""";
+
+    // lang: text
     public static final String FORMS_VALIDATORS = """
 .required()              // Field must have a value
 .optional()              // Skip validation if empty
@@ -625,14 +709,16 @@ app.post("/register", req -> {
 .matches(field, value)   // Must match another field""";
 
     public static final String FORMS_CUSTOM = """
+List<String> forbiddenWords = List.of("spam");
+
 // Using check() for simple predicates
-.check(s -> s.startsWith("@"), "Must start with @")
+FormValidator.create().field("name", "value").check(s -> s.startsWith("@"), "Must start with @");
 
 // Using custom() for complex validators
-.custom(Validator.of(
+FormValidator.create().field("name", "value").custom(Validator.of(
     value -> !forbiddenWords.contains(value.toLowerCase()),
     field -> field + " contains forbidden words"
-))""";
+));""";
 
     public static final String FORMS_ERRORS = """
 private Element showErrors(Map<String, List<String>> errors) {
@@ -647,6 +733,8 @@ private Element showErrors(Map<String, List<String>> errors) {
 }""";
 
     public static final String FORMS_EVENTS = """
+State<String> searchTerm = useState("");
+
 // Form submit
 form(onSubmit(e -> {
     e.preventDefault();
@@ -665,7 +753,12 @@ input(onInput(e -> {
 }))
 
 // Focus/blur
-input(onFocus(e -> showHint()), onBlur(e -> validateField()))""";
+input(onFocus(e -> showHint()), onBlur(e -> validateField()))
+
+void submitForm() {}
+void updateState(String value) {}
+void showHint() {}
+void validateField() {}""";
 
     // ==================== Form Builder Section ====================
     // A form is a record: one class declares the fields, their types and their
@@ -701,6 +794,8 @@ enum Plan { FREE, PRO, ENTERPRISE }
 form(Signup.class).action("/signup").submit("Sign Up")""";
 
     public static final String FORM_BUILDER_CONFIG = """
+record Signup(String username, String bio, UploadedFile resume) {}
+
 // field(name, f -> ...) is presentational only — label, placeholder, help
 // text, control type, rows, accept, autocomplete, options. The rules
 // (required, email, length) stay on the record's annotations.
@@ -745,6 +840,8 @@ fieldset(
 )""";
 
     public static final String FORM_BUILDER_BUTTONS = """
+record Signup(String username) {}
+
 form(Signup.class)
     .submit("Create Account")   // the submit button's text
 
@@ -752,6 +849,9 @@ form(Signup.class)
 // .jweb-submit class instead, or skip Form.styles() and write your own CSS.""";
 
     public static final String FORM_BUILDER_COMPLETE = """
+enum Country { US, UK, CA, DE }
+enum Plan { FREE, PRO, ENTERPRISE }
+
 public record Registration(
     @Form.Required String firstName,
     @Form.Required String lastName,
@@ -770,6 +870,7 @@ form(Registration.class)
     .submit("Create Account")
 
 // Server side — bind, then either use the value or re-render with the errors
+Accounts accounts = new Accounts();
 app.post("/register", req -> {
     Form.Bound<Registration> bound = Form.bind(Registration.class, req);
     if (!bound.ok()) {
@@ -777,7 +878,11 @@ app.post("/register", req -> {
     }
     accounts.create(bound.value());
     return Response.redirect("/welcome");
-});""";
+});
+
+class Accounts {
+    void create(Registration r) {}
+}""";
 
     // ==================== UI Components Section ====================
 
@@ -793,7 +898,14 @@ UI.ghostButton("Learn More", e -> navigate())
 UI.linkButton("View Details", e -> showDetails())
 
 // Icon button (icon + label)
-UI.iconButton("\\u2605", "Favorite", e -> handleClick())""";
+UI.iconButton("\\u2605", "Favorite", e -> handleClick())
+
+void handleSubmit() {}
+void handleCancel() {}
+void handleDelete() {}
+void navigate() {}
+void showDetails() {}
+void handleClick() {}""";
 
     public static final String UI_BADGES = """
 import static jweb.UI.*;
@@ -808,7 +920,9 @@ UI.badge("Primary", Badge.PRIMARY) // indigo
 
 // Tags (similar to badges, for categories)
 UI.tag("JavaScript")
-UI.tag("Removable", e -> removeTag())  // with remove handler""";
+UI.tag("Removable", e -> removeTag())  // with remove handler
+
+void removeTag() {}""";
 
     public static final String UI_ALERTS = """
 import static jweb.UI.*;
@@ -880,6 +994,9 @@ UI.emptyState(
 )""";
 
     public static final String UI_DIVIDERS = """
+Element content1 = p("Section one");
+Element content2 = p("Section two");
+
 // Horizontal divider
 UI.divider()
 
@@ -1053,6 +1170,11 @@ style()
 
     public static final String DSL_ROUTING = """
 JWeb app = JWeb.create();
+String path = "/x";
+Element element = div("Hello");
+Object result = "ok";
+Middleware middleware = (req, chain) -> chain.next();
+boolean cond = true;
 
 app.get(path, () -> element)    // Simple GET
 app.get(path, req -> element)   // GET with request
@@ -1077,11 +1199,15 @@ req.method()              // HTTP method
 req.path()                // Request path""";
 
     public static final String DSL_STATE = """
-State<T> state = useState(initialValue);
+Integer initialValue = 0;
+State<Integer> state = useState(initialValue);
+Integer newValue = 1;
+Consumer<Integer> callback = v -> {};
+Consumer<Integer> cb = callback;
 
 state.get()               // Read value
-state.set(newValue)       // Set value
-state.update(v -> v + 1)  // Transform value
+state.set(newValue);      // Set value
+state.update(v -> v + 1); // Transform value
 state.subscribe(callback) // Listen for changes
 state.unsubscribe(cb)     // Remove listener
 state.getId()             // Unique state ID
@@ -1090,29 +1216,41 @@ state.toJson()            // JSON serialization""";
     // ==================== API Section ====================
 
     public static final String API_CONTROLLER = """
-@REST("/api/users")
+record User(Long id, String name) {}
+
+class UserService {
+    List<User> findAll() { return List.of(); }
+    User findById(Long id) { return null; }
+    User save(User user) { return user; }
+    void delete(Long id) {}
+}
+
+@REST("/api/v1/users")
 public class UserApi {
+    private final UserService userService = new UserService();
+
     @GET
     public List<User> getAll() {
         return userService.findAll();
     }
 
     @GET("/{id}")
-    public User getById(@PathVariable Long id) {
+    public User getById(@Param Long id) {
         return userService.findById(id);
     }
 
     @POST
-    public User create(@RequestBody User user) {
+    public User create(@Body User user) {
         return userService.save(user);
     }
 
     @DEL("/{id}")
-    public void delete(@PathVariable Long id) {
+    public void delete(@Param Long id) {
         userService.delete(id);
     }
 }""";
 
+    // lang: text
     public static final String API_ANNOTATIONS = """
 // JWeb simplified annotations
 @REST("/api")      // Marks REST controller with base path
@@ -1135,19 +1273,24 @@ public Map<String, Object> status() {
 // Response: {"status":"healthy","timestamp":"..."}""";
 
     public static final String API_REQUEST_BODY = """
+record User(Long id) {}
+record Item(String category, Long id) {}
+
 @POST
-public User create(@RequestBody User user) {
-    return userService.save(user);
+public User create(@Body User user) {
+    return user;
 }
 
 @GET("/{category}/{id}")
 public Item getItem(
-    @PathVariable String category,
-    @PathVariable Long id) {
-    return itemService.find(category, id);
+    @Param String category,
+    @Param Long id) {
+    return new Item(category, id);
 }""";
 
     public static final String API_OPENAPI_CONFIG = """
+class UserApi {}
+
 // Mount interactive API docs
 OpenApi.create()
     .title("My API")
@@ -1167,6 +1310,8 @@ String hashed = Password.hash("user-password");
 boolean valid = Password.verify("input", hashed);""";
 
     public static final String SECURITY_JWT = """
+String userId = "user-42";
+
 // Generate JWT token
 String token = Jwt.create()
     .subject(userId)
@@ -1182,6 +1327,9 @@ if (Jwt.isValid(token)) {
 }""";
 
     public static final String SECURITY_SESSION = """
+class User { Long getId() { return 1L; } }
+User user = new User();
+
 // Store in session
 req.sessionAttr("userId", user.getId());
 
@@ -1225,9 +1373,14 @@ UI.Modal.create("confirm-modal")
     .build()
 
 // Trigger: UI.modalTrigger("confirm-modal", "Delete")
-// Script: UI.modalScript()""";
+// Script: UI.modalScript()
+
+void deleteItem() {}""";
 
     public static final String UI_TABS = """
+Element generalContent = p("General settings");
+Element securityContent = p("Security settings");
+
 UI.Tabs.create("settings-tabs")
     .tab("general", "General", generalContent)
     .tab("security", "Security", securityContent)
@@ -1243,7 +1396,10 @@ UI.Dropdown.create("user-menu")
     .item("Settings", e -> goTo("/settings"))
     .divider()
     .item("Logout", e -> logout())
-    .build()""";
+    .build()
+
+void goTo(String path) {}
+void logout() {}""";
 
     public static final String UI_ACCORDION = """
 UI.Accordion.create("faq")
@@ -1264,10 +1420,13 @@ button(onClick(Toast.error("Failed")), "Delete")
 Toast.initial(Toast.Type.SUCCESS, "Welcome!")""";
 
     public static final String UI_DATATABLE = """
+record User(String name, String email, String role) {}
+List<User> users = List.of(new User("Ada Lovelace", "ada@example.com", "Admin"));
+
 UI.DataTable.<User>create()
-    .column("Name", User::getName)
-    .column("Email", User::getEmail)
-    .column("Role", u -> UI.badge(u.getRole(), Badge.INFO))
+    .column("Name", u -> span(u.name()))
+    .column("Email", u -> span(u.email()))
+    .column("Role", u -> UI.badge(u.role(), UI.Badge.INFO))
     .data(users)
     .striped()
     .hoverable()
@@ -1310,6 +1469,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 }""";
 
     public static final String DATA_USAGE = """
+record User(Long id, String name) {}
+interface UserRepository { List<User> findAll(); }
+record UsersPage(List<User> users) implements Template {
+    public Element render() { return ul(each(users, u -> li(u.name()))); }
+}
+
 @Component
 public class Routes implements JWebRoutes {
     private final UserRepository userRepo;
@@ -1321,11 +1486,12 @@ public class Routes implements JWebRoutes {
     public void configure(JWeb app) {
         app.get("/users", req -> {
             List<User> users = userRepo.findAll();
-            return new UsersPage(users).render();
+            return new UsersPage(users);
         });
     }
 }""";
 
+    // lang: yaml
     public static final String DATA_CONFIG = """
 # application.yaml
 spring:
@@ -1340,6 +1506,7 @@ spring:
 
     // ==================== DevTools Section ====================
 
+    // lang: yaml
     public static final String DEV_CONFIG = """
 # application.yaml
 jweb:
@@ -1362,6 +1529,7 @@ public class Layout implements Template {
     }
 }""";
 
+    // lang: xml
     public static final String DEV_DEVTOOLS_POM = """
 <!-- pom.xml - Add for full hot reload -->
 <dependency>

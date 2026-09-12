@@ -13,6 +13,9 @@ public final class FormsEvents {
             codeBlock("""
 State<String> searchTerm = useState("");
 State<String> email = useState("");
+void validateEmail(String value) {}
+void showHint() {}
+void hideHint() {}
 
 // Input event (fires on every keystroke)
 input(
@@ -37,9 +40,12 @@ input(
 
             h3Title("Form Submit"),
             codeBlock("""
+import java.util.concurrent.CompletableFuture;
+
 State<String> name = useState("");
 State<String> email = useState("");
 State<Boolean> loading = useState(false);
+CompletableFuture<Void> submitForm(String n, String e) { return CompletableFuture.completedFuture(null); }
 
 form(onSubmit(e -> {
     e.preventDefault();

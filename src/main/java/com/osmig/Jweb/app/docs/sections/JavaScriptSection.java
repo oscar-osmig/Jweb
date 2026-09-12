@@ -33,6 +33,8 @@ import static jweb.Js.*;""")),
             h3Title("Actions DSL (High-Level)"),
             para("Declarative builders for common interactions."),
             codeBlock("""
+long id = 42;
+
 // Form submission with loading state
 onSubmit("login-form")
     .loading("Signing in...")

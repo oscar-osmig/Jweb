@@ -11,6 +11,9 @@ public final class ElementsFragments {
             h3Title("Fragments"),
             para("Group elements without adding a wrapper element to the DOM."),
             codeBlock("""
+boolean showExtra = true;
+record User(String getName, String getEmail) {}
+
 // fragment() groups elements without a wrapper
 fragment(
     h1("Title"),
@@ -36,6 +39,9 @@ public Element renderUserInfo(User user) {
             h3Title("Raw HTML"),
             para("Insert pre-rendered HTML when needed (use carefully)."),
             codeBlock("""
+String trustedContent = "# Hello\\n\\nThis is **safe** markdown.";
+String markdownToHtml(String md) { return "<p>" + md + "</p>"; }
+
 // raw() inserts HTML directly (be careful with user input!)
 raw("<svg>...</svg>")
 

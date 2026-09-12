@@ -17,16 +17,26 @@ public final class RoutingSection {
             para("Configure routes in a class implementing JWebRoutes. " +
                  "Routes support path parameters, query strings, and all HTTP methods."),
             codeBlock("""
+                    import jweb.api.Component;
+
+                    class HomePage implements Template {
+                        public Element render() { return div("Home"); }
+                    }
+
                     @Component
                     public class Routes implements JWebRoutes {
+                        List<String> users = List.of("Ada", "Grace");
+
                         public void configure(JWeb app) {
                             // Page routes
                             app.pages("/", HomePage.class);
-                    
+
                             // API routes
-                            app.get("/api/users", () -> Response.json(users));
+                            app.get("/api/users", req -> Response.json(users));
                             app.post("/api/users", req -> createUser(req));
                         }
+
+                        Object createUser(Request req) { return Response.json(201, req.body()); }
                     }"""),
 
             RoutingBasics.render(),
@@ -47,6 +57,9 @@ public final class RoutingSection {
                  "every link to it are then compile-time checked. Handlers receive " +
                  "already-parsed values; bad input returns 400, not 500."),
             codeBlock("""
+                    Element userPage(Long id) { return div("User " + id); }
+                    Element productList(int page) { return div("Page " + page); }
+
                     static final TypedRoute.Path1<Long> USER =
                         TypedRoute.path("/users/:id", Long.class);
 

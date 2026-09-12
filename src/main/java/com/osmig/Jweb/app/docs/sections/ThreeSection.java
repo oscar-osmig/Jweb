@@ -75,6 +75,8 @@ public final class ThreeSection {
                  "handler over the live WebSocket. The event's value() carries the " +
                  "node's name."),
             codeBlock("""
+                    State<Integer> rolls = useState(0);
+
                     sphere().name("product")
                         .clickSwap("/api/product/42", "#detail-panel")
 
@@ -178,7 +180,7 @@ public final class ThreeSection {
                      "runs when the scene exists (no polling), and JWebThree.THREE is " +
                      "the bundled module itself — construct vectors and materials " +
                      "without prototype tricks."),
-                codeBlock("""
+                codeBlock("js", """
                         JWebThree.ready('hall', h => {
                             const v = new JWebThree.THREE.Vector3(0, 1, 0);
                             h.objects.moon.position.add(v);
@@ -188,7 +190,7 @@ public final class ThreeSection {
             docSubtitle("Escape Hatch"),
             para("The DSL covers scenes, not shaders. Give a scene an id and the live " +
                  "three.js objects are exposed to scripts:"),
-            codeBlock("""
+            codeBlock("js", """
                     // scene(...).id("hero") then, from any script:
                     // JWebThree.get('hero') -> {scene, camera, renderer, controls, objects}
                     var hero = JWebThree.get('hero');

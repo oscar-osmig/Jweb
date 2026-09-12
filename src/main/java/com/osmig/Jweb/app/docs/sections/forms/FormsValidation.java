@@ -42,6 +42,10 @@ input(type("text"), name("username"),
 
             h3Title("Server-Side Validation"),
             codeBlock("""
+class UserService { void register(String email, String password) {} }
+UserService userService = new UserService();
+Element registerForm(List<String> errors) { return div(); }
+
 app.post("/register", req -> {
     String email = req.formParam("email");
     String password = req.formParam("password");

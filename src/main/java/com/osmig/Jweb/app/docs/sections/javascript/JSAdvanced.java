@@ -15,15 +15,19 @@ public final class JSAdvanced {
             codeBlock("""
 import static jweb.js.JSPromise.*;
 
-// Promise combinators
-promiseAll(
-    fetch("/api/users").get().toVal(),
-    fetch("/api/posts").get().toVal()
+Val promise1 = v("promise1");
+Val promise2 = v("promise2");
+Val promises = v("promises");
+
+// Promise combinators (qualified — Async on the Js chain already has these names)
+JSPromise.promiseAll(
+    fetch(str("/api/users")).get().toVal(),
+    fetch(str("/api/posts")).get().toVal()
 ).then(callback("results").call("renderAll", v("results")))
 
-promiseRace(promise1, promise2)  // First to finish
-promiseAny(promise1, promise2)   // First successful
-promiseAllSettled(promises)      // All, regardless of success
+JSPromise.promiseRace(promise1, promise2)  // First to finish
+JSPromise.promiseAny(promise1, promise2)   // First successful
+JSPromise.promiseAllSettled(promises)      // All, regardless of success
 
 // Retry with exponential backoff
 retry(v("apiCall"), 3)    // Max 3 attempts
@@ -34,12 +38,12 @@ retry(v("apiCall"), 3)    // Max 3 attempts
     .build()
 
 // Timeout
-timeout(fetch("/api/slow").get().toVal(), 3000)
+timeout(fetch(str("/api/slow")).get().toVal(), 3000)
     .errorMessage("Request timed out")
     .build()
 
 // Cancellable promise
-cancellable(fetch("/api/data").get().toVal())
+cancellable(fetch(str("/api/data")).get().toVal())
     .controller("abortCtrl")
     .timeout(5000)
     .build("result")"""),
@@ -47,6 +51,8 @@ cancellable(fetch("/api/data").get().toVal())
             h3Title("Web Workers"),
             codeBlock("""
 import static jweb.js.JSWorker.*;
+
+Val bigData = v("bigData");
 
 // Create dedicated worker
 worker("/worker.js")
@@ -67,8 +73,8 @@ sharedWorker("/shared-worker.js").build("sw")"""),
             codeBlock("""
 import static jweb.js.JSServiceWorker.*;
 
-// Register service worker
-register("/sw.js")
+// Register service worker (qualified — Css.register(...) shares the name)
+JSServiceWorker.register("/sw.js")
     .onSuccess(callback("reg").log("SW registered"))
     .onError(callback("err").log(v("err")))
     .build()
@@ -107,6 +113,9 @@ generateKey().aesGcm(256).build()"""),
             codeBlock("""
 import static jweb.js.JSCanvas.*;
 
+int width = 800;
+int height = 600;
+
 // Get context
 getContext2D(v("canvas"))
 
@@ -116,8 +125,8 @@ strokeRect(v("ctx"), 10, 10, 80, 80)
 clearRect(v("ctx"), 0, 0, width, height)
 
 // Text
-fillText(v("ctx"), str("Hello"), 50, 50)
-strokeText(v("ctx"), str("World"), 50, 80)
+fillText(v("ctx"), "Hello", 50, 50)
+strokeText(v("ctx"), "World", 50, 80)
 
 // Path
 beginPath(v("ctx"))
@@ -165,12 +174,12 @@ formData("checkout-form")   // from a form element
 formData()                  // empty FormData
 append(v("fd"), "key", str("value"))
 
-// URL
+// URL (url(...) qualified — Css.url(...) shares the name)
 import static jweb.js.JSUrl.*;
 
-url("/path?q=search")
+JSUrl.url("/path?q=search")
 currentUrl()
-pathname(url("/path?q=search"))"""),
+JSUrl.pathname(JSUrl.url("/path?q=search"))"""),
 
             h3Title("Internationalization"),
             codeBlock("""

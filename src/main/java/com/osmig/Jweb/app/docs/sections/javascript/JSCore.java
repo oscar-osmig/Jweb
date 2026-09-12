@@ -68,6 +68,8 @@ func("handleAction", "action")
             h3Title("Array Methods"),
             para("30+ fluent array operations."),
             codeBlock("""
+long userId = 42;
+
 // Filter and map
 v("items")
     .filter(callback("x").return_(v("x").gt(5)))
@@ -82,8 +84,8 @@ v("users")
 v("numbers").reduce(
     callback("acc", "n").return_(v("acc").plus(v("n"))),
     0
-)
-
+)"""),
+            codeBlock("text", """
 // Other methods
 .forEach(callback)    // Iterate
 .some(predicate)      // Any match?
@@ -137,6 +139,8 @@ objectFromEntries(v("entries"))"""),
 
             h3Title("Operators"),
             codeBlock("""
+import static jweb.js.JSOperators.*;
+
 // Comparison
 v("a").eq(v("b"))    // a === b
 v("a").neq(v("b"))   // a !== b

@@ -15,7 +15,7 @@ public class Counter implements Template {
     public Element render() {
         return div(
             h1("Count: " + count.get()),
-            button(onClick("increment()"), "Increment")
+            button(onClick(e -> count.update(c -> c + 1)), "Increment")
         );
     }
 }
@@ -33,12 +33,14 @@ int value = count.get();  // Returns 0
 ### Set Value
 
 ```java
+State<Integer> count = useState(0);
 count.set(5);  // Sets to 5
 ```
 
 ### Update Based on Current Value
 
 ```java
+State<Integer> count = useState(0);
 count.update(c -> c + 1);  // Increment by 1
 count.update(c -> c * 2);  // Double the value
 ```
@@ -57,13 +59,15 @@ State<Double> price = useState(9.99);
 ### Object States
 
 ```java
+record User(String name, String email) {}
+
 State<User> currentUser = useState(new User("John", "john@example.com"));
 
 // Update object
 currentUser.set(new User("Jane", "jane@example.com"));
 
 // Access properties
-String email = currentUser.get().getEmail();
+String email = currentUser.get().email();
 ```
 
 ### List States
@@ -112,6 +116,8 @@ count.set(5);  // Prints: "Count changed to: 5"
 ### Unsubscribe
 
 ```java
+State<Integer> count = useState(0);
+
 Consumer<Integer> listener = value -> System.out.println(value);
 count.subscribe(listener);
 
@@ -132,11 +138,11 @@ public class TodoList implements Template {
             h1("Todo List"),
 
             // Input for new todo
-            form(onSubmit("addTodo(); return false;"),
+            form(onSubmit(e -> { e.preventDefault(); addTodo(); }),
                 input(
                     type("text"),
                     value(newTodo.get()),
-                    onInput("updateNewTodo(event.target.value)")
+                    onInput(e -> newTodo.set(e.value()))
                 ),
                 button(type("submit"), "Add")
             ),
@@ -146,7 +152,7 @@ public class TodoList implements Template {
                 each(todos.get(), todo ->
                     li(
                         span(todo),
-                        button(onClick("removeTodo('" + todo + "')"), "Remove")
+                        button(onClick(e -> removeTodo(todo)), "Remove")
                     )
                 )
             )
@@ -181,7 +187,7 @@ The `StateManager` handles state lifecycle:
 State<Integer> count = StateManager.createState("counter", 0);
 
 // Get all states for serialization
-Map<String, Object> allStates = StateManager.getStateSnapshot();
+var allStates = StateManager.getContext().getStates();
 ```
 
 ## State Serialization
@@ -189,6 +195,8 @@ Map<String, Object> allStates = StateManager.getStateSnapshot();
 States can be serialized to JSON for hydration:
 
 ```java
+record User(String name, String email) {}
+
 State<User> user = useState(new User("John", "john@example.com"));
 
 // Serialize to JSON
@@ -227,6 +235,17 @@ public class MyComponent implements Template {
 ### 2. Use Immutable Updates for Objects
 
 ```java
+class User {
+    private String name;
+    private final String email;
+    User(String name, String email) { this.name = name; this.email = email; }
+    String getName() { return name; }
+    void setName(String name) { this.name = name; }
+    String getEmail() { return email; }
+}
+
+State<User> user = useState(new User("John", "john@example.com"));
+
 // Instead of mutating...
 user.get().setName("Jane");  // Bad: no change detection
 
@@ -237,6 +256,8 @@ user.set(new User("Jane", user.get().getEmail()));  // Good
 ### 3. Keep State Minimal
 
 ```java
+List<String> items = List.of("a", "b");
+
 // Store only what you need
 State<String> userId = useState("123");  // Good: just the ID
 
@@ -247,11 +268,13 @@ State<Boolean> hasItems = useState(items.size() > 0);  // Bad: derive from items
 ### 4. Group Related State
 
 ```java
+record FormData(String firstName, String lastName, String email) {}
+
 // Instead of multiple states...
 State<String> firstName = useState("");
 State<String> lastName = useState("");
 State<String> email = useState("");
 
 // Use an object
-State<FormData> form = useState(new FormData());
+State<FormData> form = useState(new FormData("", "", ""));
 ```
