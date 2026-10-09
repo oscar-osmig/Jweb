@@ -2,8 +2,6 @@ package com.osmig.Jweb.app.pages.admin;
 
 import jweb.Element;
 import jweb.Doc;
-import jweb.Csrf;
-import jweb.CsrfToken;
 import jweb.Template;
 
 import java.text.SimpleDateFormat;
@@ -32,17 +30,20 @@ public class AdminMessagesPage implements Template {
     }
 
     private final List<Doc> messages;
-    private final CsrfToken csrfToken;
     private final Order order;
 
-    public AdminMessagesPage(List<Doc> messages, CsrfToken csrfToken) {
-        this(messages, csrfToken, Order.NEWEST);
+    public AdminMessagesPage(List<Doc> messages) {
+        this(messages, Order.NEWEST);
     }
 
-    public AdminMessagesPage(List<Doc> messages, CsrfToken csrfToken, Order order) {
+    public AdminMessagesPage(List<Doc> messages, Order order) {
         this.messages = messages;
-        this.csrfToken = csrfToken;
         this.order = order;
+    }
+
+    @Override
+    public String pageTitle() {
+        return "Messages - Admin";
     }
 
     @Override
@@ -56,20 +57,14 @@ public class AdminMessagesPage implements Template {
     }
 
     private Element topBar() {
-        return div(row().justifyContent(spaceBetween)
-                .marginBottom(SP_8),
-            div(
-                h1(style().fontSize(TEXT_3XL).fontWeight(700).color(TEXT),
-                    "Messages"),
-                p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_1),
-                    messages.size() + " submission" + (messages.size() != 1 ? "s" : ""),
-                    " · ",
-                    orderLink(Order.NEWEST, "newest first"),
-                    " · ",
-                    orderLink(Order.OLDEST, "oldest first"))
-            ),
-            logoutButton()
-        );
+        return AdminBar.render("Messages",
+            p(style().fontSize(TEXT_SM).color(TEXT_LIGHT).marginTop(SP_1),
+                messages.size() + " submission" + (messages.size() != 1 ? "s" : ""),
+                " · ",
+                orderLink(Order.NEWEST, "newest first"),
+                " · ",
+                orderLink(Order.OLDEST, "oldest first")),
+            "messages");
     }
 
     /** The order links: the active one is plain text, the other a link into the typed query. */
@@ -79,28 +74,6 @@ public class AdminMessagesPage implements Template {
         }
         return a(href("/only-admin/messages?order=" + target.name().toLowerCase()),
             style().color(PRIMARY), label);
-    }
-
-    // Logout is a POST (with CSRF token) so a cross-site link can't trigger it
-    private Element logoutButton() {
-        return form(action("/only-admin/logout"), method("post"),
-                style().margin(zero),
-            Csrf.tokenField(csrfToken),
-            button(attrs().type("submit").title("Logout"),
-                style()
-                    .apply(center())
-                    .width(px(40)).height(px(40))
-                    .backgroundColor(transparent).border(none).cursor(pointer)
-                    .borderRadius(ROUNDED).color(TEXT_LIGHT)
-                    .transitionColors(s(0.2)),
-                // Logout door icon (SVG)
-                svg(attrs().viewBox(0, 0, 24, 24).width(24).height(24).lineIcon(2),
-                    path(attrs().d("M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4")),
-                    polyline(attrs().points("16 17 21 12 16 7")),
-                    line(attrs().x1("21").y1("12").x2("9").y2("12"))
-                )
-            )
-        );
     }
 
     private Element messagesGrid() {

@@ -89,6 +89,7 @@ public interface Template extends Element {
     @Override
     default VNode toVNode() {
         com.osmig.Jweb.framework.styles.PageStyles.collect(this);
+        com.osmig.Jweb.framework.styles.PageScripts.collect(this);
         return render().toVNode();
     }
 

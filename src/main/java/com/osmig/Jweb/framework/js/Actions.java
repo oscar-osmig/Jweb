@@ -2222,6 +2222,11 @@ public class Actions extends Behaviors {
         return new DOMQuery(selector);
     }
 
+    /** {@link #dom(String)} from a typed selector — a {@code Cls}/{@code Id} handle or a chain. */
+    public static DOMQuery dom(jweb.css.Selector selector) {
+        return dom(selector.build());
+    }
+
     /**
      * Queries all elements matching a selector.
      *
@@ -2230,6 +2235,11 @@ public class Actions extends Behaviors {
      */
     public static DOMQueryAll domAll(String selector) {
         return new DOMQueryAll(selector);
+    }
+
+    /** {@link #domAll(String)} from a typed selector. */
+    public static DOMQueryAll domAll(jweb.css.Selector selector) {
+        return domAll(selector.build());
     }
 
     /**

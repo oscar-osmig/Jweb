@@ -18,24 +18,45 @@ package jweb.css;
  * </pre>
  */
 public class Selector {
-    private final StringBuilder sb = new StringBuilder();
+    private final String css;
+
+    /** An empty selector; every method returns a new one with its piece appended. */
+    public Selector() { this(""); }
+
+    /** A selector over the given text — the base {@code Cls} and {@code Id} handles build on. */
+    protected Selector(String css) { this.css = css; }
+
+    /** A new selector with {@code piece} appended; this one is unchanged. */
+    protected Selector add(String piece) { return new Selector(css + piece); }
+
+    // ========== Starters that coexist with the El/Css wildcards ==========
+    // (the short starters select()/all()/tag()/cls()/id() live in Selectors)
+
+    /** A type selector: {@code Selector.type("pre")} → {@code pre}. */
+    public static Selector type(String tagName) { return new Selector(tagName); }
+
+    /** The universal selector: {@code Selector.any()} → {@code *}. */
+    public static Selector any() { return new Selector("*"); }
+
+    /** A selector from its CSS text, for the odd case no builder covers. */
+    public static Selector of(String css) { return new Selector(css); }
 
     /** Appends the universal selector (*). */
-    public Selector all() { sb.append("*"); return this; }
+    public Selector all() { return add("*"); }
 
     /** Appends a tag/element selector. @param tagName the HTML tag name */
-    public Selector tag(String tagName) { sb.append(tagName); return this; }
+    public Selector tag(String tagName) { return add(tagName); }
 
     /** Appends a class selector. @param className the class name (no leading dot) */
-    public Selector cls(String className) { sb.append(".").append(className); return this; }
+    public Selector cls(String className) { return add("." + className); }
 
     /** Appends an ID selector. @param idName the ID (no leading hash) */
-    public Selector id(String idName) { sb.append("#").append(idName); return this; }
+    public Selector id(String idName) { return add("#" + idName); }
 
     // ========== Pseudo-classes ==========
 
     /** Appends a pseudo-class. @param name the pseudo-class name */
-    public Selector pseudo(String name) { sb.append(":").append(name); return this; }
+    public Selector pseudo(String name) { return add(":" + name); }
 
     /** Appends :hover pseudo-class (mouse over). */
     public Selector hover() { return pseudo("hover"); }
@@ -56,10 +77,10 @@ public class Selector {
     public Selector lastChild() { return pseudo("last-child"); }
 
     /** Appends :nth-child(n) pseudo-class. @param n the child index (1-based) */
-    public Selector nthChild(int n) { sb.append(":nth-child(").append(n).append(")"); return this; }
+    public Selector nthChild(int n) { return add(":nth-child(" + n + ")"); }
 
     /** Appends :nth-child() with a pattern. @param pattern e.g., "2n", "odd", "3n+1" */
-    public Selector nthChild(String pattern) { sb.append(":nth-child(").append(pattern).append(")"); return this; }
+    public Selector nthChild(String pattern) { return add(":nth-child(" + pattern + ")"); }
 
     /** Appends :focus-visible pseudo-class (keyboard focus). */
     public Selector focusVisible() { return pseudo("focus-visible"); }
@@ -86,43 +107,43 @@ public class Selector {
     public Selector open() { return pseudo("open"); }
 
     /** Appends :not() pseudo-class. @param inner the selector to negate */
-    public Selector not(Selector inner) { sb.append(":not(").append(inner.build()).append(")"); return this; }
+    public Selector not(Selector inner) { return add(":not(" + inner.build() + ")"); }
 
     /** Appends :has() pseudo-class. @param inner the selector to match */
-    public Selector has(Selector inner) { sb.append(":has(").append(inner.build()).append(")"); return this; }
+    public Selector has(Selector inner) { return add(":has(" + inner.build() + ")"); }
 
     /** Appends :has() with a raw selector string. @param selector the selector string */
-    public Selector has(String selector) { sb.append(":has(").append(selector).append(")"); return this; }
+    public Selector has(String selector) { return add(":has(" + selector + ")"); }
 
     /** Appends :is() pseudo-class (matches any of the selectors). @param inner the selector */
-    public Selector is(Selector inner) { sb.append(":is(").append(inner.build()).append(")"); return this; }
+    public Selector is(Selector inner) { return add(":is(" + inner.build() + ")"); }
 
     /** Appends :is() with a raw selector string. */
-    public Selector is(String selector) { sb.append(":is(").append(selector).append(")"); return this; }
+    public Selector is(String selector) { return add(":is(" + selector + ")"); }
 
     /** Appends :where() pseudo-class (like :is but no specificity). @param inner the selector */
-    public Selector where(Selector inner) { sb.append(":where(").append(inner.build()).append(")"); return this; }
+    public Selector where(Selector inner) { return add(":where(" + inner.build() + ")"); }
 
     /** Appends :where() with a raw selector string. */
-    public Selector where(String selector) { sb.append(":where(").append(selector).append(")"); return this; }
+    public Selector where(String selector) { return add(":where(" + selector + ")"); }
 
     /** Appends :nth-last-child() pseudo-class. */
-    public Selector nthLastChild(int n) { sb.append(":nth-last-child(").append(n).append(")"); return this; }
+    public Selector nthLastChild(int n) { return add(":nth-last-child(" + n + ")"); }
 
     /** Appends :nth-last-child() with pattern. */
-    public Selector nthLastChild(String pattern) { sb.append(":nth-last-child(").append(pattern).append(")"); return this; }
+    public Selector nthLastChild(String pattern) { return add(":nth-last-child(" + pattern + ")"); }
 
     /** Appends :nth-of-type() pseudo-class. */
-    public Selector nthOfType(int n) { sb.append(":nth-of-type(").append(n).append(")"); return this; }
+    public Selector nthOfType(int n) { return add(":nth-of-type(" + n + ")"); }
 
     /** Appends :nth-of-type() with pattern. */
-    public Selector nthOfType(String pattern) { sb.append(":nth-of-type(").append(pattern).append(")"); return this; }
+    public Selector nthOfType(String pattern) { return add(":nth-of-type(" + pattern + ")"); }
 
     /** Appends :nth-last-of-type() pseudo-class. */
-    public Selector nthLastOfType(int n) { sb.append(":nth-last-of-type(").append(n).append(")"); return this; }
+    public Selector nthLastOfType(int n) { return add(":nth-last-of-type(" + n + ")"); }
 
     /** Appends :nth-last-of-type() with pattern. */
-    public Selector nthLastOfType(String pattern) { sb.append(":nth-last-of-type(").append(pattern).append(")"); return this; }
+    public Selector nthLastOfType(String pattern) { return add(":nth-last-of-type(" + pattern + ")"); }
 
     /** Appends :first-of-type pseudo-class. */
     public Selector firstOfType() { return pseudo("first-of-type"); }
@@ -149,7 +170,7 @@ public class Selector {
     public Selector link() { return pseudo("link"); }
 
     /** Appends :lang() pseudo-class. @param lang the language code */
-    public Selector lang(String lang) { sb.append(":lang(").append(lang).append(")"); return this; }
+    public Selector lang(String lang) { return add(":lang(" + lang + ")"); }
 
     // Form-related pseudo-classes
     /** Appends :required pseudo-class. */
@@ -216,7 +237,7 @@ public class Selector {
     // ========== Pseudo-elements ==========
 
     /** Appends a pseudo-element. @param name the pseudo-element name */
-    public Selector pseudoEl(String name) { sb.append("::").append(name); return this; }
+    public Selector pseudoEl(String name) { return add("::" + name); }
 
     /** Appends ::before pseudo-element. */
     public Selector before() { return pseudoEl("before"); }
@@ -246,19 +267,19 @@ public class Selector {
     public Selector cue() { return pseudoEl("cue"); }
 
     /** Appends ::cue() with selector. */
-    public Selector cue(String selector) { sb.append("::cue(").append(selector).append(")"); return this; }
+    public Selector cue(String selector) { return add("::cue(" + selector + ")"); }
 
     /** Appends ::file-selector-button pseudo-element. */
     public Selector fileSelectorButton() { return pseudoEl("file-selector-button"); }
 
     /** Appends ::slotted() pseudo-element for shadow DOM. */
-    public Selector slotted(String selector) { sb.append("::slotted(").append(selector).append(")"); return this; }
+    public Selector slotted(String selector) { return add("::slotted(" + selector + ")"); }
 
     /** Appends ::part() pseudo-element for shadow DOM parts. */
-    public Selector part(String name) { sb.append("::part(").append(name).append(")"); return this; }
+    public Selector part(String name) { return add("::part(" + name + ")"); }
 
     /** Appends ::highlight() pseudo-element. */
-    public Selector highlight(String name) { sb.append("::highlight(").append(name).append(")"); return this; }
+    public Selector highlight(String name) { return add("::highlight(" + name + ")"); }
 
     /** Appends ::spelling-error pseudo-element. */
     public Selector spellingError() { return pseudoEl("spelling-error"); }
@@ -275,71 +296,71 @@ public class Selector {
     public Selector viewTransition() { return pseudoEl("view-transition"); }
 
     /** Appends ::view-transition-group(*) pseudo-element. @param name the transition name */
-    public Selector viewTransitionGroup(String name) { sb.append("::view-transition-group(").append(name).append(")"); return this; }
+    public Selector viewTransitionGroup(String name) { return add("::view-transition-group(" + name + ")"); }
 
     /** Appends ::view-transition-image-pair(*) pseudo-element. @param name the transition name */
-    public Selector viewTransitionImagePair(String name) { sb.append("::view-transition-image-pair(").append(name).append(")"); return this; }
+    public Selector viewTransitionImagePair(String name) { return add("::view-transition-image-pair(" + name + ")"); }
 
     /** Appends ::view-transition-old(*) pseudo-element (outgoing snapshot). @param name the transition name */
-    public Selector viewTransitionOld(String name) { sb.append("::view-transition-old(").append(name).append(")"); return this; }
+    public Selector viewTransitionOld(String name) { return add("::view-transition-old(" + name + ")"); }
 
     /** Appends ::view-transition-new(*) pseudo-element (incoming snapshot). @param name the transition name */
-    public Selector viewTransitionNew(String name) { sb.append("::view-transition-new(").append(name).append(")"); return this; }
+    public Selector viewTransitionNew(String name) { return add("::view-transition-new(" + name + ")"); }
 
     // ========== Attribute Selectors ==========
 
     /** Appends [attr] (has attribute). @param name the attribute name */
-    public Selector attr(String name) { sb.append("[").append(name).append("]"); return this; }
+    public Selector attr(String name) { return add("[" + name + "]"); }
 
     /** Appends [attr="value"]. @param name the attribute name @param value the exact value */
-    public Selector attr(String name, String value) { sb.append("[").append(name).append("=\"").append(value).append("\"]"); return this; }
+    public Selector attr(String name, String value) { return add("[" + name + "=\"" + value + "\"]"); }
 
     /** Appends [attr*="value"] (contains). @param name the attribute name @param value the substring */
-    public Selector attrContains(String name, String value) { sb.append("[").append(name).append("*=\"").append(value).append("\"]"); return this; }
+    public Selector attrContains(String name, String value) { return add("[" + name + "*=\"" + value + "\"]"); }
 
     /** Appends [attr^="value"] (starts with). @param name the attribute name @param value the prefix */
-    public Selector attrStartsWith(String name, String value) { sb.append("[").append(name).append("^=\"").append(value).append("\"]"); return this; }
+    public Selector attrStartsWith(String name, String value) { return add("[" + name + "^=\"" + value + "\"]"); }
 
     /** Appends [attr$="value"] (ends with). @param name the attribute name @param value the suffix */
-    public Selector attrEndsWith(String name, String value) { sb.append("[").append(name).append("$=\"").append(value).append("\"]"); return this; }
+    public Selector attrEndsWith(String name, String value) { return add("[" + name + "$=\"" + value + "\"]"); }
 
     // ========== Combinators ==========
 
     /** Appends descendant combinator (space). Matches any descendant. */
-    public Selector descendant(String selector) { sb.append(" ").append(selector); return this; }
+    public Selector descendant(String selector) { return add(" " + selector); }
 
     /** Appends descendant combinator (space). Matches any descendant. */
-    public Selector descendant(Selector selector) { sb.append(" ").append(selector.build()); return this; }
+    public Selector descendant(Selector selector) { return add(" " + selector.build()); }
 
     /** Appends child combinator (&gt;). Matches direct children only. */
-    public Selector child(String selector) { sb.append(" > ").append(selector); return this; }
+    public Selector child(String selector) { return add(" > " + selector); }
 
     /** Appends child combinator (&gt;). Matches direct children only. */
-    public Selector child(Selector selector) { sb.append(" > ").append(selector.build()); return this; }
+    public Selector child(Selector selector) { return add(" > " + selector.build()); }
 
     /** Appends adjacent sibling combinator (+). Matches immediately following sibling. */
-    public Selector adjacent(String selector) { sb.append(" + ").append(selector); return this; }
+    public Selector adjacent(String selector) { return add(" + " + selector); }
 
     /** Appends adjacent sibling combinator (+). Matches immediately following sibling. */
-    public Selector adjacent(Selector selector) { sb.append(" + ").append(selector.build()); return this; }
+    public Selector adjacent(Selector selector) { return add(" + " + selector.build()); }
 
     /** Appends general sibling combinator (~). Matches any following sibling. */
-    public Selector sibling(String selector) { sb.append(" ~ ").append(selector); return this; }
+    public Selector sibling(String selector) { return add(" ~ " + selector); }
 
     /** Appends general sibling combinator (~). Matches any following sibling. */
-    public Selector sibling(Selector selector) { sb.append(" ~ ").append(selector.build()); return this; }
+    public Selector sibling(Selector selector) { return add(" ~ " + selector.build()); }
 
     /** Combines with another selector (comma-separated grouping). */
-    public Selector or(String selector) { sb.append(", ").append(selector); return this; }
+    public Selector or(String selector) { return add(", " + selector); }
 
     /** Combines with another selector (comma-separated grouping). */
-    public Selector or(Selector selector) { sb.append(", ").append(selector.build()); return this; }
+    public Selector or(Selector selector) { return add(", " + selector.build()); }
 
     /** Appends raw CSS string for edge cases not covered by builder methods. */
-    public Selector raw(String s) { sb.append(s); return this; }
+    public Selector raw(String s) { return add(s); }
 
     /** Builds and returns the complete selector string. @return the CSS selector */
-    public String build() { return sb.toString(); }
+    public String build() { return css; }
 
     @Override public String toString() { return build(); }
 }

@@ -1,5 +1,7 @@
 package com.osmig.Jweb.app.docs;
 
+import jweb.Action;
+
 import static jweb.Js.*;
 
 /**
@@ -25,11 +27,10 @@ final class DocsNavScript {
         return DocVersions.isLatest(version) ? base : base + "&v=" + version;
     }
 
-    static String build() {
+    static Action build() {
         return actions()
             .does(guard("__docsNavInit").does(
-                prefetch(".docs-nav-link").within(".docs-sidebar").delay(50).cache(TTL),
-                activeLink(".docs-nav-link")))
-            .build();
+                prefetch(DocSidebar.NAV_LINK.build()).within(DocSidebar.DOCS_SIDEBAR.build()).delay(50).cache(TTL),
+                activeLink(DocSidebar.NAV_LINK.build())));
     }
 }

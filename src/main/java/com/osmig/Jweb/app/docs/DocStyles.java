@@ -30,7 +30,7 @@ public final class DocStyles {
     public static Style inlineCode() {
         return style().backgroundColor(hex("#f1f5f9")).color(hex("#475569"))
             .padding(px(2), px(6)).borderRadius(px(4)).fontSize(TEXT_SM)
-            .fontFamily("monospace");
+            .fontFamily(monospace);
     }
 
     public static Style list() {

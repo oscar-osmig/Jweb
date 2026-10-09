@@ -44,6 +44,11 @@ public final class LineGutter extends Behavior {
         return this;
     }
 
+    /** {@link #mirror(String)} from a handle. */
+    public LineGutter mirror(jweb.css.Selector mirror) {
+        return mirror(mirror.build());
+    }
+
     /** The class {@link jweb.Js#markLine} puts on the marked number. */
     public LineGutter errorClass(String className) {
         this.errorClass = className;

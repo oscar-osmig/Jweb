@@ -1,9 +1,9 @@
 package com.osmig.Jweb.app.pages.admin;
 
 import com.osmig.Jweb.app.forms.AdminLogin;
-import jweb.CsrfToken;
 import jweb.Element;
 import jweb.Form;
+import jweb.Id;
 import jweb.Template;
 
 import static jweb.El.*;
@@ -12,23 +12,28 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 
 /** Admin login page with gradient-bordered card. */
 public class AdminLoginPage implements Template {
+    private static final Id NOTICE = id("login-notice");
+
     private final String error;
     private final String notice;
     private final Form.Bound<AdminLogin> submitted;
-    private final CsrfToken csrfToken;
 
-    public AdminLoginPage(CsrfToken csrfToken) { this(null, null, null, csrfToken); }
-    public AdminLoginPage(String error, CsrfToken csrfToken) { this(error, null, null, csrfToken); }
-    public AdminLoginPage(String error, String notice, CsrfToken csrfToken) { this(error, notice, null, csrfToken); }
+    public AdminLoginPage() { this(null, null, null); }
+    public AdminLoginPage(String error) { this(error, null, null); }
+    public AdminLoginPage(String error, String notice) { this(error, notice, null); }
     /** After a submit: the bound form re-renders with the values typed and any field errors. */
-    public AdminLoginPage(String error, Form.Bound<AdminLogin> submitted, CsrfToken csrfToken) {
-        this(error, null, submitted, csrfToken);
+    public AdminLoginPage(String error, Form.Bound<AdminLogin> submitted) {
+        this(error, null, submitted);
     }
-    public AdminLoginPage(String error, String notice, Form.Bound<AdminLogin> submitted, CsrfToken csrfToken) {
+    public AdminLoginPage(String error, String notice, Form.Bound<AdminLogin> submitted) {
         this.error = error;
         this.notice = notice;
         this.submitted = submitted;
-        this.csrfToken = csrfToken;
+    }
+
+    @Override
+    public String pageTitle() {
+        return "Admin Login";
     }
 
     @Override
@@ -43,7 +48,6 @@ public class AdminLoginPage implements Template {
         Form<AdminLogin> form = form(AdminLogin.class)
             .cls("admin-login-form")
             .action("/only-admin/log/in")
-            .csrf(csrfToken)
             .field("email", f -> f.placeholder("admin@example.com"))
             .field("token", f -> f.placeholder("Enter admin token"))
             .submit("Sign In");
@@ -87,7 +91,7 @@ public class AdminLoginPage implements Template {
 
     /** A one-shot session flash ("You have been signed out."). */
     private Element noticeMessage() {
-        return when(notice != null, () -> div(id("login-notice"), style()
+        return when(notice != null, () -> div(NOTICE, style()
                 .padding(SP_3).borderRadius(ROUNDED).marginBottom(SP_4)
                 .backgroundColor(hex("#dcfce7")).color(hex("#166534"))
                 .fontSize(TEXT_SM).textAlign(center),

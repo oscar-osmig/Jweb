@@ -1,5 +1,6 @@
 package com.osmig.Jweb.app.docs;
 
+import jweb.Cls;
 import jweb.Element;
 import java.util.List;
 import static jweb.El.*;
@@ -8,6 +9,13 @@ import static com.osmig.Jweb.app.docs.DocStyles.*;
 
 public final class DocComponents {
     private DocComponents() {}
+
+    /** The code block wrapper that anchors the copy button — {@code .doc-code}. */
+    public static final Cls DOC_CODE = cls("doc-code");
+    /** The copy button riding on a code block — {@code .code-copy-btn}. */
+    public static final Cls COPY_BTN = cls("code-copy-btn");
+    /** The copy button's brief post-click state — {@code .copied}. */
+    public static final Cls COPIED = cls("copied");
 
     public static Element section(Element... children) {
         return div(style().maxWidth(px(900)), fragment(children));
@@ -54,9 +62,9 @@ public final class DocComponents {
     public static Element codeBlock(String lang, String c) {
         // Wrapper anchors the copy button; its hover reveal and the click
         // handler live in DocsPage.docsStyles() and CodeCopyScript.
-        return div(attrs().cls("doc-code").style(style().position(relative)),
+        return div(DOC_CODE, style().position(relative),
             pre(attrs().data("lang", lang).style(DocStyles.codeBlock()), code(c)),
-            button(attrs().cls("code-copy-btn").type("button").aria("label", "Copy code to clipboard"),
+            button(COPY_BTN, attrs().type("button").aria("label", "Copy code to clipboard"),
                 "Copy"));
     }
 

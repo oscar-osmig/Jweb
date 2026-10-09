@@ -98,6 +98,21 @@ onClick("search-btn").then(all(
         ))
 ))"""),
 
+            since("v3.0.2",
+                h3Title("Handles instead of selector strings"),
+                para("Every selector position — dom, domAll, byId, query, queryAll, delegate, "
+                    + "the behaviors, and el.querySelector/closest/matches — takes the Cls or "
+                    + "Id handle the element carries, so no class or id is a string in the script."),
+                codeBlock("""
+Cls card = cls("card");
+Cls copy = cls("copy");
+Id editor = id("editor");
+
+Action seen = dom(card).addClass("seen");
+Val value = byId(editor).dot("value");
+Action copyOnClick = actions().does(delegate(card, "click", copy)
+    .handler(callback("e", "t").does(copyFrom(Selector.type("pre")).trigger(v("t")))));""")),
+
             docTip("Use dom() for a single element, domAll() to operate on many.")
         );
     }

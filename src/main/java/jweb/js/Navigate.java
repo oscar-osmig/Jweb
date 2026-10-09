@@ -51,6 +51,11 @@ public final class Navigate implements Action {
         return this;
     }
 
+    /** {@link #target(String)} from a handle. */
+    public Navigate target(jweb.css.Selector target) {
+        return target(target.build());
+    }
+
     /** Replace the target element itself, not its children. */
     public Navigate replace() {
         this.mode = "outer";

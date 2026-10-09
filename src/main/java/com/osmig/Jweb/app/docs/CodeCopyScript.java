@@ -1,5 +1,8 @@
 package com.osmig.Jweb.app.docs;
 
+import jweb.Action;
+import jweb.css.Selector;
+
 import static jweb.Js.*;
 
 /**
@@ -14,15 +17,14 @@ import static jweb.Js.*;
 final class CodeCopyScript {
     private CodeCopyScript() {}
 
-    static String build() {
+    static Action build() {
         return actions()
             .does(guard("__codeCopyInit").does(
-                delegate(".docs-layout", "click", ".code-copy-btn").handler(
+                delegate(DocsPage.DOCS_LAYOUT, "click", DocComponents.COPY_BTN).handler(
                     callback("e", "t").does(
-                        copyFrom("pre").trigger(v("t"))
+                        copyFrom(Selector.type("pre").build()).trigger(v("t"))
                             .feedback("Copied!", 1600)
                             .failText("Copy failed")
-                            .feedbackClass("copied")))))
-            .build();
+                            .feedbackClass(DocComponents.COPIED.name())))));
     }
 }

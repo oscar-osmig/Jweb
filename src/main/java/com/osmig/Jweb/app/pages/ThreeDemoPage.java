@@ -1,6 +1,7 @@
 package com.osmig.Jweb.app.pages;
 
 import jweb.Element;
+import jweb.Id;
 
 import static jweb.El.*;
 import static jweb.Css.*;
@@ -14,6 +15,14 @@ public final class ThreeDemoPage {
 
     private ThreeDemoPage() {}
 
+    // Ids that are both an element id and a JS/patch target — declared once
+    // so the name is typed only here.
+    private static final Id PICK_PANEL = id("pick-panel");
+    private static final Id KNOT_CAPTION = id("knot-caption");
+    private static final Id WALKABLE = id("walkable");
+    private static final Id ARCH_CAPTION = id("arch-caption");
+    private static final Id NEAR_TIP = id("near-tip");
+
     public static Element content() {
         return div(style().maxWidth(px(700)).margin(zero, auto)
                 .padding(clamp(rem(2), vw(6), rem(3)), GUTTER),
@@ -24,26 +33,26 @@ public final class ThreeDemoPage {
                     + "Drag to orbit. Click a shape."),
 
             scene(style().marginTop(SP_6).height(px(420)).borderRadius(ROUNDED),
-                background("#0f172a"),
-                fog("#0f172a", 10, 30),
+                background(hex("#0f172a")),
+                fog(hex("#0f172a"), 10, 30),
                 camera().position(6, 4, 8).lookAt(0, 0.8, 0).autoRotate(1),
                 directionalLight(1.2).position(5, 8, 4).shadows(),
                 ambientLight(0.35),
-                plane(30, 30).flat().color("#1e293b").roughness(0.9),
+                plane(30, 30).flat().color(hex("#1e293b")).roughness(0.9),
                 group(
-                    torus(1, 0.35).color("#8b5cf6").position(-2.4, 1.2, 0)
+                    torus(1, 0.35).color(hex("#8b5cf6")).position(-2.4, 1.2, 0)
                         .rotation(90, 0, 0).spin(0, 0, 25).name("torus")
-                        .clickSwap("/demo/three/pick?shape=torus", "#pick-panel"),
-                    sphere(0.9).color("#f59e0b").metalness(0.7).roughness(0.25)
+                        .clickSwap("/demo/three/pick?shape=torus", "#" + PICK_PANEL.name()),
+                    sphere(0.9).color(hex("#f59e0b")).metalness(0.7).roughness(0.25)
                         .position(0, 0.9, 0).name("sphere")
-                        .clickSwap("/demo/three/pick?shape=sphere", "#pick-panel"),
-                    cone(0.8, 1.6).color("#10b981").position(2.4, 0.8, 0)
+                        .clickSwap("/demo/three/pick?shape=sphere", "#" + PICK_PANEL.name()),
+                    cone(0.8, 1.6).color(hex("#10b981")).position(2.4, 0.8, 0)
                         .float_(0.3, 0.5).name("cone")
-                        .clickSwap("/demo/three/pick?shape=cone", "#pick-panel")
+                        .clickSwap("/demo/three/pick?shape=cone", "#" + PICK_PANEL.name())
                 ).name("stage")
             ).id("showcase"),
 
-            div(id("pick-panel"), style().marginTop(SP_3), pickFragment(null)),
+            div(PICK_PANEL, style().marginTop(SP_3), pickFragment(null)),
 
             p(style().marginTop(SP_6).color(TEXT_LIGHT).fontSize(TEXT_SM),
                 "Every shape above is a builder chain: shadows are one call on the "
@@ -56,7 +65,7 @@ public final class ThreeDemoPage {
                 directionalLight().position(3, 5, 2),
                 ambientLight(0.3),
                 grid(),
-                box().color("#10b981").position(0, 1, 0).spin().name("cube")
+                box().color(hex("#10b981")).position(0, 1, 0).spin().name("cube")
             ).id("classic"),
 
             p(style().marginTop(SP_2).color(TEXT_LIGHT).fontSize(TEXT_SM),
@@ -66,25 +75,25 @@ public final class ThreeDemoPage {
             h2(style().marginTop(SP_6).fontSize(TEXT_LG).fontWeight(600).color(TEXT),
                 "Hover, billboards and client-side clicks"),
             scene(style().marginTop(SP_2).height(px(380)).borderRadius(ROUNDED),
-                background("#0b1120"),
+                background(hex("#0b1120")),
                 camera().position(0, 2.2, 7).lookAt(0, 1, 0).orbit(),
                 directionalLight(1.1).position(4, 6, 3),
                 ambientLight(0.35),
-                disc(6).flat().color("#111c33").roughness(0.95),
-                torusKnot(1, 0.28).color("#a855f7").metalness(0.6).roughness(0.2)
+                disc(6).flat().color(hex("#111c33")).roughness(0.95),
+                torusKnot(1, 0.28).color(hex("#a855f7")).metalness(0.6).roughness(0.2)
                     .position(0, 1.4, 0).spin(0, 25, 0).name("knot")
-                    .hoverScale(1.1).hoverEmissive("#4c1d95")
-                    .onClick(toggle("knot-caption")),
+                    .hoverScale(1.1).hoverEmissive(hex("#4c1d95"))
+                    .onClick(toggle(KNOT_CAPTION.name())),
                 billboard("torusKnot() — click it").size(0.45).position(0, 3.2, 0)
-                    .background("rgba(15,23,42,0.85)").color("#e2e8f0"),
-                icosahedron(0.7).wireframe().color("#22d3ee")
+                    .background(rgba(15, 23, 42, 0.85)).color(hex("#e2e8f0")),
+                icosahedron(0.7).wireframe().color(hex("#22d3ee"))
                     .position(-2.6, 1, 0).spin(0, 40, 0).hoverScale(1.2),
-                capsule(0.4, 0.8).color("#fb7185").position(2.6, 1.1, 0)
-                    .float_(0.2, 0.5).hoverColor("#f43f5e"),
-                ring(0.75, 0.95).color("#38bdf8").position(-2.6, 1, 0).spin(0, 0, 40)
+                capsule(0.4, 0.8).color(hex("#fb7185")).position(2.6, 1.1, 0)
+                    .float_(0.2, 0.5).hoverColor(hex("#f43f5e")),
+                ring(0.75, 0.95).color(hex("#38bdf8")).position(-2.6, 1, 0).spin(0, 0, 40)
             ).id("playground"),
 
-            p(id("knot-caption"),
+            p(KNOT_CAPTION,
                 style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
                     .backgroundColor(hex("#f5f3ff")).color(hex("#5b21b6")),
                 "Clicked! That ran an Actions-DSL handler — toggle(\"knot-caption\") — "
@@ -101,47 +110,47 @@ public final class ThreeDemoPage {
             h2(style().marginTop(SP_6).fontSize(TEXT_LG).fontWeight(600).color(TEXT),
                 "Walk through it — and patch it live"),
             scene(style().marginTop(SP_2).height(px(460)).borderRadius(ROUNDED),
-                background("#0c0a09"),
-                fog("#0c0a09", 14, 34),
+                background(hex("#0c0a09")),
+                fog(hex("#0c0a09"), 14, 34),
                 bloom(0.8, 0.4, 0.8),
                 camera().position(0, 1.9, 7.2).lookAt(0, 1.8, -2.5).fov(56)
                     .walk(1.6).bounds(-3.3, -5.6, 3.3, 6.6).sway()
                     .autoStart().clickToMove().fly(2.5).footsteps(),
-                hemisphereLight("#8a7a68", "#151210"),
-                pointLight(1.2).color("#ffd9a0").position(0, 3.4, 1),
-                pointLight(0.8).color("#ffe0b0").position(0, 3.2, -4.5),
+                hemisphereLight(hex("#8a7a68"), hex("#151210")),
+                pointLight(1.2).color(hex("#ffd9a0")).position(0, 3.4, 1),
+                pointLight(0.8).color(hex("#ffe0b0")).position(0, 3.2, -4.5),
                 // the polished floor: a real mirror under a satin veil
-                plane(8, 14).flat().mirror().color("#4a443e"),
-                plane(8, 14).flat().color("#191512").roughness(0.4)
+                plane(8, 14).flat().mirror().color(hex("#4a443e")),
+                plane(8, 14).flat().color(hex("#191512")).roughness(0.4)
                     .opacity(0.72).position(0, 0.01, 0),
                 // walls and the far portal
-                plane(8.2, 4.6).position(0, 2.3, -7).color("#25211c").roughness(1),
-                plane(14, 4.6).rotation(0, 90, 0).position(-4, 2.3, 0).color("#2a2521").roughness(1),
-                plane(14, 4.6).rotation(0, -90, 0).position(4, 2.3, 0).color("#2a2521").roughness(1),
+                plane(8.2, 4.6).position(0, 2.3, -7).color(hex("#25211c")).roughness(1),
+                plane(14, 4.6).rotation(0, 90, 0).position(-4, 2.3, 0).color(hex("#2a2521")).roughness(1),
+                plane(14, 4.6).rotation(0, -90, 0).position(4, 2.3, 0).color(hex("#2a2521")).roughness(1),
                 // one arc() is the whole archway; two lathe() profiles are the columns
-                arc(1.6, 0.09, 180).color("#8a6f4d").metalness(0.8).roughness(0.4)
+                arc(1.6, 0.09, 180).color(hex("#8a6f4d")).metalness(0.8).roughness(0.4)
                     .position(0, 2.1, -4.5),
                 lathe(0.34, 0, 0.26, 0.12, 0.2, 0.3, 0.2, 2.0, 0.3, 2.15).segments(24)
-                    .color("#4a4038").roughness(0.9).position(-1.6, 0, -4.5).solid(0.4),
+                    .color(hex("#4a4038")).roughness(0.9).position(-1.6, 0, -4.5).solid(0.4),
                 lathe(0.34, 0, 0.26, 0.12, 0.2, 0.3, 0.2, 2.0, 0.3, 2.15).segments(24)
-                    .color("#4a4038").roughness(0.9).position(1.6, 0, -4.5).solid(0.4),
+                    .color(hex("#4a4038")).roughness(0.9).position(1.6, 0, -4.5).solid(0.4),
                 // under the arch: a zone that captions itself on the way in and out
                 zone(-1.4, -5.3, 1.4, -3.7).name("arch")
-                    .onEnter(show("arch-caption")).onLeave(hide("arch-caption")),
+                    .onEnter(show(ARCH_CAPTION.name())).onLeave(hide(ARCH_CAPTION.name())),
                 // one tube() is the whole vine over the arch
                 tube(0.035, -1.7, 2.0, -4.4, -0.8, 3.05, -4.6, 0.6, 3.1, -4.4, 1.7, 2.2, -4.5)
-                    .color("#3d5c3a").roughness(1),
+                    .color(hex("#3d5c3a")).roughness(1),
                 // the lantern: click it and the server re-colors it over the socket
-                cylinder(0.05, 1.1).color("#4a4038").position(0, 0.55, -2.2).solid(0.2),
-                sphere(0.24).color("#ffd9a0").emissive("#e8b36b").roughness(0.6)
+                cylinder(0.05, 1.1).color(hex("#4a4038")).position(0, 0.55, -2.2).solid(0.2),
+                sphere(0.24).color(hex("#ffd9a0")).emissive(hex("#e8b36b")).roughness(0.6)
                     .position(0, 1.35, -2.2).name("lantern").hoverScale(1.15)
                     .onClick(ThreeDemoPage::relightLantern)
-                    .onNear(2.2, show("near-tip")).onFar(hide("near-tip")),
-                pointLight(1.1).color("#e8b36b").position(0, 1.6, -2.2).name("lantern-light"),
+                    .onNear(2.2, show(NEAR_TIP.name())).onFar(hide(NEAR_TIP.name())),
+                pointLight(1.1).color(hex("#e8b36b")).position(0, 1.6, -2.2).name("lantern-light"),
                 billboard("the lantern listens — click it").size(0.32)
-                    .position(0, 2.15, -2.2).background("rgba(12,10,9,0.8)").color("#e7d6b1"),
+                    .position(0, 2.15, -2.2).background(rgba(12, 10, 9, 0.8)).color(hex("#e7d6b1")),
                 // dust holding the light: one node, one draw call
-                particles(140).color("#e7d6b1").size(0.02).spread(6, 3.4, 10)
+                particles(140).color(hex("#e7d6b1")).size(0.02).spread(6, 3.4, 10)
                     .position(0, 1.9, 0).drift().opacity(0.75),
                 // a compass in the corner: pure CSS on the scene's --three-yaw
                 div(id("compass"), style().position(absolute).right(px(14)).bottom(px(14))
@@ -150,26 +159,26 @@ public final class ThreeDemoPage {
                         .apply(center())
                         .fontSize(px(18)).transform(rotate(var("--three-yaw", deg(0)))),
                     "▲")
-            ).id("walkable"),
+            ).id(WALKABLE.name()),
 
-            p(id("arch-caption"),
+            p(ARCH_CAPTION,
                 style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
                     .backgroundColor(hex("#fef3c7")).color(hex("#78350f")),
                 "Under the arch. A zone(...).onEnter(show(...)) put this here; "
                     + "onLeave(hide(...)) takes it away — no script, no round-trip."),
-            p(id("near-tip"),
+            p(NEAR_TIP,
                 style().display(none).marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
                     .backgroundColor(hex("#ecfeff")).color(hex("#155e75")),
                 "Near the lantern — onNear(2.2, show(...)) / onFar(hide(...)). "
                     + "The columns and the lantern post are .solid(): walk into them."),
 
             div(cluster(SP_2).marginTop(SP_3),
-                button(data("three-walk", "walkable"), chipStyle(),
+                button(data("three-walk", WALKABLE.name()), chipStyle(),
                     "🚶 Walk here — W A S D, drag to look, Esc to step out"),
-                button(onClick(e -> Three.patch("walkable").camera()
+                button(onClick(e -> Three.patch(WALKABLE.name()).camera()
                             .position(0, 2.2, -0.6).lookAt(0, 2.1, -4.5).tween(1200)),
                     chipStyle(), "Glide to the arch"),
-                button(onClick(e -> Three.patch("walkable").camera()
+                button(onClick(e -> Three.patch(WALKABLE.name()).camera()
                             .position(0, 1.9, 7.2).lookAt(0, 1.8, -2.5).tween(1200)),
                     chipStyle(), "Back to the door")),
 
@@ -199,10 +208,10 @@ public final class ThreeDemoPage {
     private static void relightLantern(jweb.Event e) {
         boolean cool = !LANTERN_COOL.get();
         LANTERN_COOL.set(cool);
-        Three.patch("walkable")
-            .node("lantern").emissive(cool ? "#22d3ee" : "#e8b36b")
-                .color(cool ? "#a5f3fc" : "#ffd9a0").tween(500)
-            .node("lantern-light").color(cool ? "#22d3ee" : "#e8b36b")
+        Three.patch(WALKABLE.name())
+            .node("lantern").emissive(cool ? hex("#22d3ee") : hex("#e8b36b"))
+                .color(cool ? hex("#a5f3fc") : hex("#ffd9a0")).tween(500)
+            .node("lantern-light").color(cool ? hex("#22d3ee") : hex("#e8b36b"))
                 .intensity(cool ? 1.6 : 1.1).tween(500);
     }
 

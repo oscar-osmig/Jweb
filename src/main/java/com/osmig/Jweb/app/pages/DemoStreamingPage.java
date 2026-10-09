@@ -2,6 +2,7 @@ package com.osmig.Jweb.app.pages;
 
 import jweb.Suspense;
 import jweb.Element;
+import jweb.Id;
 import jweb.state.State;
 
 import java.util.ArrayList;
@@ -17,6 +18,13 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 public final class DemoStreamingPage {
 
     private DemoStreamingPage() {}
+
+    // Ids that are both an element id and a JS target — declared once so
+    // the name is typed only here.
+    private static final Id ACTIONS_PANEL = id("actions-panel");
+    private static final Id FRAG_SLOT = id("frag-slot");
+    private static final Id FRAG_NOTE = id("frag-note");
+    private static final Id LATE_NOTE = id("late-note");
 
     public static Element content() {
         return div(style().maxWidth(px(700)).margin(zero, auto)
@@ -42,16 +50,16 @@ public final class DemoStreamingPage {
         return div(style().marginTop(SP_6),
             h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
                 "Client-only action (Actions DSL, CSP-safe)"),
-            button(id("toggle-details"), onClick(toggle("actions-panel")), buttonStyle(),
+            button(id("toggle-details"), onClick(toggle(ACTIONS_PANEL.name())), buttonStyle(),
                 "Toggle details"),
-            div(id("actions-panel"),
+            div(ACTIONS_PANEL,
                 style().marginTop(SP_2).padding(SP_3).borderRadius(ROUNDED)
                     .backgroundColor(hex("#fefce8")).color(hex("#854d0e")),
                 "Toggled entirely in the browser — under the page's nonce CSP."),
             // Raw set("onclick", js): the serializer rewrites even this
             // hand-written form to delegation at render time
             button(id("raw-inline"),
-                attrs().set("onclick", "document.getElementById('raw-note').textContent="
+                attrs().set("onclick", "document.getElementById('raw-note').textContent=" // raw: demonstrates the serializer rewriting a hand-written handler
                     + "'The raw handler ran — rewritten to delegation at render time.'"),
                 buttonStyle().marginLeft(SP_2),
                 "Raw set(\"onclick\") handler"),
@@ -68,9 +76,9 @@ public final class DemoStreamingPage {
         return div(style().marginTop(SP_6),
             h2(style().fontSize(TEXT_LG).fontWeight(600).color(TEXT),
                 "Fragment swap carrying its own action"),
-            button(id("load-fragment"), swap("/demo/streaming/fragment", "#frag-slot"),
+            button(id("load-fragment"), swap("/demo/streaming/fragment", "#" + FRAG_SLOT.name()),
                 buttonStyle(), "Load fragment"),
-            div(id("frag-slot"), style().marginTop(SP_2))
+            div(FRAG_SLOT, style().marginTop(SP_2))
         );
     }
 
@@ -80,9 +88,9 @@ public final class DemoStreamingPage {
             style().padding(SP_3).borderRadius(ROUNDED)
                    .backgroundColor(hex("#fdf2f8")).color(hex("#9d174d")),
             p("This fragment was fetched and swapped in."),
-            button(id("frag-action"), onClick(hide("frag-note")), buttonStyle(),
+            button(id("frag-action"), onClick(hide(FRAG_NOTE.name())), buttonStyle(),
                 "Hide the note"),
-            p(id("frag-note"), "Its button works because the "
+            p(FRAG_NOTE, "Its button works because the "
                 + "definitions script rode along and ran on swap.")
         );
     }
@@ -131,9 +139,9 @@ public final class DemoStreamingPage {
                             each(entries, entry -> li(entry)))),
                     // Actions-DSL handler born on the block's render thread:
                     // its definition rides the chunk's script, late
-                    button(id("late-action"), onClick(toggle("late-note")),
+                    button(id("late-action"), onClick(toggle(LATE_NOTE.name())),
                         buttonStyle().marginLeft(SP_2), "Toggle note (client-only)"),
-                    p(id("late-note"), "A streamed-in Actions-DSL handler toggled this.")
+                    p(LATE_NOTE, "A streamed-in Actions-DSL handler toggled this.")
                 );
             })
         );

@@ -1,5 +1,6 @@
 package com.osmig.Jweb.app.docs;
 
+import jweb.Cls;
 import jweb.Element;
 import jweb.Template;
 
@@ -8,6 +9,21 @@ import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
 
 public class DocSidebar implements Template {
+    /** The left rail — {@code .docs-sidebar} — phone breakpoint lives in {@link DocsPage}. */
+    public static final Cls DOCS_SIDEBAR = cls("docs-sidebar");
+    /** The chip-strip wrapper used on phone — {@code .docs-sidebar-inner}. */
+    public static final Cls DOCS_SIDEBAR_INNER = cls("docs-sidebar-inner");
+    /** One link group under a heading — {@code .docs-nav-section}. */
+    public static final Cls NAV_SECTION = cls("docs-nav-section");
+    /** A group's heading — {@code .docs-nav-title} — hidden on phone. */
+    public static final Cls NAV_TITLE = cls("docs-nav-title");
+    /** The link list inside a group — {@code .docs-nav-links}. */
+    public static final Cls NAV_LINKS = cls("docs-nav-links");
+    /** A section link — {@code .docs-nav-link}. */
+    public static final Cls NAV_LINK = cls("docs-nav-link");
+    /** The current-section/current-heading marker, shared with {@code SubheaderSidebar}'s rail links. */
+    public static final Cls ACTIVE = cls("active");
+
     private final String active;
     private final String version;
 
@@ -24,9 +40,9 @@ public class DocSidebar implements Template {
     public Element render() {
         // Layout props (width, padding, border, overflow) live in DocsPage's
         // .docs-sidebar rules so the phone breakpoint can reshape them.
-        return aside(cls("docs-sidebar"), style()
+        return aside(DOCS_SIDEBAR, style()
                 .backgroundColor(hex("#fafafa")),
-            div(cls("docs-sidebar-inner"),
+            div(DOCS_SIDEBAR_INNER,
                 navSection("Basics",
                     link("intro", "Introduction"),
                     link("setup", "Getting Started"),
@@ -71,8 +87,8 @@ public class DocSidebar implements Template {
      * navigating. Opening a tab as well would just leave an empty one behind.
      */
     private Element aiDocsLink() {
-        return div(cls("docs-nav-section"),
-            h2(cls("docs-nav-title"), style()
+        return div(NAV_SECTION,
+            h2(NAV_TITLE, style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), "For AI"),
@@ -95,18 +111,18 @@ public class DocSidebar implements Template {
                 span(style().display(block), "Download all docs (.md)"),
                 span(style()
                         .display(block).marginTop(px(2))
-                        .fontFamily("ui-monospace, SFMono-Regular, monospace")
+                        .fontFamily(uiMonospace, font("SFMono-Regular"), monospace)
                         .fontSize(px(11)).opacity(0.75),
                     "/docs/tell")));
     }
 
     private Element navSection(String title, Element... links) {
-        return div(cls("docs-nav-section"),
-            h2(cls("docs-nav-title"), style()
+        return div(NAV_SECTION,
+            h2(NAV_TITLE, style()
                 .fontSize(TEXT_SM).fontWeight(600).color(TEXT)
                 .marginBottom(SP_2).textTransform(uppercase)
                 .letterSpacing(em(0.05)), title),
-            nav(cls("docs-nav-links"), fragment(links)));
+            nav(NAV_LINKS, fragment(links)));
     }
 
     /**
@@ -126,10 +142,10 @@ public class DocSidebar implements Template {
         String href = DocVersions.href(id, version);
         return a(attrs().href(href)
             .data("section", id)
-            .swap(DocsNavScript.contentHref(id, version), ".docs-content")
+            .swap(DocsNavScript.contentHref(id, version), DocsPage.DOCS_CONTENT.build())
             .swapPush(href)
             .data("swap-cache", String.valueOf(DocsNavScript.TTL))
-            .cls("docs-nav-link").classIf(id.equals(active), "active"),
+            .cls(NAV_LINK.name()).classIf(id.equals(active), ACTIVE.name()),
             label);
     }
 }

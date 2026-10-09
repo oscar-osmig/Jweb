@@ -1,5 +1,9 @@
 package com.osmig.Jweb.app.subheader;
 
+import com.osmig.Jweb.app.docs.DocsPage;
+import jweb.Action;
+import jweb.css.Selector;
+
 import static jweb.Js.*;
 
 /**
@@ -19,15 +23,15 @@ import static jweb.Js.*;
 public final class SubheaderScript {
     private SubheaderScript() {}
 
-    public static String build() {
+    public static Action build() {
         return actions()
             .does(guard("__subheaderInit").does(
-                scrollSpy("#subheader-nav", "h2, h3")
-                    .within(".docs-content")
-                    .linkClass("subheader-link")
-                    .host("#subheader-sidebar")
-                    .hasHeadingsClass("has-headers")
-                    .scrollMargin(24)))
-            .build();
+                scrollSpy(SubheaderSidebar.SUBHEADER_NAV.build(),
+                        Selector.type("h2").or(Selector.type("h3")).build())
+                    .within(DocsPage.DOCS_CONTENT.build())
+                    .linkClass(SubheaderSidebar.SUBHEADER_LINK.name())
+                    .host(SubheaderSidebar.SUBHEADER_SIDEBAR_ID.build())
+                    .hasHeadingsClass(SubheaderSidebar.HAS_HEADERS.name())
+                    .scrollMargin(24)));
     }
 }

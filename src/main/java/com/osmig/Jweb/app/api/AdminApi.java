@@ -17,6 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class AdminApi {
 
+    /** The review API's credential headers — the same email and token as the login form. */
+    public static final String EMAIL_HEADER = "X-Admin-Email";
+    public static final String TOKEN_HEADER = "X-Admin-Token";
+
     private static final int MAX_ATTEMPTS = 5;
     private static final long ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
 
@@ -49,20 +53,52 @@ public class AdminApi {
         if (!isConfigured()) return false;
         if (isRateLimited(request.ip())) return false;
 
-        // Tolerate copy-paste whitespace and email case differences
-        String cleanEmail = email == null ? null : email.strip().toLowerCase();
-        String cleanToken = token == null ? null : token.strip();
-        String expectedEmail = adminEmail == null ? null : adminEmail.strip().toLowerCase();
-
-        if (!constantTimeEquals(adminToken.strip(), cleanToken)
-                || !constantTimeEquals(expectedEmail, cleanEmail)) {
+        if (!credentialsMatch(email, token)) {
             recordFailure(request.ip());
             return false;
         }
 
         failedAttempts.remove(request.ip());
-        Auth.login(request, Principal.of("admin", cleanEmail, "admin"));
+        Auth.login(request, Principal.of("admin", email.strip().toLowerCase(), "admin"));
         return true;
+    }
+
+    /**
+     * True when the request is the admin's: a signed-in admin session, or the
+     * admin email and token sent as the {@value #EMAIL_HEADER} and
+     * {@value #TOKEN_HEADER} headers. The headers are how a script drives the
+     * review API without a browser session; a wrong pair counts against the
+     * same per-IP limit as the login form.
+     */
+    public boolean authorize(Request request) {
+        if (Auth.hasRole(request, "admin")) return true;
+
+        String email = request.header(EMAIL_HEADER);
+        String token = request.header(TOKEN_HEADER);
+        if (email == null && token == null) return false;
+        if (!isConfigured()) return false;
+        if (isRateLimited(request.ip())) return false;
+
+        if (!credentialsMatch(email, token)) {
+            recordFailure(request.ip());
+            return false;
+        }
+        return true;
+    }
+
+    /** Both credentials in constant time; copy-paste whitespace and email case are tolerated. */
+    private boolean credentialsMatch(String email, String token) {
+        String cleanEmail = email == null ? null : email.strip().toLowerCase();
+        String cleanToken = token == null ? null : token.strip();
+        String expectedEmail = adminEmail == null ? null : adminEmail.strip().toLowerCase();
+        return constantTimeEquals(adminToken.strip(), cleanToken)
+            && constantTimeEquals(expectedEmail, cleanEmail);
+    }
+
+    /** Sets the credentials outside Spring — for tests. */
+    void configure(String email, String token) {
+        this.adminEmail = email;
+        this.adminToken = token;
     }
 
     /** Timing-safe string comparison so the token can't be guessed byte-by-byte. */

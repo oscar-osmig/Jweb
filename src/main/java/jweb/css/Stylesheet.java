@@ -63,6 +63,18 @@ public class Stylesheet {
     }
 
     /**
+     * Adds a CSS rule from a typed selector — a {@code Cls}/{@code Id} handle
+     * or a {@code Selectors} chain: {@code rule(CARD.hover(), style()...)}.
+     *
+     * @param selector the selector
+     * @param style the styles to apply
+     * @return this for chaining
+     */
+    public Stylesheet rule(Selector selector, jweb.Style<?> style) {
+        return rule(selector.build(), style);
+    }
+
+    /**
      * Adds a CSS rule built with {@link jweb.css.Rule#of}.
      *
      * <p>Example:</p>
@@ -266,6 +278,11 @@ public class Stylesheet {
     public Stylesheet startingStyle(String selector, jweb.Style<?> style) {
         rules.add("@starting-style{" + selector + "{" + style.build() + "}}");
         return this;
+    }
+
+    /** {@link #startingStyle(String, jweb.Style)} from a typed selector. */
+    public Stylesheet startingStyle(Selector selector, jweb.Style<?> style) {
+        return startingStyle(selector.build(), style);
     }
 
     /**

@@ -48,6 +48,29 @@ public class UserPage implements Template {
     }
 }"""),
 
+            since("v3.0.2",
+                h3Title("A page built from the request"),
+                para("A page whose constructor needs a query parameter, a store lookup or a "
+                    + "flash message stays in the page table: register it with a lambda and it "
+                    + "keeps the default layout, pageTitle(), styles(), scripts() and "
+                    + "beforeRender(). Response.html(template) from a handler renders the "
+                    + "same way, with the status and headers you set."),
+                codeBlock("""
+class AboutPage implements Template { public Element render() { return div(); } }
+class SandboxPage implements Template {
+    SandboxPage(String file) {}
+    public Element render() { return div(); }
+    public String pageTitle() { return "Sandbox - JWeb"; }
+}
+
+@Component
+public class Routes implements JWebRoutes {
+    public void configure(JWeb app) {
+        app.pages("/sandbox", req -> new SandboxPage(req.query("file")));
+        app.pages("/about", AboutPage::new);
+    }
+}""")),
+
             h3Title("Page Template"),
             para("Each page is a class implementing Template."),
             codeBlock("""

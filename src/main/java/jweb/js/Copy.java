@@ -82,6 +82,11 @@ public final class Copy implements Action {
         return this;
     }
 
+    /** {@link #feedbackClass(String)} from a handle. */
+    public Copy feedbackClass(jweb.Cls cls) {
+        return feedbackClass(cls.name());
+    }
+
     @Override
     public String build() {
         String source = selector != null

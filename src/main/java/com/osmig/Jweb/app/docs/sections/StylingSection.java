@@ -104,6 +104,7 @@ String css = styles(
 );"""),
 
             StylingPageStyles.render(),
+            StylingHandles.render(),
             StylingMixins.render(),
             StylingUnits.render(),
             StylingColors.render(),

@@ -27,6 +27,21 @@ public class Events extends Runtime {
         return new Delegate(parent, event, child);
     }
 
+    /** {@link #delegate(String, String, String)} from typed selectors: {@code delegate(LAYOUT, "click", COPY)}. */
+    public static Delegate delegate(jweb.css.Selector parent, String event, jweb.css.Selector child) {
+        return delegate(parent.build(), event, child.build());
+    }
+
+    /** {@link #delegate(String, String, String)} with a typed parent. */
+    public static Delegate delegate(jweb.css.Selector parent, String event, String child) {
+        return delegate(parent.build(), event, child);
+    }
+
+    /** {@link #delegate(String, String, String)} with a typed child. */
+    public static Delegate delegate(String parent, String event, jweb.css.Selector child) {
+        return delegate(parent, event, child.build());
+    }
+
     /**
      * A debounced version of {@code action} — a self-contained function
      * expression, so there is no timer variable to declare or name.

@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 /**
  * The framework's own app is the proof that the DSL covers what a real page
- * needs: its four client scripts are written entirely in it, and what they
+ * needs: its five client scripts are written entirely in it, and what they
  * generate parses.
  */
 class AppScriptsTest {
@@ -29,7 +29,8 @@ class AppScriptsTest {
         "src/main/java/com/osmig/Jweb/app/docs/DocsNavScript.java",
         "src/main/java/com/osmig/Jweb/app/docs/CodeCopyScript.java",
         "src/main/java/com/osmig/Jweb/app/subheader/SubheaderScript.java",
-        "src/main/java/com/osmig/Jweb/app/sandbox/SandboxScript.java");
+        "src/main/java/com/osmig/Jweb/app/sandbox/SandboxScript.java",
+        "src/main/java/com/osmig/Jweb/app/pages/SnippetScript.java");
 
     @Test
     void noScriptReachesForTheEscapeHatch() throws IOException {
@@ -76,6 +77,11 @@ class AppScriptsTest {
         assertTrue(sandbox.contains("JWeb.relineGutter"), sandbox);
         assertTrue(sandbox.contains("JWeb.markLine"), sandbox);
         assertTrue(sandbox.contains("JWeb.insertText"), sandbox);
+
+        assertTrue(sandbox.contains("snippet-code"), "the sandbox fills the Add snippet form: " + sandbox);
+
+        String snippets = js.get("snippets");
+        assertTrue(snippets.contains("JWeb.copyText((JWeb.nearest(t,'pre')"), snippets);
     }
 
     @Test
@@ -101,10 +107,11 @@ class AppScriptsTest {
 
     private static Map<String, String> scripts() {
         Map<String, String> js = new LinkedHashMap<>();
-        js.put("docs-nav", DocsNavScript.build());
-        js.put("code-copy", CodeCopyScript.build());
-        js.put("subheader", SubheaderScript.build());
+        js.put("docs-nav", DocsNavScript.build().build());
+        js.put("code-copy", CodeCopyScript.build().build());
+        js.put("subheader", SubheaderScript.build().build());
         js.put("sandbox", SandboxScriptAccess.build());
+        js.put("snippets", com.osmig.Jweb.app.pages.SnippetScript.build().build());
         return js;
     }
 

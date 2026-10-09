@@ -162,6 +162,11 @@ public class Supports {
         return this;
     }
 
+    /** {@link #rule(String, jweb.Style)} from a typed selector ({@code CARD.hover()}). */
+    public Supports rule(Selector selector, jweb.Style<?> style) {
+        return rule(selector.build(), style);
+    }
+
     /**
      * Adds multiple CSS rules.
      *

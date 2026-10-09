@@ -390,6 +390,20 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T fontFamily(String value) { return prop("font-family", value); }
 
     /**
+     * A font stack from typed values — named families and generics:
+     * {@code fontFamily(font("Inter"), systemUi, sansSerif)} renders
+     * {@code font-family:"Inter", system-ui, sans-serif}.
+     */
+    public T fontFamily(CSSValue... families) {
+        StringBuilder sb = new StringBuilder();
+        for (CSSValue family : families) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(family.css());
+        }
+        return prop("font-family", sb.toString());
+    }
+
+    /**
      * Sets the {@code font} shorthand — style, variant, weight,
      * size/line-height and family in one string.
      *
@@ -794,6 +808,29 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T animation(String name, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction, CSSValue fillMode) {
         return animation(CSSValue.of(name), duration, timing, delay, iterationCount, direction, fillMode);
     }
+    // The keyframes object itself — its name is declared once, in one place:
+    //   static final Keyframes SHIFT = keyframes("gradientShift").from(...).to(...);
+    //   style().animation(SHIFT, s(3), linear, s(0), infinite)
+    public T animation(jweb.css.Keyframes keyframes, CSSValue duration) {
+        return animation(keyframes.getName(), duration);
+    }
+    public T animation(jweb.css.Keyframes keyframes, CSSValue duration, CSSValue timing) {
+        return animation(keyframes.getName(), duration, timing);
+    }
+    public T animation(jweb.css.Keyframes keyframes, CSSValue duration, CSSValue timing, CSSValue delay) {
+        return animation(keyframes.getName(), duration, timing, delay);
+    }
+    public T animation(jweb.css.Keyframes keyframes, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount) {
+        return animation(keyframes.getName(), duration, timing, delay, iterationCount);
+    }
+    public T animation(jweb.css.Keyframes keyframes, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction) {
+        return animation(keyframes.getName(), duration, timing, delay, iterationCount, direction);
+    }
+    public T animation(jweb.css.Keyframes keyframes, CSSValue duration, CSSValue timing, CSSValue delay, CSSValue iterationCount, CSSValue direction, CSSValue fillMode) {
+        return animation(keyframes.getName(), duration, timing, delay, iterationCount, direction, fillMode);
+    }
+    /** {@code animation-name} from the keyframes object. */
+    public T animationName(jweb.css.Keyframes keyframes) { return prop("animation-name", keyframes.getName()); }
     public T animationName(CSSValue value) { return prop("animation-name", value); }
     public T animationDuration(CSSValue value) { return prop("animation-duration", value); }
     public T animationTimingFunction(CSSValue value) { return prop("animation-timing-function", value); }
@@ -813,6 +850,29 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     }
 
     public T boxShadow(String value) { return prop("box-shadow", value); }
+
+    /**
+     * One or more shadows from {@code shadow(...)} / {@code insetShadow(...)}
+     * values, comma-separated:
+     * {@code boxShadow(shadow(0, px(1), px(2), rgba(0,0,0,.1)), shadow(0, px(12), px(32), px(-16), rgba(79,70,229,.35)))}.
+     */
+    public T boxShadow(CSSValue... shadows) {
+        return prop("box-shadow", joinShadows(shadows));
+    }
+
+    /** One or more text shadows, comma-separated. */
+    public T textShadow(CSSValue... shadows) {
+        return prop("text-shadow", joinShadows(shadows));
+    }
+
+    private static String joinShadows(CSSValue[] shadows) {
+        StringBuilder sb = new StringBuilder();
+        for (CSSValue shadow : shadows) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(shadow.css());
+        }
+        return sb.toString();
+    }
 
     // ==================== Box Shadow Presets ====================
 
@@ -3355,6 +3415,98 @@ public class Style<T extends Style<T>> implements com.osmig.Jweb.framework.style
     public T textShadow(CSSValue value) { return prop("text-shadow", value); }
     /** {@code font-family} from a typed value, e.g. a {@code var(--font)} token. */
     public T fontFamily(CSSValue value) { return prop("font-family", value); }
+
+    // ==================== 3.0.2: the long tail, so camelCase always works ====================
+    // One typed and one String form each, like every other property.
+
+    public T backfaceVisibility(CSSValue value) { return prop("backface-visibility", value); }
+    public T backfaceVisibility(String value) { return prop("backface-visibility", value); }
+    public T backgroundOrigin(CSSValue value) { return prop("background-origin", value); }
+    public T backgroundOrigin(String value) { return prop("background-origin", value); }
+    public T borderTopColor(CSSValue value) { return prop("border-top-color", value); }
+    public T borderTopColor(String value) { return prop("border-top-color", value); }
+    public T borderTopStyle(CSSValue value) { return prop("border-top-style", value); }
+    public T borderTopStyle(String value) { return prop("border-top-style", value); }
+    public T borderTopWidth(CSSValue value) { return prop("border-top-width", value); }
+    public T borderTopWidth(String value) { return prop("border-top-width", value); }
+    public T borderRightColor(CSSValue value) { return prop("border-right-color", value); }
+    public T borderRightColor(String value) { return prop("border-right-color", value); }
+    public T borderRightStyle(CSSValue value) { return prop("border-right-style", value); }
+    public T borderRightStyle(String value) { return prop("border-right-style", value); }
+    public T borderRightWidth(CSSValue value) { return prop("border-right-width", value); }
+    public T borderRightWidth(String value) { return prop("border-right-width", value); }
+    public T borderBottomColor(CSSValue value) { return prop("border-bottom-color", value); }
+    public T borderBottomColor(String value) { return prop("border-bottom-color", value); }
+    public T borderBottomStyle(CSSValue value) { return prop("border-bottom-style", value); }
+    public T borderBottomStyle(String value) { return prop("border-bottom-style", value); }
+    public T borderBottomWidth(CSSValue value) { return prop("border-bottom-width", value); }
+    public T borderBottomWidth(String value) { return prop("border-bottom-width", value); }
+    public T borderLeftColor(CSSValue value) { return prop("border-left-color", value); }
+    public T borderLeftColor(String value) { return prop("border-left-color", value); }
+    public T borderLeftStyle(CSSValue value) { return prop("border-left-style", value); }
+    public T borderLeftStyle(String value) { return prop("border-left-style", value); }
+    public T borderLeftWidth(CSSValue value) { return prop("border-left-width", value); }
+    public T borderLeftWidth(String value) { return prop("border-left-width", value); }
+    public T borderImage(CSSValue value) { return prop("border-image", value); }
+    public T borderImage(String value) { return prop("border-image", value); }
+    public T boxDecorationBreak(CSSValue value) { return prop("box-decoration-break", value); }
+    public T boxDecorationBreak(String value) { return prop("box-decoration-break", value); }
+    public T captionSide(CSSValue value) { return prop("caption-side", value); }
+    public T captionSide(String value) { return prop("caption-side", value); }
+    public T emptyCells(CSSValue value) { return prop("empty-cells", value); }
+    public T emptyCells(String value) { return prop("empty-cells", value); }
+    public T fontSynthesis(CSSValue value) { return prop("font-synthesis", value); }
+    public T fontSynthesis(String value) { return prop("font-synthesis", value); }
+    public T gridColumnStart(CSSValue value) { return prop("grid-column-start", value); }
+    public T gridColumnStart(String value) { return prop("grid-column-start", value); }
+    public T gridColumnStart(int line) { return prop("grid-column-start", String.valueOf(line)); }
+    public T gridColumnEnd(CSSValue value) { return prop("grid-column-end", value); }
+    public T gridColumnEnd(String value) { return prop("grid-column-end", value); }
+    public T gridColumnEnd(int line) { return prop("grid-column-end", String.valueOf(line)); }
+    public T gridRowStart(CSSValue value) { return prop("grid-row-start", value); }
+    public T gridRowStart(String value) { return prop("grid-row-start", value); }
+    public T gridRowStart(int line) { return prop("grid-row-start", String.valueOf(line)); }
+    public T gridRowEnd(CSSValue value) { return prop("grid-row-end", value); }
+    public T gridRowEnd(String value) { return prop("grid-row-end", value); }
+    public T gridRowEnd(int line) { return prop("grid-row-end", String.valueOf(line)); }
+    public T gridTemplate(CSSValue value) { return prop("grid-template", value); }
+    public T gridTemplate(String value) { return prop("grid-template", value); }
+    public T listStyleImage(CSSValue value) { return prop("list-style-image", value); }
+    public T listStyleImage(String value) { return prop("list-style-image", value); }
+    public T offsetPath(CSSValue value) { return prop("offset-path", value); }
+    public T offsetPath(String value) { return prop("offset-path", value); }
+    public T outlineColor(CSSValue value) { return prop("outline-color", value); }
+    public T outlineColor(String value) { return prop("outline-color", value); }
+    public T outlineStyle(CSSValue value) { return prop("outline-style", value); }
+    public T outlineStyle(String value) { return prop("outline-style", value); }
+    public T outlineWidth(CSSValue value) { return prop("outline-width", value); }
+    public T outlineWidth(String value) { return prop("outline-width", value); }
+    public T overflowAnchor(CSSValue value) { return prop("overflow-anchor", value); }
+    public T overflowAnchor(String value) { return prop("overflow-anchor", value); }
+    public T paintOrder(CSSValue value) { return prop("paint-order", value); }
+    public T paintOrder(String value) { return prop("paint-order", value); }
+    public T perspective(CSSValue value) { return prop("perspective", value); }
+    public T perspective(String value) { return prop("perspective", value); }
+    public T perspectiveOrigin(CSSValue value) { return prop("perspective-origin", value); }
+    public T perspectiveOrigin(String value) { return prop("perspective-origin", value); }
+    /** The individual {@code rotate} transform property: {@code rotate(deg(45))}. */
+    public T rotate(CSSValue value) { return prop("rotate", value); }
+    public T rotate(String value) { return prop("rotate", value); }
+    /** The individual {@code scale} transform property: {@code scale(1.5)}. */
+    public T scale(CSSValue value) { return prop("scale", value); }
+    public T scale(String value) { return prop("scale", value); }
+    public T scale(double factor) { return prop("scale", String.valueOf(factor)); }
+    public T textJustify(CSSValue value) { return prop("text-justify", value); }
+    public T textJustify(String value) { return prop("text-justify", value); }
+    public T transformStyle(CSSValue value) { return prop("transform-style", value); }
+    public T transformStyle(String value) { return prop("transform-style", value); }
+    /** The individual {@code translate} transform property: {@code translate(px(4), px(8))}. */
+    public T translate(CSSValue value) { return prop("translate", value); }
+    public T translate(CSSValue x, CSSValue y) { return prop("translate", x.css() + " " + y.css()); }
+    public T translate(String value) { return prop("translate", value); }
+    public T zoom(CSSValue value) { return prop("zoom", value); }
+    public T zoom(String value) { return prop("zoom", value); }
+    public T zoom(double factor) { return prop("zoom", String.valueOf(factor)); }
 
 
     // ==================== Composition ====================

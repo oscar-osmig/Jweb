@@ -46,6 +46,11 @@ public final class Prefetch extends Behavior {
         return this;
     }
 
+    /** {@link #within(String)} from a handle. */
+    public Prefetch within(jweb.css.Selector scope) {
+        return within(scope.build());
+    }
+
     /** Prefetch on hover — the default. */
     public Prefetch onHover() {
         this.visible = false;

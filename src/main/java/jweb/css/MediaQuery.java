@@ -465,6 +465,11 @@ public class MediaQuery {
         return this;
     }
 
+    /** {@link #rule(String, jweb.Style)} from a typed selector ({@code CARD.hover()}). */
+    public MediaQuery rule(Selector selector, jweb.Style<?> style) {
+        return rule(selector.build(), style);
+    }
+
     /**
      * Adds multiple CSS rules to this media query.
      *

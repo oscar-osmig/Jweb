@@ -61,6 +61,19 @@ input(type("hidden"), name("csrf"), value(token))
 // Color picker
 input(type("color"), name("theme"), value("#6366f1"))"""),
 
+            since("v3.0.2",
+                h3Title("The CSRF token"),
+                para("Middlewares.recommended() includes CSRF, so every router POST must carry "
+                    + "the token. A record form adds the field itself; a hand-built form "
+                    + "renders Csrf.tokenField(), and a page whose script POSTs by hand renders "
+                    + "Csrf.tokenMeta() and sends the _csrf parameter read from it. Inside a "
+                    + "render the helpers need no request."),
+                codeBlock("""
+form(attrs().action("/save").method("POST"),
+    Csrf.tokenField(),
+    input(type("text"), name("title")),
+    button(type("submit"), "Save"))""")),
+
             h3Title("Textarea"),
             para("Multi-line text input."),
             codeBlock("""

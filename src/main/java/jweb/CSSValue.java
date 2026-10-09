@@ -31,4 +31,45 @@ public interface CSSValue {
     static CSSValue of(String css) {
         return () -> css;
     }
+
+    // ==================== Arithmetic ====================
+    // vh(100).minus(px(50)) -> calc(100vh - 50px); nested calcs flatten.
+
+    /** {@code calc(this + other)}. */
+    default CSSValue plus(CSSValue other) {
+        return calc(inner(this) + " + " + inner(other));
+    }
+
+    /** {@code calc(this - other)}. */
+    default CSSValue minus(CSSValue other) {
+        return calc(inner(this) + " - " + inner(other));
+    }
+
+    /** {@code calc(this * factor)}. */
+    default CSSValue times(double factor) {
+        return calc(inner(this) + " * " + number(factor));
+    }
+
+    /** {@code calc(this / divisor)}. */
+    default CSSValue div(double divisor) {
+        return calc(inner(this) + " / " + number(divisor));
+    }
+
+    private static CSSValue calc(String expression) {
+        return () -> "calc(" + expression + ")";
+    }
+
+    /** A whole-valued double prints without the ".0". */
+    private static String number(double n) {
+        return n == Math.rint(n) && !Double.isInfinite(n) ? String.valueOf((long) n) : String.valueOf(n);
+    }
+
+    /** The expression inside a calc(), or the value itself. */
+    private static String inner(CSSValue value) {
+        String css = value.css();
+        if (css.startsWith("calc(") && css.endsWith(")")) {
+            return css.substring(5, css.length() - 1);
+        }
+        return css;
+    }
 }

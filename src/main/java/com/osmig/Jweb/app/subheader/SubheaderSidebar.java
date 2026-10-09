@@ -1,6 +1,8 @@
 package com.osmig.Jweb.app.subheader;
 
+import jweb.Cls;
 import jweb.Element;
+import jweb.Id;
 import jweb.Template;
 
 import static jweb.El.*;
@@ -13,9 +15,20 @@ import static com.osmig.Jweb.app.layout.Theme.*;
  */
 public class SubheaderSidebar implements Template {
 
+    /** The rail element itself — {@code #subheader-sidebar} — the {@link SubheaderScript} host. */
+    public static final Id SUBHEADER_SIDEBAR_ID = id("subheader-sidebar");
+    /** The rail's visibility class — {@code .subheader-sidebar} — shown by {@link com.osmig.Jweb.app.docs.DocsPage}'s media rule once headings exist. */
+    public static final Cls SUBHEADER_SIDEBAR_CLS = cls("subheader-sidebar");
+    /** The scrolling link list — {@code #subheader-nav} — the {@link SubheaderScript} nav target. */
+    public static final Id SUBHEADER_NAV = id("subheader-nav");
+    /** A generated heading link — {@code .subheader-link} — rendered by {@link SubheaderScript}'s scrollSpy, never by Java. */
+    public static final Cls SUBHEADER_LINK = cls("subheader-link");
+    /** Added to {@link #SUBHEADER_SIDEBAR_ID} once the scrollSpy finds headings — {@code .has-headers}. */
+    public static final Cls HAS_HEADERS = cls("has-headers");
+
     @Override
     public Element render() {
-        return aside(id("subheader-sidebar"), cls("subheader-sidebar"),
+        return aside(SUBHEADER_SIDEBAR_ID, SUBHEADER_SIDEBAR_CLS,
             style()
                 // 260, not 220: at 220 a link had 139px of text width, so the
                 // longest heading ("5. pages/HomePage.java", 159px) could not fit
@@ -39,9 +52,9 @@ public class SubheaderSidebar implements Template {
                 .marginBottom(SP_4).textTransform(uppercase)
                 .letterSpacing(em(0.05)),
                 "On This Page"),
-            nav(id("subheader-nav"), stack(SP_1)
+            nav(SUBHEADER_NAV, stack(SP_1)
                 .overflowY(auto)
-                .maxHeight(calc("100vh - 50px"))
+                .maxHeight(vh(100).minus(px(50)))
                 .paddingRight(SP_2)
                 .paddingBottom(rem(10)))
         );

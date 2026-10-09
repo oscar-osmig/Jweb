@@ -194,6 +194,16 @@ public class JS extends Events {
         return new El("document.getElementById('" + esc(id) + "')");
     }
 
+    /** document.getElementById(...) from an {@link jweb.Id} handle — the same one the element carries. */
+    public static El byId(jweb.Id id) {
+        return byId(id.name());
+    }
+
+    /** document.getElementById(...) from a {@link jweb.Ref}. */
+    public static El byId(jweb.Ref ref) {
+        return byId(ref.id());
+    }
+
     /** document.getElementById('id') — prefer {@link #byId(String)} (matches the platform name). */
     public static El getElem(String id) {
         return byId(id);
@@ -209,9 +219,19 @@ public class JS extends Events {
         return new El("document.querySelector('" + esc(selector) + "')");
     }
 
+    /** document.querySelector(...) from a typed selector — a {@code Cls}/{@code Id} handle or a chain. */
+    public static El query(jweb.css.Selector selector) {
+        return query(selector.build());
+    }
+
     /** document.querySelectorAll('selector') */
     public static Val queryAll(String selector) {
         return new Val("document.querySelectorAll('" + esc(selector) + "')");
+    }
+
+    /** document.querySelectorAll(...) from a typed selector. */
+    public static Val queryAll(jweb.css.Selector selector) {
+        return queryAll(selector.build());
     }
 
     // ==================== Viewport & Media Queries ====================
@@ -1177,9 +1197,19 @@ public class JS extends Events {
             return new El(code + ".querySelector('" + esc(selector) + "')");
         }
 
+        /** {@link #querySelector(String)} from a typed selector — a {@code Cls}/{@code Id} handle or a chain. */
+        public El querySelector(jweb.css.Selector selector) {
+            return querySelector(selector.build());
+        }
+
         /** Finds all descendants by selector: elem.querySelectorAll(selector) */
         public Val querySelectorAll(String selector) {
             return new Val(code + ".querySelectorAll('" + esc(selector) + "')");
+        }
+
+        /** {@link #querySelectorAll(String)} from a typed selector. */
+        public Val querySelectorAll(jweb.css.Selector selector) {
+            return querySelectorAll(selector.build());
         }
 
         /** Finds closest ancestor matching selector: elem.closest(selector) */
@@ -1187,9 +1217,39 @@ public class JS extends Events {
             return new El(code + ".closest('" + esc(selector) + "')");
         }
 
+        /** {@link #closest(String)} from a typed selector. */
+        public El closest(jweb.css.Selector selector) {
+            return closest(selector.build());
+        }
+
         /** Checks if element matches selector: elem.matches(selector) */
         public Val matches(String selector) {
             return new Val(code + ".matches('" + esc(selector) + "')");
+        }
+
+        /** {@link #matches(String)} from a typed selector. */
+        public Val matches(jweb.css.Selector selector) {
+            return matches(selector.build());
+        }
+
+        /** Adds a class by handle: elem.classList.add('name') */
+        public Val addClass(jweb.Cls cls) {
+            return addClass(cls.name());
+        }
+
+        /** Removes a class by handle: elem.classList.remove('name') */
+        public Val removeClass(jweb.Cls cls) {
+            return removeClass(cls.name());
+        }
+
+        /** Toggles a class by handle: elem.classList.toggle('name') */
+        public Val toggleClass(jweb.Cls cls) {
+            return toggleClass(cls.name());
+        }
+
+        /** Whether the element carries the class: elem.classList.contains('name') */
+        public Val hasClass(jweb.Cls cls) {
+            return new Val(code + ".classList.contains('" + esc(cls.name()) + "')");
         }
 
         // ==================== Focus ====================

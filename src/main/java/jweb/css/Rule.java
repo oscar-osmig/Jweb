@@ -41,6 +41,11 @@ public record Rule(String selector, jweb.Style<?> style) {
         return new Rule(selector, style);
     }
 
+    /** A rule from a typed selector — a {@code Cls}/{@code Id} handle or a chain. */
+    public static Rule of(Selector selector, jweb.Style<?> style) {
+        return new Rule(selector.build(), style);
+    }
+
     /** The rule as CSS text: {@code selector{declarations}}. */
     public String build() {
         return selector + "{" + style.build() + "}";

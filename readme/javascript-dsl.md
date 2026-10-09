@@ -334,6 +334,23 @@ domAll(".item").addClass("processed")
 domAll(".temp").remove()
 ```
 
+Since 3.0.2 every selector position takes the handle the element carries — `dom`, `domAll`,
+`byId`, `query`, `queryAll`, `delegate`, the behaviors (`copyFrom`, `prefetch`, `scrollSpy`,
+`splitPane`, `lineGutter`, …) and `el.querySelector`/`closest`/`matches` — so no class or id
+is a string in the script:
+
+```java
+Cls card = cls("card");
+Cls copy = cls("copy");
+Id editor = id("editor");
+
+dom(card).addClass("seen");
+byId(editor).dot("value");
+delegate(card, "click", copy);
+query(editor).closest(card);
+byId(editor).hasClass(copy);
+```
+
 ## Core JS Module (`JS`)
 
 ```java

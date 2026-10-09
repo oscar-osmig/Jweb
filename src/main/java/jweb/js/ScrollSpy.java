@@ -55,16 +55,31 @@ public final class ScrollSpy extends Behavior {
         return this;
     }
 
+    /** {@link #within(String)} from a handle. */
+    public ScrollSpy within(jweb.css.Selector content) {
+        return within(content.build());
+    }
+
     /** The class put on each generated link. */
     public ScrollSpy linkClass(String className) {
         this.linkClass = className;
         return this;
     }
 
+    /** {@link #linkClass(String)} from a handle. */
+    public ScrollSpy linkClass(jweb.Cls cls) {
+        return linkClass(cls.name());
+    }
+
     /** The class marking the link for the heading in view ({@code active}). */
     public ScrollSpy activeClass(String className) {
         this.activeClass = className;
         return this;
+    }
+
+    /** {@link #activeClass(String)} from a handle. */
+    public ScrollSpy activeClass(jweb.Cls cls) {
+        return activeClass(cls.name());
     }
 
     /**
@@ -77,10 +92,20 @@ public final class ScrollSpy extends Behavior {
         return this;
     }
 
+    /** {@link #hasHeadingsClass(String)} from a handle. */
+    public ScrollSpy hasHeadingsClass(jweb.Cls cls) {
+        return hasHeadingsClass(cls.name());
+    }
+
     /** The element {@link #hasHeadingsClass} is applied to. */
     public ScrollSpy host(String selector) {
         this.host = selector;
         return this;
+    }
+
+    /** {@link #host(String)} from a handle. */
+    public ScrollSpy host(jweb.css.Selector host) {
+        return host(host.build());
     }
 
     /** A fixed activation line, in pixels from the top of the scroll box. */

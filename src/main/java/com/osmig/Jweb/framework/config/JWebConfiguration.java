@@ -85,9 +85,11 @@ public class JWebConfiguration implements WebMvcConfigurer {
         return args -> {
             Thread warmup = new Thread(() -> {
                 for (var route : jweb.getPageRegistry().getRoutes()) {
+                    // A page built from the request cannot be rendered ahead of one
+                    if (route.needsRequest()) continue;
                     try {
                         com.osmig.Jweb.framework.state.StateManager.withContext(
-                            () -> route.pageSupplier().get().render().toHtml());
+                            () -> route.page(null).render().toHtml());
                     } catch (Exception e) {
                         com.osmig.Jweb.framework.util.Log.debug(
                             "Warmup skipped {}: {}", route.path(), e.getMessage());

@@ -178,6 +178,27 @@ div(class_("container"),
 > `scripts()`/`onMount()`/`onUnmount()` (each an `Action`) inject before `</body>`, and
 > `cacheable()`/`cacheDuration()` drive the Cache-Control header.
 
+Since 3.0.2 `scripts()` is **collected** the way `styles()` is: every `Template` rendered in
+a page contributes its script once (deduped by content), and the script rides swap
+fragments, streamed chunks and WebSocket patches too. A component owns its behavior:
+
+```java
+public class CopyButton implements Template {
+    static final Cls COPY = cls("copy");
+
+    @Override
+    public Element render() {
+        return button(COPY, "Copy");
+    }
+
+    @Override
+    public Optional<Action> scripts() {
+        return Optional.of(actions().does(delegate(Selector.type("body"), "click", COPY)
+            .handler(callback("e", "t").does(copyFrom(Selector.type("pre")).trigger(v("t"))))));
+    }
+}
+```
+
 ### Layouts
 
 A layout is a `Template` whose constructor accepts the page content. The controller looks for a
@@ -236,6 +257,26 @@ app.addRoute(Route route)
 
 app.layout(Class<? extends Template> layout)
 app.pages(Object... pathsAndPages)                 // alternating "/path", PageClass.class
+app.pages(String path, Function<Request, Template>) // 3.0.2: a page built from the request
+app.pages(String path, Supplier<Template>)         //        or by a supplier — both keep the layout and the hooks
+```
+
+A page whose constructor needs something from the request — a query parameter, a store
+lookup, a flash message — stays in the page table since 3.0.2, so it keeps the default layout,
+`pageTitle()`, `styles()`, `scripts()` and `beforeRender()`:
+
+```java
+class DocsPage implements Template {
+    DocsPage(String section, String version) {}
+    public Element render() { return div(); }
+}
+
+public class Routes implements JWebRoutes {
+    public void configure(JWeb app) {
+        app.pages("/docs", req -> new DocsPage(req.query("section"), req.query("v")));
+        app.pages("/about", () -> () -> div("About"));
+    }
+}
 ```
 
 Not available (as of now): `patch()`, `head()`, `options()`, route groups. A method
@@ -364,11 +405,15 @@ All factories return Spring `ResponseEntity` values:
 import org.springframework.http.HttpStatus;
 
 Element element = div();
+Template template = () -> div();
 String htmlString = "<p>Hi</p>";
 Object object = Map.of("key", "value");
 
 // HTML
 Response.html(element)                          // 200, rendered Element
+Response.html(template)                         // 3.0.2: a Template renders as a full page —
+                                                // hooks, styles, scripts, hydration, runtime —
+                                                // with the status and headers you set
 Response.html(htmlString)
 Response.html(HttpStatus.OK, element)
 

@@ -42,6 +42,11 @@ public final class SplitPane extends Behavior {
         return this;
     }
 
+    /** {@link #container(String)} from a handle. */
+    public SplitPane container(jweb.css.Selector container) {
+        return container(container.build());
+    }
+
     /** Smallest the left pane may get, in pixels. */
     public SplitPane min(int px) {
         this.min = px;

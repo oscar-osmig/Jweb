@@ -227,6 +227,9 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         // Re-renders can mint Actions-DSL handlers the page has never seen
         // (conditional branches); ship their definitions with the patches
         String actionsJs = com.osmig.Jweb.framework.js.ClientActions.drainJs(context);
+        // ... and a re-rendered component can bring a scripts() hook with it
+        String pageJs = com.osmig.Jweb.framework.styles.PageScripts.drainJs(context);
+        if (pageJs != null) actionsJs = actionsJs == null ? pageJs : actionsJs + ";" + pageJs;
         sendMessage(session, new DomUpdateResponse(patches, actionsJs));
     }
 

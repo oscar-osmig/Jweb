@@ -37,7 +37,7 @@ class JwebSurfaceTest {
     void htmlValueTypesAreJwebTypes() {
         jweb.Tag t = div(id("x"), "hi");
         jweb.Attributes a = attrs().id("y");
-        jweb.Attr id = id("z");
+        jweb.Id id = id("z");
         jweb.Element el = t;
         jweb.Tag scene = scene(box());
 
@@ -46,7 +46,7 @@ class JwebSurfaceTest {
         jweb.Event e = DomEvent.builder().type("click").build();
 
         assertEquals("<div id=\"x\">hi</div>", t.toHtml());
-        assertEquals("id", id.name());
+        assertEquals("z", id.name());
         assertTrue(div(withHandler).toHtml().contains("click"), div(withHandler).toHtml());
         assertEquals("click", e.type());
         assertTrue(scene.toHtml().contains("data-three"));

@@ -291,7 +291,9 @@ public class Tag implements Element, HtmlAttributes<Tag> {
         return item instanceof Attr
             || item instanceof Attributes
             || item instanceof InlineStyle
-            || item instanceof jweb.Style;
+            || item instanceof jweb.Style
+            || item instanceof Cls
+            || item instanceof Id;
     }
 
     /** An Iterable or Object[] argument is a group of items, not one child. */
@@ -333,6 +335,11 @@ public class Tag implements Element, HtmlAttributes<Tag> {
         for (Object item : items) {
             if (item instanceof Attr attr) {
                 attrs.put(attr.name(), attr.value());
+            } else if (item instanceof Cls cls) {
+                // A class handle merges, so div(CARD, ACTIVE) carries both
+                com.osmig.Jweb.framework.styles.PageStyles.addClass(attrs, cls.name());
+            } else if (item instanceof Id id) {
+                attrs.put("id", id.name());
             } else if (item instanceof Attributes attributes) {
                 attrs.putAll(attributes.toMap());
             } else if (item instanceof InlineStyle inlineStyle) {
@@ -352,6 +359,10 @@ public class Tag implements Element, HtmlAttributes<Tag> {
                 for (Object subItem : group) {
                     if (subItem instanceof Attr attr) {
                         attrs.put(attr.name(), attr.value());
+                    } else if (subItem instanceof Cls cls) {
+                        com.osmig.Jweb.framework.styles.PageStyles.addClass(attrs, cls.name());
+                    } else if (subItem instanceof Id id) {
+                        attrs.put("id", id.name());
                     } else if (subItem instanceof InlineStyle inlineStyle) {
                         attrs.putAll(inlineStyle.toMap());
                     } else if (subItem instanceof Attributes attributes) {

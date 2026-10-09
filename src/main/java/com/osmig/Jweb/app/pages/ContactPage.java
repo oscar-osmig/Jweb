@@ -17,6 +17,11 @@ import static com.osmig.Jweb.app.layout.Theme.*;
 public class ContactPage implements Template {
 
     @Override
+    public String pageTitle() {
+        return "Contact - JWeb";
+    }
+
+    @Override
     public Element render() {
         return div(container(px(500))
                 .padding(clamp(rem(2), vw(8), rem(4)), GUTTER),

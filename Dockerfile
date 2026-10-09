@@ -11,7 +11,7 @@ COPY src/ src/
 # from src/. Leave them out of the build context and maven-resources quietly
 # copies nothing, the endpoint throws on the first missing guide, and the docs
 # page returns 500. That is exactly how it shipped once.
-COPY README.md dsl-simplification.md dsl-simplification-3.md ./
+COPY README.md dsl-simplification.md dsl-simplification-3.md dsl-3.0.2.md ./
 COPY readme/ readme/
 
 RUN ./mvnw package -DskipTests -B -Pdemo

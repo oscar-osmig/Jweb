@@ -1,0 +1,103 @@
+# CSS keyword values an author can expect as a constant under `import static jweb.Css.*`.
+# One per line, as spelled in CSS; the test camelCases each (pre-wrap -> preWrap, space-between -> spaceBetween)
+# and looks for a public static final CSSValue field of that name on the Css inheritance chain.
+# Keywords whose camelCase form is a Java keyword or an element/element-factory name are listed
+# with their DSL spelling after a space (e.g. "static static_", "none none").
+absolute
+anywhere
+auto
+balance
+baseline
+block
+bold
+bolder
+border-box borderBox
+both
+break-all breakAll
+break-spaces breakSpaces
+break-word breakWord
+capitalize
+center
+clip
+col-resize colResize
+collapse
+column
+column-reverse columnReverse
+contain
+content-box contentBox
+contents
+cover
+cursive
+dashed
+default default_
+dotted
+double double_
+ease
+ease-in easeIn
+ease-in-out easeInOut
+ease-out easeOut
+ellipsis
+end
+fantasy
+fill
+fixed
+flex
+flex-end flexEnd
+flex-start flexStart
+grab
+grabbing
+grid
+hidden
+inherit
+initial
+inline
+inline-block inlineBlock
+inline-flex inlineFlex
+inline-grid inlineGrid
+inset
+italic
+keep-all keepAll
+left
+lighter
+linear
+list-item listItem
+lowercase
+manipulation
+monospace
+none
+normal
+not-allowed notAllowed
+nowrap
+pointer
+pre
+pre-line preLine
+pre-wrap preWrap
+relative
+reverse
+revert
+right
+row
+row-reverse rowReverse
+sans-serif sansSerif
+scale-down scaleDown
+scroll
+serif
+smooth
+solid
+space-around spaceAround
+space-between spaceBetween
+space-evenly spaceEvenly
+start
+static static_
+sticky
+stretch
+system-ui systemUi
+text
+thin
+transparent
+underline
+unset
+uppercase
+visible
+wrap
+wrap-reverse wrapReverse

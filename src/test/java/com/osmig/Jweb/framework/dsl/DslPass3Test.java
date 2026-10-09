@@ -3,7 +3,7 @@ package com.osmig.Jweb.framework.dsl;
 import jweb.Attr;
 import com.osmig.Jweb.framework.elements.PopoverElements;
 import jweb.Tag;
-import com.osmig.Jweb.framework.ref.Ref;
+import jweb.Ref;
 import com.osmig.Jweb.framework.template.Template;
 import com.osmig.Jweb.framework.ui.Toast;
 import com.osmig.Jweb.framework.ui.UI;
@@ -32,7 +32,7 @@ class DslPass3Test {
 
     @Test
     void fourImportsCoexistWithoutAmbiguity() {
-        Attr main = id("main");                        // was ambiguous with the Selector starter
+        jweb.Id main = id("main");                        // was ambiguous with the Selector starter
         Object trusted = raw("<b>x</b>");              // was ambiguous with the CSS raw(...)
         Tag sel = select(name("x"), option("A"));      // was a CSS Selector
         Tag custom = tag("my-element", "hi");          // was a CSS Selector
@@ -46,7 +46,8 @@ class DslPass3Test {
         Object unit = em(1.2);                         // CSS unit
         Tag element = em("emphasis");                  // HTML element
 
-        assertEquals("id", main.name());
+        assertEquals("main", main.name());
+        assertEquals("<div id=\"main\"></div>", div(main).toHtml());
         assertEquals("<select name=\"x\"><option>A</option></select>", sel.toHtml());
         assertEquals("<my-element>hi</my-element>", custom.toHtml());
         assertEquals("<em>emphasis</em>", element.toHtml());
@@ -162,7 +163,7 @@ class DslPass3Test {
      */
     @Test
     void theNewStaticsCoexistWithTheFourWildcards() {
-        Attr classAttr = cls("card");                    // vs jweb.css.Selectors.cls
+        jweb.Cls classAttr = cls("card");                    // vs jweb.css.Selectors.cls
         Attr joined = classes("chip", when(true, "on")); // vs Utility.classes()
         Attr chosen = selected();
         Attr encoding = enctype("multipart/form-data");
@@ -183,7 +184,8 @@ class DslPass3Test {
         Object dialogAction = openDialog("confirm");
         Object detailsAction = toggleDetails("faq");
 
-        assertEquals("class", classAttr.name());
+        assertEquals("card", classAttr.name());
+        assertEquals("<div class=\"card\"></div>", div(classAttr).toHtml());
         assertEquals("chip on", joined.value());
         assertEquals("selected", chosen.name());
         assertEquals("<form enctype=\"multipart/form-data\"></form>", form(encoding).toHtml());

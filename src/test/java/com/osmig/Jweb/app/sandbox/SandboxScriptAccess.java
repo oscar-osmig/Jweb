@@ -5,6 +5,6 @@ public final class SandboxScriptAccess {
     private SandboxScriptAccess() {}
 
     public static String build() {
-        return SandboxScript.build();
+        return SandboxScript.build().build();
     }
 }

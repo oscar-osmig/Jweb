@@ -56,6 +56,11 @@ public class Behaviors extends JS {
         return new Copy(null, null, selector);
     }
 
+    /** {@link #copyFrom(String)} from a typed selector: {@code copyFrom(Selector.type("pre"))}. */
+    public static Copy copyFrom(jweb.css.Selector selector) {
+        return copyFrom(selector.build());
+    }
+
     // ==================== navigation ====================
 
     /** Fetches a fragment and swaps it in — client-side navigation as an action. */
@@ -73,9 +78,19 @@ public class Behaviors extends JS {
         return new Prefetch(linkSelector);
     }
 
+    /** {@link #prefetch(String)} from a handle: {@code prefetch(NAV_LINK)}. */
+    public static Prefetch prefetch(jweb.css.Selector links) {
+        return prefetch(links.build());
+    }
+
     /** Marks the link whose {@code href} is the page you are on. */
     public static ActiveLink activeLink(String linkSelector) {
         return new ActiveLink(linkSelector);
+    }
+
+    /** {@link #activeLink(String)} from a handle. */
+    public static ActiveLink activeLink(jweb.css.Selector links) {
+        return activeLink(links.build());
     }
 
     /** Runs a callback on the browser's back/forward navigation. */
@@ -90,6 +105,11 @@ public class Behaviors extends JS {
         return new ScrollSpy(navSelector, headingsSelector);
     }
 
+    /** {@link #scrollSpy(String, String)} from handles: {@code scrollSpy(RAIL, Selector.type("h2"))}. */
+    public static ScrollSpy scrollSpy(jweb.css.Selector nav, jweb.css.Selector headings) {
+        return scrollSpy(nav.build(), headings.build());
+    }
+
     // ==================== editors ====================
 
     /** A draggable divider between two panes. */
@@ -97,9 +117,19 @@ public class Behaviors extends JS {
         return new SplitPane(handleSelector, leftSelector);
     }
 
+    /** {@link #splitPane(String, String)} from handles. */
+    public static SplitPane splitPane(jweb.css.Selector handle, jweb.css.Selector left) {
+        return splitPane(handle.build(), left.build());
+    }
+
     /** Wrap-accurate line numbers beside a textarea. */
     public static LineGutter lineGutter(String textareaSelector, String gutterSelector) {
         return new LineGutter(textareaSelector, gutterSelector);
+    }
+
+    /** {@link #lineGutter(String, String)} from handles. */
+    public static LineGutter lineGutter(jweb.css.Selector textarea, jweb.css.Selector gutter) {
+        return lineGutter(textarea.build(), gutter.build());
     }
 
     /** Re-measures a gutter after its textarea's value was replaced in code. */
@@ -107,14 +137,29 @@ public class Behaviors extends JS {
         return () -> "JWeb.relineGutter('" + JS.esc(textareaSelector) + "')";
     }
 
+    /** {@link #relineGutter(String)} from a handle. */
+    public static Action relineGutter(jweb.css.Selector textarea) {
+        return relineGutter(textarea.build());
+    }
+
     /** Marks one gutter line (0 clears the mark) — for a compiler error. */
     public static Action markLine(String textareaSelector, Object line) {
         return () -> "JWeb.markLine('" + JS.esc(textareaSelector) + "'," + JS.toJs(line) + ")";
     }
 
+    /** {@link #markLine(String, Object)} from a handle. */
+    public static Action markLine(jweb.css.Selector textarea, Object line) {
+        return markLine(textarea.build(), line);
+    }
+
     /** Grows a textarea to fit its content, and keeps it fitting as it is typed. */
     public static Action resizeToContent(String textareaSelector) {
         return () -> "JWeb.resizeToContent('" + JS.esc(textareaSelector) + "')";
+    }
+
+    /** {@link #resizeToContent(String)} from a handle. */
+    public static Action resizeToContent(jweb.css.Selector textarea) {
+        return resizeToContent(textarea.build());
     }
 
     /**
@@ -124,6 +169,11 @@ public class Behaviors extends JS {
     public static Action insertText(String selector, Object text) {
         return () -> "JWeb.insertText(document.querySelector('" + JS.esc(selector) + "'),"
             + JS.toJs(text) + ")";
+    }
+
+    /** {@link #insertText(String, Object)} from a handle. */
+    public static Action insertText(jweb.css.Selector field, Object text) {
+        return insertText(field.build(), text);
     }
 
     /** Inserts text at the caret of a field an expression names. */
@@ -155,8 +205,8 @@ public class Behaviors extends JS {
      *
      * <p>Scripts inside it stay inert, as they do in any template element.</p>
      */
-    public static Val parseHtml(Val html) {
-        return new Val("(function(h){var t=document.createElement('template');"
+    public static JS.El parseHtml(Val html) {
+        return new JS.El("(function(h){var t=document.createElement('template');"
             + "t.innerHTML=h;return t.content})(" + html.js() + ")");
     }
 

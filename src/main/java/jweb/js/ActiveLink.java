@@ -32,6 +32,11 @@ public final class ActiveLink extends Behavior {
         return this;
     }
 
+    /** {@link #activeClass(String)} from a handle. */
+    public ActiveLink activeClass(jweb.Cls cls) {
+        return activeClass(cls.name());
+    }
+
     @Override
     protected String install() {
         return "JWeb.activeLink("

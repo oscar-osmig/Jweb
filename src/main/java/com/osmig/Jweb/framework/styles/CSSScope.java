@@ -79,6 +79,11 @@ public class CSSScope extends CSSLayer {
         return new ScopeBuilder(root, null);
     }
 
+    /** {@link #scope(String)} from a typed selector ({@code scope(CARD)}). */
+    public static ScopeBuilder scope(jweb.css.Selector root) {
+        return new ScopeBuilder(root.build(), null);
+    }
+
     /**
      * Fluent builder for constructing @scope rules.
      */
@@ -110,6 +115,11 @@ public class CSSScope extends CSSLayer {
         public ScopeBuilder to(String selector) {
             this.lowerBoundary = selector;
             return this;
+        }
+
+        /** {@link #to(String)} from a typed selector. */
+        public ScopeBuilder to(jweb.css.Selector selector) {
+            return to(selector.build());
         }
 
         /**
@@ -144,6 +154,11 @@ public class CSSScope extends CSSLayer {
         public ScopeBuilder rule(String selector, jweb.Style<?> style) {
             rules.add(CSS.rule(selector).apply(style));
             return this;
+        }
+
+        /** {@link #rule(String, jweb.Style)} from a typed selector. */
+        public ScopeBuilder rule(jweb.css.Selector selector, jweb.Style<?> style) {
+            return rule(selector.build(), style);
         }
 
         /**

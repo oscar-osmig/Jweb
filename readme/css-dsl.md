@@ -185,6 +185,53 @@ div(attrs().cls("card").style(s -> s.display(flex).gap(rem(1))).id("main"), cont
 
 Use `attrs()` when you need chained event handlers or many attributes.
 
+## Handles: one name for HTML, CSS and JS (3.0.2)
+
+A class name or id is declared once, as a handle, and used by all three languages. `cls("card")`
+returns a `jweb.Cls` and `id("x")` a `jweb.Id`: each is an element argument, an immutable
+`Selector` and a JavaScript target, so the name is never typed twice and a rename is a refactor.
+
+```java
+Cls card = cls("card");
+Cls copy = cls("copy");
+Id editor = id("editor");
+
+article(card, button(copy, "Copy"), textarea(editor));           // class="card" … id="editor"
+
+Stylesheet sheet = stylesheet()
+    .rule(card, style().padding(rem(1)))                          // .card{padding:1rem}
+    .rule(copy.hover(), style().color(hex("#4f46e5")))             // .copy:hover{…}
+    .rule(card.descendant(Selector.type("pre")), style().margin(zero))   // .card pre{…}
+    .rule(editor.focus(), style().outline(none))                   // #editor:focus{…}
+    .add(media().maxWidth(px(960)).rule(card, style().display(block)));
+
+delegate(card, "click", copy);                                     // the JS DSL takes the handle
+byId(editor).dot("value");                                         // document.getElementById('editor')
+```
+
+Every `rule(...)` — on `Stylesheet`, `MediaQuery`, `ContainerQuery`, `Supports`, `Rule.of`,
+`startingStyle`, `scope` — takes a `Selector` as well as a String. Tag and universal selectors
+are `Selector.type("pre")` and `Selector.any()`; `Selector.of(css)` is the escape for the odd case.
+`cls()` with no name mints a class scoped to the declaring class (`snippetcard-1`). A static
+component attaches its rules with `styled(sheet, element)`, exactly as a `Template`'s
+`styles()` does.
+
+Values that used to be strings have builders too:
+
+```java
+style()
+    .boxShadow(shadow(0, px(1), px(2), rgba(15, 23, 42, 0.04)),
+               shadow(0, px(12), px(32), px(-16), rgba(79, 70, 229, 0.35)))
+    .fontFamily(uiMonospace, font("SFMono-Regular"), font("Menlo"), monospace)
+    .maxHeight(vh(100).minus(px(50)))                              // calc(100vh - 50px)
+    .backgroundImage(radialGradient("circle", stop(hex("#e2e8f0"), px(1)), stop(transparent, px(1))))
+    .whiteSpace(preWrap).overflowWrap(anywhere).textOverflow(ellipsis);
+
+Keyframes shift = keyframes("shift").from(style().opacity(0)).to(style().opacity(1));
+style().animation(shift, s(3), linear);                            // the name is declared once
+stylesheet().add(shift);
+```
+
 ## Page-owned stylesheets
 
 A component owns the class rules it needs. Override `styles()` and the render collects it
@@ -555,24 +602,25 @@ stylesheet().add(viewTransitions())     // @view-transition{navigation:auto}
 Three ways in, in the order you should reach for them:
 
 ```java
-// 1. A plain string, when you already know the selector — full CSS parity
-rule(".card:hover")
-rule("li:nth-child(2n+1)")
+Cls card = cls("card");
+Id search = id("search");
 
-// 2. The Selector builder, when you are composing one — chainable, keeps its type
-import jweb.css.Selectors;
-import static jweb.css.Selectors.*;          // the starters live here, not in Css:
-                                             // id/tag/select/cls are also HTML DSL names —
-                                             // cls needs the Selectors. prefix to disambiguate
-rule(Selectors.cls("card").hover())          // .card:hover
-rule(Selectors.cls("input").focusVisible())
-rule(tag("li").nthChild("2n+1"))
-rule(Selectors.cls("form").has("input:invalid"))       // :has()
-// starters: select() tag() cls() id() all(); then pseudo-classes, pseudo-elements,
-// attribute matches, and the combinators child()/descendant()/adjacent()/sibling()
+// 1. A handle (3.0.2) — the same name the element carries, chainable, never mutated
+stylesheet()
+    .rule(card.hover(), style().color(hex("#4f46e5")))             // .card:hover
+    .rule(card.child(Selector.type("li")).nthChild("2n+1"), style().opacity(0.9))
+    .rule(search.focusVisible(), style().outline(none))
+    .rule(card.has(Selector.type("input").invalid()), style().borderColor(hex("#b91c1c")));
+// starters without an element: Selector.type("li"), Selector.any(); then pseudo-classes,
+// pseudo-elements, attribute matches, and the combinators child()/descendant()/adjacent()/sibling()
 
-// 3. The static Selectors helpers (deprecated) returned raw strings that you
-//    concatenated with `+`. The builder above covers the same ground and composes.
+// 2. The Selectors builder, when there is no handle — its starters live in their own
+//    import because id/tag/cls are also HTML DSL names
+jweb.css.Selectors.cls("card").hover();                           // .card:hover
+jweb.css.Selectors.tag("li").nthChild("2n+1");
+
+// 3. A plain string, when you already know the selector — full CSS parity, no checking
+stylesheet().rule(".card:hover", style().color(hex("#4f46e5")));
 ```
 
 ## CSS Variables

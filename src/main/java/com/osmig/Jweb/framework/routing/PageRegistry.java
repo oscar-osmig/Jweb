@@ -41,7 +41,8 @@ public class PageRegistry {
         for (int i = 0; i < routes.size(); i++) {
             PageRoute route = routes.get(i);
             if (route.layoutClass() == null) {
-                PageRoute updated = new PageRoute(route.path(), route.title(), route.pageSupplier(), layoutClass);
+                PageRoute updated = new PageRoute(route.path(), route.title(), route.pageSupplier(),
+                    layoutClass, route.pageFactory());
                 routes.set(i, updated);
                 index(updated);
             }
@@ -75,8 +76,33 @@ public class PageRegistry {
                 Supplier<? extends Template> pageSupplier = (Supplier<? extends Template>) supplier;
                 PageRoute route = new PageRoute(path, extractTitle(path), pageSupplier, defaultLayout);
                 addRoute(route);
+            } else if (pageArg instanceof java.util.function.Function<?, ?> function) {
+                @SuppressWarnings("unchecked")
+                java.util.function.Function<jweb.Request, ? extends Template> factory =
+                    (java.util.function.Function<jweb.Request, ? extends Template>) function;
+                register(path, factory);
+            } else {
+                throw new IllegalArgumentException("A page is a Template class, a Supplier or a "
+                    + "Function<Request, Template> — not " + (pageArg == null ? "null" : pageArg.getClass().getName()));
             }
         }
+    }
+
+    /**
+     * Registers a page whose constructor needs the request — a query
+     * parameter, a store lookup, a flash message:
+     * {@code register("/sandbox", req -> new SandboxPage(req.query("file")))}.
+     * The page keeps the default layout and every {@code Template} hook.
+     */
+    public void register(String path, java.util.function.Function<jweb.Request, ? extends Template> factory) {
+        PageRoute route = new PageRoute(path, extractTitle(path), null, defaultLayout, factory);
+        addRoute(route);
+    }
+
+    /** Registers a page made by a supplier; the same as the {@code pages(path, supplier)} pair form. */
+    public void register(String path, Supplier<? extends Template> supplier) {
+        PageRoute route = new PageRoute(path, extractTitle(path), supplier, defaultLayout);
+        addRoute(route);
     }
 
     private void registerClass(String path, Class<? extends Template> pageClass) {

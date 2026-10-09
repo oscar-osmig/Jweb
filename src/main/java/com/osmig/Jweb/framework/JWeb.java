@@ -390,6 +390,36 @@ public class JWeb {
     }
 
     /**
+     * Registers one page whose constructor needs the request, so it stays in
+     * the page table with the default layout, {@code pageTitle()},
+     * {@code styles()}, {@code scripts()} and {@code beforeRender()}:
+     *
+     * <pre>{@code
+     * app.pages("/sandbox", req -> new SandboxPage(req.query("file")));
+     * }</pre>
+     *
+     * @param path the path (may carry {@code :param} segments)
+     * @param page the page for a request
+     * @return this for chaining
+     */
+    public JWeb pages(String path, java.util.function.Function<Request, ? extends Template> page) {
+        pageRegistry.register(path, page);
+        return this;
+    }
+
+    /**
+     * Registers one page made by a supplier: {@code app.pages("/about", AboutPage::new)}.
+     *
+     * @param path the path
+     * @param page the page supplier
+     * @return this for chaining
+     */
+    public JWeb pages(String path, Supplier<? extends Template> page) {
+        pageRegistry.register(path, page);
+        return this;
+    }
+
+    /**
      * Scans a package (recursively) for Template classes annotated with
      * {@code @Page(path = "...")} and registers each at its declared path,
      * using the current default layout.

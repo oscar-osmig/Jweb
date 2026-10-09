@@ -8,6 +8,7 @@ import java.util.Map;
 import static jweb.El.*;
 import static jweb.Css.*;
 import static com.osmig.Jweb.app.layout.Theme.*;
+import static com.osmig.Jweb.app.sandbox.SandboxCss.mono;
 
 /**
  * The playground's starter project — a typical JWeb app layout. DSL-mode
@@ -192,7 +193,7 @@ public final class SandboxFiles {
         return div(style()
                 .backgroundColor(BG_DARK).color(hex("#a5b4fc"))
                 .padding(SP_4).borderRadius(ROUNDED_LG)
-                .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
+                .apply(mono())
                 .fontSize(TEXT_SM).lineHeight(1.9),
             div(style().color(TEXT_LIGHT), "$ ./mvnw spring-boot:run"),
             div("🚀 JWeb dev server on http://localhost:8085"),
@@ -207,7 +208,7 @@ public final class SandboxFiles {
         return div(style()
                 .backgroundColor(BG).border(px(1), solid, BORDER)
                 .borderRadius(ROUNDED_LG).padding(SP_4)
-                .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
+                .apply(mono())
                 .fontSize(TEXT_SM).lineHeight(2),
             div(style().color(TEXT_LIGHT).marginBottom(SP_2), "registered routes"),
             div(span(style().color(hex("#059669")).fontWeight(700), "GET  "),
@@ -223,7 +224,7 @@ public final class SandboxFiles {
         return div(style()
                 .backgroundColor(BG_DARK).color(hex("#e2e8f0"))
                 .padding(SP_4).borderRadius(ROUNDED_LG)
-                .fontFamily("ui-monospace, SFMono-Regular, Menlo, monospace")
+                .apply(mono())
                 .fontSize(TEXT_SM).lineHeight(1.9),
             div(style().color(TEXT_LIGHT), "$ ./mvnw dependency:resolve"),
             div("[INFO] com.github.oscar-osmig:Jweb:v2.0.0 ✓"),

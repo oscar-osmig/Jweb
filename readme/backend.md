@@ -536,6 +536,18 @@ head(..., Csrf.tokenMeta(request))                // <meta name="csrf-token"> fo
 // or header "X-CSRF-TOKEN"; tokens expire after 30 min; comparison is constant-time.
 ```
 
+Since 3.0.2 `Middlewares.recommended()` includes `csrf()`, so every router POST/PUT/PATCH/DELETE
+must carry the token (`/api/v*` controllers are outside the stack). Inside a render the
+helpers need no request: a record form adds the field itself, a hand-built form renders
+`Csrf.tokenField()`, and a page whose script POSTs by hand renders `Csrf.tokenMeta()` and
+sends the `_csrf` parameter read from it:
+
+```java
+form(attrs().action("/save").method("POST"),
+    Csrf.tokenField(),                            // the request in flight
+    button(type("submit"), "Save"));
+```
+
 ### Password Hashing (BCrypt)
 
 ```java

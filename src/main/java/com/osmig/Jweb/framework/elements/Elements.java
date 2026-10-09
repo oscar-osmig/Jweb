@@ -115,19 +115,36 @@ public class Elements {
     // These provide convenient single-attribute shortcuts.
     // Use attrs() for combining multiple attributes.
 
-    /** Creates an id attribute. @param value the element ID */
-    public static Attr id(String value) { return Attr.id(value); }
     /**
-     * The class attribute — the everyday spelling: {@code div(cls("card"))}.
+     * An element id as a handle: an element argument here, a selector in a
+     * stylesheet ({@code rule(EDITOR.focus(), ...)}) and a JavaScript target
+     * ({@code byId(EDITOR)}). Declare it once as a {@code static final} field.
      *
-     * <p>{@link #class_(String)} is the same attribute under the
-     * trailing-underscore keyword rule; both stay because {@code class} is a
-     * Java keyword and {@code cls} is what authors actually type.</p>
+     * @param value the element ID
+     * @return the id handle
+     */
+    public static jweb.Id id(String value) { return jweb.Id.of(value); }
+    /**
+     * A class name as a handle — the everyday spelling: {@code div(cls("card"))}.
+     *
+     * <p>The same handle is a selector in a stylesheet
+     * ({@code rule(CARD.hover(), ...)}) and a JavaScript target
+     * ({@code dom(CARD)}), so the name is typed once. Several words set
+     * several classes. {@link #class_(String)} is the plain attribute under
+     * the trailing-underscore keyword rule.</p>
      *
      * @param value the CSS class(es)
-     * @return the class attribute
+     * @return the class handle
      */
-    public static Attr cls(String value) { return Attr.class_(value); }
+    public static jweb.Cls cls(String value) { return jweb.Cls.of(value); }
+    /**
+     * A class scoped to the declaring class, named for it
+     * ({@code snippetcard-1}); for a component that does not care what its
+     * class is called. Declare it as a {@code static final} field.
+     *
+     * @return the class handle
+     */
+    public static jweb.Cls cls() { return jweb.Cls.scoped(); }
     /** Creates a class attribute. Named class_ to avoid Java keyword conflict. @param value the CSS class(es) */
     public static Attr class_(String value) { return Attr.class_(value); }
 
@@ -170,6 +187,7 @@ public class Elements {
         return switch (part) {
             case null -> null;
             case String s -> s;
+            case jweb.Cls cls -> cls.name();
             case jweb.Element element -> plainText(element.toVNode());
             case VNode node -> plainText(node);
             case Iterable<?> items -> {
@@ -351,8 +369,42 @@ public class Elements {
     public static Attributes swapForm(String actionUrl, String targetSelector) { return attrs().swapForm(actionUrl, targetSelector); }
     /** Push {@code browserUrl} into history when the swap completes. */
     public static Attributes swapPush(String browserUrl) { return attrs().swapPush(browserUrl); }
+    /** {@link #swap(String, String)} with the target as a handle: {@code swap("/x", STATUS)}. */
+    public static Attributes swap(String url, jweb.css.Selector target) { return attrs().swap(url, target.build()); }
+    /** {@link #swapOuter(String, String)} with the target as a handle. */
+    public static Attributes swapOuter(String url, jweb.css.Selector target) { return attrs().swapOuter(url, target.build()); }
+    /** {@link #swapMorph(String, String)} with the target as a handle. */
+    public static Attributes swapMorph(String url, jweb.css.Selector target) { return attrs().swapMorph(url, target.build()); }
+    /** {@link #swapForm(String, String)} with the target as a handle. */
+    public static Attributes swapForm(String actionUrl, jweb.css.Selector target) { return attrs().swapForm(actionUrl, target.build()); }
     /** Give the element the ref's id, so the ref's Actions can target it. */
-    public static Attributes ref(com.osmig.Jweb.framework.ref.Ref ref) { return attrs().ref(ref); }
+    public static Attributes ref(jweb.Ref ref) { return attrs().ref(ref); }
+
+    /**
+     * An element that carries a stylesheet: the rules ride the page's one
+     * {@code <style>} exactly as a {@code Template}'s {@code styles()} do, so a
+     * static component can own its CSS without being a class.
+     *
+     * <pre>{@code
+     * static final Stylesheet RULES = stylesheet().rule(CARD, style()...);
+     * public static Element render(Doc d) { return styled(RULES, article(CARD, ...)); }
+     * }</pre>
+     *
+     * @param sheet the rules the element needs
+     * @param element the element
+     * @return the element, with its stylesheet attached
+     */
+    public static jweb.Element styled(jweb.css.Stylesheet sheet, jweb.Element element) {
+        return new StyledElement(sheet, element);
+    }
+
+    private record StyledElement(jweb.css.Stylesheet sheet, jweb.Element element) implements jweb.Element {
+        @Override
+        public VNode toVNode() {
+            if (sheet != null) com.osmig.Jweb.framework.styles.PageStyles.add(sheet.build());
+            return element.toVNode();
+        }
+    }
 
     /**
      * Bind an element's text to reactive state — the runtime patches it on
@@ -409,6 +461,14 @@ public class Elements {
 
     /** Inline JavaScript. The code is emitted verbatim (never HTML-escaped). */
     public static Tag inlineScript(String code) { return tag("script", TextElement.raw(code)); }
+    /**
+     * Inline JavaScript from the DSL: {@code inlineScript(actions().does(...))}.
+     * The action stays an {@code Action} to the page boundary; the framework
+     * serializes it. A page or component usually prefers the
+     * {@code Template.scripts()} hook, which dedupes and delivers the script
+     * with fragments and patches too.
+     */
+    public static Tag inlineScript(jweb.Action script) { return inlineScript(script.build()); }
     /** Inline CSS in a {@code <style>} element. The CSS is emitted verbatim. */
     public static Tag style(String css) { return tag("style", TextElement.raw(css)); }
 
@@ -692,6 +752,19 @@ public class Elements {
      */
     public static Element when(boolean condition, String text) {
         return condition ? Element.of(TextElement.of(text)) : nothing();
+    }
+
+    /**
+     * A class only when the condition holds — as an element argument
+     * ({@code li(TAB, when(active, ON))}) or inside {@code classes(...)}.
+     * Null (nothing) otherwise, which every element skips.
+     *
+     * @param condition whether to set the class
+     * @param cls the class handle
+     * @return the handle, or null
+     */
+    public static jweb.Cls when(boolean condition, jweb.Cls cls) {
+        return condition ? cls : null;
     }
 
     /**

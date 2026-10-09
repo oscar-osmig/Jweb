@@ -25,6 +25,7 @@ public class Nav implements Template {
             div(cluster(clamp(SP_3, vw(3), rem(1.5))),
                 link("/docs", "Documentation"),
                 link("/sandbox", "Sandbox"),
+                link("/snippets", "Snippets"),
                 link("/about", "About"),
                 link("/contact", "Contact")
             )

@@ -1,6 +1,8 @@
 package com.osmig.Jweb.app.sandbox;
 
+import jweb.Cls;
 import jweb.Element;
+import jweb.Id;
 import com.osmig.Jweb.app.sandbox.SandboxDsl.Knob;
 import com.osmig.Jweb.app.sandbox.SandboxDsl.Result;
 import com.osmig.Jweb.app.sandbox.SandboxFiles.Mode;
@@ -21,6 +23,21 @@ import static jweb.El.*;
 public final class SandboxPanes {
     private SandboxPanes() {}
 
+    /** The three fragments a render returns; the client picks them out by id. */
+    public static final Id RX_DYNBAR = id("rx-dynbar");
+    public static final Id RX_VIEW = id("rx-view");
+    public static final Id RX_STATUS = id("rx-status");
+
+    /** The dynbar's markup — styled by {@link SandboxPage}, driven by {@link SandboxScript}. */
+    public static final Cls BLURB = cls("sandbox-blurb");
+    public static final Cls CONTROLS = cls("sandbox-controls");
+    public static final Cls KNOB_LABEL = cls("sandbox-knob-label");
+    public static final Cls KNOB = cls("sandbox-knob");
+    public static final Cls CHIP = cls("sandbox-chip");
+    public static final Cls CHIP_PRIMARY = cls("sandbox-chip-primary");
+    public static final Id RESET = id("sandbox-reset");
+    public static final Id ADD_SNIPPET = id("sandbox-add-snippet");
+
     private static final String[] PRAISE = {
         "ship it 🚀", "zero red squiggles", "mother would be proud",
         "artisanal, hand-typed Java", "builds on your machine too",
@@ -33,8 +50,8 @@ public final class SandboxPanes {
         String src = code != null ? code : f.source();
         if (f.mode() == Mode.STATIC) {
             return fragment(
-                div(attrs().id("rx-dynbar"), dynbarContent(f, List.of())),
-                div(attrs().id("rx-view"), SandboxFiles.staticPreview(f.id())),
+                div(RX_DYNBAR, dynbarContent(f, List.of())),
+                div(RX_VIEW, SandboxFiles.staticPreview(f.id())),
                 status(true, "ℹ this file just boots things — write UI in pages/ or components/"));
         }
         long t0 = System.nanoTime();
@@ -46,23 +63,28 @@ public final class SandboxPanes {
         }
         String praise = PRAISE[Math.floorMod(src.hashCode(), PRAISE.length)];
         return fragment(
-            div(attrs().id("rx-dynbar"), dynbarContent(f, r.knobs())),
-            div(attrs().id("rx-view"), r.element()),
+            div(RX_DYNBAR, dynbarContent(f, r.knobs())),
+            div(RX_VIEW, r.element()),
             status(true, String.format(Locale.ROOT, "✓ compiled in %.2fms — %s", ms, praise)));
     }
 
     private static Element status(boolean ok, String msg) {
-        return div(attrs().id("rx-status").data("ok", ok ? "1" : "0"), msg);
+        return div(RX_STATUS, attrs().data("ok", ok ? "1" : "0"), msg);
     }
 
-    /** Blurb + knobs derived from the current code + the reset chip. */
+    /**
+     * Blurb + knobs derived from the current code + the reset chip, and on a
+     * DSL file the "Add snippet" chip that opens the page's submission panel.
+     */
     public static Element dynbarContent(SandboxFile f, List<Knob> knobs) {
         return fragment(
-            div(cls("sandbox-blurb"), f.blurb()),
-            div(cls("sandbox-controls"),
+            div(BLURB, f.blurb()),
+            div(CONTROLS,
                 each(indexed(knobs), k -> knobControl(k.knob(), k.i())),
-                button(attrs().cls("sandbox-chip").id("sandbox-reset").type("button"),
-                    "↺ Reset file")));
+                button(RESET, CHIP, attrs().type("button"), "↺ Reset file"),
+                when(f.mode() == Mode.DSL, () ->
+                    button(ADD_SNIPPET, CHIP, CHIP_PRIMARY, attrs().type("button"),
+                        "＋ Add snippet"))));
     }
 
     private record IndexedKnob(Knob knob, int i) {}
@@ -74,20 +96,20 @@ public final class SandboxPanes {
 
     private static Element knobControl(Knob k, int ordinal) {
         String id = k.kind() + ":" + k.label() + ":" + ordinal;
-        var a = attrs().cls("sandbox-knob")
+        var a = attrs()
             .data("id", id).data("kind", k.kind())
             .data("start", String.valueOf(k.start()))
             .data("len", String.valueOf(k.len()))
             .aria("label", k.label());
         Element control = switch (k.kind()) {
-            case "color" -> input(a.type("color").value(k.value()));
-            case "number" -> input(a.type("number").value(k.value())
+            case "color" -> input(KNOB, a.type("color").value(k.value()));
+            case "number" -> input(KNOB, a.type("number").value(k.value())
                 .set("step", "rem".equals(k.unit()) ? "0.25" : "em".equals(k.unit()) ? "0.1" : "1")
                 .set("min", "0")
                 .set("max", "px".equals(k.unit()) ? "2000" : "200"));
-            default -> input(a.type("text").value(k.value()).maxlength(60));
+            default -> input(KNOB, a.type("text").value(k.value()).maxlength(60));
         };
-        return label(cls("sandbox-knob-label"), span(k.label()), control);
+        return label(KNOB_LABEL, span(k.label()), control);
     }
 
     /** Initial page content for the default file (mirrors the POST response). */
@@ -98,6 +120,6 @@ public final class SandboxPanes {
     public static Element initialView(SandboxFile f, Result r) {
         if (f.mode() == Mode.STATIC) return SandboxFiles.staticPreview(f.id());
         return r != null && r.isOk() ? r.element()
-            : div(cls("sandbox-blurb"), "…");
+            : div(BLURB, "…");
     }
 }

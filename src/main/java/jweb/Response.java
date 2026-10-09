@@ -75,9 +75,55 @@ public class Response {
      * @return HTML response
      */
     public static ResponseEntity<String> html(jweb.Element element) {
+        if (element instanceof com.osmig.Jweb.framework.template.Template template) {
+            return new Page(200, template);
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(element.toHtml());
+    }
+
+    /**
+     * A {@code Response.html(template)} the router renders as a page: the
+     * template's lifecycle hooks, collected styles and scripts, hydration data
+     * and runtime all apply, exactly as when the handler returns the template
+     * bare — plus the status and headers set here.
+     */
+    public static final class Page extends ResponseEntity<String> {
+        private final com.osmig.Jweb.framework.template.Template template;
+        private volatile String rendered;
+
+        Page(int status, com.osmig.Jweb.framework.template.Template template) {
+            super(null, htmlHeaders(), HttpStatusCode.valueOf(status));
+            this.template = template;
+        }
+
+        private static HttpHeaders htmlHeaders() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_HTML);
+            return headers;
+        }
+
+        /** The template to render. */
+        public com.osmig.Jweb.framework.template.Template template() {
+            return template;
+        }
+
+        /** The template rendered bare — what a caller outside the router sees. */
+        @Override
+        public String getBody() {
+            String html = rendered;
+            if (html == null) {
+                html = template.toHtml();
+                rendered = html;
+            }
+            return html;
+        }
+
+        @Override
+        public boolean hasBody() {
+            return true;
+        }
     }
 
     /**
@@ -100,6 +146,9 @@ public class Response {
      * @return HTML response
      */
     public static ResponseEntity<String> html(int status, jweb.Element element) {
+        if (element instanceof com.osmig.Jweb.framework.template.Template template) {
+            return new Page(status, template);
+        }
         return ResponseEntity.status(status)
                 .contentType(MediaType.TEXT_HTML)
                 .body(element.toHtml());

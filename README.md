@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 3.0.1** | **Last Updated: 2026-09-11**
+**Version 3.0.2** | **Last Updated: 2026-10-08**
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -62,7 +62,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v3.0.1</version>
+    <version>v3.0.2</version>
 </dependency>
 ```
 
@@ -70,7 +70,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.1' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.2' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -88,6 +88,17 @@ public class App {
 ```
 
 Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest commit.
+
+### Upgrading to 3.0.2
+
+3.0.2 removes the last reasons to write CSS or JavaScript as a string: `cls("card")` and
+`id("x")` return handles that are at once an element argument, a selector
+(`rule(CARD.hover(), …)`) and a JavaScript target (`delegate(LAYOUT, "click", COPY)`);
+every `rule(…)` takes a `Selector`; shadows, font stacks, `calc` and keyframes have
+builders; `Template.scripts()` is collected like `styles()`; pages with constructor
+arguments go in the page table (`app.pages("/x", req -> new XPage(req.query("q")))`);
+`Middlewares.recommended()` includes CSRF. Two declared types change (`Attr x = cls(…)`
+becomes `Cls x`). Everything else is additive — **[dsl-3.0.2.md](dsl-3.0.2.md)**.
 
 ### Upgrading to 3.0
 
@@ -265,6 +276,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
+| [DSL 3.0.2](./dsl-3.0.2.md) | The 3.0.2 pass: class and id handles shared by HTML, CSS and JS, typed selectors in every rule, value builders for shadows, fonts, calc and keyframes, collected `scripts()`, request-aware pages, CSRF in the recommended middleware |
 | [Migrating to 3.0](./dsl-simplification-3.md) | The 3.0 syntax pass: handlers as arguments, a String is always text, one JS import, and the call sites that silently change meaning |
 | [Migrating to 2.0](./dsl-simplification.md) | The 2.0 pass: the six rules the DSL follows and the breaking changes to check by hand |
 | [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |

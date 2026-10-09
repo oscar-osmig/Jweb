@@ -6,6 +6,7 @@ import static jweb.Css.*;
 import jweb.Element;
 import jweb.CSSValue;
 import jweb.Style;
+import jweb.css.Keyframes;
 
 /**
  * Design tokens and brand style fragments for the app.
@@ -96,8 +97,18 @@ public final class Theme {
     public static final CSSValue BRAND_GRADIENT = jweb.css.Theme.gradient("brand");
 
     /**
+     * The brand gradient's background-position sweep. Declared once here;
+     * {@link Layout#styles()} emits it with {@code .add(GRADIENT_SHIFT)} and
+     * {@link #brandFlow()} references it by name.
+     */
+    public static final Keyframes GRADIENT_SHIFT = keyframes("gradientShift")
+        .at(0, style().backgroundPosition(percent(0), percent(50)))
+        .at(50, style().backgroundPosition(percent(100), percent(50)))
+        .at(100, style().backgroundPosition(percent(0), percent(50)));
+
+    /**
      * The animated flowing brand gradient as a reusable style fragment.
-     * Pairs with the {@code gradientShift} keyframes in {@link Layout}'s
+     * Pairs with {@link #GRADIENT_SHIFT}, added to {@link Layout}'s
      * stylesheet.
      *
      * <pre>
@@ -110,7 +121,7 @@ public final class Theme {
         return style()
             .background(BRAND_GRADIENT)
             .backgroundSize(percent(300), percent(100))
-            .animation("gradientShift", s(3), linear, s(0), infinite);
+            .animation(GRADIENT_SHIFT, s(3), linear, s(0), infinite);
     }
 
     /**

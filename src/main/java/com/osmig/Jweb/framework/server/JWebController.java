@@ -195,15 +195,17 @@ public class JWebController {
 
         // Templates returned from handlers get their lifecycle hooks
         if (result instanceof Template template) {
-            template.beforeRender(request);
-            com.osmig.Jweb.framework.styles.PageStyles.collect(template);
-            String html = template.render().toHtml();
-            template.afterRender(request);
-            html = applyTemplateExtras(html, template);
-            if (context != null) {
-                html = injectHydrationData(html, buildHydrationScript(context), context);
-            }
             return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(renderTemplate(template, context, request));
+        }
+
+        // Response.html(template) — the same render as a bare Template, plus
+        // the status and headers the handler set
+        if (result instanceof jweb.Response.Page page) {
+            String html = renderTemplate(page.template(), context, request);
+            return ResponseEntity.status(page.getStatusCode())
+                .headers(page.getHeaders())
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
         }
@@ -275,6 +277,23 @@ public class JWebController {
         return data.toScriptTag();
     }
 
+    /**
+     * A template as a whole page: lifecycle hooks, collected styles and
+     * scripts, title/head extras, then hydration data and the runtime.
+     */
+    private String renderTemplate(Template template, StateManager.StateContext context, Request request) {
+        template.beforeRender(request);
+        com.osmig.Jweb.framework.styles.PageStyles.collect(template);
+        com.osmig.Jweb.framework.styles.PageScripts.collect(template);
+        String html = template.render().toHtml();
+        template.afterRender(request);
+        html = applyTemplateExtras(html, template);
+        if (context != null) {
+            html = injectHydrationData(html, buildHydrationScript(context), context);
+        }
+        return html;
+    }
+
     private String injectHydrationData(String html, String hydrationScript,
                                        StateManager.StateContext context) {
         // External, immutably-cached script references (the browser caches
@@ -285,7 +304,9 @@ public class JWebController {
         // Actions-DSL handlers registered during this render, as a
         // nonce-stamped definitions script (inline on*= attributes can't
         // run under the recommended CSP)
-        String actionsTag = com.osmig.Jweb.framework.js.ClientActions.drainScriptTag(context);
+        String actionsTag = com.osmig.Jweb.framework.js.ClientActions.drainScriptTag(context)
+            // ... and every Template's scripts() hook this render collected
+            + com.osmig.Jweb.framework.styles.PageScripts.drainScriptTag(context);
         // The CSS this render collected: every Template's styles() hook plus
         // the rules behind the generated classes of conditional inline styles
         String styleTag = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
@@ -458,7 +479,8 @@ public class JWebController {
                     String lateCss = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
                     out.write(streamChunk(pending.placeholderId(), lateCss + pending.html().join(),
                         lateStatesJson(context, sentStateIds),
-                        com.osmig.Jweb.framework.js.ClientActions.drainJs(context)));
+                        joinJs(com.osmig.Jweb.framework.js.ClientActions.drainJs(context),
+                            com.osmig.Jweb.framework.styles.PageScripts.drainJs(context))));
                     it.remove();
                 }
             }
@@ -616,11 +638,19 @@ public class JWebController {
      * if configured. The instantiated page is exposed via pageHolder so the
      * caller can apply title/head/script extras to the final HTML.
      */
+    /** Two scripts joined as one, either of which may be null. */
+    private static String joinJs(String a, String b) {
+        if (a == null || a.isBlank()) return b;
+        if (b == null || b.isBlank()) return a;
+        return a + ";" + b;
+    }
+
     private jweb.Element renderPage(PageRoute route, Request request, Template[] pageHolder) {
-        Template page = route.pageSupplier().get();
+        Template page = route.page(request);
         pageHolder[0] = page;
         page.beforeRender(request);
         com.osmig.Jweb.framework.styles.PageStyles.collect(page);
+        com.osmig.Jweb.framework.styles.PageScripts.collect(page);
         var content = page.render();
         String pageTitle = page.pageTitle();
         String title = pageTitle != null ? pageTitle : route.title();
@@ -675,7 +705,11 @@ public class JWebController {
 
         StringBuilder bodyExtras = new StringBuilder();
         String scriptOpen = "<script" + com.osmig.Jweb.framework.security.CspNonce.attr() + ">";
-        page.scripts().ifPresent(js -> bodyExtras.append(scriptOpen).append(js.build()).append("</script>"));
+        // scripts() rides the collected page scripts (deduped, delivered with
+        // fragments too); only a render with no context inlines it here
+        if (StateManager.getContext() == null) {
+            page.scripts().ifPresent(js -> bodyExtras.append(scriptOpen).append(js.build()).append("</script>"));
+        }
         String mount = page.onMount() == null ? null : page.onMount().build();
         if (mount != null && !mount.isBlank()) {
             bodyExtras.append(scriptOpen).append("document.addEventListener('DOMContentLoaded',function(){")
@@ -732,6 +766,7 @@ public class JWebController {
                 layout = (Template) cachedCtor.newInstance(Element.of(content));
             }
             com.osmig.Jweb.framework.styles.PageStyles.collect(layout);
+            com.osmig.Jweb.framework.styles.PageScripts.collect(layout);
             return layout.render();
         } catch (Exception e) {
             throw new RuntimeException("Failed to instantiate layout: " + layoutClass.getName(), e);

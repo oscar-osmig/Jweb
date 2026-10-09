@@ -3,7 +3,7 @@ package jweb;
 import com.osmig.Jweb.framework.attributes.HtmlAttributes;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
-import com.osmig.Jweb.framework.ref.Ref;
+import jweb.Ref;
 import com.osmig.Jweb.framework.styles.CSSValue;
 import com.osmig.Jweb.framework.styles.Style;
 import com.osmig.Jweb.framework.transition.TransitionBuilder;

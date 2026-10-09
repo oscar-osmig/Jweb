@@ -51,6 +51,7 @@ public final class DocsTell {
     private static final List<Topic> TOPICS = List.of(
         new Topic("overview", "Overview and quick start", "readme/README.md"),
         new Topic("migrating-to-3", "Migrating to 3.x — handlers as arguments, a String is text, one JS import, and what breaks silently", "readme/dsl-simplification-3.md"),
+        new Topic("dsl-3-0-2", "DSL 3.0.2 — class and id handles shared by HTML, CSS and JS, typed selectors in every rule, value builders, collected scripts(), request-aware pages, CSRF in recommended()", "readme/dsl-3.0.2.md"),
         new Topic("migrating-to-2", "Migrating to 2.x — what changed, and what breaks silently", "readme/dsl-simplification.md"),
         new Topic("why-jweb", "Why JWeb, and the honest trade-offs", "readme/guides/why-jweb.md"),
         new Topic("architecture", "Architecture: rendering pipeline, request flow, routing, middleware", "readme/guides/architecture.md"),
@@ -287,6 +288,16 @@ public final class DocsTell {
                per-field messages, `aria-invalid`, and the values as typed.
 
             ## Do not emit 1.x or 2.x syntax
+
+            Version 3.0.2 adds handles and typed selectors on top of 3.0.1: `cls("card")` and
+            `id("x")` return `Cls`/`Id`, which are element arguments, selectors
+            (`rule(CARD.hover(), ...)`) and JS targets (`delegate(LAYOUT, "click", COPY)`);
+            every `rule(...)` takes a `Selector`; `shadow()`, `font()`, `stop()` and
+            `vh(100).minus(px(50))` replace string values; `Template.scripts()` is collected
+            like `styles()`; `app.pages("/x", req -> new XPage(req.query("q")))` keeps a page
+            with constructor arguments in the page table; `Middlewares.recommended()` includes
+            CSRF, so a hand-written POST sends the `_csrf` field from `Csrf.tokenMeta()`.
+            Prefer these forms; never emit `.rule("…")`, `.prop("…")` or `inlineScript("…")`.
 
             Version 3.0.1 is source- and binary-incompatible with 2.x, and these changes do
             not produce a compile error:

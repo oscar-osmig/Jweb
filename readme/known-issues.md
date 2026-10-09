@@ -11,6 +11,34 @@ Legend: ✅ fixed 2026-08-09 · 🟡 remaining pitfall (by design or deferred)
 
 ---
 
+## 2026-10-08 — the 3.0.2 pass: no raw CSS or JS strings
+
+The before → after detail is in [DSL 3.0.2](../dsl-3.0.2.md). What to know when writing code
+against it:
+
+- **`cls()` and `id()` return handles** (`jweb.Cls`, `jweb.Id`), not `Attr`. A handle is an
+  element argument, an immutable `jweb.css.Selector` and a JS target, so declare it once
+  (`static final Cls CARD = cls("card")`) and use it in `rule(CARD.hover(), …)`,
+  `delegate(LAYOUT, "click", COPY)`, `byId(EDITOR)`. Selector chains never mutate the handle.
+- **Tag and universal selectors are `Selector.type("pre")` and `Selector.any()`**, qualified —
+  the `Selectors` starters (`tag`, `all`, `cls`, `id`) still collide with `El` under a wildcard.
+- **`Template.scripts()` is collected like `styles()`**: every template rendered in a page
+  contributes once, and the script rides fragments and patches. `inlineScript(Action)` exists
+  for a one-off; `*Script` helpers return `Action`, not `String`.
+- **`Middlewares.recommended()` now includes `csrf()`.** A router POST without the token is a
+  403 before the handler runs. Record forms and `Csrf.tokenField()` cover HTML forms; a
+  hand-written `fetch` sends the `_csrf` parameter read from `Csrf.tokenMeta()`. `/api/v*`
+  controllers are outside the stack as before.
+- **Pages with constructor arguments belong in the page table**:
+  `app.pages("/x", req -> new XPage(req.query("q")))`. `Response.html(template)` is rendered
+  as a page too (runtime, hydration, scripts, styles), with your status and headers.
+- **`Csrf.tokenField()` / `tokenMeta()` / `token()` take no argument** inside a render.
+- **Guards:** `jweb/AppDslHygieneTest` (no raw strings in app code; `// raw: why` marks a
+  deliberate demo) and `jweb/CssSpecCoverageTest` (every listed CSS property has a camelCase
+  setter, every listed keyword a constant — extend the lists when you extend the DSL).
+
+---
+
 ## Remaining sharp edges (🟡)
 
 By design (know them, don't "fix" them):

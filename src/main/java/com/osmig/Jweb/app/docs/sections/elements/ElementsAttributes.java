@@ -347,7 +347,30 @@ attrs()
     .set("itemscope", "")
     .set("itemtype", "https://schema.org/Product")"""),
 
-            docTip("Use class_() instead of class() because 'class' is a reserved word in Java.")
+            docTip("Use class_() instead of class() because 'class' is a reserved word in Java."),
+
+            since("v3.0.2",
+                h3Title("Handles"),
+                para("cls(\"card\") returns a Cls and id(\"x\") an Id — a handle that is an "
+                    + "element argument, a selector for the stylesheet and a target for the "
+                    + "JavaScript DSL. Declare it once; the class name is never typed twice."),
+                codeBlock("""
+static final Cls CHIP = cls("chip");
+static final Cls ON = cls("chip-on");
+static final Id SEARCH = id("search");
+
+Element render(boolean active) {
+    return div(
+        span(CHIP, when(active, ON), "Java"),            // class="chip chip-on"
+        span(attrs().cls(CHIP).classIf(active, ON), "Go"),
+        input(SEARCH, type("search")));                   // id="search"
+}
+
+Stylesheet styles() {
+    return stylesheet()
+        .rule(CHIP.hover(), style().opacity(0.9))         // .chip:hover
+        .rule(SEARCH.focus(), style().outline(none));     // #search:focus
+}"""))
         );
     }
 }

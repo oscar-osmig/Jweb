@@ -103,7 +103,7 @@ public class JWebTest {
                 Object result = app.getMiddlewareStack().execute(request, () -> {
                     Object guarded = app.getGuards().check(request);
                     if (guarded != null) return guarded;
-                    var page = route.pageSupplier().get();
+                    var page = route.page(request);
                     page.beforeRender(request);
                     var content = page.render();
                     page.afterRender(request);

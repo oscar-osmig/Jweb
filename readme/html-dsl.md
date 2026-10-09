@@ -196,6 +196,22 @@ div(classes("chip", when(false, "chip-on"), size))      // class="chip lg"
 div(attrs().cls("chip").classIf(active, "chip-on"))     // the same, on an attrs() chain
 ```
 
+Since 3.0.2 `cls("card")` returns a `jweb.Cls` and `id("x")` a `jweb.Id`: a handle that is
+also a selector and a JavaScript target, so a stylesheet rule and a script name the same
+thing the element does. Declare it once and pass it everywhere:
+
+```java
+Cls chip = cls("chip");
+Cls on = cls("chip-on");
+boolean active = true;
+
+div(chip, when(active, on))                              // class="chip chip-on"
+div(classes(chip, when(active, on)))                     // the same, joined
+div(attrs().cls(chip).classIf(active, on))               // on an attrs() chain
+stylesheet().rule(chip.hover(), style().opacity(0.9));   // .chip:hover
+dom(chip).addClass("seen");                              // the JS DSL
+```
+
 ### Inline styles
 
 ```java

@@ -238,6 +238,10 @@ public class CSS extends CSSUnits {
     public static final CSSValue propRight = () -> "right";
     /** Property name: bottom - for use with transitions. */
     public static final CSSValue propBottom = () -> "bottom";
+    public static final CSSValue propFilter = () -> "filter";
+    public static final CSSValue propVisibility = () -> "visibility";
+    public static final CSSValue propMaxHeight = () -> "max-height";
+    public static final CSSValue propBorderBottomColor = () -> "border-bottom-color";
 
     /**
      * Represents a single CSS transition definition.
@@ -502,6 +506,47 @@ public class CSS extends CSSUnits {
     public static final CSSValue keepAll = () -> "keep-all";
     /** Overflow-wrap: break-word - break long words if needed. */
     public static final CSSValue breakWord = () -> "break-word";
+    /** Overflow-wrap: anywhere - break at any point, counted for min-content. */
+    public static final CSSValue anywhere = () -> "anywhere";
+    /** Text-overflow: ellipsis - clipped text ends in "…". */
+    public static final CSSValue ellipsis = () -> "ellipsis";
+
+    // ========== Font families ==========
+    // Use with: style().fontFamily(font("Inter"), systemUi, sansSerif)
+
+    /** The generic serif family. */
+    public static final CSSValue serif = () -> "serif";
+    /** The generic sans-serif family. */
+    public static final CSSValue sansSerif = () -> "sans-serif";
+    /** The generic monospace family. */
+    public static final CSSValue monospace = () -> "monospace";
+    /** The generic cursive family. */
+    public static final CSSValue cursive = () -> "cursive";
+    /** The generic fantasy family. */
+    public static final CSSValue fantasy = () -> "fantasy";
+    /** The platform's UI font ({@code system-ui}). */
+    public static final CSSValue systemUi = () -> "system-ui";
+    /** The platform's serif UI font ({@code ui-serif}). */
+    public static final CSSValue uiSerif = () -> "ui-serif";
+    /** The platform's sans-serif UI font ({@code ui-sans-serif}). */
+    public static final CSSValue uiSansSerif = () -> "ui-sans-serif";
+    /** The platform's monospace UI font ({@code ui-monospace}). */
+    public static final CSSValue uiMonospace = () -> "ui-monospace";
+    /** The platform's rounded UI font ({@code ui-rounded}). */
+    public static final CSSValue uiRounded = () -> "ui-rounded";
+    /** The platform's emoji font. */
+    public static final CSSValue emoji = () -> "emoji";
+    /** The platform's math font. */
+    public static final CSSValue math = () -> "math";
+
+    // ========== Global and list keywords ==========
+
+    /** The {@code revert} global value: the user-agent's value for the property. */
+    public static final CSSValue revert = () -> "revert";
+    /** Display: list-item. */
+    public static final CSSValue listItem = () -> "list-item";
+    /** The {@code default} keyword (cursor: default; the trailing underscore is the keyword rule). */
+    public static final CSSValue default_ = () -> "default";
 
     // ========== Object Fit ==========
     // Use with: style().objectFit(cover)
@@ -1262,6 +1307,69 @@ public class CSS extends CSSUnits {
      */
     public static CSSValue linearGradient(jweb.CSSValue... stops) {
         return () -> "linear-gradient(" + joinCss(stops) + ")";
+    }
+
+    /**
+     * A gradient color stop with a position:
+     * {@code radialGradient("circle", stop(hex("#e2e8f0"), px(1)), stop(transparent, px(1)))}.
+     */
+    public static CSSValue stop(jweb.CSSValue color, jweb.CSSValue position) {
+        return () -> color.css() + " " + position.css();
+    }
+
+    // ==================== Fonts ====================
+
+    /**
+     * A named font family for {@code fontFamily(...)}; quoted when the name
+     * needs it: {@code font("Inter")} → {@code "Inter"}, next to the generics
+     * {@code systemUi}, {@code sansSerif}, {@code monospace}.
+     */
+    public static CSSValue font(String family) {
+        String name = family.strip();
+        boolean plain = name.matches("[A-Za-z_-][A-Za-z0-9_-]*");
+        String css = plain ? name : "\"" + name.replace("\"", "\\\"") + "\"";
+        return () -> css;
+    }
+
+    // ==================== Shadows ====================
+
+    /**
+     * One shadow for {@code boxShadow(...)} / {@code textShadow(...)}:
+     * {@code shadow(0, px(1), px(2), rgba(0, 0, 0, 0.1))}. Several shadows
+     * are several arguments to {@code boxShadow}.
+     */
+    public static CSSValue shadow(jweb.CSSValue offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue color) {
+        return () -> offsetX.css() + " " + offsetY.css() + " " + blur.css() + " " + color.css();
+    }
+
+    /** A shadow with a spread radius. */
+    public static CSSValue shadow(jweb.CSSValue offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue spread, jweb.CSSValue color) {
+        return () -> offsetX.css() + " " + offsetY.css() + " " + blur.css() + " " + spread.css() + " " + color.css();
+    }
+
+    /** A shadow whose x/y offsets are plain numbers (unitless zero or pixels). */
+    public static CSSValue shadow(double offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue color) {
+        return shadow(numberOrPx(offsetX), offsetY, blur, color);
+    }
+
+    /** A shadow with a spread radius whose x offset is a plain number. */
+    public static CSSValue shadow(double offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue spread, jweb.CSSValue color) {
+        return shadow(numberOrPx(offsetX), offsetY, blur, spread, color);
+    }
+
+    /** An inset shadow. */
+    public static CSSValue insetShadow(jweb.CSSValue offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue color) {
+        return () -> "inset " + shadow(offsetX, offsetY, blur, color).css();
+    }
+
+    /** An inset shadow with a spread radius. */
+    public static CSSValue insetShadow(jweb.CSSValue offsetX, jweb.CSSValue offsetY, jweb.CSSValue blur, jweb.CSSValue spread, jweb.CSSValue color) {
+        return () -> "inset " + shadow(offsetX, offsetY, blur, spread, color).css();
+    }
+
+    private static CSSValue numberOrPx(double n) {
+        String text = n == Math.rint(n) ? String.valueOf((long) n) : String.valueOf(n);
+        return () -> n == 0 ? "0" : text + "px";
     }
 
     /**

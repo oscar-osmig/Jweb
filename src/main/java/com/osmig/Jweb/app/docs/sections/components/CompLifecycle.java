@@ -94,6 +94,28 @@ public Action onUnmount() {
     return all(call("closeWebSocket"), call("saveScrollPosition"));
 }"""),
 
+            since("v3.0.2",
+                h3Title("Collected scripts"),
+                para("scripts() is collected the way styles() is: every Template rendered in "
+                    + "a page contributes once, deduped by content, and the script rides swap "
+                    + "fragments, streamed chunks and WebSocket patches. A component owns its "
+                    + "behavior; the page never writes inlineScript()."),
+                codeBlock("""
+public class CopyButton implements Template {
+    static final Cls COPY = cls("copy");
+
+    @Override
+    public Element render() {
+        return button(COPY, "Copy");
+    }
+
+    @Override
+    public Optional<Action> scripts() {
+        return Optional.of(actions().does(delegate(Selector.type("body"), "click", COPY)
+            .handler(callback("e", "t").does(copyFrom(Selector.type("pre")).trigger(v("t"))))));
+    }
+}""")),
+
             h3Title("Caching"),
             para("Control response caching for performance."),
             codeBlock("""

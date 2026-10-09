@@ -5,26 +5,31 @@ import jweb.JWeb;
 import jweb.JWebRoutes;
 import jweb.Middlewares;
 import jweb.OpenApi;
-import jweb.Csrf;
 import jweb.Form;
 import jweb.Response;
 import jweb.Session;
 import jweb.api.Component;
 import jweb.api.Range;
 import com.osmig.Jweb.app.api.AdminApi;
+import com.osmig.Jweb.app.api.AdminSnippetsApi;
 import com.osmig.Jweb.app.api.ContactApi;
 import com.osmig.Jweb.app.api.ExampleApi;
+import com.osmig.Jweb.app.api.SnippetStore;
 import com.osmig.Jweb.app.forms.AdminLogin;
 import com.osmig.Jweb.app.forms.ContactForm;
 import com.osmig.Jweb.app.forms.ContactStatus;
+import com.osmig.Jweb.app.forms.SnippetSubmission;
 import com.osmig.Jweb.app.layout.Layout;
 import com.osmig.Jweb.app.pages.HomePage;
 import com.osmig.Jweb.app.pages.AboutPage;
 import com.osmig.Jweb.app.pages.ContactPage;
 import com.osmig.Jweb.app.pages.DemoStreamingPage;
+import com.osmig.Jweb.app.pages.SnippetCard;
+import com.osmig.Jweb.app.pages.SnippetsPage;
 import com.osmig.Jweb.app.pages.ThreeDemoPage;
 import com.osmig.Jweb.app.pages.admin.AdminLoginPage;
 import com.osmig.Jweb.app.pages.admin.AdminMessagesPage;
+import com.osmig.Jweb.app.pages.admin.AdminSnippetsPage;
 import com.osmig.Jweb.app.docs.DocsPage;
 import com.osmig.Jweb.app.docs.DocContent;
 import com.osmig.Jweb.app.docs.DocsTell;
@@ -57,10 +62,13 @@ public class Routes implements JWebRoutes {
 
     private final AdminApi adminApi;
     private final com.osmig.Jweb.app.api.MessageStore messageStore;
+    private final SnippetStore snippets;
 
-    public Routes(AdminApi adminApi, com.osmig.Jweb.app.api.MessageStore messageStore) {
+    public Routes(AdminApi adminApi, com.osmig.Jweb.app.api.MessageStore messageStore,
+                  SnippetStore snippets) {
         this.adminApi = adminApi;
         this.messageStore = messageStore;
+        this.snippets = snippets;
     }
 
     @Override
@@ -72,27 +80,22 @@ public class Routes implements JWebRoutes {
         app.use("/contact/submit",
             Middlewares.rateLimit(5, 60_000));
 
-        // Page routes
+        // Page routes: every page keeps the default layout and its own
+        // pageTitle()/styles()/scripts() hooks; a page whose constructor
+        // needs the request is registered with a lambda
         app.layout(Layout.class)
            .pages(
                "/", HomePage.class,
-               "/about", AboutPage.class
+               "/about", AboutPage.class,
+               "/contact", ContactPage.class
            );
-
-        // The contact form's CSRF token comes from the request the page is
-        // rendered for, so the page itself takes no arguments
-        app.get("/contact", ctx -> new Layout("Contact - JWeb",
-            new ContactPage()
-        ));
 
         // Contact form target — returns a status fragment that the runtime
         // swaps into #form-status (works without JS as a plain POST too).
         // ContactForm's annotations are the whole validation: no hand-written
-        // null checks, no length checks.
+        // null checks, no length checks; the CSRF check is the recommended()
+        // middleware's.
         app.post("/contact/submit", ctx -> {
-            if (!Csrf.isValid(ctx)) {
-                return ContactStatus.error("Your session expired — reload the page and try again.");
-            }
             Form.Bound<ContactForm> submitted = Form.bind(ContactForm.class, ctx);
             if (!submitted.ok()) {
                 return ContactStatus.error(submitted.errors().getAllMessages().get(0));
@@ -102,11 +105,37 @@ public class Routes implements JWebRoutes {
             return ContactStatus.success("Message sent — we'll get back to you soon!");
         });
 
+        // ==================== Snippets ====================
+
+        // Community snippets: the gallery shows what an admin approved. They
+        // are sent in from the Sandbox's "Add snippet" form (the editor's
+        // code plus a title and a name), rendered through the sandbox's
+        // whitelist interpreter — never compiled. Submissions are capped per IP.
+        app.use("/snippets/submit", Middlewares.rateLimit(5, 60_000));
+
+        app.pages("/snippets", req -> new SnippetsPage(snippets.approved()));
+
+        // Submission: the record's annotations validate the fields, the
+        // interpreter validates the code, and the snippet lands in the queue.
+        // Returns a status fragment the Sandbox swaps into its form panel.
+        app.post("/snippets/submit", ctx -> {
+            Form.Bound<SnippetSubmission> submitted = Form.bind(SnippetSubmission.class, ctx);
+            if (!submitted.ok()) {
+                return ContactStatus.error(submitted.errors().getAllMessages().get(0));
+            }
+            SnippetSubmission s = submitted.value();
+            String problem = SnippetCard.compileError(s.code());
+            if (problem != null) {
+                return ContactStatus.error("The code does not compile — " + problem);
+            }
+            snippets.submit(s.title().trim(), s.author().trim(), s.code().strip());
+            return ContactStatus.success(
+                "Sent for review — once approved it will appear on /snippets.");
+        });
+
         // Docs page needs request access for query params; ?v= selects the
         // docs version (defaults to latest)
-        app.get("/docs", ctx -> new Layout("Documentation - JWeb",
-            new DocsPage(ctx.query("section"), ctx.query("v"))
-        ));
+        app.pages("/docs", req -> new DocsPage(req.query("section"), req.query("v")));
 
         // Docs content endpoint for client-side navigation (returns only content)
         app.get("/docs/content", ctx ->
@@ -162,10 +191,10 @@ public class Routes implements JWebRoutes {
 
         // Playground: user code runs through SandboxDsl's whitelist interpreter
         // only — nothing is compiled or reflected, and output uses the normal
-        // escaping pipeline. The render POST is stateless (no CSRF surface).
-        app.get("/sandbox", ctx -> new Layout("Sandbox - JWeb",
-            new com.osmig.Jweb.app.sandbox.SandboxPage(ctx.query("file"))
-        ));
+        // escaping pipeline. The render POST and the "Add snippet" form carry
+        // the page's CSRF token (meta tag and hidden field) for the
+        // recommended() middleware.
+        app.pages("/sandbox", req -> new com.osmig.Jweb.app.sandbox.SandboxPage(req.query("file")));
 
         app.post("/sandbox/render", ctx ->
             com.osmig.Jweb.app.sandbox.SandboxPanes.renderFragment(
@@ -205,9 +234,7 @@ public class Routes implements JWebRoutes {
                 return Response.redirect("/only-admin/messages");
             }
             String notice = Session.of(ctx).flash("notice");
-            return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(null, notice, Csrf.getOrCreateToken(ctx))
-            ));
+            return new Layout(new AdminLoginPage(null, notice));
         });
 
         // Admin login handler: the form binds to the AdminLogin record; a
@@ -215,9 +242,7 @@ public class Routes implements JWebRoutes {
         app.post("/only-admin/log/in", ctx -> {
             Form.Bound<AdminLogin> submitted = Form.bind(AdminLogin.class, ctx);
             String error = null;
-            if (!Csrf.isValid(ctx)) {
-                error = "Your session expired — please try again.";
-            } else if (submitted.ok()) {
+            if (submitted.ok()) {
                 AdminLogin login = submitted.value();
                 if (adminApi.login(ctx, login.email(), login.token())) {
                     return Response.redirect("/only-admin/messages");
@@ -226,9 +251,7 @@ public class Routes implements JWebRoutes {
                     ? "Invalid email or token"
                     : "Admin login is not configured — set JWEB_ADMIN_TOKEN and JWEB_ADMIN_EMAIL.";
             }
-            return Response.html(new Layout("Admin Login",
-                new AdminLoginPage(error, submitted, Csrf.getOrCreateToken(ctx))
-            ));
+            return new Layout(new AdminLoginPage(error, submitted));
         });
 
         // Admin messages page: ?order=newest|oldest (enum by name) and
@@ -236,19 +259,43 @@ public class Routes implements JWebRoutes {
         app.get("/only-admin/messages", MessagesView.class, (ctx, view) -> {
             var order = view.order().orElse(AdminMessagesPage.Order.NEWEST);
             var messages = order.apply(adminApi.getMessages(), view.limit().orElse(Integer.MAX_VALUE));
-            return Response.html(new Layout("Messages - Admin",
-                new AdminMessagesPage(messages, Csrf.getOrCreateToken(ctx), order)
-            ));
+            return new Layout(new AdminMessagesPage(messages, order));
         });
 
-        // Admin logout — POST with CSRF token so a cross-site link can't trigger it
+        // Snippet review: the queue and the published list, plus the one-shot
+        // notice the last action left behind
+        app.pages("/only-admin/snippets", req -> new AdminSnippetsPage(
+            snippets.pending(), snippets.approved(), Session.of(req).flash("notice")));
+
+        // Approve / reject / unpublish — POSTs carry the CSRF token (the
+        // recommended() middleware checks it), then back to the queue
+        app.post("/only-admin/snippets/:id/approve", ctx -> {
+            Session.of(ctx).flash("notice", snippets.approve(ctx.param("id"))
+                ? "Snippet published — it is live on /snippets."
+                : "That snippet is no longer there.");
+            return Response.redirect("/only-admin/snippets");
+        });
+
+        app.post("/only-admin/snippets/:id/delete", ctx -> {
+            Session.of(ctx).flash("notice", snippets.delete(ctx.param("id"))
+                ? "Snippet removed."
+                : "That snippet is no longer there.");
+            return Response.redirect("/only-admin/snippets");
+        });
+
+        // Admin logout — a POST, so a cross-site link can't trigger it
         app.post("/only-admin/logout", ctx -> {
-            if (Csrf.isValid(ctx)) {
-                adminApi.logout(ctx);
-                Session.of(ctx).flash("notice", "You have been signed out.");
-            }
+            adminApi.logout(ctx);
+            Session.of(ctx).flash("notice", "You have been signed out.");
             return Response.redirect("/only-admin/log/in");
         });
+
+        // The review API takes the same credentials as the login form, sent
+        // as headers so a script can drive the queue; an admin session works
+        // too. Anything else is a 401 before the controller runs.
+        app.guard("/api/v1/admin/**", req -> adminApi.authorize(req) ? null
+            : Response.unauthorized("Admin credentials required: send the "
+                + AdminApi.EMAIL_HEADER + " and " + AdminApi.TOKEN_HEADER + " headers"));
 
         // API documentation
         OpenApi.create()
@@ -257,6 +304,7 @@ public class Routes implements JWebRoutes {
             .description("Example REST API built with JWeb")
             .addApi(ExampleApi.class)
             .addApi(ContactApi.class)
+            .addApi(AdminSnippetsApi.class)
             .mount(app, "/api");
     }
 }

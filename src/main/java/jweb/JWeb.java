@@ -195,6 +195,18 @@ public class JWeb extends com.osmig.Jweb.framework.JWeb {
     }
 
     @Override
+    public JWeb pages(String path, java.util.function.Function<jweb.Request, ? extends Template> page) {
+        super.pages(path, page);
+        return this;
+    }
+
+    @Override
+    public JWeb pages(String path, Supplier<? extends Template> page) {
+        super.pages(path, page);
+        return this;
+    }
+
+    @Override
     public JWeb scanPages(String basePackage) {
         super.scanPages(basePackage);
         return this;

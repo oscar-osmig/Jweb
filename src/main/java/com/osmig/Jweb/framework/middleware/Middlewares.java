@@ -47,10 +47,12 @@ public class Middlewares {
         Middleware security = securityHeaders();
         Middleware ids = requestId();
         Middleware compression = compressionHeaders();
+        Middleware csrf = csrf();
         return (req, chain) ->
             security.handle(req, () ->
                 ids.handle(req, () ->
-                    compression.handle(req, chain)));
+                    compression.handle(req, () ->
+                        csrf.handle(req, chain))));
     }
 
     // ========== Logging ==========

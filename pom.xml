@@ -13,7 +13,7 @@
 	</parent>
 	<groupId>com.osmig</groupId>
 	<artifactId>Jweb</artifactId>
-	<version>3.0.1</version>
+	<version>3.0.2</version>
 	<name>Jweb</name>
 	<description>JWeb - Build web apps in pure Java</description>
 	<url>https://github.com/oscar-osmig/Jweb</url>
@@ -219,6 +219,7 @@
 										     assistant does not emit 1.x syntax. -->
 										<include>dsl-simplification.md</include>
 										<include>dsl-simplification-3.md</include>
+										<include>dsl-3.0.2.md</include>
 									</includes>
 								</resource>
 								<!-- The long-form guides. Needed on the classpath because

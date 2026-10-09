@@ -5,7 +5,7 @@ import jweb.Event;
 import com.osmig.Jweb.framework.events.EventHandler;
 import com.osmig.Jweb.framework.events.EventRegistry;
 import jweb.Action;
-import com.osmig.Jweb.framework.ref.Ref;
+import jweb.Ref;
 import com.osmig.Jweb.framework.transition.TransitionBuilder;
 import com.osmig.Jweb.framework.transition.TransitionBuilder.TransitionReceiver;
 
@@ -136,6 +136,16 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
         return condition ? addClass(className) : self();
     }
 
+    /** {@link #classIf(boolean, String)} from a handle: {@code classIf(active, ON)}. */
+    default SELF classIf(boolean condition, jweb.Cls cls) {
+        return classIf(condition, cls.name());
+    }
+
+    /** {@link #addClass(String)} from a handle. */
+    default SELF addClass(jweb.Cls cls) {
+        return addClass(cls.name());
+    }
+
     /**
      * Adds a class when the condition holds.
      *
@@ -157,6 +167,16 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
      * @return this for chaining
      */
     default SELF cls(String value) { return set("class", value); }
+
+    /** The class attribute from handles: {@code attrs().cls(CARD, ACTIVE)}. */
+    default SELF cls(jweb.Cls... classes) {
+        StringBuilder sb = new StringBuilder();
+        for (jweb.Cls cls : classes) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(cls.name());
+        }
+        return set("class", sb.toString());
+    }
 
     /**
      * Adds class based on ternary condition.
@@ -866,6 +886,15 @@ public interface HtmlAttributes<SELF extends HtmlAttributes<SELF>> extends Trans
     default SELF swapPush(String browserUrl) {
         return set("data-swap-push", browserUrl);
     }
+
+    /** {@link #swap(String, String)} with the target as a handle: {@code swap("/x", STATUS)}. */
+    default SELF swap(String url, jweb.css.Selector target) { return swap(url, target.build()); }
+    /** {@link #swapOuter(String, String)} with the target as a handle. */
+    default SELF swapOuter(String url, jweb.css.Selector target) { return swapOuter(url, target.build()); }
+    /** {@link #swapMorph(String, String)} with the target as a handle. */
+    default SELF swapMorph(String url, jweb.css.Selector target) { return swapMorph(url, target.build()); }
+    /** {@link #swapForm(String, String)} with the target as a handle. */
+    default SELF swapForm(String actionUrl, jweb.css.Selector target) { return swapForm(actionUrl, target.build()); }
 
     // ==================== Event Handlers ====================
 

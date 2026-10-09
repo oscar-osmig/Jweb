@@ -154,6 +154,27 @@ public class Csrf {
     }
 
     /**
+     * The hidden token field for the request in flight — inside a page or
+     * component render, no token needs passing in:
+     * {@code form(..., Csrf.tokenField(), ...)}.
+     *
+     * @return a hidden input element
+     */
+    public static Element tokenField() {
+        return tokenField(com.osmig.Jweb.framework.server.CurrentRequest.require("Csrf.tokenField()"));
+    }
+
+    /** The token for the request in flight (created if the session has none). */
+    public static jweb.CsrfToken token() {
+        return getOrCreateToken(com.osmig.Jweb.framework.server.CurrentRequest.require("Csrf.token()"));
+    }
+
+    /** The meta tag carrying the token for the request in flight. */
+    public static Element tokenMeta() {
+        return tokenMeta(com.osmig.Jweb.framework.server.CurrentRequest.require("Csrf.tokenMeta()"));
+    }
+
+    /**
      * Creates a meta tag containing the CSRF token for JavaScript access.
      * Useful for AJAX requests.
      *
