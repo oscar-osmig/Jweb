@@ -37,6 +37,39 @@ This is where Spring, Guava, etc. live — users need zero extra config, just th
 
 First-time setup takes an hour or two; after that, releasing is one command. Worth it if you want the framework to feel like a serious public library.
 
+**What is already in place (2026-10-10):** the `pom.xml` carries the metadata Central
+checks (`name`, `description`, `url`, `licenses`, `scm`, `developers`) and a `central`
+profile that adds the javadoc jar, GPG signing and the Central publishing plugin. The default
+build is untouched. What remains is yours to do once:
+
+1. **Namespace.** Central must verify the `groupId`. `com.osmig` needs the domain
+   `osmig.com` (a DNS TXT record); otherwise change the groupId to `io.github.oscar-osmig`
+   and verify it through a throwaway GitHub repo the portal names. JitPack coordinates
+   (`com.github.oscar-osmig:Jweb`) are unaffected either way.
+2. **Token.** Generate a portal token at central.sonatype.com and put it in
+   `~/.m2/settings.xml`:
+
+   ```xml
+   <servers>
+     <server><id>central</id><username>TOKEN_USER</username><password>TOKEN_PASS</password></server>
+   </servers>
+   ```
+
+3. **GPG key.** `gpg --gen-key`, publish it (`gpg --keyserver keyserver.ubuntu.com --send-keys KEYID`),
+   and export the passphrase as `MAVEN_GPG_PASSPHRASE` when deploying.
+4. **Deploy a tagged release:** `./mvnw -B -Pcentral -DskipTests deploy`. The profile
+   uploads and validates the bundle (`waitUntil=validated`); the final *Publish* click is on
+   the portal, so a bad bundle never reaches Central.
+
+A dry run without credentials — `./mvnw -B -Pcentral -DskipTests -Dgpg.skip package` — builds
+the javadoc jar beside the sources jar, which is what CI can check.
+
+**What a consumer pulls in.** The library's non-optional dependencies are the Spring Boot web
+and websocket starters, Jackson, the MongoDB driver (`mongodb-driver-sync`) and
+`spring-dotenv`. BCrypt (`spring-security-crypto`) and JWT (`jjwt`) are `optional`: an app
+that uses `Password` or `Jwt` adds them itself. Spring Data JPA, Spring AI and Testcontainers
+appear in the pom only as commented-out examples — they are not dependencies.
+
 **Option 3: GitHub Packages**
 
 Publishes to a Maven registry tied to your repo, but users need a GitHub token even to *read* public packages, which is annoying enough that I'd skip it for a public framework.

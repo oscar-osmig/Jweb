@@ -31,6 +31,10 @@ Work on `main` since 3.0.2. Not tagged.
   and `html()` with the DOM patches applied. It goes through `EventDispatch`, the class the
   WebSocket handler now delegates to, so a test exercises the real protocol: handler lookup
   in the page's context only, changed states, re-rendered live regions, `context_expired`.
+- **Maven Central, ready when the namespace is.** A `central` profile adds the javadoc jar,
+  GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
+  the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace
+  verification, portal token, GPG key) are listed in readme/publish.md.
 
 ## [3.0.2] — 2026-10-08
 
