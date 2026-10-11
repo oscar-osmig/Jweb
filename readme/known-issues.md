@@ -71,6 +71,13 @@ By design (know them, don't "fix" them):
 - **Guards cover everything under a prefix — pages, router routes and `@REST`
   controllers** (`app.guard("/admin/**", ...)`), but **middleware still does not apply to
   `@REST` controllers**: `app.use(...)` runs only for what `JWebController` dispatches.
+- **Render contexts are in-memory and per-instance** (five idle minutes, `StateManager`),
+  and so is OAuth2 state. One instance, or sticky sessions for `/jweb` and the pages that use
+  server events, live regions or state bindings — a reconnect that reaches another instance
+  is answered `known:false` and the page shows its expired notice. Since 2026-10-10 the
+  runtime does tell the user: *This page has expired* (or *Connection lost*) with a Reload
+  button, configurable with `jweb.runtime.expired` / `jweb.runtime.reconnect-attempts`; see
+  [State & Realtime](./state-and-realtime.md#when-the-connection-drops-and-when-the-page-expires).
 - **`Template.session()` / `Template.pathParam()` read the request in flight.** They work
   while a page route or router handler renders (streamed blocks included), not from a bare
   `toHtml()` in a test or inside a WebSocket event handler — capture what a handler needs

@@ -31,6 +31,12 @@ public class JWebConfiguration implements WebMvcConfigurer {
     @Value("${jweb.runtime.enabled:true}")
     private boolean runtimeEnabled;
 
+    @Value("${jweb.runtime.expired:banner}")
+    private String runtimeExpired;
+
+    @Value("${jweb.runtime.reconnect-attempts:8}")
+    private int runtimeReconnectAttempts;
+
     @Value("${jweb.ai.enabled:false}")
     private boolean aiEnabled;
 
@@ -63,6 +69,9 @@ public class JWebConfiguration implements WebMvcConfigurer {
         return args -> {
             com.osmig.Jweb.framework.server.ErrorPage.setDebug(devDebug);
             com.osmig.Jweb.framework.js.JWebRuntime.setEnabled(runtimeEnabled);
+            com.osmig.Jweb.framework.js.JWebRuntime.setExpiredAction(
+                com.osmig.Jweb.framework.js.JWebRuntime.ExpiredAction.parse(runtimeExpired));
+            com.osmig.Jweb.framework.js.JWebRuntime.setReconnectAttempts(runtimeReconnectAttempts);
             com.osmig.Jweb.framework.ai.AI.configure(new com.osmig.Jweb.framework.ai.AiConfig()
                 .enabled(aiEnabled)
                 .baseUrl(aiBaseUrl)

@@ -218,12 +218,41 @@ manually, e.g. for pages rendered outside the controller).
   - client → server: `event` (handler id, contextId, event payload, formData), `init`
     (contextId), `setState` (id, value), `ping`
   - server → client: `connected`, `stateUpdate` (`[{id,value}]`), `domUpdate`
-    (`[{id,html}]`), `eventHandled`, `initState`, `pong`, `error`
+    (`[{id,html}]`), `eventHandled`, `initState` (`states`, and `known:false` when the
+    server no longer holds the context the client named), `pong`, `error` (`message`, and
+    `code:"context_expired"` when an event names a reaped context)
 - On an `event` message the handler restores the `StateContext` by contextId, executes the
   registered handler (in that context only), collects `getChangedStates()`, and pushes
   `stateUpdate` back, followed by one `domUpdate` carrying the re-rendered HTML of every
   `live` region that depends on a changed state (`[{id:"live_1",html:"..."}]`; the runtime
   morphs each into its `data-live` element).
+
+### When the connection drops, and when the page expires
+
+A render context lives on the server for five idle minutes, in memory, on the instance that
+rendered the page. The runtime owns what the user sees when that stops being true:
+
+- **The socket closes** (network blip, deploy, server restart): the runtime reconnects with
+  exponential backoff — 1s, 2s, 4s… capped at 30s, `jweb.runtime.reconnect-attempts` times
+  (default 8). The device coming back online or the tab becoming visible retries at once.
+  Server events fired meanwhile are held (up to 20) and delivered when the socket reopens,
+  since the context outlives the socket. Past the last attempt, a fixed notice says
+  *Connection to the server was lost. Reload to continue.*
+- **The context is gone** (reaped after idling, the server restarted, or the socket reached
+  an instance that never rendered the page): the server answers the reconnect's `init` with
+  `known:false`, or an event with `error` + `context_expired`. The runtime then does what
+  `jweb.runtime.expired` says — `banner` (default: *This page has expired. Reload to
+  continue.*, with a Reload button), `reload` (reload at once), or `silent` (console only).
+  Either way it dispatches `jweb:expired` on `document` for page scripts, and stops
+  reconnecting. A page with no server-bound element (no server handler, live region or state
+  binding) loses nothing when its context expires, so it is never told.
+- The notice is one `div.jweb-notice[data-jweb-notice="expired|lost"]` with `role="alert"`,
+  styled through `--jweb-notice-bg`, `--jweb-notice-fg`, `--jweb-notice-btn-bg` and
+  `--jweb-notice-btn-fg` (set them on `:root` in a theme to restyle it).
+
+Because contexts are per-instance, a deployment with more than one instance needs sticky
+sessions for `/jweb` and the pages that use server events; without them every reconnect lands
+on an instance that answers `known:false`.
 
 ## Session
 

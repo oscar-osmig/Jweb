@@ -252,7 +252,12 @@ public class JWebSocketHandler extends TextWebSocketHandler {
             }
         }
 
-        sendMessage(session, new InitStateResponse(stateDataList));
+        // known=false: the page named a context this server does not hold
+        // (reaped, restarted, or another instance rendered it). The runtime
+        // shows its expired notice right away when the page has server-bound
+        // elements, instead of on the first click that would be dropped.
+        Boolean known = contextId == null ? null : context != null;
+        sendMessage(session, new InitStateResponse(stateDataList, known));
     }
 
     /**

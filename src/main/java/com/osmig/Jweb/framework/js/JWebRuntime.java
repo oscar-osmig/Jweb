@@ -31,6 +31,58 @@ public final class JWebRuntime {
         return enabled;
     }
 
+    /** What the page does when the server reports its render context expired. */
+    public enum ExpiredAction {
+        /** A fixed notice with a Reload button (default). */
+        BANNER,
+        /** Reload the page at once. */
+        RELOAD,
+        /** Log to the console only — the page's own scripts handle it via {@code jweb:expired}. */
+        SILENT;
+
+        /** Parses the {@code jweb.runtime.expired} value, case-insensitively; blank means banner. */
+        public static ExpiredAction parse(String value) {
+            if (value == null || value.isBlank()) return BANNER;
+            try {
+                return valueOf(value.trim().toUpperCase(java.util.Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException(
+                    "jweb.runtime.expired must be banner, reload or silent — was '" + value + "'");
+            }
+        }
+    }
+
+    private static volatile ExpiredAction expiredAction = ExpiredAction.BANNER;
+    private static volatile int reconnectAttempts = 8;
+
+    /**
+     * Sets what the runtime does on {@code context_expired} ({@code jweb.runtime.expired}).
+     * Invalidates the resolved script, so the served {@code /jweb/runtime.js?v=} hash changes.
+     */
+    public static void setExpiredAction(ExpiredAction action) {
+        expiredAction = action == null ? ExpiredAction.BANNER : action;
+        resolvedScript = null;
+    }
+
+    public static ExpiredAction getExpiredAction() {
+        return expiredAction;
+    }
+
+    /**
+     * How many times the runtime retries the WebSocket after it closes, with exponential
+     * backoff from one second capped at thirty ({@code jweb.runtime.reconnect-attempts}).
+     * A device coming back online or a tab becoming visible retries at once regardless.
+     */
+    public static void setReconnectAttempts(int attempts) {
+        if (attempts < 0) throw new IllegalArgumentException("reconnect attempts must be >= 0");
+        reconnectAttempts = attempts;
+        resolvedScript = null;
+    }
+
+    public static int getReconnectAttempts() {
+        return reconnectAttempts;
+    }
+
     /**
      * Returns the JWeb client runtime JavaScript code.
      */
@@ -39,14 +91,17 @@ public final class JWebRuntime {
         if (script == null) {
             script = RUNTIME_SCRIPT
                 .replace("__THREE_BUNDLE_V__", jweb.three.ThreeAssets.bundleVersion())
-                .replace("__THREE_RUNTIME_V__", jweb.three.ThreeRuntime.version());
+                .replace("__THREE_RUNTIME_V__", jweb.three.ThreeRuntime.version())
+                .replace("__EXPIRED_ACTION__", expiredAction.name().toLowerCase(java.util.Locale.ROOT))
+                .replace("__RECONNECT_ATTEMPTS__", Integer.toString(reconnectAttempts));
             resolvedScript = script;
         }
         return script;
     }
 
     // The runtime embeds the three.js asset versions (for cache-busting ?v=
-    // params), resolved once — its own content hash then covers them too.
+    // params) and the connection settings, resolved once — its own content
+    // hash then covers them too.
     private static volatile String resolvedScript;
 
     /**
@@ -67,8 +122,11 @@ public final class JWebRuntime {
             data:null,
             connected:false,
             reconnectAttempts:0,
-            maxReconnectAttempts:5,
+            maxReconnectAttempts:__RECONNECT_ATTEMPTS__,
             reconnectDelay:1000,
+            expiredAction:'__EXPIRED_ACTION__',
+            expired:false,
+            pending:[],
 
             init:function(){
                 console.log('[JWeb] Starting initialization...');
@@ -91,6 +149,7 @@ public final class JWebRuntime {
                 this.lateQueue=[];
                 this.ready=true;
                 this.connect();
+                this.initConnectionWatch();
                 this.initTransitions();
                 this.initBindings();
                 this.initSwaps();
@@ -477,6 +536,12 @@ public final class JWebRuntime {
                         if(self.data&&self.data.contextId){
                             self.ws.send(JSON.stringify({type:'init',contextId:self.data.contextId}));
                         }
+                        // The page may have gone on without us: deliver what
+                        // was fired while reconnecting (the server's context
+                        // outlives a dropped socket) and take the notice down
+                        if(!self.expired)self.hideNotice();
+                        var queued=self.pending;self.pending=[];
+                        queued.forEach(function(d){self.ws.send(JSON.stringify(d));});
                     };
                     this.ws.onmessage=function(event){
                         self.handleMessage(JSON.parse(event.data));
@@ -496,13 +561,99 @@ public final class JWebRuntime {
             },
 
             scheduleReconnect:function(){
+                if(this.expired)return;
                 if(this.reconnectAttempts<this.maxReconnectAttempts){
                     this.reconnectAttempts++;
-                    var delay=this.reconnectDelay*this.reconnectAttempts;
+                    // 1s, 2s, 4s, ... capped at 30s
+                    var delay=Math.min(this.reconnectDelay*Math.pow(2,this.reconnectAttempts-1),30000);
                     console.log('[JWeb] Reconnecting in '+delay+'ms');
                     var self=this;
-                    setTimeout(function(){self.connect();},delay);
+                    this.reconnectTimer=setTimeout(function(){self.reconnectTimer=null;self.connect();},delay);
+                }else{
+                    console.warn('[JWeb] Gave up reconnecting after '+this.maxReconnectAttempts+' attempts');
+                    this.notice('lost');
                 }
+            },
+
+            // A device coming back online or a tab becoming visible again
+            // retries at once instead of waiting out the backoff (or the
+            // give-up): the user is looking at the page right now.
+            initConnectionWatch:function(){
+                var self=this;
+                var retry=function(){
+                    if(self.connected||self.expired)return;
+                    if(self.reconnectTimer){clearTimeout(self.reconnectTimer);self.reconnectTimer=null;}
+                    self.reconnectAttempts=0;
+                    self.connect();
+                };
+                window.addEventListener('online',retry);
+                document.addEventListener('visibilitychange',function(){
+                    if(document.visibilityState==='visible')retry();
+                });
+            },
+
+            // The server reaped this page's render context: its handlers and
+            // live regions are gone, so nothing the user does will reach it.
+            // Say so (jweb.runtime.expired: banner | reload | silent) and let
+            // page scripts react to jweb:expired.
+            onExpired:function(){
+                if(this.expired)return;
+                this.expired=true;
+                this.pending=[];
+                document.dispatchEvent(new CustomEvent('jweb:expired'));
+                if(this.expiredAction==='reload'){location.reload();return;}
+                if(this.expiredAction==='silent'){console.warn('[JWeb] Page context expired — reload to continue');return;}
+                this.notice('expired');
+            },
+
+            // True when something on the page needs the server: a server
+            // handler, a live region or a state binding. A page with none of
+            // them loses nothing when its context expires, so it is never told.
+            hasServerBindings:function(){
+                return !!document.querySelector('[data-live],[data-state],[data-state-bind],[data-state-input],[data-state-attr],[data-state-class]')
+                    ||Array.prototype.some.call(document.querySelectorAll('*'),function(el){
+                        for(var i=0;i<el.attributes.length;i++){if(el.attributes[i].name.indexOf('data-jweb-on')===0)return true;}
+                        return false;
+                    });
+            },
+
+            // One fixed notice at the bottom of the viewport. Themeable with
+            // --jweb-notice-bg / -fg / -btn-bg / -btn-fg; the element carries
+            // class jweb-notice and data-jweb-notice="expired|lost".
+            notice:function(kind){
+                var text=kind==='expired'
+                    ?'This page has expired. Reload to continue.'
+                    :'Connection to the server was lost. Reload to continue.';
+                var el=document.getElementById('__jweb_notice');
+                if(!el){
+                    el=document.createElement('div');
+                    el.id='__jweb_notice';
+                    el.className='jweb-notice';
+                    el.setAttribute('role','alert');
+                    var s=el.style;
+                    s.position='fixed';s.left='50%';s.bottom='16px';s.transform='translateX(-50%)';
+                    s.zIndex='2147483647';s.display='flex';s.alignItems='center';s.gap='12px';
+                    s.maxWidth='calc(100vw - 32px)';s.padding='10px 14px';s.borderRadius='8px';
+                    s.font='14px/1.4 system-ui,sans-serif';s.boxShadow='0 6px 24px rgba(0,0,0,.25)';
+                    s.background='var(--jweb-notice-bg, #1f2937)';s.color='var(--jweb-notice-fg, #f9fafb)';
+                    var msg=document.createElement('span');msg.className='jweb-notice-text';
+                    var btn=document.createElement('button');btn.type='button';btn.className='jweb-notice-reload';
+                    btn.textContent='Reload';
+                    var b=btn.style;
+                    b.font='inherit';b.fontWeight='600';b.padding='6px 12px';b.border='0';b.borderRadius='6px';b.cursor='pointer';
+                    b.background='var(--jweb-notice-btn-bg, #f9fafb)';b.color='var(--jweb-notice-btn-fg, #1f2937)';
+                    btn.addEventListener('click',function(){location.reload();});
+                    el.appendChild(msg);el.appendChild(btn);
+                    document.body.appendChild(el);
+                }
+                el.setAttribute('data-jweb-notice',kind);
+                el.querySelector('.jweb-notice-text').textContent=text;
+                el.style.display='flex';
+            },
+
+            hideNotice:function(){
+                var el=document.getElementById('__jweb_notice');
+                if(el)el.style.display='none';
             },
 
             handleMessage:function(msg){
@@ -521,6 +672,10 @@ public final class JWebRuntime {
                         break;
                     case 'initState':
                         this.handleStateUpdate(msg.states);
+                        // known:false — the server has no context for this
+                        // page (it restarted, or the socket landed on another
+                        // instance). Tell the user now, not on the next click.
+                        if(msg.known===false&&this.data&&this.data.contextId&&this.hasServerBindings())this.onExpired();
                         break;
                     case 'threePatch':
                         // Live scene mutation from Three.patch(...) — the
@@ -534,6 +689,7 @@ public final class JWebRuntime {
                     case 'pong':
                         break;
                     case 'error':
+                        if(msg.code==='context_expired'){this.onExpired();break;}
                         console.error('[JWeb] Server error:',msg.message);
                         break;
                 }
@@ -601,8 +757,9 @@ public final class JWebRuntime {
             },
 
             call:function(handlerId,domEvent){
-                if(!this.connected){
-                    console.warn('[JWeb] Not connected');
+                if(this.expired){
+                    // Nothing on the server can answer; make sure the notice is up
+                    if(this.expiredAction==='banner')this.notice('expired');
                     return;
                 }
                 var eventData={
@@ -627,6 +784,13 @@ public final class JWebRuntime {
                     var formData=new FormData(domEvent.target);
                     eventData.formData=Object.fromEntries(formData);
                     domEvent.preventDefault();
+                }
+                if(!this.connected){
+                    // Hold the event for the reconnect (the server's context
+                    // outlives the socket); past the give-up, say so instead
+                    if(this.reconnectAttempts>=this.maxReconnectAttempts&&!this.reconnectTimer){this.notice('lost');return;}
+                    if(this.pending.length<20)this.pending.push(eventData);
+                    return;
                 }
                 this.ws.send(JSON.stringify(eventData));
             },

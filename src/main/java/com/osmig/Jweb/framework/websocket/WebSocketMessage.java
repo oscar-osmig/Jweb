@@ -573,6 +573,7 @@ public final class WebSocketMessage {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class InitStateResponse extends Base {
         private List<StateData> states;
+        private Boolean known;
 
         public InitStateResponse() {
             setType("initState");
@@ -583,12 +584,31 @@ public final class WebSocketMessage {
             this.states = states;
         }
 
+        /**
+         * @param known whether the server still holds the render context the client
+         *              named — {@code false} tells the runtime the page has expired
+         *              before the user's first click finds out; {@code null} when the
+         *              client named no context
+         */
+        public InitStateResponse(List<StateData> states, Boolean known) {
+            this(states);
+            this.known = known;
+        }
+
         public List<StateData> getStates() {
             return states;
         }
 
         public void setStates(List<StateData> states) {
             this.states = states;
+        }
+
+        public Boolean getKnown() {
+            return known;
+        }
+
+        public void setKnown(Boolean known) {
+            this.known = known;
         }
     }
 }

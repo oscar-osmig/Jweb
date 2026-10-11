@@ -16,6 +16,15 @@ Work on `main` since 3.0.2. Not tagged.
   syntax tests run), then builds the demo Docker image. Until now JitPack and the Dockerfile
   both built with `-DskipTests`, so nothing gated `main`.
 - **This changelog**, and GitHub Releases for every existing tag.
+- **The page tells the user when it expired or lost the server.** The runtime used to log
+  `context_expired` to the console and give up reconnecting after five linear retries, so
+  a page whose context was reaped (or whose server restarted) silently stopped responding.
+  Now: a fixed notice with a Reload button (`jweb.runtime.expired`: `banner` default,
+  `reload`, or `silent` + a `jweb:expired` event), exponential backoff 1s → 30s for
+  `jweb.runtime.reconnect-attempts` (default 8) with an immediate retry when the device comes
+  back online or the tab becomes visible, events fired while reconnecting held and delivered
+  on reopen, and `initState` carries `known:false` so a reconnect after a restart announces
+  the expiry before the first dropped click. Themeable via `--jweb-notice-*`.
 
 ## [3.0.2] — 2026-10-08
 

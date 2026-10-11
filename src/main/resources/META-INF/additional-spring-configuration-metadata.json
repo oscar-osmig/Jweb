@@ -81,6 +81,18 @@
       "description": "Inject the JWeb client runtime (WebSocket events, state sync, DOM patching) into rendered pages"
     },
     {
+      "name": "jweb.runtime.expired",
+      "type": "java.lang.String",
+      "description": "What a page does when the server no longer holds its render context: banner (a fixed notice with a Reload button, the default), reload (reload at once), or silent (console only; page scripts get a jweb:expired event)",
+      "defaultValue": "banner"
+    },
+    {
+      "name": "jweb.runtime.reconnect-attempts",
+      "type": "java.lang.Integer",
+      "description": "How many times the client runtime retries a closed WebSocket (exponential backoff from 1s, capped at 30s) before showing the connection-lost notice; coming back online or to the foreground retries at once regardless",
+      "defaultValue": 8
+    },
+    {
       "name": "jweb.websocket.allowed-origins",
       "type": "java.lang.String",
       "description": "Comma-separated origins allowed to open the /jweb WebSocket (blank = same-origin only)"
