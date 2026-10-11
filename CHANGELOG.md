@@ -43,6 +43,10 @@ Work on `main` since 3.0.2. Not tagged.
   cardinal rules (English-like, French and Brazilian Portuguese, the East Slavic languages,
   Polish, Czech/Slovak, Arabic, Romanian, Hebrew, the no-plural languages) and takes
   registrations for the rest.
+- **The docs site has search.** A field above the sidebar nav; hits as you type, each linking
+  to the section and heading. The index is built from the rendered Java sections themselves
+  (split at their headings, prose and code alike), so it can never drift from the content.
+  `GET /docs/search?q=` is the fragment behind it.
 - **Maven Central, ready when the namespace is.** A `central` profile adds the javadoc jar,
   GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
   the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace

@@ -141,6 +141,11 @@ public class Routes implements JWebRoutes {
         app.get("/docs/content", ctx ->
             DocContent.get(ctx.query("section"), ctx.query("v")));
 
+        // The sidebar's search box: the hits for ?q= as a fragment, links
+        // carrying the version being read
+        app.get("/docs/search", ctx ->
+            com.osmig.Jweb.app.docs.DocsSearch.results(ctx.query("q"), ctx.query("v")));
+
         // The whole documentation set as one markdown document, for an AI
         // assistant to pull in as grounding before writing JWeb code. Opening the
         // URL in a browser downloads it as a .md file; ?topic=<id> narrows it to

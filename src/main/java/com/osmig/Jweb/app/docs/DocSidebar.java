@@ -2,7 +2,12 @@ package com.osmig.Jweb.app.docs;
 
 import jweb.Cls;
 import jweb.Element;
+import jweb.Id;
 import jweb.Template;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import static jweb.El.*;
 import static jweb.Css.*;
@@ -23,6 +28,44 @@ public class DocSidebar implements Template {
     public static final Cls NAV_LINK = cls("docs-nav-link");
     /** The current-section/current-heading marker, shared with {@code SubheaderSidebar}'s rail links. */
     public static final Cls ACTIVE = cls("active");
+    /** The search box above the nav — {@code .docs-search}. */
+    public static final Cls SEARCH_BOX = cls("docs-search");
+    /** The search field — {@code #docs-search-input}; {@link DocsSearchScript} listens on it. */
+    public static final Id SEARCH_INPUT = id("docs-search-input");
+    /** Where the hits land — {@code #docs-search-results}; {@link DocsSearch#results} fills it. */
+    public static final Id SEARCH_RESULTS = id("docs-search-results");
+
+    /**
+     * Every section, in nav order, with its label. The nav renders from this
+     * and {@link DocsSearch} indexes from it, so a new section is listed once.
+     */
+    public static final Map<String, String> SECTIONS;
+    static {
+        Map<String, String> s = new LinkedHashMap<>();
+        s.put("intro", "Introduction");
+        s.put("setup", "Getting Started");
+        s.put("elements", "Elements");
+        s.put("styling", "Styling");
+        s.put("conditionals", "Conditionals");
+        s.put("components", "Components");
+        s.put("javascript", "JavaScript");
+        s.put("routing", "Routing");
+        s.put("fragments", "Fragments");
+        s.put("streaming", "Streaming SSR");
+        s.put("state", "State");
+        s.put("forms", "Forms");
+        s.put("layouts", "Layouts");
+        s.put("api", "REST API");
+        s.put("ai", "AI");
+        s.put("three", "3D Scenes");
+        s.put("performance", "Performance & SEO");
+        s.put("security", "Security");
+        s.put("ui", "UI Components");
+        s.put("data", "Database");
+        s.put("devtools", "DevTools");
+        s.put("examples", "Examples");
+        SECTIONS = Collections.unmodifiableMap(s);
+    }
 
     private final String active;
     private final String version;
@@ -43,36 +86,53 @@ public class DocSidebar implements Template {
         return aside(DOCS_SIDEBAR, style()
                 .backgroundColor(hex("#fafafa")),
             div(DOCS_SIDEBAR_INNER,
+                searchBox(),
                 navSection("Basics",
-                    link("intro", "Introduction"),
-                    link("setup", "Getting Started"),
-                    link("elements", "Elements")),
+                    link("intro"),
+                    link("setup"),
+                    link("elements")),
                 navSection("Core",
-                    link("styling", "Styling"),
-                    link("conditionals", "Conditionals"),
-                    link("components", "Components"),
-                    link("javascript", "JavaScript")),
+                    link("styling"),
+                    link("conditionals"),
+                    link("components"),
+                    link("javascript")),
                 navSection("Features",
-                    link("routing", "Routing"),
-                    link("fragments", "Fragments"),
-                    link("streaming", "Streaming SSR"),
-                    link("state", "State"),
-                    link("forms", "Forms"),
-                    link("layouts", "Layouts")),
+                    link("routing"),
+                    link("fragments"),
+                    link("streaming"),
+                    link("state"),
+                    link("forms"),
+                    link("layouts")),
                 navSection("Advanced",
-                    link("api", "REST API"),
-                    link("ai", "AI"),
-                    link("three", "3D Scenes"),
-                    link("performance", "Performance & SEO"),
-                    link("security", "Security"),
-                    link("ui", "UI Components"),
-                    link("data", "Database"),
-                    link("devtools", "DevTools")),
+                    link("api"),
+                    link("ai"),
+                    link("three"),
+                    link("performance"),
+                    link("security"),
+                    link("ui"),
+                    link("data"),
+                    link("devtools")),
                 navSection("More",
-                    link("examples", "Examples")),
+                    link("examples")),
                 aiDocsLink()
             )
         );
+    }
+
+    /**
+     * The search field and the container its hits land in. The field has no
+     * form around it on purpose: typing is the submit ({@link DocsSearchScript}
+     * fetches {@code /docs/search} as you type), and Enter should not reload.
+     * Presentation is class rules in {@code DocsPage.styles()}.
+     */
+    private Element searchBox() {
+        return div(SEARCH_BOX,
+            input(SEARCH_INPUT, type("search"),
+                attrs().placeholder("Search the docs…")
+                    .autocomplete("off")
+                    .set("aria-label", "Search the documentation")
+                    .set("aria-controls", SEARCH_RESULTS.name())),
+            div(SEARCH_RESULTS, attrs().set("aria-live", "polite")));
     }
 
     /**
@@ -136,7 +196,8 @@ public class DocSidebar implements Template {
      * inline style would outrank {@code .docs-nav-link.active}, so the marking
      * could never take effect after a swap.</p>
      */
-    private Element link(String id, String label) {
+    private Element link(String id) {
+        String label = SECTIONS.get(id);
         // Sections that don't exist in the viewed version stay out of the nav
         if (!DocVersions.sectionAvailable(id, version)) return null;
         String href = DocVersions.href(id, version);
