@@ -76,6 +76,12 @@
       "description": "Show exception details and stack traces on error pages (dev only)"
     },
     {
+      "name": "jweb.dev.strict-html",
+      "type": "java.lang.Boolean",
+      "description": "Fail a render on invalid HTML nesting (p(div(...)), ul(div(...)), a(a(...)), title outside head) instead of logging the pair once",
+      "defaultValue": false
+    },
+    {
       "name": "jweb.runtime.enabled",
       "type": "java.lang.Boolean",
       "description": "Inject the JWeb client runtime (WebSocket events, state sync, DOM patching) into rendered pages"

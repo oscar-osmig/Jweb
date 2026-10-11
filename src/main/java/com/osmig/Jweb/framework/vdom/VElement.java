@@ -168,6 +168,11 @@ public final class VElement implements VNode {
         html.append(">");
 
         for (VNode child : children) {
+            // The content model the DSL cannot enforce by type: p(div(...)) compiles.
+            // Reported once per pair, or thrown under jweb.dev.strict-html.
+            if (child instanceof VElement element) {
+                HtmlNesting.check(tag, element.tag);
+            }
             html.append(child.toHtml());
         }
 

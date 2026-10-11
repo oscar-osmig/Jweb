@@ -31,6 +31,18 @@ Work on `main` since 3.0.2. Not tagged.
   and `html()` with the DOM patches applied. It goes through `EventDispatch`, the class the
   WebSocket handler now delegates to, so a test exercises the real protocol: handler lookup
   in the page's context only, changed states, re-rendered live regions, `context_expired`.
+- **Invalid HTML nesting is reported.** `p(div(…))` compiles and used to render silently,
+  leaving the browser to repair it into a DOM that no longer matched the tree. The
+  serializer now checks every parent/child pair against the content model (`HtmlNesting`:
+  phrasing-only parents, list / table / select structure, nested interactive content,
+  `<title>` outside `<head>`) and logs each offending pair once with the reason;
+  `jweb.dev.strict-html: true` fails the render instead.
+- **Plural forms in i18n.** `Messages.plural("items", n)` and `I18n.plural("items", n)` read
+  `items.one` / `items.few` / `items.many` / `items.other`… for the form the count takes in the
+  locale, with `{0}` the count formatted for that locale. `jweb.Plural` carries the CLDR
+  cardinal rules (English-like, French and Brazilian Portuguese, the East Slavic languages,
+  Polish, Czech/Slovak, Arabic, Romanian, Hebrew, the no-plural languages) and takes
+  registrations for the rest.
 - **Maven Central, ready when the namespace is.** A `central` profile adds the javadoc jar,
   GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
   the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace

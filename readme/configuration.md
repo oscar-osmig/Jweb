@@ -122,6 +122,7 @@ jweb:
 | Property | Default | Effect |
 |----------|---------|--------|
 | `jweb.dev.debug` | `false` | Show exception details and stack traces on error pages (dev only) |
+| `jweb.dev.strict-html` | `false` | Fail a render on invalid HTML nesting (`p(div(…))`, `ul(div(…))`, `a(a(…))`, `title` outside `head`) instead of logging each pair once |
 | `jweb.runtime.enabled` | `true` | Inject the JWeb client runtime (WebSocket events, state sync, DOM patching) into rendered pages |
 | `jweb.runtime.expired` | `banner` | What a page does when the server no longer holds its render context: `banner` (fixed notice with a Reload button), `reload`, or `silent` (console + `jweb:expired` event only) |
 | `jweb.runtime.reconnect-attempts` | `8` | WebSocket retries after a close (backoff 1s → 30s) before the connection-lost notice; coming back online or to the foreground retries at once |

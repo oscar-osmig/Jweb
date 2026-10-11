@@ -104,7 +104,9 @@ By design (know them, don't "fix" them):
 - **Three attributes have no free static name**, because an element already owns it:
   `title`, `label` and `cite` are `attrs().title(...)` / `attrs().label(...)` /
   `attrs().cite(...)`. `button(title("x"), …)` compiles and nests a `<title>` element —
-  the renderer logs a warning when a `<title>` appears outside a head or SVG parent.
+  the renderer reports it, as it reports every nesting the browser would repair
+  (`p(div(…))`, `ul(div(…))`, `a(a(…))`): once per parent/child pair in the log, or as a
+  failed render with `jweb.dev.strict-html: true` (since 2026-10-10, `HtmlNesting`).
 - **Three SVG elements carry an `svg` prefix** so the four wildcard imports stay
   unambiguous: `svgText` (plain `text` is the text node), `svgLinearGradient` and
   `svgRadialGradient` (the plain names are CSS values).

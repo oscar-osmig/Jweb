@@ -149,6 +149,22 @@ public class I18n {
     }
 
     /**
+     * A message in the plural form {@code count} takes in the current locale —
+     * {@code I18n.plural("items", n)} reads {@code items.one} / {@code items.other}
+     * (and {@code .few}, {@code .many}… where the language has them).
+     *
+     * @see Messages#plural(String, long, Object...)
+     */
+    public static String plural(String key, long count, Object... args) {
+        return Messages.plural(current(), key, count, args);
+    }
+
+    /** {@link #plural(String, long, Object...)} in a specific request's locale. */
+    public static String plural(Request request, String key, long count, Object... args) {
+        return Messages.plural(getLocale(request), key, count, args);
+    }
+
+    /**
      * Parses the Accept-Language header and returns the best matching locale.
      *
      * @param header the Accept-Language header value

@@ -28,6 +28,9 @@ public class JWebConfiguration implements WebMvcConfigurer {
     @Value("${jweb.dev.debug:false}")
     private boolean devDebug;
 
+    @Value("${jweb.dev.strict-html:false}")
+    private boolean strictHtml;
+
     @Value("${jweb.runtime.enabled:true}")
     private boolean runtimeEnabled;
 
@@ -68,6 +71,7 @@ public class JWebConfiguration implements WebMvcConfigurer {
     public ApplicationRunner jwebFrameworkSettings() {
         return args -> {
             com.osmig.Jweb.framework.server.ErrorPage.setDebug(devDebug);
+            com.osmig.Jweb.framework.vdom.HtmlNesting.setStrict(strictHtml);
             com.osmig.Jweb.framework.js.JWebRuntime.setEnabled(runtimeEnabled);
             com.osmig.Jweb.framework.js.JWebRuntime.setExpiredAction(
                 com.osmig.Jweb.framework.js.JWebRuntime.ExpiredAction.parse(runtimeExpired));

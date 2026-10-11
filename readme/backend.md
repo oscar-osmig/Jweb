@@ -906,7 +906,20 @@ app.use(I18n.middleware());                       // sets the thread-local local
 
 String msg = I18n.t("greeting", user.name());     // uses current locale
 String msg2 = Messages.get("no", "greeting", "Ola");
+
+// Plurals: one entry per form the language has, {0} is the count
+Messages.load("en", Map.of("items.one", "{0} item", "items.other", "{0} items"));
+Messages.load("ru", Map.of("items.one", "{0} товар", "items.few", "{0} товара", "items.many", "{0} товаров"));
+Messages.plural("items", 1);                      // "1 item"
+Messages.plural("ru", "items", 22);               // "22 товара"  (few)
+String msg3 = I18n.plural("items", 5);            // current locale; your args follow as {1}, {2}…
+Plural.Category form = Plural.of(Locale.FRENCH, 0);   // ONE — 0 is singular in French
 ```
+
+`Plural` carries the CLDR cardinal rules for English-like languages, French (0 and 1), the
+East Slavic three-form languages, Polish, Czech/Slovak, Arabic, Romanian, Hebrew and the
+languages without plural forms; `Plural.register("sl", n -> …)` adds one. A form the bundle
+lacks falls back to `.other`, then to the bare key.
 
 > The middleware intentionally leaves the locale set after the chain returns (the framework
 > clears it at the end of the request), so lazily-rendered elements can call `I18n.t(...)`
