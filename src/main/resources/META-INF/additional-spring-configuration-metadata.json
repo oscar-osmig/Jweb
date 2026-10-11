@@ -87,6 +87,12 @@
       "description": "Inject the JWeb client runtime (WebSocket events, state sync, DOM patching) into rendered pages"
     },
     {
+      "name": "jweb.metrics.micrometer",
+      "type": "java.lang.Boolean",
+      "description": "Mirror jweb.Metrics into the application's Micrometer MeterRegistry when one exists (actuator + a registry); false keeps the built-in /metrics endpoint only",
+      "defaultValue": true
+    },
+    {
       "name": "jweb.runtime.expired",
       "type": "java.lang.String",
       "description": "What a page does when the server no longer holds its render context: banner (a fixed notice with a Reload button, the default), reload (reload at once), or silent (console only; page scripts get a jweb:expired event)",

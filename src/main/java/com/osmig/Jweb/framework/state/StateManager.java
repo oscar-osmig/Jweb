@@ -174,6 +174,11 @@ public class StateManager {
      * @param sessionId the session ID
      * @return the context, or null if not found
      */
+    /** How many render contexts are alive right now — a gauge for the dashboards. */
+    public static int activeContexts() {
+        return contextRegistry.size();
+    }
+
     public static StateContext getContextById(String sessionId) {
         if (sessionId == null) return null;
         StateContext context = contextRegistry.get(sessionId);

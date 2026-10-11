@@ -56,6 +56,12 @@ Work on `main` since 3.0.2. Not tagged.
   its versions from the framework it runs in, uses `@JWebApplication`, `app.layout(...)
   .pages(...)`, handle-based pages and layouts with `styles()`, constructor-injected
   repositories, a Maven-image Dockerfile, and `JWebCliTest` compiles what it generates.
+- **Metrics reach Micrometer.** `jweb.Metrics` gained a `Sink`; the Micrometer bridge
+  (`MicrometerSink`, bound automatically when the app has a `MeterRegistry` bean, i.e.
+  actuator plus a registry) mirrors every counter, timer and gauge — including the
+  framework's new `jweb.contexts.active` — into Prometheus, Datadog, OTLP or whatever the
+  registry exports to. `micrometer-core` is an optional dependency; without it nothing
+  changes.
 - **Maven Central, ready when the namespace is.** A `central` profile adds the javadoc jar,
   GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
   the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace

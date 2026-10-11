@@ -169,6 +169,15 @@
 			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
+		<!-- Micrometer bridge: jweb.Metrics forwards to a MeterRegistry when the app has one
+		     (actuator + a registry such as micrometer-registry-prometheus). Optional: an app
+		     without Micrometer keeps the built-in /metrics endpoint and loads no bridge. -->
+		<dependency>
+			<groupId>io.micrometer</groupId>
+			<artifactId>micrometer-core</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- Spring Data JPA for database access (uncomment when needed) -->
 		<!-- <dependency>
 			<groupId>org.springframework.boot</groupId>

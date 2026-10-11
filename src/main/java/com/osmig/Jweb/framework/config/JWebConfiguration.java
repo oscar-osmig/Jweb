@@ -72,6 +72,8 @@ public class JWebConfiguration implements WebMvcConfigurer {
         return args -> {
             com.osmig.Jweb.framework.server.ErrorPage.setDebug(devDebug);
             com.osmig.Jweb.framework.vdom.HtmlNesting.setStrict(strictHtml);
+            // The framework's own health signal: how many pages hold server state
+            jweb.Metrics.gauge("jweb.contexts.active", com.osmig.Jweb.framework.state.StateManager::activeContexts);
             com.osmig.Jweb.framework.js.JWebRuntime.setEnabled(runtimeEnabled);
             com.osmig.Jweb.framework.js.JWebRuntime.setExpiredAction(
                 com.osmig.Jweb.framework.js.JWebRuntime.ExpiredAction.parse(runtimeExpired));

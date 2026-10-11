@@ -34,6 +34,15 @@ import java.util.concurrent.atomic.LongAdder;
  *   <li><b>Gauges</b> - Point-in-time values</li>
  *   <li><b>Timers</b> - Duration measurements</li>
  * </ul>
+ *
+ * <h2>Micrometer</h2>
+ * <p>Everything recorded here can also flow into a Micrometer {@code MeterRegistry}
+ * — and from there to Prometheus, Datadog, OTLP or whatever the registry
+ * exports to. With {@code micrometer-core} on the classpath and a
+ * {@code MeterRegistry} bean in the application (Spring Boot's actuator
+ * provides one), the framework binds it at startup; by hand it is
+ * {@code MicrometerSink.bind(registry)}. The built-in {@code /metrics}
+ * endpoint keeps working either way.</p>
  */
 public class Metrics {
 
@@ -41,6 +50,39 @@ public class Metrics {
     private static final Map<String, Gauge> gauges = new ConcurrentHashMap<>();
     private static final Map<String, Timer> timers = new ConcurrentHashMap<>();
     private static final Instant startTime = Instant.now();
+
+    /**
+     * Where every recording is mirrored, once one is attached: a counter
+     * increment, a gauge registration, a timer sample. The Micrometer bridge
+     * ({@link MicrometerSink}) is one; a test
+     * can be another. Named in framework terms so this class never loads a
+     * Micrometer type.
+     */
+    public interface Sink {
+        void counter(String name, long delta);
+        void gauge(String name, java.util.function.Supplier<Number> value);
+        void timer(String name, long nanos);
+    }
+
+    private static volatile Sink sink;
+
+    /**
+     * Attaches the sink every recording from now on is mirrored to, and
+     * replays the gauges already registered (a gauge is a registration, not a
+     * sample, so a late sink would otherwise never see it). Counters and
+     * timers start forwarding from this point. {@code null} detaches.
+     */
+    public static void sink(Sink newSink) {
+        sink = newSink;
+        if (newSink != null) {
+            gauges.forEach((name, gauge) -> newSink.gauge(name, gauge.supplier));
+        }
+    }
+
+    /** The attached sink, or {@code null}. */
+    public static Sink sink() {
+        return sink;
+    }
 
     // Built-in metrics
     private static final Counter requestsTotal = counter("http.requests.total");
@@ -74,11 +116,13 @@ public class Metrics {
         }
 
         public void increment() {
-            value.increment();
+            increment(1);
         }
 
         public void increment(long delta) {
             value.add(delta);
+            Sink s = sink;
+            if (s != null) s.counter(name, delta);
         }
 
         public long get() {
@@ -100,6 +144,8 @@ public class Metrics {
      */
     public static void gauge(String name, java.util.function.Supplier<Number> supplier) {
         gauges.put(name, new Gauge(name, supplier));
+        Sink s = sink;
+        if (s != null) s.gauge(name, supplier);
     }
 
     /**
@@ -153,11 +199,7 @@ public class Metrics {
          * Records a duration in milliseconds.
          */
         public void record(long durationMs) {
-            count.increment();
-            long nanos = durationMs * 1_000_000;
-            totalTimeNanos.add(nanos);
-            updateMin(nanos);
-            updateMax(nanos);
+            sample(durationMs * 1_000_000);
         }
 
         /**
@@ -168,11 +210,7 @@ public class Metrics {
             try {
                 operation.run();
             } finally {
-                long duration = System.nanoTime() - start;
-                count.increment();
-                totalTimeNanos.add(duration);
-                updateMin(duration);
-                updateMax(duration);
+                sample(System.nanoTime() - start);
             }
         }
 
@@ -184,12 +222,18 @@ public class Metrics {
             try {
                 return operation.get();
             } finally {
-                long duration = System.nanoTime() - start;
-                count.increment();
-                totalTimeNanos.add(duration);
-                updateMin(duration);
-                updateMax(duration);
+                sample(System.nanoTime() - start);
             }
+        }
+
+        /** One sample, in nanoseconds: the statistics here, and the sink's copy. */
+        public void sample(long nanos) {
+            count.increment();
+            totalTimeNanos.add(nanos);
+            updateMin(nanos);
+            updateMax(nanos);
+            Sink s = sink;
+            if (s != null) s.timer(name, nanos);
         }
 
         private void updateMin(long value) {

@@ -474,6 +474,28 @@ Metrics.setupEndpoint(app);      // GET /metrics — JSON, or Prometheus with Ac
 
 Metrics middleware sees page-route and 404 traffic too (everything runs through the stack).
 
+**Micrometer.** Everything `Metrics` records is mirrored into a Micrometer `MeterRegistry`
+when the application has one, so it reaches Prometheus, Datadog, OTLP or whatever the
+registry exports to — the same names, every counter increment and timer sample, every gauge.
+Add Spring Boot's actuator and a registry and nothing else is needed:
+
+```xml
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-actuator</artifactId>
+</dependency>
+<dependency>
+  <groupId>io.micrometer</groupId>
+  <artifactId>micrometer-registry-prometheus</artifactId>
+</dependency>
+```
+
+Then `/actuator/prometheus` carries `http_requests_total`, `orders_placed_total`, and the
+framework's own `jweb_contexts_active` (pages holding server state right now). Bind one by
+hand with `MicrometerSink.bind(registry)` (`jweb.MicrometerSink`), or keep the
+two apart with `jweb.metrics.micrometer=false`. Without `micrometer-core` on the classpath
+nothing changes: the built-in `/metrics` endpoint stays.
+
 ## Server-side HTTP Client (`http/Fetch`)
 
 ```java
