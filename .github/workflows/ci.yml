@@ -1,0 +1,66 @@
+# The gate main never had: every push and pull request runs the full suite and
+# builds the library jar. JitPack and the Dockerfile both build with -DskipTests
+# (one is a packaging step, the other a deploy), so this workflow is the only
+# place the 588 tests run automatically.
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags-ignore: ['v*']   # a tag is cut from a commit that already passed on main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test (JDK 21)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Node is on the runner, so the generated-JavaScript syntax tests run
+      # instead of being skipped (they use `node --check`).
+      - name: Toolchain
+        run: |
+          java -version
+          node --version
+
+      # `verify` = compile, test, package the library jar (with the demo app
+      # excluded) and attach the sources jar — the same artifact JitPack ships.
+      - name: Build and test
+        run: sh mvnw -B -ntp verify
+
+      - name: Test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
+          retention-days: 7
+
+  docker:
+    name: Demo image builds
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Railway builds production from this Dockerfile on every push to main. A
+    # guide added to DocsTell but not COPYed into the image once shipped a 500;
+    # the Dockerfile fails on that now, and this job catches it before deploy.
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker build
+        run: docker build -t jweb-demo:ci .

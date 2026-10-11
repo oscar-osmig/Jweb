@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 3.0.2** | **Last Updated: 2026-10-08**
+**Version 3.0.2** | **Last Updated: 2026-10-08** | [![CI](https://github.com/oscar-osmig/Jweb/actions/workflows/ci.yml/badge.svg)](https://github.com/oscar-osmig/Jweb/actions/workflows/ci.yml) | [Changelog](./CHANGELOG.md)
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -276,6 +276,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
+| [Changelog](./CHANGELOG.md) | Every tagged release, newest first; each section is that tag's GitHub Release |
 | [DSL 3.0.2](./dsl-3.0.2.md) | The 3.0.2 pass: class and id handles shared by HTML, CSS and JS, typed selectors in every rule, value builders for shadows, fonts, calc and keyframes, collected `scripts()`, request-aware pages, CSRF in the recommended middleware |
 | [Migrating to 3.0](./dsl-simplification-3.md) | The 3.0 syntax pass: handlers as arguments, a String is always text, one JS import, and the call sites that silently change meaning |
 | [Migrating to 2.0](./dsl-simplification.md) | The 2.0 pass: the six rules the DSL follows and the breaking changes to check by hand |
