@@ -951,6 +951,58 @@ Note: `JWebTest.test(app, mockRequest)` exercises page routes (`app.pages(...)`)
 routes alike — the middleware stack and lifecycle hooks run, and method mismatches return 405,
 matching production dispatch.
 
+### Server events without a browser
+
+A page's `onClick(e -> ...)` handlers, `live(...)` regions and state bindings only come alive
+over the WebSocket. `JWebTest.render(template)` gives a test that loop without the browser: the
+template renders in a fresh render context that stays alive, `click` / `input` / `submit` /
+`fire` run the handler an element carries through the same dispatch the WebSocket handler
+uses, and the DOM patches that come back are applied to `html()` the way the runtime would
+morph them in.
+
+```java
+import jweb.JWebTest;
+import jweb.RenderedPage;
+import jweb.state.State;
+import static jweb.State.*;
+
+class CounterPage implements Template {
+    State<Integer> count;
+
+    public Element render() {
+        count = useState(0);
+        return div(
+            live(count, c -> p("Count: " + c)),
+            button(id("inc"), onClick(e -> count.set(count.get() + 1)), "+1"),
+            form(id("signup"),
+                onSubmit(e -> { e.preventDefault(); count.set(Integer.parseInt(e.formData().get("n"))); }),
+                input(id("n"), name("n"), onInput(e -> count.set(e.value().isBlank() ? 0 : Integer.parseInt(e.value())))))
+        );
+    }
+}
+
+try (RenderedPage page = JWebTest.render(new CounterPage())) {
+    page.html();                                        // "...Count: 0..." with the handler attributes
+
+    RenderedPage.Result r = page.click("inc");          // the server handler, in the page's context
+    r.ok();                                             // handled, no error
+    r.patches();                                        // {live_1=<p data-live="live_1">Count: 1</p>}
+    r.states();                                         // {state_1=1}
+    page.html();                                        // the patch applied: "...Count: 1..."
+
+    page.input("n", "41");                              // onInput(e -> ...) with e.value()
+    page.submit("signup", Map.of("n", "42"))            // onSubmit with e.formData()
+        .defaultPrevented();                            // true: the handler called e.preventDefault()
+    page.fire("click", "inc", e -> e.ctrlKey(true));    // any event, any field the browser would report
+}
+```
+
+Elements are addressed by their `id` (a String or a `jweb.Id` handle). A missing id or an
+element with no server handler for that event type throws with the reason; a `Result` whose
+`error()` is set is what the browser would have been sent (an expired context, for one). Pass
+a `MockRequest` as the second argument when `beforeRender` or `Csrf.token()` need the request.
+`close()` clears the context, so a `try`-with-resources leaves nothing registered.
+
 ---
 
 ## AI Integration (`framework/ai`)

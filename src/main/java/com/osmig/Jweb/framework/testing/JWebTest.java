@@ -70,6 +70,30 @@ public class JWebTest {
         // Static utility class
     }
 
+    // ========== Pages with their event loop ==========
+
+    /**
+     * Renders a template in a fresh render context and keeps that context
+     * alive, so the test can fire the server handlers its elements carry
+     * ({@code page.click("inc")}) and read the DOM patches that come back —
+     * the WebSocket protocol without the browser. Close it when done.
+     *
+     * <pre>
+     * try (RenderedPage page = JWebTest.render(new CounterPage())) {
+     *     page.click("inc");
+     *     assertTrue(page.html().contains("Count: 1"));
+     * }
+     * </pre>
+     */
+    public static jweb.RenderedPage render(jweb.Template template) {
+        return jweb.RenderedPage.of(template);
+    }
+
+    /** As {@link #render(jweb.Template)}, with a request in flight for the lifecycle hooks. */
+    public static jweb.RenderedPage render(jweb.Template template, jweb.MockRequest request) {
+        return jweb.RenderedPage.of(template, request.build());
+    }
+
     // ========== Route Testing ==========
 
     /**

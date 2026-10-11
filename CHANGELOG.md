@@ -25,6 +25,12 @@ Work on `main` since 3.0.2. Not tagged.
   back online or the tab becomes visible, events fired while reconnecting held and delivered
   on reopen, and `initState` carries `known:false` so a reconnect after a restart announces
   the expiry before the first dropped click. Themeable via `--jweb-notice-*`.
+- **The event loop is testable without a browser.** `JWebTest.render(template)` returns a
+  `jweb.RenderedPage`: the template rendered in a live render context, `click / input /
+  change / check / submit / keydown / fire` to run the server handler an element carries,
+  and `html()` with the DOM patches applied. It goes through `EventDispatch`, the class the
+  WebSocket handler now delegates to, so a test exercises the real protocol: handler lookup
+  in the page's context only, changed states, re-rendered live regions, `context_expired`.
 
 ## [3.0.2] — 2026-10-08
 
