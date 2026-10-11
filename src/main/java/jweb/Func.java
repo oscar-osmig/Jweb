@@ -50,6 +50,18 @@ public class Func {
         return this;
     }
 
+    /** {@code let <handle> = value;} — the local declared through its {@link Var} handle. */
+    public Func let(Var local, Object value) {
+        body.add(local.let(value).js());
+        return this;
+    }
+
+    /** {@code const <handle> = value;} */
+    public Func const_(Var local, Object value) {
+        body.add(local.const_(value).js());
+        return this;
+    }
+
     public Func set(String name, Object value) {
         body.add(name + "=" + toJs(value));
         return this;

@@ -98,6 +98,38 @@ if_(v("stale").eq(true), return_())                              // a guard, any
 for. The framework's own pages use it nowhere; if you reach for it, the shape you need is
 probably a missing verb worth adding.
 
+## Locals are handles: `local(...)`
+
+A script's variables are named once, as `Var` handles — the JavaScript counterpart of the
+`Cls` and `Id` handles HTML and CSS share. A `Var` is a `Val`, so it reads anywhere an
+expression goes; it declares itself, assigns itself, and stands as a callback parameter.
+A misspelled name is a compile error, and a rename is one edit.
+
+```java
+import jweb.Var;
+import jweb.Id;
+
+Id INPUT = id("search"), RESULTS = id("results");
+Var Q = local("q"), HTML = local("html"), E = local("e");
+String url = "/docs/search?q=";
+
+Action wiring = actions().does(
+    byId(INPUT).addEventListener("input", debounce(150, callback()
+        .let(Q, byId(INPUT).value().trim())                        // let q = ...
+        .if_(Q.length().eq(0), byId(RESULTS).setHtml(""))           // q.length === 0
+        .else_(fetch(str(url).plus(call("encodeURIComponent", Q)))
+            .text()
+            .then(callback(HTML).does(byId(RESULTS).setHtml(HTML))) // (html) => ...
+            .toVal()))),
+    byId(INPUT).addEventListener("keydown", callback(E)             // (e) => ...
+        .if_(eventKey(E).eq("Escape"), byId(INPUT).setValue(""))));
+```
+
+`Q.let(expr)`, `Q.const_(expr)`, `Q.set(expr)`, `Q.increment()` are statements;
+`func("name", E)` and `callback(E, T)` take handles as parameters (a bare `callback()` is
+unchanged). `v("q")` still works for a one-off; the handle is for the names a script
+repeats.
+
 ## Behaviors
 
 A behavior is client work that installs itself once and keeps running. Each is an

@@ -62,6 +62,15 @@ Work on `main` since 3.0.2. Not tagged.
   framework's new `jweb.contexts.active` — into Prometheus, Datadog, OTLP or whatever the
   registry exports to. `micrometer-core` is an optional dependency; without it nothing
   changes.
+- **JavaScript locals as handles.** `jweb.Var` from `local("q")`: a `Val` that declares
+  itself (`Q.let(expr)`, `Q.const_(expr)`), assigns itself (`Q.set`, `Q.increment()`) and is
+  a callback parameter by handle (`callback(E, T)`, `func("f", E)`, `Func.let(Q, expr)`). The
+  JavaScript counterpart of `Cls` and `Id`, and the first step of the 4.0 plan to retire
+  `v("x")` in app code; the docs search script is written with it.
+- **The 4.0 plan is written down.** `readme/roadmap-4.0.md`: what the measurements say is
+  left (string identifiers in the JS DSL, the deprecated surface, `Val` as a statement, the
+  component form), with a recommendation on each and the order to do them in. Nothing
+  breaking ships before the tag.
 - **Maven Central, ready when the namespace is.** A `central` profile adds the javadoc jar,
   GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
   the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace

@@ -53,7 +53,38 @@ public class JS extends Events {
         return new Func(null, params);
     }
 
+    /**
+     * A callback whose parameters are {@link jweb.Var} handles, so the body
+     * refers to them by handle, never by a repeated string:
+     * {@code callback(E).does(if_(eventKey(E).eq("Escape"), ...))}.
+     * (At least one handle: a bare {@code callback()} is the String form.)
+     */
+    public static Func callback(jweb.Var first, jweb.Var... rest) {
+        return new Func(null, names(first, rest));
+    }
+
+    /** {@link #func(String, String...)} with {@link jweb.Var} parameters. */
+    public static Func func(String name, jweb.Var first, jweb.Var... rest) {
+        return new Func(name, names(first, rest));
+    }
+
+    private static String[] names(jweb.Var first, jweb.Var... rest) {
+        String[] names = new String[rest.length + 1];
+        names[0] = first.name();
+        for (int i = 0; i < rest.length; i++) names[i + 1] = rest[i].name();
+        return names;
+    }
+
     // ==================== Values ====================
+
+    /**
+     * A JavaScript local as a handle — declared once, like a {@code Cls} or an
+     * {@code Id}, and used wherever a {@code Val} is: {@code Q.let(expr)} declares
+     * it, {@code Q.set(expr)} assigns it, {@code Q.plus(1)} reads it.
+     */
+    public static jweb.Var local(String name) {
+        return jweb.Var.of(name);
+    }
 
     /** Variable reference: variable("count") -> count */
     public static Val variable(String name) {
