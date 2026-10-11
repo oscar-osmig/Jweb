@@ -13,32 +13,45 @@ final class Templates {
     // ==================== Page Template ====================
 
     static String page(String packageName, String className, String[] fields) {
+        String name = className.replace("Page", "");
         return """
             package %s.pages;
 
+            import jweb.Cls;
             import jweb.Element;
             import jweb.Template;
+            import jweb.css.Stylesheet;
 
             import static jweb.El.*;
             import static jweb.Css.*;
 
             /**
-             * %s page.
+             * %s page. Register it in Routes: app.pages("/%s", %s.class)
              */
             public class %s implements Template {
 
+                static final Cls ROOT = cls("%s");
+
+                @Override
+                public String pageTitle() {
+                    return "%s";
+                }
+
                 @Override
                 public Element render() {
-                    return div(style()
-                            .padding(rem(2)),
+                    return section(ROOT,
                         h1("%s"),
-                        p("This is the %s page.")
-                    );
+                        p("This is the %s page."));
+                }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet()
+                        .rule(ROOT, style().padding(rem(2)));
                 }
             }
-            """.formatted(packageName, className, className,
-                className.replace("Page", ""),
-                className.replace("Page", "").toLowerCase());
+            """.formatted(packageName, name, name.toLowerCase(), className, className,
+                name.toLowerCase() + "-page", name, name, name.toLowerCase());
     }
 
     // ==================== Component Template ====================
@@ -83,28 +96,40 @@ final class Templates {
         return """
             package %s.components;
 
+            import jweb.Cls;
             import jweb.Element;
             import jweb.Template;
+            import jweb.css.Stylesheet;
 
             import static jweb.El.*;
             import static jweb.Css.*;
 
             /**
-             * %s component.
+             * %s component — a Template is an Element, so it drops into any page:
+             * {@code div(new %s(...))}. Its styles() rides the page's stylesheet.
              */
             public class %s implements Template {
+
+                static final Cls ROOT = cls("%s");
             %s%s
                 @Override
                 public Element render() {
-                    return div(style()
-                            .padding(rem(1))
-                            .rounded(px(8))
-                            .border(px(1), solid, hex("#e5e7eb")),
+                    return div(ROOT,
             %s
                     );
                 }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet()
+                        .rule(ROOT, style()
+                            .padding(rem(1))
+                            .borderRadius(px(8))
+                            .border(px(1), solid, hex("#e5e7eb")));
+                }
             }
-            """.formatted(packageName, className, className,
+            """.formatted(packageName, className, className, className,
+                className.toLowerCase(),
                 propsSection.isEmpty() ? "" : "\n" + propsSection,
                 constructor,
                 renderContentStr);
@@ -116,62 +141,64 @@ final class Templates {
         return """
             package %s.layouts;
 
+            import jweb.Cls;
             import jweb.Element;
+            import jweb.Template;
+            import jweb.css.Selector;
+            import jweb.css.Stylesheet;
 
             import static jweb.El.*;
             import static jweb.Css.*;
 
             /**
-             * %s layout.
+             * %s layout. Use it as the default with app.layout(%s.class) — the
+             * (title, content) constructor is what the page registry looks for.
              */
-            public class %s {
+            public class %s implements Template {
 
-                public static Element wrap(Element... content) {
-                    return html(
+                static final Cls HEADER = cls("site-header");
+                static final Cls NAV = cls("site-nav");
+                static final Cls BRAND = cls("site-brand");
+                static final Cls MAIN = cls("site-main");
+                static final Cls FOOTER = cls("site-footer");
+
+                private final String title;
+                private final Element content;
+
+                public %s(String title, Element content) {
+                    this.title = title != null ? title : "JWeb App";
+                    this.content = content;
+                }
+
+                @Override
+                public Element render() {
+                    return html(attrs().lang("en"),
                         head(
-                            meta(attrs().set("charset", "UTF-8")),
-                            meta(attrs()
-                                .name("viewport")
-                                .content("width=device-width, initial-scale=1.0")),
-                            title("JWeb App")
-                        ),
-                        body(style()
-                                .margin(zero)
-                                .fontFamily("system-ui, sans-serif"),
-                            // Header
-                            header(style()
-                                    .backgroundColor(white)
-                                    .borderBottom(px(1), solid, hex("#e5e7eb"))
-                                    .padding(rem(1), rem(2)),
-                                nav(style()
-                                        .maxWidth(px(1200))
-                                        .margin(zero, auto)
-                                        .flex()
-                                        .justifyContent(spaceBetween)
-                                        .alignItems(center),
-                                    a(attrs().href("/").style(s -> s
-                                            .fontWeight(700)
-                                            .fontSize(rem(1.25))
-                                            .color(hex("#111"))
-                                            .textDecoration(none)),
-                                        "JWeb"))),
-                            // Main content
-                            main(style()
-                                    .maxWidth(px(1200))
-                                    .margin(zero, auto)
-                                    .padding(rem(2)),
-                                content),
-                            // Footer
-                            footer(style()
-                                    .textCenter()
-                                    .padding(rem(2))
-                                    .color(hex("#6b7280"))
-                                    .fontSize(rem(0.875)),
-                                "Built with JWeb"))
-                    );
+                            metaCharset(),
+                            meta("viewport", "width=device-width, initial-scale=1.0"),
+                            title(title)),
+                        body(
+                            header(HEADER, nav(NAV, a(BRAND, href("/"), "JWeb"))),
+                            main(MAIN, content),
+                            footer(FOOTER, "Built with JWeb")));
+                }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet()
+                        .rule(Selector.type("body"), style().margin(zero).fontFamily(systemUi, sansSerif))
+                        .rule(HEADER, style()
+                            .backgroundColor(white).borderBottom(px(1), solid, hex("#e5e7eb"))
+                            .padding(rem(1), rem(2)))
+                        .rule(NAV, row().maxWidth(px(1200)).margin(zero, auto).justifyContent(spaceBetween))
+                        .rule(BRAND, style()
+                            .fontWeight(700).fontSize(rem(1.25)).color(hex("#111")).textDecoration(none))
+                        .rule(MAIN, style().maxWidth(px(1200)).margin(zero, auto).padding(rem(2)))
+                        .rule(FOOTER, style()
+                            .textAlign(center).padding(rem(2)).color(hex("#6b7280")).fontSize(rem(0.875)));
                 }
             }
-            """.formatted(packageName, className, className);
+            """.formatted(packageName, className, className, className, className);
     }
 
     // ==================== Form Template ====================
@@ -312,52 +339,75 @@ final class Templates {
         return """
             package %s.pages;
 
+            import jweb.Cls;
             import jweb.Element;
             import jweb.Template;
             import jweb.UI;
+            import jweb.css.Stylesheet;
             import %s.models.%s;
             import %s.repositories.%sRepository;
-            import org.springframework.beans.factory.annotation.Autowired;
 
             import java.util.List;
 
             import static jweb.El.*;
             import static jweb.Css.*;
-            import static jweb.UI.*;
 
+            /**
+             * Lists every %s. A page in the page table is built by the registry,
+             * not by Spring, so the repository comes in through the constructor:
+             * app.pages("/%ss", () -> new %sListPage(repository)) from a Routes
+             * bean that has it injected.
+             */
             public class %sListPage implements Template {
 
-                @Autowired
-                private %sRepository repository;
+                static final Cls ROOT = cls("%s-list");
+                static final Cls TOOLBAR = cls("%s-list-toolbar");
+                static final Cls ADD = cls("%s-list-add");
+
+                private final %sRepository repository;
+
+                public %sListPage(%sRepository repository) {
+                    this.repository = repository;
+                }
+
+                @Override
+                public String pageTitle() {
+                    return "%ss";
+                }
 
                 @Override
                 public Element render() {
                     List<%s> items = repository.findAll();
 
-                    return div(style().padding(rem(2)),
-                        div(style()
-                                .flex()
-                                .justifyContent(spaceBetween)
-                                .alignItems(center)
-                                .marginBottom(rem(2)),
+                    return section(ROOT,
+                        div(TOOLBAR,
                             h1("%ss"),
-                            a(attrs().href("/%ss/new").style(s -> s
-                                    .backgroundColor(hex("#6366f1"))
-                                    .color(white)
-                                    .padding(rem(0.5), rem(1))
-                                    .rounded(px(6))
-                                    .textDecoration(none)),
-                                "Add New")),
+                            a(ADD, href("/%ss/new"), "Add new")),
                         UI.DataTable.<%s>create()
             %s                .data(items)
                             .striped()
                             .hoverable()
-                            .build()
-                    );
+                            .build());
+                }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet()
+                        .rule(ROOT, style().padding(rem(2)))
+                        .rule(TOOLBAR, row().justifyContent(spaceBetween).marginBottom(rem(2)))
+                        .rule(ADD, style()
+                            .backgroundColor(hex("#6366f1")).color(white)
+                            .padding(rem(0.5), rem(1)).borderRadius(px(6))
+                            .textDecoration(none));
                 }
             }
             """.formatted(packageName, packageName, entityName, packageName, entityName,
-                entityName, entityName, entityName, entityName, entityName.toLowerCase(),
+                entityName, entityName.toLowerCase(), entityName,
+                entityName,
+                entityName.toLowerCase(), entityName.toLowerCase(), entityName.toLowerCase(),
+                entityName, entityName, entityName,
+                entityName,
+                entityName, entityName, entityName.toLowerCase(),
                 entityName, columns.toString());
     }
 
@@ -367,26 +417,36 @@ final class Templates {
         return """
             package %s.pages;
 
+            import jweb.Cls;
             import jweb.Element;
             import jweb.Template;
+            import jweb.css.Stylesheet;
             import %s.models.%s;
             import %s.repositories.%sRepository;
-            import org.springframework.beans.factory.annotation.Autowired;
 
             import static jweb.El.*;
             import static jweb.Css.*;
 
+            /**
+             * Creates or edits one %s. Registered with the repository and the id
+             * handed in: app.pages("/%ss/new", () -> new %sFormPage(repository, null))
+             * and app.pages("/%ss/:id", req -> new %sFormPage(repository, req.requireParamLong("id"))).
+             */
             public class %sFormPage implements Template {
 
-                @Autowired
-                private %sRepository repository;
+                static final Cls ROOT = cls("%s-form");
 
-                private Long id;
+                private final %sRepository repository;
+                private final Long id;
 
-                public %sFormPage() {}
-
-                public %sFormPage(Long id) {
+                public %sFormPage(%sRepository repository, Long id) {
+                    this.repository = repository;
                     this.id = id;
+                }
+
+                @Override
+                public String pageTitle() {
+                    return id != null ? "Edit %s" : "New %s";
                 }
 
                 @Override
@@ -395,30 +455,33 @@ final class Templates {
                         ? repository.findById(id).orElse(new %s())
                         : new %s();
 
-                    return div(style().padding(rem(2)),
-                        h1(id != null ? "Edit %s" : "New %s"),
-                        buildForm(entity)
-                    );
+                    return section(ROOT,
+                        h1(pageTitle()),
+                        buildForm(entity));
                 }
 
-                // This is a JPA entity, not a record, so it renders through plain
-                // elements rather than the record-based jweb.Form — add a field
-                // for each property, e.g.:
-                // div(style().marginBottom(rem(1)),
-                //     label(for_("name"), "Name"),
+                // A JPA entity is not a record, so it renders through plain elements
+                // rather than form(Record.class) — add a field per property, e.g.:
+                // div(label(for_("name"), "Name"),
                 //     input(type("text"), name("name"), id("name"), value(entity.getName())))
                 private Element buildForm(%s entity) {
-                    return form(attrs()
-                            .action("/%ss" + (id != null ? "/" + id : ""))
-                            .method("POST"),
-                        button(type("submit"), id != null ? "Update" : "Create")
-                    );
+                    return form(action("/%ss" + (id != null ? "/" + id : "")), method("post"),
+                        button(type("submit"), id != null ? "Update" : "Create"));
+                }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet().rule(ROOT, style().padding(rem(2)));
                 }
             }
             """.formatted(packageName, packageName, entityName, packageName, entityName,
-                entityName, entityName, entityName, entityName,
+                entityName, entityName.toLowerCase(), entityName, entityName.toLowerCase(), entityName,
+                entityName, entityName.toLowerCase(),
+                entityName,
+                entityName, entityName,
+                entityName, entityName,
                 entityName, entityName, entityName,
-                entityName, entityName, entityName, entityName.toLowerCase());
+                entityName, entityName.toLowerCase());
     }
 
     // ==================== API Template ====================

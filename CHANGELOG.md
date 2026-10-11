@@ -47,6 +47,15 @@ Work on `main` since 3.0.2. Not tagged.
   to the section and heading. The index is built from the rendered Java sections themselves
   (split at their headings, prose and code alike), so it can never drift from the content.
   `GET /docs/search?q=` is the fragment behind it.
+- **A tutorial, and a `jweb new` that matches it.** `readme/tutorial.md` builds a todo app
+  in seven steps — page and layout, live state, a validated record form, a `@REST`
+  endpoint, tests with `JWebTest.render`, a Docker build — and every block is compiled by
+  the suite. The CLI's generated project had drifted three releases behind (Spring Boot
+  3.2.0, JWeb v1.1.0, `@SpringBootApplication`, a static layout with raw CSS, a `.rounded()`
+  that does not exist, `@Autowired` fields on pages the registry constructs); it now takes
+  its versions from the framework it runs in, uses `@JWebApplication`, `app.layout(...)
+  .pages(...)`, handle-based pages and layouts with `styles()`, constructor-injected
+  repositories, a Maven-image Dockerfile, and `JWebCliTest` compiles what it generates.
 - **Maven Central, ready when the namespace is.** A `central` profile adds the javadoc jar,
   GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
   the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace

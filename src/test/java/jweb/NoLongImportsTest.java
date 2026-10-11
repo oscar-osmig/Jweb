@@ -43,6 +43,9 @@ class NoLongImportsTest {
         "readme/why-jweb.md", List.of(
             new Allowed("com.osmig.Jweb.framework.cli.JWebCli",
                 "a JVM main-class invocation on a shell command line, not a Java import")),
+        "readme/tutorial.md", List.of(
+            new Allowed("com.osmig.Jweb.framework.cli.JWebCli",
+                "a JVM main-class invocation on a shell command line, not a Java import")),
         "readme/known-issues.md", List.of(
             new Allowed("`com.osmig.Jweb.framework.*`", "prose naming the legacy namespace in a migration note")),
         "README.md", List.of(

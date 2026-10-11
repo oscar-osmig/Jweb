@@ -126,6 +126,10 @@ details and the before/after for each change:
 
 ## Quick Start
 
+New here? [The tutorial](./readme/tutorial.md) builds a todo app in about fifteen minutes —
+a page and layout, live state, a validated form, a JSON endpoint, and the tests for them.
+`jweb new myapp` generates the same shape of project.
+
 ```java
 import jweb.Element;
 import jweb.Template;
@@ -266,6 +270,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 
 | Topic | Description |
 |-------|-------------|
+| [Tutorial](./readme/tutorial.md) | Your first app in fifteen minutes: page and layout, live state, a validated form, a JSON endpoint, tests — every block compiled by the suite |
 | [Why JWeb?](./readme/why-jweb.md) | Feature comparison with React/Next, HTMX, Astro & co — and the honest trade-offs |
 | [Architecture](./readme/architecture.md) | Rendering pipeline, request flow, routing systems, middleware, Request/Response APIs |
 | [HTML DSL](./readme/html-dsl.md) | Elements, attributes, modern HTML5, popover, forms, conditionals, fluent builders |

@@ -50,6 +50,7 @@ public final class DocsTell {
      */
     private static final List<Topic> TOPICS = List.of(
         new Topic("overview", "Overview and quick start", "readme/README.md"),
+        new Topic("tutorial", "Tutorial: a first app — page and layout, live state, a validated form, a JSON endpoint, tests", "readme/guides/tutorial.md"),
         new Topic("migrating-to-3", "Migrating to 3.x — handlers as arguments, a String is text, one JS import, and what breaks silently", "readme/dsl-simplification-3.md"),
         new Topic("dsl-3-0-2", "DSL 3.0.2 — class and id handles shared by HTML, CSS and JS, typed selectors in every rule, value builders, collected scripts(), request-aware pages, CSRF in recommended()", "readme/dsl-3.0.2.md"),
         new Topic("migrating-to-2", "Migrating to 2.x — what changed, and what breaks silently", "readme/dsl-simplification.md"),

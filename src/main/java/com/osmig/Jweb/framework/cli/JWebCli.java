@@ -41,9 +41,39 @@ import java.util.*;
  */
 public class JWebCli {
 
-    private static final String VERSION = "1.0.0";
+    /** The framework version this CLI ships in — what a generated pom depends on. */
+    private static final String VERSION = frameworkVersion();
     private static String basePackage = "com.example";
     private static Path projectRoot = Paths.get(".");
+
+    /**
+     * The version of the jar this runs from: {@code build-info.properties} (a
+     * dev run or the jar), then Maven's {@code pom.properties}; a checkout
+     * without either falls back to JitPack's {@code main-SNAPSHOT}.
+     */
+    static String frameworkVersion() {
+        String v = readProperty("META-INF/build-info.properties", "build.version");
+        if (v == null) v = readProperty("META-INF/maven/com.osmig/Jweb/pom.properties", "version");
+        return v == null ? "main-SNAPSHOT" : v;
+    }
+
+    private static String readProperty(String resource, String key) {
+        try (java.io.InputStream in = JWebCli.class.getClassLoader().getResourceAsStream(resource)) {
+            if (in == null) return null;
+            java.util.Properties p = new java.util.Properties();
+            p.load(in);
+            String v = p.getProperty(key);
+            return v == null || v.isBlank() ? null : v.trim();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    /** The Spring Boot line the framework itself builds on — the generated pom's parent. */
+    static String springBootVersion() {
+        String v = org.springframework.boot.SpringBootVersion.getVersion();
+        return v == null ? "4.0.8" : v;
+    }
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -110,15 +140,16 @@ public class JWebCli {
     }
 
     private static String dockerfileTemplate() {
+        // A generated project has no Maven wrapper, so the build stage brings
+        // its own Maven; the runtime stage is a JRE only.
         return """
             # Build stage
-            FROM eclipse-temurin:21-jdk-alpine AS build
+            FROM maven:3.9-eclipse-temurin-21-alpine AS build
             WORKDIR /app
-            COPY .mvn/ .mvn/
-            COPY mvnw pom.xml ./
-            RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
+            COPY pom.xml ./
+            RUN mvn -B -q dependency:go-offline
             COPY src/ src/
-            RUN ./mvnw package -DskipTests -B
+            RUN mvn -B -q package -DskipTests
 
             # Runtime stage
             FROM eclipse-temurin:21-jre-alpine
@@ -137,7 +168,9 @@ public class JWebCli {
             return;
         }
 
-        String projectName = args[1];
+        // The argument may be a name or a path; the project is named after its last segment
+        Path projectDir = Paths.get(args[1]);
+        String projectName = projectDir.getFileName().toString();
         String packageName = "com." + projectName.toLowerCase().replaceAll("[^a-z0-9]", "");
 
         // Parse options
@@ -147,16 +180,25 @@ public class JWebCli {
             }
         }
 
-        Path projectDir = Paths.get(projectName);
         if (Files.exists(projectDir)) {
-            System.err.println("Directory already exists: " + projectName);
+            System.err.println("Directory already exists: " + projectDir);
             return;
         }
 
         System.out.println("Creating JWeb project: " + projectName);
         System.out.println("Package: " + packageName);
+        createProject(projectDir, projectName, packageName);
 
-        // Create directory structure
+        System.out.println("\n\u2713 Project created successfully!");
+        System.out.println("\nNext steps:");
+        System.out.println("  cd " + projectDir);
+        System.out.println("  mvn spring-boot:run");
+        System.out.println("\nThen open http://localhost:8085 in your browser.");
+        System.out.println("The tutorial walks through what was generated: readme/tutorial.md in the JWeb repository.");
+    }
+
+    /** Writes a new project into {@code projectDir}. What {@code jweb new} does, callable from tests. */
+    static void createProject(Path projectDir, String projectName, String packageName) throws IOException {
         String packagePath = packageName.replace('.', '/');
         Files.createDirectories(projectDir.resolve("src/main/java/" + packagePath + "/pages"));
         Files.createDirectories(projectDir.resolve("src/main/java/" + packagePath + "/components"));
@@ -164,37 +206,18 @@ public class JWebCli {
         Files.createDirectories(projectDir.resolve("src/main/resources"));
         Files.createDirectories(projectDir.resolve("src/test/java/" + packagePath));
 
-        // Generate pom.xml
         writeFile(projectDir.resolve("pom.xml"), generatePom(projectName, packageName));
-
-        // Generate main application
         writeFile(projectDir.resolve("src/main/java/" + packagePath + "/Application.java"),
             generateApplication(packageName));
-
-        // Generate routes
         writeFile(projectDir.resolve("src/main/java/" + packagePath + "/Routes.java"),
             generateRoutes(packageName));
-
-        // Generate home page
         writeFile(projectDir.resolve("src/main/java/" + packagePath + "/pages/HomePage.java"),
             generateHomePage(packageName, projectName));
-
-        // Generate main layout
         writeFile(projectDir.resolve("src/main/java/" + packagePath + "/layouts/MainLayout.java"),
-            generateMainLayout(packageName));
-
-        // Generate application.properties
+            generateMainLayout(packageName, projectName));
         writeFile(projectDir.resolve("src/main/resources/application.properties"),
             generateProperties(projectName));
-
-        // Generate .gitignore
         writeFile(projectDir.resolve(".gitignore"), generateGitignore());
-
-        System.out.println("\n\u2713 Project created successfully!");
-        System.out.println("\nNext steps:");
-        System.out.println("  cd " + projectName);
-        System.out.println("  mvn spring-boot:run");
-        System.out.println("\nThen open http://localhost:8080 in your browser.");
     }
 
     // ==================== Code Generation ====================
@@ -292,9 +315,16 @@ public class JWebCli {
         writeFile(resolvePath("pages", entityName + "FormPage.java"), formCode);
         System.out.println("\u2713 Created form page: " + entityName + "FormPage");
 
-        System.out.println("\nDon't forget to add routes in Routes.java:");
-        System.out.println("  .get(\"/" + entityName.toLowerCase() + "s\", " + entityName + "ListPage::new)");
-        System.out.println("  .get(\"/" + entityName.toLowerCase() + "s/new\", " + entityName + "FormPage::new)");
+        String path = entityName.toLowerCase() + "s";
+        System.out.println("\nThe entity and repository need Spring Data JPA — add to pom.xml:");
+        System.out.println("  spring-boot-starter-data-jpa, and a driver (h2 for a start)");
+        System.out.println("\nThen register the pages in Routes.java, handing the repository in");
+        System.out.println("(a page in the page table is built by the registry, not by Spring,");
+        System.out.println("so it takes its collaborators through the constructor):");
+        System.out.println("  @Autowired " + entityName + "Repository " + entityName.toLowerCase() + "s;");
+        System.out.println("  app.pages(\"/" + path + "\", () -> new " + entityName + "ListPage(" + entityName.toLowerCase() + "s))");
+        System.out.println("     .pages(\"/" + path + "/new\", () -> new " + entityName + "FormPage(" + entityName.toLowerCase() + "s, null))");
+        System.out.println("     .pages(\"/" + path + "/:id\", req -> new " + entityName + "FormPage(" + entityName.toLowerCase() + "s, req.requireParamLong(\"id\")));");
     }
 
     private static void generateApi(String name, String[] fields) throws IOException {
@@ -367,12 +397,14 @@ public class JWebCli {
               jweb new myapp --package=com.mycompany.myapp
               jweb generate page Home
               jweb generate component UserCard
-              jweb generate form User name:string email:email age:int
+              jweb generate form User name:string! email:email! age:int
               jweb generate crud Product name:string price:double
               jweb generate api Users
 
             Field types: string, int, long, double, boolean, date, datetime, email, password
-            """.formatted(VERSION));
+            (a trailing ! marks a form field required). A generated project depends on
+            JWeb %s; the tutorial that walks through it is readme/tutorial.md.
+            """.formatted(VERSION, dependencyVersion()));
     }
 
     // ==================== Template Generation ====================
@@ -392,7 +424,7 @@ public class JWebCli {
                 <parent>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-parent</artifactId>
-                    <version>3.2.0</version>
+                    <version>%s</version>
                 </parent>
 
                 <groupId>%s</groupId>
@@ -412,14 +444,16 @@ public class JWebCli {
                 </repositories>
 
                 <dependencies>
-                    <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-web</artifactId>
-                    </dependency>
+                    <!-- JWeb brings Spring Boot web and websocket support with it -->
                     <dependency>
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
-                        <version>v1.1.0</version>
+                        <version>%s</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-test</artifactId>
+                        <scope>test</scope>
                     </dependency>
                 </dependencies>
 
@@ -432,17 +466,25 @@ public class JWebCli {
                     </plugins>
                 </build>
             </project>
-            """.formatted(groupId, projectName, projectName);
+            """.formatted(springBootVersion(), groupId, projectName, projectName, dependencyVersion());
+    }
+
+    /** JitPack wants the tag name: {@code v3.0.2} for a release, {@code main-SNAPSHOT} for a checkout. */
+    static String dependencyVersion() {
+        String v = VERSION;
+        if (v.endsWith("-SNAPSHOT")) return v;
+        return v.startsWith("v") ? v : "v" + v;
     }
 
     private static String generateApplication(String packageName) {
         return """
             package %s;
 
+            import jweb.JWebApplication;
             import org.springframework.boot.SpringApplication;
-            import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-            @SpringBootApplication
+            /** The entry point. @JWebApplication is @SpringBootApplication plus the framework's wiring. */
+            @JWebApplication
             public class Application {
 
                 public static void main(String[] args) {
@@ -458,120 +500,168 @@ public class JWebCli {
 
             import jweb.JWeb;
             import jweb.JWebRoutes;
+            import jweb.Middlewares;
+            import %s.layouts.MainLayout;
             import %s.pages.HomePage;
             import org.springframework.stereotype.Component;
 
+            /**
+             * Every route of the app, in one place. Pages go in the page table and
+             * get the layout, the title hooks and the client runtime for free;
+             * app.get / app.post are for handlers that answer with a fragment,
+             * JSON or a redirect.
+             */
             @Component
             public class Routes implements JWebRoutes {
 
                 @Override
                 public void configure(JWeb app) {
-                    app.get("/", HomePage::new);
+                    app.use(Middlewares.recommended());   // security headers, request ids, compression, CSRF
+
+                    // layout() before pages(): the registry captures the default layout as pages register
+                    app.layout(MainLayout.class)
+                       .pages("/", HomePage.class);
                 }
             }
-            """.formatted(packageName, packageName);
+            """.formatted(packageName, packageName, packageName);
     }
 
     private static String generateHomePage(String packageName, String projectName) {
         return """
             package %s.pages;
 
+            import jweb.Cls;
             import jweb.Element;
             import jweb.Template;
-            import %s.layouts.MainLayout;
+            import jweb.css.Stylesheet;
 
             import static jweb.El.*;
             import static jweb.Css.*;
 
+            /**
+             * The home page. A page is a Template: render() is the markup, styles()
+             * the rules it needs (collected into the page's one stylesheet), and the
+             * class names are handles declared once and shared by both.
+             */
             public class HomePage implements Template {
+
+                static final Cls HERO = cls("hero");
+                static final Cls TITLE = cls("hero-title");
+                static final Cls LEAD = cls("hero-lead");
+                static final Cls CTA = cls("hero-cta");
+
+                @Override
+                public String pageTitle() {
+                    return "%s";
+                }
 
                 @Override
                 public Element render() {
-                    return MainLayout.wrap(
-                        div(style()
-                                .textCenter()
-                                .padding(rem(4)),
-                            h1(style()
-                                    .fontSize(rem(3))
-                                    .fontWeight(700)
-                                    .marginBottom(rem(1)),
-                                "Welcome to %s"),
-                            p(style()
-                                    .fontSize(rem(1.25))
-                                    .color(hex("#6b7280"))
-                                    .marginBottom(rem(2)),
-                                "Built with JWeb - Java Web Framework"),
-                            a(attrs()
-                                    .href("https://github.com/osmig/jweb")
-                                    .style(s -> s
-                                        .display(inlineBlock)
-                                        .backgroundColor(hex("#6366f1"))
-                                        .color(white)
-                                        .padding(rem(0.75), rem(1.5))
-                                        .rounded(px(8))
-                                        .textDecoration(none)
-                                        .fontWeight(500)),
-                                "Get Started"))
-                    );
+                    return section(HERO,
+                        h1(TITLE, "Welcome to %s"),
+                        p(LEAD, "Built with JWeb — the whole app in Java."),
+                        a(CTA, href("https://github.com/oscar-osmig/Jweb/blob/main/readme/tutorial.md"), "Follow the tutorial"));
+                }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet()
+                        .rule(HERO, style().textAlign(center).padding(rem(4), rem(1)))
+                        .rule(TITLE, style().fontSize(rem(3)).fontWeight(700).marginBottom(rem(1)))
+                        .rule(LEAD, style().fontSize(rem(1.25)).color(hex("#6b7280")).marginBottom(rem(2)))
+                        .rule(CTA, style()
+                            .display(inlineBlock)
+                            .backgroundColor(hex("#6366f1")).color(white)
+                            .padding(rem(0.75), rem(1.5)).borderRadius(px(8))
+                            .textDecoration(none).fontWeight(500))
+                        .rule(CTA.hover(), style().backgroundColor(hex("#4f46e5")));
                 }
             }
-            """.formatted(packageName, packageName, projectName);
+            """.formatted(packageName, projectName, projectName);
     }
 
-    private static String generateMainLayout(String packageName) {
+    private static String generateMainLayout(String packageName, String projectName) {
         return """
             package %s.layouts;
 
+            import jweb.Cls;
             import jweb.Element;
+            import jweb.Template;
+            import jweb.css.Selector;
+            import jweb.css.Stylesheet;
 
             import static jweb.El.*;
             import static jweb.Css.*;
 
-            public class MainLayout {
+            /**
+             * The shell around every page: a (title, content) constructor is what
+             * app.layout(MainLayout.class) looks for. The page's own pageTitle()
+             * arrives as the title; its styles() and scripts() are collected into
+             * the document along with this layout's.
+             */
+            public class MainLayout implements Template {
 
-                public static Element wrap(Element... content) {
-                    return html(
-                        head(
-                            meta(attrs().set("charset", "UTF-8")),
-                            meta(attrs()
-                                .name("viewport")
-                                .content("width=device-width, initial-scale=1.0")),
-                            title("JWeb App"),
-                            style(globalStyles())
-                        ),
-                        body(style()
-                                .margin(zero)
-                                .fontFamily("system-ui, -apple-system, sans-serif")
-                                .minHeight(vh(100))
-                                .backgroundColor(hex("#f9fafb")),
-                            content)
-                    );
+                static final Cls HEADER = cls("site-header");
+                static final Cls BRAND = cls("site-brand");
+                static final Cls MAIN = cls("site-main");
+                static final Cls FOOTER = cls("site-footer");
+
+                private final String title;
+                private final Element content;
+
+                public MainLayout(String title, Element content) {
+                    this.title = title != null ? title : "%s";
+                    this.content = content;
                 }
 
-                private static String globalStyles() {
-                    return \"\"\"
-                        *, *::before, *::after { box-sizing: border-box; }
-                        body { line-height: 1.5; -webkit-font-smoothing: antialiased; }
-                        img, picture, video, canvas, svg { display: block; max-width: 100%%; }
-                        input, button, textarea, select { font: inherit; }
-                        p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word; }
-                        \"\"\";
+                @Override
+                public Element render() {
+                    return html(attrs().lang("en"),
+                        head(
+                            metaCharset(),
+                            meta("viewport", "width=device-width, initial-scale=1.0"),
+                            title(title)),
+                        body(
+                            header(HEADER, a(BRAND, href("/"), "%s")),
+                            main(MAIN, content),
+                            footer(FOOTER, "Built with JWeb")));
+                }
+
+                @Override
+                public Stylesheet styles() {
+                    return stylesheet()
+                        .rule(Selector.any(), style().boxSizing(borderBox))
+                        .rule(Selector.type("body"), style()
+                            .margin(zero).minHeight(vh(100)).lineHeight(1.5)
+                            .fontFamily(systemUi, sansSerif)
+                            .backgroundColor(hex("#f9fafb")).color(hex("#111827")))
+                        .rule(HEADER, style()
+                            .backgroundColor(white).borderBottom(px(1), solid, hex("#e5e7eb"))
+                            .padding(rem(1), rem(2)))
+                        .rule(BRAND, style()
+                            .fontWeight(700).fontSize(rem(1.25))
+                            .color(hex("#111827")).textDecoration(none))
+                        .rule(MAIN, style().maxWidth(px(1100)).margin(zero, auto).padding(rem(2)))
+                        .rule(FOOTER, style()
+                            .textAlign(center).padding(rem(2))
+                            .color(hex("#6b7280")).fontSize(rem(0.875)));
                 }
             }
-            """.formatted(packageName);
+            """.formatted(packageName, projectName, projectName);
     }
 
     private static String generateProperties(String projectName) {
         return """
             # JWeb Application Configuration
             spring.application.name=%s
-            server.port=8080
+            server.port=8085
 
-            # Development settings
+            # Development settings (the framework's own defaults are in jweb.yaml)
             jweb.dev.hot-reload=true
+            jweb.dev.watch-paths=src/main/java
 
             # Logging
-            logging.level.com.osmig.Jweb=DEBUG
+            logging.level.com.osmig.Jweb=INFO
             """.formatted(projectName);
     }
 

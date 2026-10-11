@@ -113,10 +113,22 @@ public class DocSidebar implements Template {
                     link("data"),
                     link("devtools")),
                 navSection("More",
-                    link("examples")),
+                    link("examples"),
+                    tutorialLink()),
                 aiDocsLink()
             )
         );
+    }
+
+    /**
+     * The step-by-step tutorial is markdown in the repository (its code blocks
+     * are compiled by the suite), so this is a real navigation, not a section
+     * swap: no {@code data-swap-*}, and {@code .docs-nav-link} only for the look.
+     */
+    private Element tutorialLink() {
+        return a(NAV_LINK, href("https://github.com/oscar-osmig/Jweb/blob/main/readme/tutorial.md"),
+            attrs().title("Your first app in fifteen minutes, on GitHub"),
+            "Tutorial ↗");
     }
 
     /**
