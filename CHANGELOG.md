@@ -11,6 +11,23 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **Durable jobs.** `Jobs.handle("welcome", Welcome.class, w -> …)` says what a named job
+  does; `Jobs.enqueue("welcome", payload)` stores one (`Jobs.options().after(…)`, `.at(…)`,
+  `.retries(n)`, `.key(k)` for one pending at a time). The worker, started with the app,
+  polls the store, runs due jobs on virtual threads, retries a failure at 2, 4, 8… seconds
+  (capped at an hour) until the attempts are spent, then keeps it `FAILED` with the error for
+  `Jobs.failed()` / `Jobs.retry(id)`; a job whose worker died is released after
+  `jweb.jobs.timeout`, done jobs are purged after `jweb.jobs.keep-done`. `Jobs.Memory` by
+  default; `Jobs.SqlStore` (the `jweb_jobs` table, created if missing, claims by atomic
+  update so a job runs once across instances) installed automatically when `Sql` is
+  connected; any `Jobs.Store` bean. `Jobs.runPending()` runs what is due in a test.
+- **Mail.** `Mail.to(…).subject(…).html(div(…)).send()` — the HTML DSL as the body, a text
+  part derived from it, cc/bcc/replyTo, attachments, headers. With `jweb.mail.smtp.host` set
+  the framework's own SMTP client sends it (EHLO, STARTTLS or implicit TLS, AUTH PLAIN or
+  LOGIN, MIME with base64 parts, RFC 2047 subjects) — no mail library; without it the
+  outbox keeps the last two hundred messages for `Mail.outbox()` and logs each. `.later()`
+  enqueues the message as the durable job `jweb.mail`. Any `Mail.Sender` bean replaces the
+  sender. Tested against an in-process SMTP stand-in.
 - **PubSub: one publish, every page.** `jweb.PubSub.publish(topic, message)` re-renders
   every page that `PubSub.subscribe(topic, Type.class, handler)`-d while rendering: the
   handler runs in the page's context, the live regions reading the states it changed are

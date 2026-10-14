@@ -344,3 +344,43 @@ async function generateReport(type) {
     pollStatus();
 }
 ```
+
+## Durable Jobs
+
+Everything above runs in this JVM and is gone on restart. A durable job is named, carries a
+payload, is stored, retried with backoff, dead-lettered after the last attempt, and on the
+SQL store survives a restart and is shared by every instance on the database.
+
+```java
+import jweb.Jobs;
+
+record Welcome(long userId, String email) {}
+
+// at startup: what the job does
+Jobs.handle("welcome", Welcome.class, w -> System.out.println("welcome " + w.email()));
+Jobs.handle("reindex", () -> System.out.println("reindexing"));
+
+// anywhere: enqueue
+Jobs.Job job = Jobs.enqueue("welcome", new Welcome(42, "ada@example.com"));
+Jobs.enqueue("welcome", new Welcome(43, "bob@example.com"), Jobs.options().after(Duration.ofMinutes(5)).retries(5));
+Jobs.enqueue("reindex", null, Jobs.options().key("reindex"));   // one pending at a time
+
+// looking after them
+Optional<Jobs.Job> found = Jobs.find(job.id());
+List<Jobs.Job> pending = Jobs.pending();
+List<Jobs.Job> failed = Jobs.failed();
+boolean requeued = Jobs.retry(job.id());
+Map<Jobs.Status, Long> counts = Jobs.stats();
+
+// in a test: run what is due, now, on this thread
+int ran = Jobs.runPending();
+```
+
+- `Jobs.Memory` (default) or `Jobs.SqlStore` (`jweb_jobs`, installed automatically when
+  `jweb.Sql` is connected); any `Jobs.Store` bean replaces them.
+- The worker polls every `jweb.jobs.poll` (1s), runs `jweb.jobs.concurrency` (8) jobs at
+  once, retries at 2, 4, 8… seconds up to an hour, releases a job stuck `RUNNING` for
+  `jweb.jobs.timeout` (10m), purges done jobs after `jweb.jobs.keep-done` (24h).
+  `jweb.jobs.enabled: false` turns the worker off on an instance.
+- A job's error, attempts and next run are on `Jobs.Job`; `Jobs.retry(id)` puts a failed
+  one back.

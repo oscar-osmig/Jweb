@@ -352,7 +352,9 @@ What is per-instance, what is shared, and what to do about each:
 | `PubSub` | In memory by default | Set `jweb.pubsub.redis.url` (or a `PubSub.Backend` bean): a publish on one instance reaches the pages on all |
 | HTTP session (`Session`, `Auth.login`, flash, the OAuth2 state) | The servlet session, in memory | Add **Spring Session** with a store (Redis, JDBC) and `jweb.Session` works unchanged — it wraps the servlet session |
 | OAuth2 login state and PKCE verifier | The session | Shared with it; the callback can land on any instance |
-| `Jobs`, `Scheduler` | The instance that scheduled them | Each instance runs its own schedule; make scheduled work idempotent, or elect one instance |
+| Durable `Jobs.enqueue` | The `jweb_jobs` table when `Sql` is connected | Shared: every instance's worker claims from the one queue, one job runs once |
+| `Jobs.run`, `Scheduler` | The instance that scheduled them | Each instance runs its own schedule; make scheduled work idempotent, or elect one instance |
+| `Mail` | The instance's SMTP connection | Nothing to share; `later()` goes through the durable queue |
 | `Cache`, `RateLimit` | In memory, per instance | A limit of 100/min is 100/min *per instance*; put a shared limiter at the edge when that matters |
 | `Migrations` | The database | Instances starting together take turns on a lock row |
 | Uploaded files | The instance's disk | Store them somewhere shared |
@@ -670,6 +672,52 @@ Scheduler.everyMinutes(15, "sync", () -> sync());
 Scheduler.pause("sync"); Scheduler.resume("sync"); Scheduler.cancel("sync");
 Scheduler.getAllJobs();          // List<JobInfo(name, schedule, paused, lastRun, runCount, active)>
 ```
+
+### Durable jobs (`Jobs.handle`, `Jobs.enqueue`)
+
+`Jobs.run` is fire-and-forget in this JVM: a restart loses it and an exception ends it. A
+**durable job** is named, carries a payload, is stored, retried with backoff, dead-lettered
+after the last attempt, and — on the SQL store — survives a restart and is shared by every
+instance on the database.
+
+```java
+import jweb.Jobs;
+import jweb.Mail;
+
+record Welcome(long userId, String email) {}
+record Digest(long userId) {}
+
+// once, at startup (a JWebRoutes.configure, a @Component constructor): what each job does
+Jobs.handle("welcome", Welcome.class, w -> Mail.to(w.email()).subject("Welcome").text("Hello!").send());
+Jobs.handle("reindex", () -> System.out.println("rebuilding the search index"));
+
+// anywhere: enqueue — returns at once, the worker runs it
+Jobs.Job job = Jobs.enqueue("welcome", new Welcome(42, "ada@example.com"));
+Jobs.enqueue("digest", new Digest(42), Jobs.options().after(Duration.ofHours(1)).retries(5));
+Jobs.enqueue("reindex", null, Jobs.options().key("reindex"));   // one pending at a time
+
+// looking
+Jobs.find(job.id());             // Optional<Jobs.Job>: status, attempts, runAt, error
+Jobs.pending(); Jobs.running(); Jobs.failed();
+Jobs.retry(job.id());            // a failed job back in the queue
+Jobs.stats();                    // counts by status
+```
+
+- **Stores.** `Jobs.Memory` (the default) keeps jobs in this JVM. `Jobs.SqlStore` keeps them
+  in the `jweb_jobs` table (created if missing) and is installed automatically when `Sql`
+  is connected; each instance claims a job with one atomic update, so a job runs once. Any
+  `Jobs.Store` bean replaces both; `jweb.jobs.store: memory` keeps the in-memory one even
+  with a database.
+- **The worker** starts with the application: it polls every `jweb.jobs.poll` (1s), runs
+  due jobs on virtual threads (`jweb.jobs.concurrency`, 8), and on an exception schedules
+  the next attempt at 2, 4, 8… seconds (capped at an hour) until the retries (default 3)
+  are spent — then the job is `FAILED` with the error, kept for `Jobs.failed()` and
+  `Jobs.retry(id)`. A job still `RUNNING` after `jweb.jobs.timeout` (10 minutes; its
+  worker died) is released; finished jobs are purged after `jweb.jobs.keep-done` (24 hours).
+  `jweb.jobs.enabled: false` keeps an instance from running jobs (it can still enqueue).
+- **In a test**, `Jobs.runPending()` runs what is due on the calling thread and returns how
+  many ran — no waiting for the poller.
+- Timestamps are compared in the JVM's zone; run every instance in the same one (UTC).
 
 ## Cache (`cache/Cache`)
 

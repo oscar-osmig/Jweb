@@ -375,11 +375,18 @@ public final class Sql {
         private final Database db;
         private final String sql;
         private final Object[] params;
+        private int maxRows;
 
         Query(Database db, String sql, Object[] params) {
             this.db = db;
             this.sql = sql;
             this.params = params;
+        }
+
+        /** At most this many rows, whatever the database's LIMIT syntax. */
+        public Query limit(int rows) {
+            this.maxRows = Math.max(0, rows);
+            return this;
         }
 
         /** Every row, in order. */
@@ -447,6 +454,7 @@ public final class Sql {
         public void forEach(Consumer<Row> consumer) {
             db.withConnection(sql, connection -> {
                 try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    if (maxRows > 0) statement.setMaxRows(maxRows);
                     bind(statement, params);
                     try (ResultSet rs = statement.executeQuery()) {
                         while (rs.next()) {

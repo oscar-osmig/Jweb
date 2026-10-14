@@ -171,6 +171,75 @@
       "type": "java.lang.String",
       "defaultValue": "jweb:",
       "description": "Prefix of the Redis channel a PubSub topic is published on"
+    },
+    {
+      "name": "jweb.jobs.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Run the jweb.Jobs durable-jobs worker on this instance"
+    },
+    {
+      "name": "jweb.jobs.store",
+      "type": "java.lang.String",
+      "defaultValue": "auto",
+      "description": "auto = the jweb_jobs table when jweb.Sql is connected, else in memory; memory = always in memory"
+    },
+    {
+      "name": "jweb.jobs.poll",
+      "type": "java.time.Duration",
+      "defaultValue": "1s",
+      "description": "How often the jobs worker looks for due jobs"
+    },
+    {
+      "name": "jweb.jobs.concurrency",
+      "type": "java.lang.Integer",
+      "defaultValue": 8,
+      "description": "How many jobs run at once on this instance"
+    },
+    {
+      "name": "jweb.jobs.timeout",
+      "type": "java.time.Duration",
+      "defaultValue": "10m",
+      "description": "A job still RUNNING this long is released to run again (its worker died)"
+    },
+    {
+      "name": "jweb.jobs.keep-done",
+      "type": "java.time.Duration",
+      "defaultValue": "24h",
+      "description": "How long finished jobs are kept before being purged"
+    },
+    {
+      "name": "jweb.mail.from",
+      "type": "java.lang.String",
+      "defaultValue": "no-reply@localhost",
+      "description": "The From address used when a jweb.Mail message sets none"
+    },
+    {
+      "name": "jweb.mail.smtp.host",
+      "type": "java.lang.String",
+      "description": "SMTP server for jweb.Mail; blank keeps the outbox, which logs messages instead of sending"
+    },
+    {
+      "name": "jweb.mail.smtp.port",
+      "type": "java.lang.Integer",
+      "defaultValue": 587,
+      "description": "SMTP port (587 STARTTLS, 465 implicit TLS, 25 plain)"
+    },
+    {
+      "name": "jweb.mail.smtp.username",
+      "type": "java.lang.String",
+      "description": "SMTP username; set to authenticate with AUTH PLAIN or LOGIN"
+    },
+    {
+      "name": "jweb.mail.smtp.password",
+      "type": "java.lang.String",
+      "description": "SMTP password"
+    },
+    {
+      "name": "jweb.mail.smtp.tls",
+      "type": "java.lang.String",
+      "defaultValue": "starttls",
+      "description": "starttls, implicit (TLS from the first byte), or none"
     }
   ]
 }

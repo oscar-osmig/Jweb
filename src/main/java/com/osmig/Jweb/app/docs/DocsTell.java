@@ -61,7 +61,7 @@ public final class DocsTell {
         new Topic("javascript-dsl", "JavaScript DSL: actions, handlers, fetch, events, browser APIs", "readme/guides/javascript-dsl.md"),
         new Topic("state-and-realtime", "State, hydration, WebSocket, SSE, transitions, async rendering", "readme/guides/state-and-realtime.md"),
         new Topic("three-dsl", "Three DSL: declarative 3D scenes — shapes, lights, shadows, models, click events", "readme/guides/three-dsl.md"),
-        new Topic("backend", "Backend: REST, OpenAPI, SQL and migrations, MongoDB, security, validation, uploads, jobs", "readme/guides/backend.md"),
+        new Topic("backend", "Backend: REST, OpenAPI, SQL and migrations, MongoDB, security, validation, uploads, mail, jobs", "readme/guides/backend.md"),
         new Topic("configuration", "Configuration, environment, dev tools, CLI, project structure", "readme/guides/configuration.md"),
         new Topic("known-issues", "Known issues and sharp edges — the API pitfalls", "readme/guides/known-issues.md"),
         new Topic("ref-templates", "Reference: templates", "framework-src/docs/templates.md"),
@@ -77,7 +77,8 @@ public final class DocsTell {
         new Topic("ref-file-upload", "Reference: file upload", "framework-src/docs/file-upload.md"),
         new Topic("ref-sql", "Reference: SQL and migrations", "framework-src/docs/sql.md"),
         new Topic("ref-sse", "Reference: server-sent events", "framework-src/docs/sse.md"),
-        new Topic("ref-jobs", "Reference: background jobs", "framework-src/docs/jobs.md"),
+        new Topic("ref-jobs", "Reference: background jobs, durable jobs", "framework-src/docs/jobs.md"),
+        new Topic("ref-mail", "Reference: mail", "framework-src/docs/mail.md"),
         new Topic("ref-i18n", "Reference: i18n", "framework-src/docs/i18n.md"),
         new Topic("ref-testing", "Reference: testing", "framework-src/docs/testing.md")
     );

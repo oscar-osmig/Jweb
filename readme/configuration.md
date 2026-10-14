@@ -134,6 +134,14 @@ jweb:
 | `jweb.sql.migrations` | `classpath:db/migration` | Where the `V*__*.sql` migration files are |
 | `jweb.pubsub.redis.url` | *(blank = in-memory, this instance only)* | Redis for `jweb.PubSub` across instances: `redis://[user[:password]@]host[:port]`, `rediss://` for TLS |
 | `jweb.pubsub.redis.prefix` | `jweb:` | The Redis channel prefix a topic gets |
+| `jweb.jobs.enabled` | `true` | Run the durable-jobs worker on this instance (an instance can still enqueue with it off) |
+| `jweb.jobs.store` | `auto` | `auto` = the `jweb_jobs` table when `Sql` is connected, else memory; `memory` forces in-memory |
+| `jweb.jobs.poll` / `concurrency` | `1s` / `8` | How often the worker looks for due jobs, and how many run at once |
+| `jweb.jobs.timeout` / `keep-done` | `10m` / `24h` | A job still running past the timeout is released (its worker died); done jobs are purged after keep-done |
+| `jweb.mail.from` | `no-reply@localhost` | The `From` when a message sets none |
+| `jweb.mail.smtp.host` / `port` | *(blank = outbox)* / `587` | SMTP server; blank keeps the outbox, which logs messages instead of sending |
+| `jweb.mail.smtp.username` / `password` | — | AUTH PLAIN or LOGIN when a username is set |
+| `jweb.mail.smtp.tls` | `starttls` | `starttls`, `implicit` (465), or `none` |
 | `jweb.ai.enabled` | `false` | Enable the built-in AI module (`AI.ask/chat/agent`) |
 | `jweb.ai.base-url` / `api-key` / `model` | OpenAI defaults | Which OpenAI-compatible endpoint and model to use |
 | `jweb.ai.temperature` / `timeout-seconds` | `0.7` / `60` | Sampling and per-request timeout for AI calls |

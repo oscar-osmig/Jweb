@@ -1038,6 +1038,71 @@ for large PDFs.
 
 ---
 
+## Mail (`jweb.Mail`)
+
+A message built like an element, sent now or later. No mail library: with
+`jweb.mail.smtp.host` set, the framework's own SMTP client sends it (STARTTLS on 587 by
+default, implicit TLS on 465, AUTH PLAIN or LOGIN with a username); without it, the
+**outbox** keeps the last two hundred messages in memory and logs each one — development and
+tests read them back.
+
+```java
+import jweb.Mail;
+import jweb.Jobs;
+import static jweb.El.*;
+
+record User(String email, String name) {}
+User user = new User("ada@example.com", "Ada");
+byte[] csv = "a,b\n".getBytes();
+
+Mail.to(user.email())
+    .subject("Welcome")
+    .html(div(h1("Welcome, " + user.name()), p("Your account is ready.")))   // the HTML DSL; a text part is derived
+    .send();
+
+Mail.to(user.email()).cc("ops@example.com").from("Reports <reports@example.com>").replyTo("help@example.com")
+    .subject("Your export")
+    .text("Attached.")
+    .attach("export.csv", csv, "text/csv")
+    .header("X-Campaign", "exports")
+    .later();                                 // a durable job: sent by the worker, retried, survives a restart
+
+Mail.Message last = Mail.outbox().last();    // in a test: what was "sent"
+Mail.outbox().messages();
+Mail.outbox().clear();
+```
+
+```yaml
+jweb:
+  mail:
+    from: "App <no-reply@example.com>"       # the From when a message sets none
+    smtp:
+      host: ${SMTP_HOST:}                    # blank = outbox (log, do not send)
+      port: 587
+      username: ${SMTP_USER:}
+      password: ${SMTP_PASSWORD:}
+      tls: starttls                          # starttls | implicit | none
+```
+
+`send()` throws `Mail.MailException` with the server's refusal (`AUTH PLAIN refused: 535 …`,
+`RCPT TO x refused: 550 …`); `later()` leaves that to the job's retries. The text part, when
+not given, is derived from the HTML (headings and paragraphs become lines, lists get dashes,
+links keep their URL). Non-ASCII subjects are RFC 2047 encoded; bodies and attachments go
+base64, so any content is safe. Any `Mail.Sender` bean replaces the sender — an HTTP API is
+a few lines:
+
+```java
+import jweb.Mail;
+import jweb.Fetch;
+
+Mail.Sender resend = message -> Fetch.post("https://api.resend.com/emails")
+    .header("Authorization", "Bearer " + System.getenv("RESEND_API_KEY"))
+    .json(Map.of("from", message.from(), "to", message.to(), "subject", message.subject(),
+        "html", message.html(), "text", message.text()))
+    .send();
+Mail.sender(resend);
+```
+
 ## Internationalization
 
 ```java

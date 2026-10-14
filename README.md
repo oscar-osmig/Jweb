@@ -41,7 +41,8 @@ JWeb is built on these core principles:
 - **Typed routes** — `TypedRoute.path("/users/:id", Long.class)`: handler params parsed and URLs compile-time checked
 - **Built-in AI** — `AI.ask/chat/agent` with tool-calling loops against any OpenAI-compatible API (OpenAI, Ollama, Groq...), plus a drop-in chat widget — zero dependencies
 - **SEO & performance** — `Seo` builder (OG/Twitter/canonical), on-the-fly image optimization (`/jweb/img`), immutably-cached runtime assets, gzip, startup warmup
-- **Background work** — Virtual-thread `Jobs`, cron `Scheduler`, `Suspense` for async rendering, TTL `Cache`
+- **Background work** — Durable `Jobs.enqueue` (stored, retried with backoff, dead-lettered; shared by every instance on the SQL store), virtual-thread `Jobs.run`, cron `Scheduler`, `Suspense` for async rendering, TTL `Cache`
+- **Mail** — `Mail.to(...).subject(...).html(div(...)).send()` with the HTML DSL as the body; the framework speaks SMTP itself (STARTTLS, AUTH), an outbox for development and tests, `.later()` through the durable queue
 - **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding, accessibility auditor, `Middlewares.recommended()` secure baseline
 
 ---
@@ -283,7 +284,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [JavaScript DSL](./readme/javascript-dsl.md) | Actions, form handlers, fetch, events, and the full 43-module browser API surface |
 | [State & Realtime](./readme/state-and-realtime.md) | Reactive state, events, hydration, WebSocket, SSE, transitions, portals, async rendering |
 | [Three DSL](./readme/three-dsl.md) | Declarative 3D scenes — shapes, curves, terrain, lights, one-call shadows, glTF models; a first-person walk mode with feet, solids, float and click-to-move; portals, zones and proximity; sound; live patches over the socket |
-| [Backend](./readme/backend.md) | REST API, OpenAPI, SQL and migrations, MongoDB, security, validation, forms, uploads, jobs, testing |
+| [Backend](./readme/backend.md) | REST API, OpenAPI, SQL and migrations, MongoDB, security, validation, forms, uploads, mail, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
 | [Changelog](./CHANGELOG.md) | Every tagged release, newest first; each section is that tag's GitHub Release |
@@ -294,12 +295,12 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |
 
 Additional internal reference docs ship with the framework source at
-`src/main/java/com/osmig/Jweb/framework/docs/` (16 topic files) and are copied into the jar
+`src/main/java/com/osmig/Jweb/framework/docs/` (17 topic files) and are copied into the jar
 under `framework-src/`.
 
 ### For AI assistants: `/docs/tell`
 
-`GET /docs/tell` returns this entire documentation set — the guides above plus all 16
+`GET /docs/tell` returns this entire documentation set — the guides above plus all 17
 reference topics — as one markdown document, version-stamped and ordered so the DSL rules
 and the 2.x breaking changes come first. Point an assistant at it before asking it to write
 JWeb code.
