@@ -11,6 +11,26 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **SQL, with migrations.** `jweb.Sql` runs SQL against the app's `DataSource` — queries
+  mapped to records by column name (`created_at` fills `createdAt`), positional and `:named`
+  parameters, inserts that hand back the generated key, batches, `transaction(...)` with
+  rollback on any exception and nesting that joins — and `Sql.table("todos", Todo.class)` for
+  the CRUD a record needs (`insert` fills in the generated id, `find`/`get`/`where`/`count`/
+  `update`/`save`/`delete`). `jweb.Migrations` applies `V<version>__<name>.sql` files under
+  `db/migration` once each, in order, recorded with a checksum in `jweb_migrations`; an
+  edited file fails the next start naming the version (`repair` for deliberate edits);
+  instances starting together take turns on a lock row. Both are written against
+  `javax.sql.DataSource` only: an app adds `spring-boot-starter-jdbc` and a driver and sets
+  `spring.datasource.url`, and `SqlConfiguration` binds the bean and migrates before any
+  runner of the app's own. `jweb.sql.migrate` / `jweb.sql.migrations` configure it; Flyway
+  or Liquibase on the classpath takes over. 20 tests against H2; a reference topic
+  (`ref-sql`) and a guide section.
+- **MongoDB is opt-in.** The driver is now an optional dependency: an app that uses SQL, or
+  no database, no longer ships `mongodb-driver-sync`, `bson` and `mongodb-driver-core`, and
+  never loads a Mongo type. The startup connection moved from `JWebConfiguration` to
+  `db.mongo.MongoConfiguration`, which exists only when the driver does; `jweb.data.enabled`
+  on without the driver logs the dependency to add. To keep using `jweb.Mongo`, add
+  `org.mongodb:mongodb-driver-sync:5.10.0` to the app's pom.
 - **CI.** `.github/workflows/ci.yml` runs the full suite and builds the library jar on every
   push to `main` and every pull request (JDK 21, Node present so the generated-JavaScript
   syntax tests run), then builds the demo Docker image. Until now JitPack and the Dockerfile

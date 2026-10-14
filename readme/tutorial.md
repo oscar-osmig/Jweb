@@ -374,6 +374,6 @@ once the app is behind HTTPS. The rest of the production checklist is in
 - [HTML DSL](./html-dsl.md) — every element and attribute, forms, conditionals
 - [CSS DSL](./css-dsl.md) — rules, units, colors, at-rules, themes
 - [State & Realtime](./state-and-realtime.md) — `useState`, `live`, bindings, streaming SSR
-- [Backend](./backend.md) — REST, OpenAPI, MongoDB, security, validation, uploads
+- [Backend](./backend.md) — REST, OpenAPI, SQL with migrations (`Sql.table("todos", Todo.class)` is the next step for this app's list), MongoDB, security, validation, uploads
 - [JavaScript DSL](./javascript-dsl.md) — for the client-side behavior that does need a script
 - [Known issues](./known-issues.md) — the sharp edges, before you hit them

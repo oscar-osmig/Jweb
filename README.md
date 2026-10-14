@@ -31,7 +31,7 @@ JWeb is built on these core principles:
 - **Virtual DOM** — `VNode` tree rendering with XSS-safe text escaping by default
 - **Routing & Middleware** — Fluent route definitions with `:param` path parameters and a request pipeline
 - **REST API** — Annotation-based REST controllers (`@REST`, `@GET`, `@POST`, `@UPDATE`, `@PATCH`, `@DEL`) dispatched by Spring MVC
-- **MongoDB Integration** — Fluent DSL (`Mongo`, `Doc`, `MongoQuery`) with Spring-driven auto-connection
+- **Databases, both opt-in** — SQL over any JDBC `DataSource` (`Sql`: queries to records, named parameters, generated keys, transactions, a table helper; `Migrations`: versioned `V*__*.sql` files applied at startup) and MongoDB (`Mongo`, `Doc`, `MongoQuery`); each loads only when its driver is on the classpath
 - **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers
 - **Validation** — Composable `Validator<T>` plus `FormValidator`/`FieldValidator` fluent APIs
 - **OpenAPI** — Generates OpenAPI 3.0.3 spec + Swagger UI, Redoc, and Scalar doc pages
@@ -88,6 +88,11 @@ public class App {
 ```
 
 Requires **Java 21+**. Use `main-SNAPSHOT` as the version to track the latest commit.
+
+Databases are opt-in. For SQL add `spring-boot-starter-jdbc` and a driver and set
+`spring.datasource.url`; `jweb.Sql` binds to the `DataSource` and runs the migrations under
+`db/migration`. For MongoDB add `org.mongodb:mongodb-driver-sync` and set
+`jweb.data.enabled: true`. See [Backend](./readme/backend.md#database-sql-sql-migrations).
 
 ### Upgrading to 3.0.2
 
@@ -278,7 +283,7 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [JavaScript DSL](./readme/javascript-dsl.md) | Actions, form handlers, fetch, events, and the full 43-module browser API surface |
 | [State & Realtime](./readme/state-and-realtime.md) | Reactive state, events, hydration, WebSocket, SSE, transitions, portals, async rendering |
 | [Three DSL](./readme/three-dsl.md) | Declarative 3D scenes — shapes, curves, terrain, lights, one-call shadows, glTF models; a first-person walk mode with feet, solids, float and click-to-move; portals, zones and proximity; sound; live patches over the socket |
-| [Backend](./readme/backend.md) | REST API, OpenAPI, MongoDB, security, validation, forms, uploads, jobs, testing |
+| [Backend](./readme/backend.md) | REST API, OpenAPI, SQL and migrations, MongoDB, security, validation, forms, uploads, jobs, testing |
 | [Configuration](./readme/configuration.md) | Setup, config files, environment variables, dev tools, CLI, project structure |
 | [Known Issues](./readme/known-issues.md) | Verified gaps, unwired features, and API pitfalls — read before extending the framework |
 | [Changelog](./CHANGELOG.md) | Every tagged release, newest first; each section is that tag's GitHub Release |
@@ -289,12 +294,12 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |
 
 Additional internal reference docs ship with the framework source at
-`src/main/java/com/osmig/Jweb/framework/docs/` (15 topic files) and are copied into the jar
+`src/main/java/com/osmig/Jweb/framework/docs/` (16 topic files) and are copied into the jar
 under `framework-src/`.
 
 ### For AI assistants: `/docs/tell`
 
-`GET /docs/tell` returns this entire documentation set — the guides above plus all 15
+`GET /docs/tell` returns this entire documentation set — the guides above plus all 16
 reference topics — as one markdown document, version-stamped and ordered so the DSL rules
 and the 2.x breaking changes come first. Point an assistant at it before asking it to write
 JWeb code.

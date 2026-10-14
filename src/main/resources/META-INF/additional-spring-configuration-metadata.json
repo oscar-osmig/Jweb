@@ -148,6 +148,18 @@
       "name": "jweb.markitdown.timeout-seconds",
       "type": "java.lang.Long",
       "description": "Maximum seconds a markitdown conversion may take"
+    },
+    {
+      "name": "jweb.sql.migrate",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Run the pending jweb.Migrations when the DataSource bean is bound to jweb.Sql at startup"
+    },
+    {
+      "name": "jweb.sql.migrations",
+      "type": "java.lang.String",
+      "defaultValue": "classpath:db/migration",
+      "description": "Where the V<version>__<name>.sql migration files are (classpath: or file:)"
     }
   ]
 }

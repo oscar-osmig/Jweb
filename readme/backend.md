@@ -333,10 +333,156 @@ classpath scan for `@REST`-annotated classes (use it or `addApi(Class)`).
 
 ---
 
+## Database: SQL (`Sql`, `Migrations`)
+
+Any JDBC database — PostgreSQL, MySQL, SQLite, H2 — through the app's `DataSource`. No ORM
+and no query language of its own: the SQL is yours; mapping rows to records, binding
+parameters, transactions and the connection handling are the framework's.
+
+**Setup.** Add the starter and a driver, give Spring Boot the URL, and the `DataSource` bean
+it creates is bound to `Sql` at startup:
+
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <scope>runtime</scope>
+</dependency>
+```
+
+```yaml
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/myapp}
+    username: ${DATABASE_USER:myapp}
+    password: ${DATABASE_PASSWORD:}
+```
+
+Outside Spring (a test, a `main`), `Sql.connect(dataSource)` binds one by hand.
+
+### Queries, updates, inserts
+
+```java
+import jweb.Sql;
+
+record User(Long id, String name, String email, LocalDateTime createdAt) {}
+long from = 1, to = 2;
+
+List<User> users = Sql.query("select * from users where email like ?", "%@example.com").list(User.class);
+Optional<User> one = Sql.query("select * from users where id = ?", 7).first(User.class);
+User exactly = Sql.query("select * from users where email = ?", "ada@example.com").one(User.class);
+long n = Sql.query("select count(*) from users").scalar(Long.class);
+boolean taken = Sql.query("select 1 from users where email = ?", "ada@example.com").exists();
+
+// named parameters from a map; :: is left alone, so a PostgreSQL cast still works
+List<User> named = Sql.query("select * from users where name = :name", Map.of("name", "Ada")).list(User.class);
+
+int changed = Sql.update("update users set name = ? where id = ?", "Ada", 7);
+long id = Sql.insert("insert into users (name, email) values (?, ?)", "Ada", "ada@example.com").key(Long.class);
+Sql.execute("create index users_email on users (email)");
+Sql.batch("insert into users (name, email) values (?, ?)",
+    List.of(new Object[]{"a", "a@x"}, new Object[]{"b", "b@x"}));
+
+// rows without a record: typed getters, or a mapper
+List<String> names = Sql.query("select name from users").list(String.class);
+List<String> labels = Sql.query("select id, name from users").list(row -> row.getLong("id") + " " + row.getString("name"));
+Sql.query("select * from users").forEach(row -> System.out.println(row.toMap()));   // streams, holds nothing
+
+Sql.transaction(() -> {
+    Sql.update("update accounts set balance = balance - ? where id = ?", 50, from);
+    Sql.update("update accounts set balance = balance + ? where id = ?", 50, to);
+});   // commit at the end; rollback on any exception; nested calls join
+```
+
+**Records.** A row maps to a record by column name: the component `createdAt` reads the
+column `created_at` (or `createdAt`, or `CREATEDAT` — case and underscores are ignored). A
+column the row does not have leaves the component `null` (zero / `false` for a primitive).
+The types that convert: the numbers, `String`, `boolean`, `BigDecimal`, `LocalDate`,
+`LocalDateTime`, `LocalTime`, `Instant`, `UUID`, enums by name, `byte[]`. A non-record class
+(`String.class`, `Long.class`) maps the first column. Temporal columns are read as
+`java.time` values, never through `java.sql.Date`.
+
+### A table through a record
+
+```java
+import jweb.Sql;
+
+record Todo(Long id, String title, boolean done) {}
+
+Sql.Table<Todo> todos = Sql.table("todos", Todo.class);     // columns = components in snake_case; `id` is the key
+
+Todo t = todos.insert(new Todo(null, "Write docs", false)); // the returned copy carries the generated id
+todos.update(new Todo(t.id(), t.title(), true));            // every column, by id
+todos.save(t);                                              // insert when id is null, update otherwise
+Optional<Todo> maybe = todos.find(t.id());
+Todo must = todos.get(t.id());                               // fails when absent
+List<Todo> open = todos.where("done = ? order by id", false); // everything after `where`, ordering included
+long left = todos.count("done = ?", false);
+todos.delete(t.id());
+todos.deleteWhere("done = ?", true);
+```
+
+Forms and tables meet on the record: `Form.of(Todo.class)` renders it, `Form.bind(req,
+Todo.class)` validates it, `todos.save(...)` stores it.
+
+### Migrations
+
+Versioned SQL files, applied once each in order and remembered in `jweb_migrations`. The
+file name is Flyway's convention, so the files move to Flyway unchanged the day an app wants
+it; with Flyway or Liquibase on the classpath, JWeb's migrator steps aside.
+
+```
+src/main/resources/db/migration/V1__create_todos.sql
+src/main/resources/db/migration/V2__add_todos_done_index.sql
+```
+
+```sql
+create table todos (
+    id bigint generated always as identity primary key,
+    title varchar(200) not null,
+    done boolean not null default false
+);
+```
+
+Pending migrations run at startup, before any `ApplicationRunner` of the app's own, each in
+one transaction (where the database makes DDL transactional: PostgreSQL, H2, SQLite — MySQL
+commits DDL as it goes). A file edited after it was applied fails the next start naming the
+version; put the change in a new migration, or `Migrations.repair(dataSource)` when the edit
+was deliberate. Several instances starting at once take turns on a lock row. Statements are
+split on `;` outside quotes, comments and PostgreSQL `$$` bodies; a file that starts with
+`-- jweb:whole` is sent as one statement.
+
+```java
+import jweb.Migrations;
+import javax.sql.DataSource;
+
+DataSource dataSource = Sql.dataSource();
+
+Migrations.Report report = Migrations.migrate(dataSource);   // what this call applied
+List<Migrations.Migration> pending = Migrations.pending(dataSource);
+List<Migrations.Applied> history = Migrations.applied(dataSource);
+```
+
+| Property | Default | Effect |
+|----------|---------|--------|
+| `jweb.sql.migrate` | `true` | Run pending migrations when the `DataSource` is bound |
+| `jweb.sql.migrations` | `classpath:db/migration` | Where the `V*__*.sql` files are (`classpath:` or `file:`) |
+
+**Errors** are `Sql.SqlException` (unchecked, with the SQL that failed) and
+`Migrations.MigrationException`. Calling `Sql` with nothing bound says what to add.
+
+---
+
 ## Database Integration (MongoDB)
 
-MongoDB auto-connects when `jweb.data.enabled: true` via `JWebConfiguration.mongoInitializer()`
-(an `ApplicationRunner`, so connection happens after context startup). URI/database come from
+The MongoDB driver is an **optional dependency**: add `org.mongodb:mongodb-driver-sync`
+(5.10.0) to use `Mongo`; an app that does not never loads a Mongo type. With the driver
+present and `jweb.data.enabled: true`, `MongoConfiguration.mongoInitializer()` connects at
+startup (an `ApplicationRunner`, so after the context is up). URI/database come from
 `jweb.data.mongo.uri` / `jweb.data.mongo.database` (see [Configuration](./configuration.md)).
 
 | Class | Purpose |

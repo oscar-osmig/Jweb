@@ -1,7 +1,6 @@
 package com.osmig.Jweb.framework.config;
 
 import com.osmig.Jweb.framework.JWeb;
-import com.osmig.Jweb.framework.db.mongo.Mongo;
 import com.osmig.Jweb.framework.routing.Router;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -18,12 +17,6 @@ public class JWebConfiguration implements WebMvcConfigurer {
 
     @Value("${jweb.data.enabled:false}")
     private boolean dataEnabled;
-
-    @Value("${jweb.data.mongo.uri:mongodb://localhost:27017}")
-    private String mongoUri;
-
-    @Value("${jweb.data.mongo.database:myapp}")
-    private String mongoDatabase;
 
     @Value("${jweb.dev.debug:false}")
     private boolean devDebug;
@@ -58,11 +51,21 @@ public class JWebConfiguration implements WebMvcConfigurer {
     @Value("${jweb.ai.timeout-seconds:60}")
     private long aiTimeoutSeconds;
 
+    /**
+     * MongoDB connects in {@code db.mongo.MongoConfiguration}, which only
+     * exists when the driver does. This is the message for the other case:
+     * the property is on and the dependency is missing.
+     */
     @Bean
-    public ApplicationRunner mongoInitializer() {
+    public ApplicationRunner mongoDriverCheck() {
         return args -> {
-            if (dataEnabled) {
-                Mongo.connect(mongoUri, mongoDatabase);
+            if (!dataEnabled) return;
+            try {
+                Class.forName("com.mongodb.client.MongoClient", false, getClass().getClassLoader());
+            } catch (ClassNotFoundException e) {
+                com.osmig.Jweb.framework.util.Log.error(
+                    "jweb.data.enabled is true but the MongoDB driver is not on the classpath. "
+                    + "Add org.mongodb:mongodb-driver-sync to use jweb.Mongo, or set jweb.data.enabled=false.");
             }
         };
     }

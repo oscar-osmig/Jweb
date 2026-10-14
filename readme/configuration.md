@@ -129,17 +129,26 @@ jweb:
 | `jweb.websocket.allowed-origins` | *(blank = same-origin)* | Comma-separated origins allowed to open the `/jweb` WebSocket (`*` for dev) |
 | `jweb.markitdown.command` | `.tools/markitdown/bin/markitdown` | Path to the markitdown CLI |
 | `jweb.markitdown.timeout-seconds` | `120` | Max seconds per document conversion |
-| `jweb.data.enabled` | `false` (code) — sample app sets `true` | Auto-connect MongoDB on startup |
+| `jweb.data.enabled` | `false` (code) — sample app sets `true` | Auto-connect MongoDB on startup (needs the optional `mongodb-driver-sync`) |
+| `jweb.sql.migrate` | `true` | Run the pending `jweb.Migrations` when a `DataSource` bean is bound to `jweb.Sql` |
+| `jweb.sql.migrations` | `classpath:db/migration` | Where the `V*__*.sql` migration files are |
 | `jweb.ai.enabled` | `false` | Enable the built-in AI module (`AI.ask/chat/agent`) |
 | `jweb.ai.base-url` / `api-key` / `model` | OpenAI defaults | Which OpenAI-compatible endpoint and model to use |
 | `jweb.ai.temperature` / `timeout-seconds` | `0.7` / `60` | Sampling and per-request timeout for AI calls |
 
-## MongoDB Auto-Connection
+## Database connections
 
-`JWebConfiguration` registers an `ApplicationRunner` that calls
-`Mongo.connect(uri, database)` when `jweb.data.enabled: true`. This happens **after** context
-refresh, and applies registered `Schema` indexes on connect. Set `jweb.data.enabled: false`
-to run without MongoDB (the test suite runs with it disabled).
+**SQL.** With `spring-boot-starter-jdbc` and a driver on the classpath and
+`spring.datasource.url` set, Spring Boot creates a `DataSource`; `SqlConfiguration` binds it
+to `jweb.Sql` at startup and runs the pending migrations under `db/migration` first, before
+any `ApplicationRunner` of the app's own. No `DataSource` bean, nothing happens. See
+[Backend → Database: SQL](./backend.md#database-sql-sql-migrations).
+
+**MongoDB.** `MongoConfiguration` (present only when the optional driver is) registers an
+`ApplicationRunner` that calls `Mongo.connect(uri, database)` when `jweb.data.enabled: true`.
+This happens **after** context refresh, and applies registered `Schema` indexes on connect.
+Set `jweb.data.enabled: false` to run without MongoDB (the test suite runs with it disabled).
+The property on without the driver logs what to add.
 
 ## Development Tools
 
@@ -253,9 +262,13 @@ app/
 | spring-boot-devtools | (managed, runtime, optional) | Hot reload |
 | spring-dotenv | 4.0.0 | `.env` file support |
 | jackson-databind | (managed) | JSON processing |
-| mongodb-driver-sync / bson / mongodb-driver-core | 5.10.0 | MongoDB |
+| mongodb-driver-sync / bson / mongodb-driver-core | 5.10.0 (optional) | MongoDB — add it to use `jweb.Mongo` |
+| h2 | (managed, test) | The suite's in-memory database for `jweb.Sql` / `jweb.Migrations` |
 | spring-security-crypto | (managed, optional) | BCrypt hashing |
 | jjwt-api / jjwt-impl / jjwt-jackson | 0.12.7 (optional) | JWT support |
+
+`jweb.Sql` is written against `javax.sql.DataSource` only: an app adds
+`spring-boot-starter-jdbc` and its driver; nothing JDBC-specific ships from the framework.
 
 **Commented out (not active):** spring-boot-starter-data-jpa, Spring AI OpenAI/Ollama
 (2.0.0-M1), Testcontainers.
