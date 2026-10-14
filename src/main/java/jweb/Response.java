@@ -8,7 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -361,15 +363,22 @@ public class Response {
     public static final class Redirect extends ResponseEntity<Void> {
 
         private final String location;
+        private final List<String> cookies;
 
         Redirect(String location, HttpStatusCode status) {
-            super(null, locationHeader(location), status);
-            this.location = location;
+            this(location, status, List.of());
         }
 
-        private static HttpHeaders locationHeader(String location) {
+        private Redirect(String location, HttpStatusCode status, List<String> cookies) {
+            super(null, headers(location, cookies), status);
+            this.location = location;
+            this.cookies = cookies;
+        }
+
+        private static HttpHeaders headers(String location, List<String> cookies) {
             HttpHeaders headers = new HttpHeaders();
             headers.setLocation(URI.create(location));
+            for (String cookie : cookies) headers.add("Set-Cookie", cookie);
             return headers;
         }
 
@@ -381,18 +390,25 @@ public class Response {
         /** The same redirect to {@code location#anchor} (replacing any fragment). */
         public Redirect anchor(String anchor) {
             String base = location.contains("#") ? location.substring(0, location.indexOf('#')) : location;
-            if (anchor == null || anchor.isBlank()) return new Redirect(base, getStatusCode());
-            return new Redirect(base + "#" + (anchor.startsWith("#") ? anchor.substring(1) : anchor), getStatusCode());
+            if (anchor == null || anchor.isBlank()) return new Redirect(base, getStatusCode(), cookies);
+            return new Redirect(base + "#" + (anchor.startsWith("#") ? anchor.substring(1) : anchor), getStatusCode(), cookies);
         }
 
         /** The same redirect as a 301. */
         public Redirect permanent() {
-            return new Redirect(location, HttpStatus.MOVED_PERMANENTLY);
+            return new Redirect(location, HttpStatus.MOVED_PERMANENTLY, cookies);
         }
 
         /** The same redirect as a 303 (after a POST). */
         public Redirect seeOther() {
-            return new Redirect(location, HttpStatus.SEE_OTHER);
+            return new Redirect(location, HttpStatus.SEE_OTHER, cookies);
+        }
+
+        /** The same redirect setting a cookie — {@code Auth.rememberCookie(...)} after a login, for one. */
+        public Redirect cookie(jweb.http.Cookie cookie) {
+            List<String> all = new ArrayList<>(cookies);
+            all.add(cookie.toHeaderValue());
+            return new Redirect(location, getStatusCode(), List.copyOf(all));
         }
     }
 
@@ -591,6 +607,12 @@ public class Response {
 
         ResponseBuilder(int status) {
             this.status = status;
+        }
+
+        /** Sets a cookie on the response. */
+        public ResponseBuilder cookie(jweb.http.Cookie cookie) {
+            headers.add("Set-Cookie", cookie.toHeaderValue());
+            return this;
         }
 
         /**

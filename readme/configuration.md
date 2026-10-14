@@ -142,6 +142,8 @@ jweb:
 | `jweb.mail.smtp.host` / `port` | *(blank = outbox)* / `587` | SMTP server; blank keeps the outbox, which logs messages instead of sending |
 | `jweb.mail.smtp.username` / `password` | — | AUTH PLAIN or LOGIN when a username is set |
 | `jweb.mail.smtp.tls` | `starttls` | `starttls`, `implicit` (465), or `none` |
+| `jweb.auth.secret` | *(blank = generated per start, with a warning)* | HMAC secret for `Auth.token` and the remember-me cookie; 32+ random characters, the same on every instance |
+| `jweb.auth.remember.secure` | `false` | Mark the remember-me cookie `Secure` (set true behind HTTPS) |
 | `jweb.ai.enabled` | `false` | Enable the built-in AI module (`AI.ask/chat/agent`) |
 | `jweb.ai.base-url` / `api-key` / `model` | OpenAI defaults | Which OpenAI-compatible endpoint and model to use |
 | `jweb.ai.temperature` / `timeout-seconds` | `0.7` / `60` | Sampling and per-request timeout for AI calls |

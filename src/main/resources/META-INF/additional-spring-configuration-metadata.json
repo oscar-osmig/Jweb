@@ -240,6 +240,17 @@
       "type": "java.lang.String",
       "defaultValue": "starttls",
       "description": "starttls, implicit (TLS from the first byte), or none"
+    },
+    {
+      "name": "jweb.auth.secret",
+      "type": "java.lang.String",
+      "description": "HMAC secret for jweb.Auth tokens (password reset, email verification) and the remember-me cookie; 32+ random characters, identical on every instance. Blank generates one per start."
+    },
+    {
+      "name": "jweb.auth.remember.secure",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Mark the remember-me cookie Secure (behind HTTPS)"
     }
   ]
 }

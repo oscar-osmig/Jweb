@@ -219,6 +219,76 @@ String hashed = Password.hash(rawPassword);
 boolean matches = Password.verify(rawPassword, hashed);
 ```
 
+## The Flows
+
+Signed tokens, remember me, log out everywhere and two-factor — stateless or on a shared
+store, so they work on a cluster. Set `jweb.auth.secret` (32+ random characters).
+
+### Password reset and email verification
+
+```java
+import jweb.Auth;
+
+String passwordHash = "$2a$12$...";
+String email = "ada@example.com";
+
+// bound to the password hash: once the password changes the link is dead
+String reset = Auth.token("reset", "42", Duration.ofHours(1), passwordHash);
+Optional<String> id = Auth.subject(reset);                                // "42", unverified: load the user by it
+Optional<String> userId = Auth.verify("reset", reset, passwordHash);     // Optional.of("42"), verified against that user's hash
+
+// bound to the email: verifies that address and no other
+String verify = Auth.token("verify", "42", Duration.ofDays(1), email);
+Optional<String> verified = Auth.verify("verify", verify, email);
+Optional<Instant> expires = Auth.expiry(verify);
+```
+
+### Remember me
+
+```java
+import jweb.Auth;
+import jweb.Principal;
+
+Principal principal = Principal.of("42", "ada@example.com", "user");
+Function<String, Principal> userById = id -> principal;
+
+// on login
+Auth.login(req, principal);
+Response.Redirect home = Response.redirect("/").cookie(Auth.rememberCookie(principal, Duration.ofDays(30)));
+
+// once, for returning visitors
+app.use(Auth.remember(userById));
+
+// on logout
+Response.redirect("/").cookie(Auth.forgetCookie());
+```
+
+### Log out everywhere
+
+```java
+import jweb.Auth;
+
+Auth.logoutEverywhere("42");     // every session and remember-me cookie of the user, on every instance
+Auth.logoutEverywhere(req);      // the request's user, and this session with it
+long version = Auth.version("42");
+```
+
+Versions are in memory, or in `jweb_auth_versions` when `jweb.Sql` is connected (reads cached
+ten seconds); a `Auth.Versions` bean replaces both.
+
+### Two-factor (TOTP)
+
+```java
+import jweb.Auth;
+import jweb.Password;
+
+String secret = Auth.Totp.secret();                               // store on the user
+String uri = Auth.Totp.uri("MyApp", "ada@example.com", secret);   // render as a QR code
+boolean ok = Auth.Totp.verify(secret, req.formParam("code"));     // one period of skew either side
+List<String> recovery = Auth.recoveryCodes(8);                    // show once; store Password.hash(code) each
+String stored = Password.hash(recovery.get(0));
+```
+
 ## Complete Auth Example
 
 ```java

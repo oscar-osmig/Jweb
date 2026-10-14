@@ -51,10 +51,36 @@ import java.util.function.Function;
 public class Auth {
 
     private static final String SESSION_PRINCIPAL_KEY = "jweb_principal";
+    private static final String SESSION_VERSION_KEY = "jweb_principal_version";
     private static final String REQUEST_PRINCIPAL_KEY = "jweb_auth_principal";
+
+    /**
+     * A per-user session version: every login records the user's current
+     * version in the session, and a session whose recorded version is behind
+     * the current one is no longer logged in. Bumping it is "log out
+     * everywhere" — {@code jweb.Auth.logoutEverywhere(userId)}.
+     */
+    public interface Versions {
+        /** The user's current version (0 until first bumped). */
+        long current(String userId);
+
+        /** Advances the version; every existing session and remember-me cookie of the user is now stale. */
+        long bump(String userId);
+    }
+
+    private static volatile Versions versions;
 
     protected Auth() {
         // Static utility class
+    }
+
+    /** Installs the versions store; {@code null} turns the check off. */
+    public static void versions(Versions store) {
+        versions = store;
+    }
+
+    public static Versions versions() {
+        return versions;
     }
 
     // ========== Principal Management ==========
@@ -73,6 +99,10 @@ public class Auth {
             request.raw().changeSessionId();
         }
         session.setAttribute(SESSION_PRINCIPAL_KEY, principal);
+        Versions v = versions;
+        if (v != null && principal.getId() != null) {
+            session.setAttribute(SESSION_VERSION_KEY, v.current(principal.getId()));
+        }
         // Also store in request for immediate access
         request.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
         // Regenerate CSRF token on login
@@ -108,12 +138,26 @@ public class Auth {
         HttpSession session = request.raw().getSession(false);
         if (session != null) {
             principal = (Principal) session.getAttribute(SESSION_PRINCIPAL_KEY);
+            if (principal != null && isStale(session, principal)) {
+                // Logged out everywhere since this session logged in
+                session.removeAttribute(SESSION_PRINCIPAL_KEY);
+                session.removeAttribute(SESSION_VERSION_KEY);
+                return null;
+            }
             if (principal != null) {
                 // Cache in request for subsequent calls
                 request.raw().setAttribute(REQUEST_PRINCIPAL_KEY, principal);
             }
         }
         return principal;
+    }
+
+    private static boolean isStale(HttpSession session, Principal principal) {
+        Versions v = versions;
+        if (v == null || principal.getId() == null) return false;
+        Object recorded = session.getAttribute(SESSION_VERSION_KEY);
+        long at = recorded instanceof Number n ? n.longValue() : 0L;
+        return at < v.current(principal.getId());
     }
 
     /**

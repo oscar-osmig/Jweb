@@ -11,6 +11,20 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **The auth flows.** The user model stays the app's; `jweb.Auth` gains the mechanics every
+  flow needs, stateless or on a store the instances share. `Auth.token(purpose, subject,
+  ttl, fingerprint)` / `Auth.verify(...)`: HMAC-SHA256 tokens for password reset (bound to
+  the password hash, so the link dies when the password changes) and email verification
+  (bound to the address). `Auth.rememberCookie(principal, ttl)`, `Auth.forgetCookie()` and
+  the `Auth.remember(loader)` middleware: remember me, with `Response.redirect(...).cookie(…)`
+  and `Response.ok().cookie(…)` to attach a cookie. `Auth.logoutEverywhere(userId)`: a
+  per-user session version checked on every `getPrincipal`, in memory or in
+  `jweb_auth_versions` when `Sql` is connected. `Auth.Totp`: RFC 6238 two-factor (secret,
+  `otpauth://` URI, verify with skew; the RFC's test vectors in the suite) and
+  `Auth.recoveryCodes(n)`. `jweb.auth.secret` signs it all; blank generates one per start
+  with a warning. `MockRequest.cookie(name, value)` for tests. A full recipe (sign-up,
+  verify, login with remember-me and a second factor, forgot/reset, two-factor setup) in the
+  Backend guide.
 - **Durable jobs.** `Jobs.handle("welcome", Welcome.class, w -> …)` says what a named job
   does; `Jobs.enqueue("welcome", payload)` stores one (`Jobs.options().after(…)`, `.at(…)`,
   `.retries(n)`, `.key(k)` for one pending at a time). The worker, started with the app,

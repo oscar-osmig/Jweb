@@ -32,7 +32,7 @@ JWeb is built on these core principles:
 - **Routing & Middleware** — Fluent route definitions with `:param` path parameters and a request pipeline
 - **REST API** — Annotation-based REST controllers (`@REST`, `@GET`, `@POST`, `@UPDATE`, `@PATCH`, `@DEL`) dispatched by Spring MVC
 - **Databases, both opt-in** — SQL over any JDBC `DataSource` (`Sql`: queries to records, named parameters, generated keys, transactions, a table helper; `Migrations`: versioned `V*__*.sql` files applied at startup) and MongoDB (`Mongo`, `Doc`, `MongoQuery`); each loads only when its driver is on the classpath
-- **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers with PKCE and session-held state
+- **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers with PKCE and session-held state; the flows an app needs — signed single-use tokens for password reset and email verification, remember-me, log out everywhere, TOTP two-factor and recovery codes
 - **Validation** — Composable `Validator<T>` plus `FormValidator`/`FieldValidator` fluent APIs
 - **OpenAPI** — Generates OpenAPI 3.0.3 spec + Swagger UI, Redoc, and Scalar doc pages
 - **Realtime** — Reactive `State<T>` with a wired browser↔server loop (WebSocket events, DOM morphing), SSE from any route, `live(state, s -> ...)` reactive regions and `bind`/`bindAttr`/`bindClass` element bindings; `PubSub.publish(topic, msg)` re-renders every subscribed page, across instances through Redis with no client library

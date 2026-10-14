@@ -54,6 +54,7 @@ public class MockRequest {
     private final Map<String, String[]> queryParams = new LinkedHashMap<>();
     private final Map<String, String> pathParams = new HashMap<>();
     private final Map<String, Object> attributes = new HashMap<>();
+    private final Map<String, String> cookies = new LinkedHashMap<>();
     private HttpSession session;
 
     protected MockRequest() {
@@ -125,6 +126,12 @@ public class MockRequest {
 
     public MockRequest attribute(String name, Object value) {
         this.attributes.put(name, value);
+        return this;
+    }
+
+    /** A cookie the browser would send. */
+    public MockRequest cookie(String name, String value) {
+        cookies.put(name, value);
         return this;
     }
 
@@ -303,7 +310,11 @@ public class MockRequest {
 
             // Remaining methods return defaults
             @Override public String getAuthType() { return null; }
-            @Override public Cookie[] getCookies() { return new Cookie[0]; }
+            @Override public Cookie[] getCookies() {
+                return cookies.entrySet().stream()
+                    .map(e -> new Cookie(e.getKey(), e.getValue()))
+                    .toArray(Cookie[]::new);
+            }
             @Override public long getDateHeader(String name) { return -1; }
             @Override public int getIntHeader(String name) { return -1; }
             @Override public String getPathInfo() { return null; }

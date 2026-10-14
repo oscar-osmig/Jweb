@@ -639,6 +639,133 @@ Principal.builder()
     .build();
 ```
 
+### The flows: password reset, email verification, remember me, log out everywhere, two-factor
+
+`Auth` keeps the user model yours — a record and a table, a `Principal` built from it —
+and provides the mechanics every flow needs, all stateless or on a store the instances
+share. Set `jweb.auth.secret` (32+ random characters) in every environment; without it a
+secret is generated per start and tokens and cookies stop working on restart.
+
+```java
+import jweb.Auth;
+import jweb.Mail;
+import jweb.Password;
+import jweb.Principal;
+import jweb.Sql;
+import jweb.Form;
+import static jweb.El.*;
+
+record User(Long id, String email, String passwordHash, boolean verified, String totpSecret) {
+    Principal principal() { return Principal.of(String.valueOf(id), email, "user"); }
+}
+record Credentials(@Form.Required @Form.Email String email, @Form.Required @Form.Password String password, boolean remember) {}
+record NewPassword(@Form.Required @Form.Password String password) {}
+Sql.Table<User> users = Sql.table("users", User.class);
+String base = "https://app.example.com";
+Element loginPage = p("login");
+
+// ---- sign up: the verification link is a token bound to the email
+app.post("/signup", req -> {
+    Credentials c = Form.bind(Credentials.class, req).value();
+    User user = users.insert(new User(null, c.email(), Password.hash(c.password()), false, null));
+    String token = Auth.token("verify", String.valueOf(user.id()), Duration.ofDays(1), user.email());
+    Mail.to(user.email()).subject("Confirm your email")
+        .html(p(a(href(base + "/verify?token=" + token), "Confirm"))).later();
+    return Response.redirect("/check-your-email");
+});
+app.get("/verify", req -> {
+    String token = req.query("token");
+    Optional<User> user = Auth.subject(token)                     // the id, unverified yet
+        .flatMap(id -> users.find(Long.valueOf(id)))
+        .filter(u -> Auth.verify("verify", token, u.email()).isPresent());   // now verified, against that user's email
+    if (user.isEmpty()) return Response.forbidden("This link is not valid any more");
+    User u = user.get();
+    users.update(new User(u.id(), u.email(), u.passwordHash(), true, u.totpSecret()));
+    return Response.redirect("/login?verified");
+});
+
+// ---- log in, with remember me and an optional second factor
+app.post("/login", req -> {
+    Credentials c = Form.bind(Credentials.class, req).value();
+    Optional<User> found = users.first("email = ?", c.email());
+    if (found.isEmpty() || !Password.verify(c.password(), found.get().passwordHash())) {
+        return Response.html(401, loginPage);
+    }
+    User user = found.get();
+    if (user.totpSecret() != null) {
+        Session.of(req).put("pending-2fa", user.id());     // finish on /login/2fa
+        return Response.redirect("/login/2fa");
+    }
+    Auth.login(req, user.principal());
+    Response.Redirect home = Response.redirect("/");
+    return c.remember() ? home.cookie(Auth.rememberCookie(user.principal(), Duration.ofDays(30))) : home;
+});
+app.post("/login/2fa", req -> {
+    Long id = Session.of(req).get("pending-2fa", Long.class);
+    User user = id == null ? null : users.get(id);
+    if (user == null || !Auth.Totp.verify(user.totpSecret(), req.formParam("code"))) {
+        return Response.html(401, p("Wrong code"));
+    }
+    Session.of(req).remove("pending-2fa");
+    Auth.login(req, user.principal());
+    return Response.redirect("/");
+});
+app.use(Auth.remember(id -> users.find(Long.valueOf(id)).map(User::principal).orElse(null)));   // returning visitors
+app.post("/logout", req -> {
+    Auth.logout(req);
+    return Response.redirect("/").cookie(Auth.forgetCookie());
+});
+app.post("/logout-everywhere", req -> {
+    Auth.logoutEverywhere(req);                          // every session and remember-me cookie of this user
+    return Response.redirect("/").cookie(Auth.forgetCookie());
+});
+
+// ---- forgot / reset: the token is bound to the password hash, so it works once
+app.post("/forgot", req -> {
+    users.first("email = ?", req.formParam("email")).ifPresent(user -> {
+        String token = Auth.token("reset", String.valueOf(user.id()), Duration.ofHours(1), user.passwordHash());
+        Mail.to(user.email()).subject("Reset your password")
+            .html(p(a(href(base + "/reset?token=" + token), "Choose a new password"))).later();
+    });
+    return Response.redirect("/check-your-email");         // the same answer whether or not the email exists
+});
+app.post("/reset", req -> {
+    String token = req.query("token");
+    Optional<User> user = Auth.subject(token)                     // the id, unverified yet
+        .flatMap(id -> users.find(Long.valueOf(id)))
+        .filter(u -> Auth.verify("reset", token, u.passwordHash()).isPresent());   // verified against the current hash
+    if (user.isEmpty()) return Response.forbidden("This link has expired or was already used");
+    NewPassword form = Form.bind(NewPassword.class, req).value();
+    User u = user.get();
+    users.update(new User(u.id(), u.email(), Password.hash(form.password()), u.verified(), u.totpSecret()));
+    Auth.logoutEverywhere(String.valueOf(u.id()));            // every other session is out
+    return Response.redirect("/login?reset");
+});
+
+// ---- two-factor setup
+app.post("/2fa/enable", req -> {
+    User user = users.get(Long.valueOf(Auth.requirePrincipal(req).getId()));
+    String secret = Auth.Totp.secret();
+    String uri = Auth.Totp.uri("MyApp", user.email(), secret);     // render as a QR code; show the secret too
+    List<String> recovery = Auth.recoveryCodes(8);                // show once; store Password.hash(code) for each
+    Session.of(req).put("2fa-setup", secret);
+    return p(uri);
+});
+```
+
+The pieces, one by one:
+
+| Piece | What it does |
+|-------|--------------|
+| `Auth.token(purpose, subject, ttl[, fingerprint])` / `Auth.verify(purpose, token[, fingerprint])` | A signed token (HMAC-SHA256, `jweb.auth.secret`): the subject comes back only for the same purpose, before the expiry, untampered, with the same fingerprint. Bind a reset token to the password hash and it dies when the password changes; bind a verification token to the email and it verifies that address. `Auth.subject(token)` reads the subject *unverified* — to load the user whose fingerprint the verify then needs; `Auth.expiry(token)` the expiry. |
+| `Auth.rememberCookie(principal, ttl)` / `Auth.forgetCookie()` | The remember-me cookie — HttpOnly, SameSite=Lax, `Secure` with `jweb.auth.remember.secure` — and the one that clears it. `Response.redirect(...).cookie(...)` and `Response.ok().cookie(...)` attach them. |
+| `Auth.remember(loader)` | Middleware: a visitor with no session login but a valid cookie is logged in with the principal the loader returns for the id. `Auth.remembered(req)` is the id alone. |
+| `Auth.logoutEverywhere(userId)` / `Auth.logoutEverywhere(req)` | Bumps the user's session version: every session and remember-me cookie that logged in before is no longer valid, on every instance. Versions live in memory, or in `jweb_auth_versions` when `Sql` is connected (reads cached ten seconds); a `Auth.Versions` bean replaces both. |
+| `Auth.Totp.secret()` / `uri(issuer, account, secret)` / `verify(secret, code)` | RFC 6238 TOTP (SHA-1, six digits, thirty seconds, one period of skew) — Google Authenticator, 1Password and the rest. `code(secret, epochSeconds)` for tests. |
+| `Auth.recoveryCodes(n)` | `xxxx-xxxx` one-time codes from an alphabet without look-alikes; store `Password.hash(code)` for each, delete on use. |
+
+Throttle the login and forgot routes with `RateLimit` (`app.use("/login", RateLimit.perMinute(10).byIp().build())`).
+
 ### JWT Authentication
 
 ```java

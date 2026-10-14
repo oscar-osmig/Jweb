@@ -59,6 +59,36 @@ public final class SecuritySection {
                         app.use(RateLimit.perMinute(100).byIp().build());
                         app.use("/api", RateLimit.perMinute(30).byIp().build());"""),
 
+            docSubtitle("The Flows: Reset, Verify, Remember Me, Two-Factor"),
+            para("The user model stays yours; Auth provides the mechanics, stateless or on a shared store. " +
+                 "Set jweb.auth.secret (32+ random characters) in every environment."),
+            codeBlock("""
+import jweb.Auth;
+import jweb.Mail;
+import jweb.Principal;
+import static jweb.El.*;
+
+String passwordHash = "$2a$12$...";
+Principal principal = Principal.of("42", "ada@example.com", "user");
+
+// password reset: a signed token bound to the password hash — dead once the password changes
+String token = Auth.token("reset", "42", Duration.ofHours(1), passwordHash);
+Mail.to("ada@example.com").subject("Reset your password")
+    .html(p(a(href("https://app.example.com/reset?token=" + token), "Choose a new password"))).later();
+Optional<String> userId = Auth.verify("reset", token, passwordHash);
+
+// remember me: the cookie on login, the middleware for returning visitors
+Response.Redirect home = Response.redirect("/").cookie(Auth.rememberCookie(principal, Duration.ofDays(30)));
+app.use(Auth.remember(id -> principal));
+
+// log out everywhere: every session and remember-me cookie of the user
+Auth.logoutEverywhere("42");
+
+// two-factor
+String secret = Auth.Totp.secret();
+String uri = Auth.Totp.uri("MyApp", "ada@example.com", secret);   // show as a QR code
+boolean ok = Auth.Totp.verify(secret, req.formParam("code"));"""),
+
             warn("Always use HTTPS in production and store secrets in environment variables.")
         );
     }
