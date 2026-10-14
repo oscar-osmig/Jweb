@@ -252,7 +252,110 @@ rendered the page. The runtime owns what the user sees when that stops being tru
 
 Because contexts are per-instance, a deployment with more than one instance needs sticky
 sessions for `/jweb` and the pages that use server events; without them every reconnect lands
-on an instance that answers `known:false`.
+on an instance that answers `known:false`. See [Running more than one instance](#running-more-than-one-instance).
+
+## PubSub — one change, every page (`jweb.PubSub`)
+
+A browser event changes one page. `PubSub` is the other direction: publish a message to a
+topic, and every page that subscribed re-renders what the message touched — on this
+instance and, with Redis, on every other. The chat room, the dashboard that follows a job,
+the list that shows what someone else just added.
+
+```java
+import jweb.PubSub;
+import static jweb.El.*;
+import static jweb.State.*;
+
+record Post(String author, String text) {}
+String room = "42";
+List<Post> recent = new ArrayList<>();
+
+// In a page: subscribe while rendering, and the page's live regions follow the topic
+State<List<Post>> posts = useState(recent);
+PubSub.subscribe("room:" + room, Post.class, post -> posts.mutate(list -> list.add(post)));
+Element wall = live(posts, list -> ul(each(list, p -> li(p.author() + ": " + p.text()))));
+
+// From anywhere — a handler, a REST endpoint, a job, another instance
+PubSub.publish("room:" + room, new Post("ada", "hello"));
+```
+
+A subscription made during a render belongs to that page's context: the handler runs in the
+context, the live regions reading the states it changed are re-rendered, and the patches go
+down the page's socket — exactly what a browser event does, started from the server. It ends
+with the context (closed, or reaped after five idle minutes). Subscribe once per page, in
+`render()`, not inside a `live` body, which re-runs. A page whose socket is closed still runs
+the handler, so its state is current when it reconnects; nothing is sent until then.
+
+A subscription made outside a render is a plain server-side listener until its `close()`:
+
+```java
+import jweb.PubSub;
+
+record Order(long id, String status) {}
+
+PubSub.Subscription audit = PubSub.subscribe("orders", Order.class, o -> System.out.println("order " + o.id() + " " + o.status()));
+PubSub.Subscription raw = PubSub.subscribe("orders", json -> System.out.println(json));   // the JSON text
+audit.close();
+raw.close();
+int listening = PubSub.subscribers("orders");
+```
+
+Messages are JSON on the wire — locally too, so a page behaves the same on one instance and
+on five. The handler gets the message parsed to the class it asked for: a `String` arrives
+as a `String`, a record as that record, `Map.class` as a map. Delivery runs on one thread in
+publish order; a handler that throws is logged and the others still run.
+
+**Backends.** `PubSub.Memory` (the default) reaches the pages on this instance.
+`jweb.RedisPubSub` reaches every instance through Redis and needs no client library — it
+speaks the Redis protocol over a socket:
+
+```yaml
+jweb:
+  pubsub:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}   # redis://[user[:password]@]host[:port], rediss:// for TLS
+      prefix: jweb:                               # the channel a topic becomes: jweb:room:42
+```
+
+Set the URL and every instance with the same one shares every topic; the subscriber
+connection reconnects with backoff when it drops, the publisher reconnects on the next
+publish, and a publish while Redis is unreachable throws `PubSub.PublishException` — nothing
+is queued. Any `PubSub.Backend` bean (NATS, Kafka, a database table) replaces both.
+
+**In a test**, `JWebTest.render(page)` gives a `RenderedPage` whose `awaitPush()` is the
+socket's side of a publish:
+
+```java
+import jweb.PubSub;
+import jweb.RenderedPage;
+import jweb.JWebTest;
+import jweb.Template;
+import static jweb.El.*;
+
+Template roomPage = () -> p("the room page");
+record Post(String author, String text) {}
+
+try (RenderedPage page = JWebTest.render(roomPage)) {
+    PubSub.publish("room:42", new Post("ada", "hello"));
+    RenderedPage.Result push = page.awaitPush();        // the patches, applied to page.html()
+    push.patches();                                      // region id -> new HTML
+}
+```
+
+## Running more than one instance
+
+What is per-instance, what is shared, and what to do about each:
+
+| Piece | Lives | With several instances |
+|-------|-------|------------------------|
+| Render contexts (live regions, server handlers, `useState`) | In memory on the instance that rendered the page, five idle minutes | **Sticky sessions** for `/jweb` and the pages that use server events. A socket that lands elsewhere is answered `known:false` and the page shows its expired notice. This is the LiveView / Blazor Server model, by design: the context holds lambdas, not data. |
+| `PubSub` | In memory by default | Set `jweb.pubsub.redis.url` (or a `PubSub.Backend` bean): a publish on one instance reaches the pages on all |
+| HTTP session (`Session`, `Auth.login`, flash, the OAuth2 state) | The servlet session, in memory | Add **Spring Session** with a store (Redis, JDBC) and `jweb.Session` works unchanged — it wraps the servlet session |
+| OAuth2 login state and PKCE verifier | The session | Shared with it; the callback can land on any instance |
+| `Jobs`, `Scheduler` | The instance that scheduled them | Each instance runs its own schedule; make scheduled work idempotent, or elect one instance |
+| `Cache`, `RateLimit` | In memory, per instance | A limit of 100/min is 100/min *per instance*; put a shared limiter at the edge when that matters |
+| `Migrations` | The database | Instances starting together take turns on a lock row |
+| Uploaded files | The instance's disk | Store them somewhere shared |
 
 ## Session
 

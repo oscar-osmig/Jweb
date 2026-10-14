@@ -57,11 +57,17 @@ public final class RenderedPage implements AutoCloseable {
     private final VNode tree;
     private final Map<String, String> regions = new LinkedHashMap<>();
     private final Map<String, Object> states = new LinkedHashMap<>();
+    private final java.util.concurrent.BlockingQueue<Result> pushes = new java.util.concurrent.LinkedBlockingQueue<>();
+    private final Consumer<List<Object>> sink;
     private boolean closed;
 
     private RenderedPage(StateManager.StateContext context, VNode tree) {
         this.context = context;
         this.tree = tree;
+        // What the page's socket would receive from a server-side push
+        // (a PubSub message, a job): collected, for awaitPush()
+        this.sink = messages -> pushes.add(absorb(messages));
+        com.osmig.Jweb.framework.websocket.ContextSockets.bind(context.getSessionId(), sink);
     }
 
     // ==================== rendering ====================
@@ -231,7 +237,39 @@ public final class RenderedPage implements AutoCloseable {
         return absorb(messages);
     }
 
-    private Result absorb(List<Object> messages) {
+    // ==================== pushes from the server ====================
+
+    /**
+     * Waits for the next server-side push to this page — what a
+     * {@code PubSub.publish(...)} the page subscribed to sends down its socket —
+     * and returns it with its patches applied to {@link #html()}.
+     *
+     * @throws AssertionError when nothing arrives within the timeout
+     */
+    public Result awaitPush(java.time.Duration timeout) {
+        try {
+            Result result = pushes.poll(timeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
+            if (result == null) {
+                throw new AssertionError("No push reached the page within " + timeout.toMillis() + " ms");
+            }
+            return result;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError("Interrupted waiting for a push", e);
+        }
+    }
+
+    /** Waits up to two seconds for the next push. */
+    public Result awaitPush() {
+        return awaitPush(java.time.Duration.ofSeconds(2));
+    }
+
+    /** The pushes received and not yet taken with {@link #awaitPush}. */
+    public List<Result> pushes() {
+        return List.copyOf(pushes);
+    }
+
+    private synchronized Result absorb(List<Object> messages) {
         boolean handled = false;
         boolean defaultPrevented = false;
         String error = null;
@@ -265,6 +303,7 @@ public final class RenderedPage implements AutoCloseable {
     public void close() {
         if (closed) return;
         closed = true;
+        com.osmig.Jweb.framework.websocket.ContextSockets.unbind(context.getSessionId(), sink);
         context.clearContext();
     }
 

@@ -740,23 +740,30 @@ OAuth2.Provider google = OAuth2.google()
     .scopes("openid", "email", "profile")
     .build();
 
-app.get("/oauth/login", req -> Response.redirect(google.authorizationUrl()));
+app.get("/oauth/login", req -> Response.redirect(google.authorizationUrl(req)));
 
 app.get("/oauth/callback", req -> {
-    if (!OAuth2.verifyState(req.query("state"))) return Response.forbidden("Bad state");
     try {
-        var tokens = google.exchangeCode(req.query("code"));
-        var info   = google.getUserInfo(tokens.accessToken());
+        OAuth2.Login login = google.callback(req);     // state checked, code exchanged, profile fetched
+        OAuth2.UserInfo info = login.user();
         Auth.login(req, Principal.of(info.id(), info.email(), "user"));
         return Response.redirect("/dashboard");
     } catch (OAuth2.OAuth2Exception e) {
-        return Response.serverError("OAuth login failed");
+        return Response.forbidden("Login failed: " + e.getMessage());
     }
 });
 ```
 
-Providers: `google()`, `github()`, `discord()`, `microsoft()`, `custom(name)`. State tokens are
-in-memory, single-use, 10-minute expiry (not cluster-safe). No PKCE yet.
+Providers: `google()`, `github()`, `discord()`, `microsoft()`, `custom(name)`.
+`authorizationUrl(req)` stores a fresh state and a PKCE verifier in the visitor's session
+(ten minutes, single use) and sends the S256 challenge with the request; `callback(req)`
+checks the state against the session, exchanges the code with the verifier and fetches the
+profile. Because the state is in the session, the callback can land on any instance (with
+Spring Session, on any instance of a cluster). `callback` throws `OAuth2Exception` naming the
+reason: the provider's error (`error` / `error_description`), a state that does not match, an
+expired attempt, a missing code, a failed exchange. `.pkce(false)` on the builder turns PKCE
+off for a provider that rejects it. The in-memory `generateState()` / `verifyState()` and the
+request-less `authorizationUrl()` still work and are deprecated.
 
 ### Real-World Example: Admin Authentication (from the sample app)
 

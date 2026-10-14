@@ -23,6 +23,19 @@ jobs:
     name: Build and test (JDK 21)
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    # A real Redis for RedisPubSubTest.roundTripsThroughARealRedis; without the
+    # variable the test is skipped and the protocol is covered by the stand-in.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      JWEB_TEST_REDIS_URL: redis://127.0.0.1:6379
     steps:
       - uses: actions/checkout@v4
 

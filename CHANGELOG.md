@@ -11,6 +11,27 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **PubSub: one publish, every page.** `jweb.PubSub.publish(topic, message)` re-renders
+  every page that `PubSub.subscribe(topic, Type.class, handler)`-d while rendering: the
+  handler runs in the page's context, the live regions reading the states it changed are
+  re-rendered, and the patches go down the page's socket — the server-started half of the
+  event loop (`EventDispatch.push`, `ContextSockets`). A subscription made outside a render
+  is a plain listener. Messages are JSON on the wire, locally too, so a page behaves the same
+  on one instance and on five. `jweb.RedisPubSub` carries topics across instances with no
+  client library (it speaks RESP over a socket; `jweb.pubsub.redis.url`, `rediss://` for TLS,
+  reconnect with backoff); any `PubSub.Backend` bean replaces it. `RenderedPage.awaitPush()`
+  is the socket's side of a publish in a test. CI runs the Redis round-trip against a real
+  Redis service; the suite covers the protocol with a stand-in.
+- **OAuth2 state lives in the session, with PKCE.** `provider.authorizationUrl(req)` stores
+  a fresh state and an S256 code verifier in the visitor's session (ten minutes, single use);
+  `provider.callback(req)` checks the state, exchanges the code with the verifier and fetches
+  the profile, and throws `OAuth2Exception` naming what went wrong (the provider's error, a
+  mismatch, an expired attempt, a missing code). The callback can land on any instance.
+  `.pkce(false)` per provider; the in-memory `generateState`/`verifyState` are deprecated.
+- **Running more than one instance** is written down: the table in the State & Realtime
+  guide says what is per-instance (render contexts → sticky sessions, `Cache`, `RateLimit`,
+  `Scheduler`) and what is shared (`PubSub` via Redis, the session via Spring Session, the
+  OAuth2 state with it, `Migrations` via the lock row).
 - **SQL, with migrations.** `jweb.Sql` runs SQL against the app's `DataSource` — queries
   mapped to records by column name (`created_at` fills `createdAt`), positional and `:named`
   parameters, inserts that hand back the generated key, batches, `transaction(...)` with

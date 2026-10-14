@@ -32,10 +32,10 @@ JWeb is built on these core principles:
 - **Routing & Middleware** — Fluent route definitions with `:param` path parameters and a request pipeline
 - **REST API** — Annotation-based REST controllers (`@REST`, `@GET`, `@POST`, `@UPDATE`, `@PATCH`, `@DEL`) dispatched by Spring MVC
 - **Databases, both opt-in** — SQL over any JDBC `DataSource` (`Sql`: queries to records, named parameters, generated keys, transactions, a table helper; `Migrations`: versioned `V*__*.sql` files applied at startup) and MongoDB (`Mongo`, `Doc`, `MongoQuery`); each loads only when its driver is on the classpath
-- **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers
+- **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers with PKCE and session-held state
 - **Validation** — Composable `Validator<T>` plus `FormValidator`/`FieldValidator` fluent APIs
 - **OpenAPI** — Generates OpenAPI 3.0.3 spec + Swagger UI, Redoc, and Scalar doc pages
-- **Realtime** — Reactive `State<T>` with a wired browser↔server loop (WebSocket events, DOM morphing), SSE from any route, `live(state, s -> ...)` reactive regions and `bind`/`bindAttr`/`bindClass` element bindings
+- **Realtime** — Reactive `State<T>` with a wired browser↔server loop (WebSocket events, DOM morphing), SSE from any route, `live(state, s -> ...)` reactive regions and `bind`/`bindAttr`/`bindClass` element bindings; `PubSub.publish(topic, msg)` re-renders every subscribed page, across instances through Redis with no client library
 - **Fragments (server-driven UI)** — `attrs().swap(url, target)` / `swapForm(...)` / `swapMorph(...)` fetch-and-swap HTML fragments with View Transitions, DOM morphing (focus/input state preserved), and history — the HTMX pattern, built in, zero JS written
 - **Streaming SSR** — `Streamed.of(() -> page)` flushes the shell instantly; `Suspense` blocks stream in as their data resolves, in parallel, no JS written
 - **Typed routes** — `TypedRoute.path("/users/:id", Long.class)`: handler params parsed and URLs compile-time checked

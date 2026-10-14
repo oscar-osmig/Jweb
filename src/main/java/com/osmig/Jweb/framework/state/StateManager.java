@@ -37,6 +37,10 @@ public class StateManager {
     // Global state change listeners (for WebSocket integration)
     private static final List<BiConsumer<State<?>, Object>> globalListeners = new ArrayList<>();
 
+    // Told the id of every context that ends (cleared or reaped): PubSub drops its subscriptions
+    private static final List<java.util.function.Consumer<String>> contextClosedListeners =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
     // Non-blocking scheduled cleanup (replaces Thread.sleep patterns)
     private static final ScheduledExecutorService cleanupScheduler =
             Executors.newSingleThreadScheduledExecutor(r -> {
@@ -72,9 +76,30 @@ public class StateManager {
             boolean stale = now - ctx.getLastAccessedAt() > CONTEXT_TTL_MS;
             if (stale) {
                 com.osmig.Jweb.framework.events.EventRegistry.clearSession(entry.getKey());
+                contextClosed(entry.getKey());
             }
             return stale;
         });
+    }
+
+    /** Registers a listener told the id of each context that ends — cleared by its page, or reaped. */
+    public static void onContextClosed(java.util.function.Consumer<String> listener) {
+        contextClosedListeners.add(listener);
+    }
+
+    private static void contextClosed(String contextId) {
+        for (var listener : contextClosedListeners) {
+            try {
+                listener.accept(contextId);
+            } catch (RuntimeException e) {
+                com.osmig.Jweb.framework.util.Log.warn("Context-closed listener failed: {}", e.getMessage());
+            }
+        }
+    }
+
+    /** The context with this id without counting the lookup as activity — for pushes from outside. */
+    public static StateContext findContext(String contextId) {
+        return contextId == null ? null : contextRegistry.get(contextId);
     }
 
     /**
@@ -422,6 +447,7 @@ public class StateManager {
             // Remove from registry and drop this context's event handlers
             contextRegistry.remove(sessionId);
             com.osmig.Jweb.framework.events.EventRegistry.clearSession(sessionId);
+            contextClosed(sessionId);
 
             // Clear thread-local if this is the current context
             if (currentContext.get() == this) {

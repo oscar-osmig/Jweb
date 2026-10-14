@@ -133,6 +133,16 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         String contextId = msg.getContextId();
         if (contextId != null) {
             sessionContextMap.put(session.getId(), contextId);
+            // Server-initiated pushes (PubSub, jobs) for this context go to this socket
+            ContextSockets.bind(contextId, session.getId(), messages -> {
+                for (Object message : messages) {
+                    try {
+                        sendMessage(session, message);
+                    } catch (IOException e) {
+                        Log.warn("Push to context {} failed: {}", contextId, e.getMessage());
+                    }
+                }
+            });
         }
 
         // Send the current state of the page's render context
@@ -167,7 +177,11 @@ public class JWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
         sessions.remove(session.getId());
-        sessionContextMap.remove(session.getId());
+        String contextId = sessionContextMap.remove(session.getId());
+        if (contextId != null) {
+            // Only if no newer socket (a reconnect) has taken the context over
+            ContextSockets.unbindIfSession(contextId, session.getId());
+        }
         Log.debug("WebSocket disconnected: {}", session.getId());
     }
 

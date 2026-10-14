@@ -69,28 +69,61 @@ public final class EventDispatch {
         // ONLY; the global registry serves just the messages that name none
         // (handlers minted outside any render). Three.patch(...) calls made
         // inside it collect on this thread and ride back with the answer.
-        jweb.three.ThreePatchQueue.open();
-        try {
-            boolean executed = contextId != null
-                    ? EventRegistry.execute(contextId, handlerId, event)
-                    : EventRegistry.execute(handlerId, event);
-            if (!executed) {
-                Log.warn("Dropping event for handler {} — not registered in context {}", handlerId, contextId);
-                out.add(new ErrorResponse("Handler not found: " + handlerId));
+        // The context is the lock: a PubSub push for the same page waits.
+        Object lock = context != null ? context : new Object();
+        synchronized (lock) {
+            jweb.three.ThreePatchQueue.open();
+            try {
+                boolean executed = contextId != null
+                        ? EventRegistry.execute(contextId, handlerId, event)
+                        : EventRegistry.execute(handlerId, event);
+                if (!executed) {
+                    Log.warn("Dropping event for handler {} — not registered in context {}", handlerId, contextId);
+                    out.add(new ErrorResponse("Handler not found: " + handlerId));
+                    return out;
+                }
+                threePatches(out);
+                if (context == null) {
+                    context = StateManager.getContext();
+                }
+                if (context != null) {
+                    flushStateChanges(context, out);
+                }
+                out.add(new EventHandledResponse(handlerId, event.isDefaultPrevented()));
                 return out;
+            } finally {
+                StateManager.clearContext();
+                jweb.three.ThreePatchQueue.close();
             }
-            threePatches(out);
-            if (context == null) {
-                context = StateManager.getContext();
-            }
-            if (context != null) {
+        }
+    }
+
+    /**
+     * Runs a change in a page's context from outside any browser event — a
+     * {@code jweb.PubSub} message, a job that finished — and returns what the
+     * page is sent: scene patches, changed states, re-rendered live regions.
+     * Empty when the change touched nothing the page shows. The caller delivers
+     * the list through {@code ContextSockets}.
+     */
+    public static List<Object> push(StateManager.StateContext context, Runnable change) {
+        List<Object> out = new ArrayList<>();
+        synchronized (context) {
+            StateManager.StateContext previous = StateManager.getContext();
+            StateManager.setContext(context);
+            jweb.three.ThreePatchQueue.open();
+            try {
+                change.run();
+                threePatches(out);
                 flushStateChanges(context, out);
+                return out;
+            } finally {
+                jweb.three.ThreePatchQueue.close();
+                if (previous != null) {
+                    StateManager.setContext(previous);
+                } else {
+                    StateManager.clearContext();
+                }
             }
-            out.add(new EventHandledResponse(handlerId, event.isDefaultPrevented()));
-            return out;
-        } finally {
-            StateManager.clearContext();
-            jweb.three.ThreePatchQueue.close();
         }
     }
 
@@ -111,16 +144,18 @@ public final class EventDispatch {
             out.add(new ErrorResponse("Unknown state: " + stateId));
             return out;
         }
-        StateManager.setContext(context);
-        jweb.three.ThreePatchQueue.open();
-        try {
-            state.set(value);
-            threePatches(out);
-            flushStateChanges(context, out);
-            return out;
-        } finally {
-            StateManager.clearContext();
-            jweb.three.ThreePatchQueue.close();
+        synchronized (context) {
+            StateManager.setContext(context);
+            jweb.three.ThreePatchQueue.open();
+            try {
+                state.set(value);
+                threePatches(out);
+                flushStateChanges(context, out);
+                return out;
+            } finally {
+                StateManager.clearContext();
+                jweb.three.ThreePatchQueue.close();
+            }
         }
     }
 

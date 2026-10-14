@@ -132,6 +132,8 @@ jweb:
 | `jweb.data.enabled` | `false` (code) — sample app sets `true` | Auto-connect MongoDB on startup (needs the optional `mongodb-driver-sync`) |
 | `jweb.sql.migrate` | `true` | Run the pending `jweb.Migrations` when a `DataSource` bean is bound to `jweb.Sql` |
 | `jweb.sql.migrations` | `classpath:db/migration` | Where the `V*__*.sql` migration files are |
+| `jweb.pubsub.redis.url` | *(blank = in-memory, this instance only)* | Redis for `jweb.PubSub` across instances: `redis://[user[:password]@]host[:port]`, `rediss://` for TLS |
+| `jweb.pubsub.redis.prefix` | `jweb:` | The Redis channel prefix a topic gets |
 | `jweb.ai.enabled` | `false` | Enable the built-in AI module (`AI.ask/chat/agent`) |
 | `jweb.ai.base-url` / `api-key` / `model` | OpenAI defaults | Which OpenAI-compatible endpoint and model to use |
 | `jweb.ai.temperature` / `timeout-seconds` | `0.7` / `60` | Sampling and per-request timeout for AI calls |

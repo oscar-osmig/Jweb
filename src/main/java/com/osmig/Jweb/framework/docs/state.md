@@ -278,3 +278,46 @@ State<String> email = useState("");
 // Use an object
 State<FormData> form = useState(new FormData("", "", ""));
 ```
+
+## PubSub: One Publish, Every Page
+
+`jweb.PubSub` is the server-started half of the event loop: publish a message to a topic and
+every page that subscribed re-renders what the message touched. A subscription made during a
+render belongs to that page's context — the handler runs in it, the live regions reading the
+states it changed are re-rendered, and the patches go down the page's socket. It ends with
+the context. Subscribe once per page, in `render()`, not inside a `live` body.
+
+```java
+import jweb.PubSub;
+import static jweb.El.*;
+import static jweb.State.*;
+
+record Post(String author, String text) {}
+String room = "42";
+
+State<List<Post>> posts = useState(new ArrayList<>());
+PubSub.subscribe("room:" + room, Post.class, post -> posts.mutate(list -> list.add(post)));
+Element wall = live(posts, list -> ul(each(list, p -> li(p.author() + ": " + p.text()))));
+
+PubSub.publish("room:" + room, new Post("ada", "hello"));   // from anywhere
+```
+
+Outside a render a subscription is a plain listener until `close()`. Messages are JSON on
+the wire and arrive parsed to the class asked for; `subscribe(topic, Consumer<String>)` gets
+the JSON text. Delivery runs on one thread in publish order; a handler that throws is logged.
+
+```java
+import jweb.PubSub;
+
+record Order(long id, String status) {}
+
+PubSub.Subscription s = PubSub.subscribe("orders", Order.class, o -> System.out.println(o.id()));
+s.close();
+int n = PubSub.subscribers("orders");
+```
+
+`PubSub.Memory` (default) reaches this instance's pages. `jweb.RedisPubSub` reaches every
+instance through Redis with no client library: set `jweb.pubsub.redis.url`
+(`redis://[user[:password]@]host[:port]`, `rediss://` for TLS; `jweb.pubsub.redis.prefix`,
+default `jweb:`). A `PubSub.Backend` bean replaces both. In a test, `RenderedPage.awaitPush()`
+returns what a publish sent the page.

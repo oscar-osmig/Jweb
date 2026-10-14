@@ -160,6 +160,17 @@
       "type": "java.lang.String",
       "defaultValue": "classpath:db/migration",
       "description": "Where the V<version>__<name>.sql migration files are (classpath: or file:)"
+    },
+    {
+      "name": "jweb.pubsub.redis.url",
+      "type": "java.lang.String",
+      "description": "Redis URL for jweb.PubSub across instances (redis://[user[:password]@]host[:port], rediss:// for TLS); blank keeps the in-memory backend"
+    },
+    {
+      "name": "jweb.pubsub.redis.prefix",
+      "type": "java.lang.String",
+      "defaultValue": "jweb:",
+      "description": "Prefix of the Redis channel a PubSub topic is published on"
     }
   ]
 }
