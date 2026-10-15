@@ -477,6 +477,40 @@ List<Migrations.Applied> history = Migrations.applied(dataSource);
 
 ---
 
+### Scaffolding a resource
+
+`jweb generate resource Todo title:string! done:boolean` writes the record (the row and the
+form), the migration that creates its table (`V<next>__create_todos.sql`), a list page, a
+form page and the `JWebRoutes` bean that wires them under `/todos`; `jweb new` already gave
+the project its database. The generated code is plain code to edit, nothing to keep in sync.
+
+## Admin (`jweb.Admin`)
+
+A back office for the tables an app keeps through `Sql.table`: a page per table that lists,
+searches and pages its rows, a form to add or edit one — the record's components are the
+fields, its `Form.*` annotations the rules — and a delete. One line to mount, one to guard:
+
+```java
+import jweb.Admin;
+import jweb.Auth;
+import jweb.Sql;
+
+record Todo(Long id, @Form.Required String title, boolean done) {}
+record User(Long id, @Form.Email String email, String role) {}
+Sql.Table<Todo> todos = Sql.table("todos", Todo.class);
+Sql.Table<User> users = Sql.table("users", User.class);
+
+Admin.mount(app, "/admin", todos, users)
+     .title("Back office")
+     .guard(Auth.requireRole("admin"));
+```
+
+The pages are templates in the page table, so the app's layout wraps them and
+`Middlewares.recommended()` protects the forms; the guard stands in front of every admin
+route. A table whose record has no `id` component is listed read-only. Behind it are two
+small additions to `Sql.Table` any page can use: `page(n, size)` and `search(text, n, size)`
+over the text columns.
+
 ## Database Integration (MongoDB)
 
 The MongoDB driver is an **optional dependency**: add `org.mongodb:mongodb-driver-sync`

@@ -203,7 +203,7 @@ public class JWebCli {
         Files.createDirectories(projectDir.resolve("src/main/java/" + packagePath + "/pages"));
         Files.createDirectories(projectDir.resolve("src/main/java/" + packagePath + "/components"));
         Files.createDirectories(projectDir.resolve("src/main/java/" + packagePath + "/layouts"));
-        Files.createDirectories(projectDir.resolve("src/main/resources"));
+        Files.createDirectories(projectDir.resolve("src/main/resources/db/migration"));
         Files.createDirectories(projectDir.resolve("src/test/java/" + packagePath));
 
         writeFile(projectDir.resolve("pom.xml"), generatePom(projectName, packageName));
@@ -217,6 +217,8 @@ public class JWebCli {
             generateMainLayout(packageName, projectName));
         writeFile(projectDir.resolve("src/main/resources/application.properties"),
             generateProperties(projectName));
+        writeFile(projectDir.resolve("src/main/resources/db/migration/.gitkeep"),
+            "# V1__create_todos.sql and friends go here: `jweb generate resource Todo title:string! done:boolean`\n");
         writeFile(projectDir.resolve(".gitignore"), generateGitignore());
     }
 
@@ -225,7 +227,7 @@ public class JWebCli {
     private static void generate(String[] args) throws IOException {
         if (args.length < 3) {
             System.err.println("Usage: jweb generate <type> <name> [fields...]");
-            System.err.println("Types: page, component, layout, form, crud, api");
+            System.err.println("Types: page, component, layout, form, resource, api");
             return;
         }
 
@@ -241,7 +243,7 @@ public class JWebCli {
             case "component", "c" -> generateComponent(name, fields);
             case "layout", "l" -> generateLayout(name);
             case "form", "f" -> generateForm(name, fields);
-            case "crud" -> generateCrud(name, fields);
+            case "resource", "r", "crud" -> generateResource(name, fields);
             case "api" -> generateApi(name, fields);
             default -> System.err.println("Unknown type: " + type);
         }
@@ -292,39 +294,43 @@ public class JWebCli {
         System.out.println("\u2713 Created form model: " + path);
     }
 
-    private static void generateCrud(String name, String[] fields) throws IOException {
+    private static void generateResource(String name, String[] fields) throws IOException {
         String entityName = capitalize(name);
+        String table = Templates.tableName(entityName);
 
-        // Generate entity
-        String entityCode = Templates.entity(basePackage, entityName, fields);
-        writeFile(resolvePath("models", entityName + ".java"), entityCode);
-        System.out.println("\u2713 Created entity: " + entityName);
+        writeFile(resolvePath("models", entityName + ".java"), Templates.record(basePackage, entityName, fields));
+        System.out.println("\u2713 Created record: " + entityName + " (the row and the form)");
 
-        // Generate repository
-        String repoCode = Templates.repository(basePackage, entityName);
-        writeFile(resolvePath("repositories", entityName + "Repository.java"), repoCode);
-        System.out.println("\u2713 Created repository: " + entityName + "Repository");
+        Path migrations = projectRoot.resolve("src/main/resources/db/migration");
+        Files.createDirectories(migrations);
+        Path migration = migrations.resolve("V" + nextMigrationVersion(migrations) + "__create_" + table + ".sql");
+        writeFile(migration, Templates.migration(entityName, fields));
+        System.out.println("\u2713 Created migration: " + projectRoot.relativize(migration));
 
-        // Generate list page
-        String listCode = Templates.listPage(basePackage, entityName, fields);
-        writeFile(resolvePath("pages", entityName + "ListPage.java"), listCode);
+        writeFile(resolvePath("pages", entityName + "ListPage.java"), Templates.resourceListPage(basePackage, entityName, fields));
         System.out.println("\u2713 Created list page: " + entityName + "ListPage");
-
-        // Generate form page
-        String formCode = Templates.formPage(basePackage, entityName, fields);
-        writeFile(resolvePath("pages", entityName + "FormPage.java"), formCode);
+        writeFile(resolvePath("pages", entityName + "FormPage.java"), Templates.resourceFormPage(basePackage, entityName));
         System.out.println("\u2713 Created form page: " + entityName + "FormPage");
+        writeFile(resolvePath("routes", entityName + "Routes.java"), Templates.resourceRoutes(basePackage, entityName));
+        System.out.println("\u2713 Created routes: " + entityName + "Routes (/" + table + ", /" + table + "/new, /" + table + "/:id)");
 
-        String path = entityName.toLowerCase() + "s";
-        System.out.println("\nThe entity and repository need Spring Data JPA — add to pom.xml:");
-        System.out.println("  spring-boot-starter-data-jpa, and a driver (h2 for a start)");
-        System.out.println("\nThen register the pages in Routes.java, handing the repository in");
-        System.out.println("(a page in the page table is built by the registry, not by Spring,");
-        System.out.println("so it takes its collaborators through the constructor):");
-        System.out.println("  @Autowired " + entityName + "Repository " + entityName.toLowerCase() + "s;");
-        System.out.println("  app.pages(\"/" + path + "\", () -> new " + entityName + "ListPage(" + entityName.toLowerCase() + "s))");
-        System.out.println("     .pages(\"/" + path + "/new\", () -> new " + entityName + "FormPage(" + entityName.toLowerCase() + "s, null))");
-        System.out.println("     .pages(\"/" + path + "/:id\", req -> new " + entityName + "FormPage(" + entityName.toLowerCase() + "s, req.requireParamLong(\"id\")));");
+        System.out.println("\nThe migration runs at the next start (jweb.Migrations, over spring.datasource.url).");
+        System.out.println("The routes bean is picked up by component scanning; nothing to register.");
+        System.out.println("An admin for the table: Admin.mount(app, \"/admin\", Sql.table(\"" + table + "\", " + entityName + ".class))");
+    }
+
+    /** One past the highest {@code V<n>__} in the directory; 1 when there is none. */
+    static int nextMigrationVersion(Path migrations) throws IOException {
+        int highest = 0;
+        if (Files.isDirectory(migrations)) {
+            try (var files = Files.list(migrations)) {
+                for (Path file : (Iterable<Path>) files::iterator) {
+                    var m = java.util.regex.Pattern.compile("^V(\\d+)__.*\\.sql$").matcher(file.getFileName().toString());
+                    if (m.matches()) highest = Math.max(highest, Integer.parseInt(m.group(1)));
+                }
+            }
+        }
+        return highest + 1;
     }
 
     private static void generateApi(String name, String[] fields) throws IOException {
@@ -388,7 +394,7 @@ public class JWebCli {
 
             Commands:
               new <name>              Create a new JWeb project
-              generate <type> <name>  Generate code (page, component, layout, form, crud, api)
+              generate <type> <name>  Generate code (page, component, layout, form, resource, api)
               build                   Package for production (jar + Dockerfile/.dockerignore)
               help                    Show this help message
               version                 Show version
@@ -398,12 +404,15 @@ public class JWebCli {
               jweb generate page Home
               jweb generate component UserCard
               jweb generate form User name:string! email:email! age:int
-              jweb generate crud Product name:string price:double
+              jweb generate resource Product name:string! price:double inStock:boolean
               jweb generate api Users
 
-            Field types: string, int, long, double, boolean, date, datetime, email, password
-            (a trailing ! marks a form field required). A generated project depends on
-            JWeb %s; the tutorial that walks through it is readme/tutorial.md.
+            Field types: string, text, int, long, double, boolean, date, datetime, email, password
+            (a trailing ! marks a field required). A resource is a record (the row and the
+            form), the migration that creates its table, a list page, a form page and the
+            routes that wire them — on jweb.Sql over the H2 file database a new project
+            starts with. A generated project depends on JWeb %s; the tutorial that walks
+            through it is readme/tutorial.md.
             """.formatted(VERSION, dependencyVersion()));
     }
 
@@ -449,6 +458,18 @@ public class JWebCli {
                         <groupId>com.github.oscar-osmig</groupId>
                         <artifactId>Jweb</artifactId>
                         <version>%s</version>
+                    </dependency>
+                    <!-- The database: jweb.Sql over any JDBC DataSource, jweb.Migrations at startup.
+                         H2 keeps it in ./data for development; swap the driver and
+                         spring.datasource.url for PostgreSQL or MySQL in production. -->
+                    <dependency>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-starter-jdbc</artifactId>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.h2database</groupId>
+                        <artifactId>h2</artifactId>
+                        <scope>runtime</scope>
                     </dependency>
                     <dependency>
                         <groupId>org.springframework.boot</groupId>
@@ -656,13 +677,20 @@ public class JWebCli {
             spring.application.name=%s
             server.port=8085
 
+            # The database: an H2 file under ./data in development (migrations in
+            # src/main/resources/db/migration run at startup); point it at PostgreSQL
+            # or MySQL for production, e.g. ${DATABASE_URL}
+            spring.datasource.url=jdbc:h2:file:./data/%s
+            spring.datasource.username=sa
+            spring.datasource.password=
+
             # Development settings (the framework's own defaults are in jweb.yaml)
             jweb.dev.hot-reload=true
             jweb.dev.watch-paths=src/main/java
 
             # Logging
             logging.level.com.osmig.Jweb=INFO
-            """.formatted(projectName);
+            """.formatted(projectName, projectName.toLowerCase().replaceAll("[^a-z0-9]", ""));
     }
 
     private static String generateGitignore() {
@@ -687,8 +715,9 @@ public class JWebCli {
             *.log
             logs/
 
-            # jweb.Storage's local store (jweb.storage.dir)
+            # jweb.Storage's local store (jweb.storage.dir), and the H2 database files
             storage/
+            data/
 
             # Maven
             pom.xml.tag

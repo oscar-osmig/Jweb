@@ -88,15 +88,21 @@ public class JWebController {
         // securityHeaders() puts it in the Content-Security-Policy header
         com.osmig.Jweb.framework.security.CspNonce.begin();
 
-        // Try page routes (GET/HEAD only — pages are documents)
+        // Try page routes (GET/HEAD only — pages are documents). A POST to a
+        // page's path goes to the handler registered for it, when there is
+        // one (app.pages("/todos", …) beside app.post("/todos", …)); 405
+        // only when nothing takes the method.
         Optional<PageRoute.Match> pageMatch = pageRegistry.match(path);
         if (pageMatch.isPresent()) {
-            if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
+            boolean document = "GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method);
+            if (document) {
+                return handlePageRoute(pageMatch.get(), servletRequest);
+            }
+            if (router.match(method, path).isEmpty()) {
                 return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                     .header("Allow", "GET, HEAD")
                     .body("Method not allowed");
             }
-            return handlePageRoute(pageMatch.get(), servletRequest);
         }
 
         // Try legacy routes

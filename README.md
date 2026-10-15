@@ -31,7 +31,7 @@ JWeb is built on these core principles:
 - **Virtual DOM** — `VNode` tree rendering with XSS-safe text escaping by default
 - **Routing & Middleware** — Fluent route definitions with `:param` path parameters and a request pipeline
 - **REST API** — Annotation-based REST controllers (`@REST`, `@GET`, `@POST`, `@UPDATE`, `@PATCH`, `@DEL`) dispatched by Spring MVC
-- **Databases, both opt-in** — SQL over any JDBC `DataSource` (`Sql`: queries to records, named parameters, generated keys, transactions, a table helper; `Migrations`: versioned `V*__*.sql` files applied at startup) and MongoDB (`Mongo`, `Doc`, `MongoQuery`); each loads only when its driver is on the classpath
+- **Databases, both opt-in** — SQL over any JDBC `DataSource` (`Sql`: queries to records, named parameters, generated keys, transactions, a table helper; `Migrations`: versioned `V*__*.sql` files applied at startup; `Admin.mount(app, "/admin", todos)` for a back office over any table) and MongoDB (`Mongo`, `Doc`, `MongoQuery`); each loads only when its driver is on the classpath
 - **Security** — JWT auth, session auth (`Auth`/`Principal`), CSRF protection, rate limiting, BCrypt hashing, OAuth2 providers with PKCE and session-held state; the flows an app needs — signed single-use tokens for password reset and email verification, remember-me, log out everywhere, TOTP two-factor and recovery codes
 - **Validation** — Composable `Validator<T>` plus `FormValidator`/`FieldValidator` fluent APIs
 - **OpenAPI** — Generates OpenAPI 3.0.3 spec + Swagger UI, Redoc, and Scalar doc pages
@@ -45,7 +45,7 @@ JWeb is built on these core principles:
 - **Mail** — `Mail.to(...).subject(...).html(div(...)).send()` with the HTML DSL as the body; the framework speaks SMTP itself (STARTTLS, AUTH), an outbox for development and tests, `.later()` through the durable queue
 - **File storage** — `Storage.upload("avatars", file)` and `Storage.url(key)`: a directory in development, any S3-compatible bucket in production (the framework signs its own requests), served with ETags and ranges, signed URLs that expire
 - **Observability** — a request id on every response, every log line and every error page (`req.id()`); `jweb.Trace` spans around routes, SQL, jobs, PubSub, mail, Fetch and browser events, bridged into Micrometer Observation and OpenTelemetry when the app has them
-- **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding, accessibility auditor, `Middlewares.recommended()` secure baseline
+- **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding (`jweb new` with a database, `jweb generate resource` for a record, its migration, pages and routes), accessibility auditor, `Middlewares.recommended()` secure baseline
 
 ---
 

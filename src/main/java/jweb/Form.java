@@ -651,6 +651,11 @@ public final class Form<T extends Record> implements Element {
         public Field options(String... choices) { this.options = List.of(choices); return this; }
 
         Element render(String value, ValidationResult errors) {
+            if ("hidden".equals(type)) {
+                // a hidden field carries a value, never a label or an error
+                Attributes hidden = new Attributes().name(name).id(name).type("hidden");
+                return input(value != null && !value.isEmpty() ? hidden.value(value) : hidden);
+            }
             boolean invalid = errors.hasErrors(name);
             String errorId = name + "-error";
             boolean checkbox = "checkbox".equals(type);

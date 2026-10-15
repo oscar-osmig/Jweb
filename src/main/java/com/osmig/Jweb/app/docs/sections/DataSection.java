@@ -222,7 +222,30 @@ jweb:
       endpoint:                      # blank = Amazon; an R2 / MinIO address otherwise
       access-key: ${S3_ACCESS_KEY:}
       secret-key: ${S3_SECRET_KEY:}"""),
-            docTip("The storage route is a route like any other: app.guard(\"/files/private/*\", Auth.requireAuth()).")
+            docTip("The storage route is a route like any other: app.guard(\"/files/private/*\", Auth.requireAuth())."),
+
+            docSubtitle("Admin and Scaffolding"),
+            para("A back office for the tables an app keeps through Sql.table: a page per table that lists, searches " +
+                 "and pages the rows, a form to add or edit one (the record is the form), and a delete. The pages sit " +
+                 "in the page table, so the layout wraps them and the guard stands in front of every admin route."),
+            codeBlock("""
+import jweb.Admin;
+import jweb.Auth;
+import jweb.Sql;
+
+record Todo(Long id, @Form.Required String title, boolean done) {}
+Sql.Table<Todo> todos = Sql.table("todos", Todo.class);
+
+Admin.mount(app, "/admin", todos).title("Back office").guard(Auth.requireRole("admin"));
+
+List<Todo> page = todos.page(2, 50);           // the helpers behind it, for your own pages
+List<Todo> hits = todos.search("docs", 1, 50);"""),
+            codeBlock("bash", """
+jweb new shop                                              # a project with H2 under ./data and db/migration
+jweb generate resource Product name:string! price:double inStock:boolean
+# → models/Product.java (the row and the form), V1__create_products.sql,
+#   ProductListPage, ProductFormPage, ProductRoutes (/products, /products/new, /products/:id)"""),
+            docTip("The generated code is plain code to edit; the migration runs at the next start.")
         );
     }
 }

@@ -740,6 +740,57 @@ public final class Sql {
             return name;
         }
 
+        /** The record type the rows map to. */
+        public Class<T> type() {
+            return records.type;
+        }
+
+        /** The record's component names, in order — the columns as the app names them. */
+        public List<String> fields() {
+            List<String> names = new ArrayList<>(records.components.length);
+            for (RecordComponent component : records.components) names.add(component.getName());
+            return names;
+        }
+
+        /** Whether the record has an {@code id} component, so rows can be addressed. */
+        public boolean hasId() {
+            return idColumn != null;
+        }
+
+        /** The record's id, or null when it has none yet (or no id component). */
+        public Object idOf(T record) {
+            return idIndex < 0 ? null : records.values(record)[idIndex];
+        }
+
+        /** One page of rows by id: page 1 is the first {@code size}. */
+        public List<T> page(int page, int size) {
+            int offset = Math.max(0, page - 1) * Math.max(1, size);
+            return db.query(selectAll + " order by " + requireId() + " limit ? offset ?", Math.max(1, size), offset).list(records.type);
+        }
+
+        /**
+         * One page of the rows whose text columns contain {@code text} (case
+         * insensitive), by id; every row when the text is blank.
+         */
+        public List<T> search(String text, int page, int size) {
+            if (text == null || text.isBlank()) return page(page, size);
+            List<String> textColumns = new ArrayList<>();
+            for (int i = 0; i < records.components.length; i++) {
+                if (records.components[i].getType() == String.class) textColumns.add(records.columns[i]);
+            }
+            if (textColumns.isEmpty()) return page(page, size);
+            StringBuilder where = new StringBuilder();
+            Object[] params = new Object[textColumns.size() + 2];
+            for (int i = 0; i < textColumns.size(); i++) {
+                if (i > 0) where.append(" or ");
+                where.append("lower(").append(textColumns.get(i)).append(") like ?");
+                params[i] = "%" + text.trim().toLowerCase(java.util.Locale.ROOT) + "%";
+            }
+            params[textColumns.size()] = Math.max(1, size);
+            params[textColumns.size() + 1] = Math.max(0, page - 1) * Math.max(1, size);
+            return db.query(selectAll + " where " + where + " order by " + requireId() + " limit ? offset ?", params).list(records.type);
+        }
+
         /** Inserts the record; the returned copy carries the generated id when the record's was null. */
         public T insert(T record) {
             Object[] values = records.values(record);

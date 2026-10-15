@@ -117,10 +117,11 @@ public class JWebTest {
         // Page routes first, mirroring JWebController's dispatch order —
         // patterned paths, guards and all
         var pageMatch = app.getPageRegistry().match(path);
-        if (pageMatch.isPresent()) {
-            if (!"GET".equalsIgnoreCase(method) && !"HEAD".equalsIgnoreCase(method)) {
-                return new TestResult(405, null, "Method not allowed: " + method + " " + path);
-            }
+        boolean document = "GET".equalsIgnoreCase(method) || "HEAD".equalsIgnoreCase(method);
+        if (pageMatch.isPresent() && !document && app.getRouter().match(method, path).isEmpty()) {
+            return new TestResult(405, null, "Method not allowed: " + method + " " + path);
+        }
+        if (pageMatch.isPresent() && document) {
             try {
                 var route = pageMatch.get().route();
                 request.setPathParams(pageMatch.get().params());
@@ -134,6 +135,9 @@ public class JWebTest {
                     return content;
                 });
                 return TestResult.from(result);
+            } catch (jweb.JWebException e) {
+                // a guard's 401, a handler's 404: the status it would answer with
+                return new TestResult(e.getStatusCode(), null, e.getMessage());
             } catch (Exception e) {
                 return new TestResult(500, null, e.getMessage());
             }
@@ -153,6 +157,8 @@ public class JWebTest {
                 return guarded != null ? guarded : match.get().handle(request);
             });
             return TestResult.from(result);
+        } catch (jweb.JWebException e) {
+            return new TestResult(e.getStatusCode(), null, e.getMessage());
         } catch (Exception e) {
             return new TestResult(500, null, e.getMessage());
         }

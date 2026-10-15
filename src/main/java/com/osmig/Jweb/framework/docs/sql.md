@@ -129,3 +129,40 @@ int repaired = Migrations.repair(dataSource);   // accept edited checksums, when
 `Sql.SqlException` (unchecked) carries the message and the SQL that failed;
 `Migrations.MigrationException` names the file and the statement. Calling `Sql` with no
 database bound says what to add.
+
+## Paging and search
+
+```java
+import jweb.Sql;
+
+record Todo(Long id, String title, boolean done) {}
+Sql.Table<Todo> todos = Sql.table("todos", Todo.class);
+
+List<Todo> first = todos.page(1, 50);                      // by id
+List<Todo> hits = todos.search("docs", 1, 50);             // the text columns, case insensitive
+List<String> fields = todos.fields();                      // id, title, done
+Object id = todos.idOf(first.get(0));
+boolean addressable = todos.hasId();
+```
+
+## The admin
+
+```java
+import jweb.Admin;
+import jweb.Auth;
+import jweb.Sql;
+
+record Todo(Long id, @Form.Required String title, boolean done) {}
+Sql.Table<Todo> todos = Sql.table("todos", Todo.class);
+
+Admin.mount(app, "/admin", todos).title("Back office").guard(Auth.requireRole("admin"));
+```
+
+A page per table under the path — list, search, pages of fifty, add, edit, delete — with
+the record as the form. Read-only for a record without an `id` component.
+
+## Scaffolding
+
+`jweb generate resource Todo title:string! done:boolean` writes the record, the migration
+(`V<next>__create_todos.sql`), a list page, a form page and their routes. `jweb new` gives a
+project H2 under `./data`, `spring.datasource.url` and the `db/migration` folder.

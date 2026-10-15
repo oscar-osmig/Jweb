@@ -11,6 +11,22 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **An admin, and scaffolding on SQL.** `Admin.mount(app, "/admin", todos, users)
+  .guard(Auth.requireRole("admin"))`: a page per `Sql.table` that lists, searches and pages
+  its rows, a form to add or edit one (the record is the form, its `Form.*` annotations the
+  rules, the id hidden), a delete — templates in the page table, so the layout wraps them and
+  the CSRF token rides along; read-only for a record without an `id`. `Sql.Table` gains
+  `page(n, size)`, `search(text, n, size)`, `fields()`, `type()`, `hasId()` and `idOf(record)`.
+  `jweb new` now gives a project its database — `spring-boot-starter-jdbc` and H2 as a file
+  under `./data`, `spring.datasource.url`, `db/migration/` — and `jweb generate resource
+  Todo title:string! done:boolean` writes the record (the row and the form), the migration
+  (`V<next>__create_todos.sql`, next after the highest version present), a list page, a form
+  page and a `JWebRoutes` bean under `/todos`; `crud` is its alias and no longer generates
+  JPA. The tutorial keeps its todos in the table. Two framework fixes on the way: a POST to a
+  path that also has a page route now reaches the handler registered for it (it was a 405
+  whatever was registered), and `JWebTest.test` answers a guard's or handler's
+  `JWebException` with its status instead of a 500. A `Form` field set to `type("hidden")`
+  renders just the input.
 - **A shared cache, locks, and rate limits across the fleet.** `Cache.shared(name, Type.class)`
   is a typed cache every instance sees — values as JSON, `get`/`getOrSet`/`set` with a time to
   live, `delete`, `increment`, `clear` — on `jweb.RedisCache` when `jweb.cache.redis.url` (or

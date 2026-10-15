@@ -201,13 +201,21 @@ Transitions), additionally include `Navigation.script()` — see the architectur
 `JWebCli` provides project and file generation:
 
 ```bash
-# New project
+# New project: pom, Application, Routes, HomePage, MainLayout — and a database
+# (spring-boot-starter-jdbc, H2 as a file under ./data, db/migration/ for the SQL files)
 java -cp Jweb.jar com.osmig.Jweb.framework.cli.JWebCli new myapp --package=com.example
 
-# Generators: page (p), component (c), layout (l), form (f), crud, api
+# Generators: page (p), component (c), layout (l), form (f), resource (r), api
 java -cp ... JWebCli generate page Pricing
-java -cp ... JWebCli generate crud Product name:string price:double
+java -cp ... JWebCli generate resource Product name:string! price:double inStock:boolean
 ```
+
+A resource is the record (the row and the form), the migration that creates its table
+(`V<next>__create_products.sql`), a list page, a form page and the `JWebRoutes` bean that
+mounts them under `/products` — on `jweb.Sql`, nothing to register. Field types: `string`,
+`text`, `int`, `long`, `double`, `boolean`, `date`, `datetime`, `email`, `password`; a
+trailing `!` makes the field required. `Admin.mount(app, "/admin", Sql.table("products",
+Product.class))` is the back office for it.
 
 ### AI-assisted development
 
