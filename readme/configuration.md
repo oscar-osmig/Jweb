@@ -142,6 +142,9 @@ jweb:
 | `jweb.mail.smtp.host` / `port` | *(blank = outbox)* / `587` | SMTP server; blank keeps the outbox, which logs messages instead of sending |
 | `jweb.mail.smtp.username` / `password` | — | AUTH PLAIN or LOGIN when a username is set |
 | `jweb.mail.smtp.tls` | `starttls` | `starttls`, `implicit` (465), or `none` |
+| `jweb.observability.request-id` | `true` | The filter that gives every request an id (`req.id()`, `X-Request-ID` both ways, the MDC) |
+| `jweb.observability.log-correlation` | `true` | `[requestId traceId] ` on every log line of a request; set `logging.pattern.correlation` to override |
+| `jweb.observability.tracing` | `true` | Bind `jweb.Trace` to the app's `ObservationRegistry` when it has one (the actuator) |
 | `jweb.storage.dir` | `storage` | The local store's directory (`Storage.Local`); ignored once a bucket is set |
 | `jweb.storage.path` | `/files` | Where the app serves stored files; `Storage.url(key)` is `path/key` |
 | `jweb.storage.access` | `public` | `signed`: every `Storage.url` carries an expiry and a signature under `jweb.auth.secret`, and the route serves nothing without one |
@@ -311,6 +314,7 @@ app/
 | Background Jobs | `async/` | `Jobs.run/submit/track`, `Scheduler.cron(...)`, `Suspense` — see [State & Realtime](./state-and-realtime.md) |
 | Health Checks | `health/` | `Health.register(name, check)`, `Health.setupEndpoints(app)` → `/health[/live|/ready]` |
 | Metrics | `metrics/` | `Metrics.counter/gauge/timer`, `Metrics.middleware()`, `/metrics` (JSON or Prometheus) |
+| Request ids & traces | `metrics/`, `server/` | `req.id()`, `X-Request-ID`, the id on every log line; `Trace.span/in`, spans around routes, SQL, jobs, PubSub, mail, Fetch, events — see [Architecture](./architecture.md#health--metrics) |
 | Testing | `testing/` | `JWebTest`, `MockRequest`, `MockSession`, `TestClient` |
 | Accessibility | `accessibility/` | `A11y.validate(element)` — WCAG 2.1 **auditor** (checks alt text, labels, heading order; it is not an ARIA helper library) |
 | SSE | `sse/` | `SseBroadcaster`, `SseEmitter`, `SseEvent` |

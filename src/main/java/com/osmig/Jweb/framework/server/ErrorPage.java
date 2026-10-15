@@ -66,6 +66,7 @@ public final class ErrorPage {
                         summary(attrs().class_("error-summary"), text("Stack Trace")),
                         pre(attrs().class_("error-stack"), code(stackTrace))
                     ),
+                    requestIdLine(),
                     // Actions. No JS at all: error responses ship without
                     // the client runtime, so a handler could never delegate
                     // — an empty href resolves to the current URL, which IS
@@ -96,6 +97,7 @@ public final class ErrorPage {
                     p(attrs().class_("error-message"),
                         "Something went wrong. Please try again later."
                     ),
+                    requestIdLine(),
                     div(attrs().class_("error-actions"),
                         a(attrs().href("/").class_("error-btn"), text("Go Home")),
                         // JS-free retry — see renderDebug
@@ -104,6 +106,17 @@ public final class ErrorPage {
                 )
             )
         );
+    }
+
+    /**
+     * The request's id, for the visitor to quote: it is in every log line
+     * the request wrote. Empty outside a request.
+     */
+    private static Element requestIdLine() {
+        jweb.Request current = CurrentRequest.get();
+        String id = current != null ? current.id() : org.slf4j.MDC.get("requestId");
+        if (id == null || id.isEmpty()) return fragment();
+        return p(attrs().class_("error-request-id"), text("Request ID: "), code(id));
     }
 
     public static Element render404(String path) {
@@ -193,6 +206,16 @@ public final class ErrorPage {
                 border-radius: 4px;
                 font-family: 'SF Mono', Monaco, 'Courier New', monospace;
                 color: #feca57;
+            }
+            .error-request-id {
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.45);
+                margin-bottom: 20px;
+            }
+            .error-request-id code {
+                font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+                color: rgba(255, 255, 255, 0.7);
+                user-select: all;
             }
             .error-details {
                 text-align: left;

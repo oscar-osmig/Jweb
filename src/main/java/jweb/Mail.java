@@ -291,12 +291,16 @@ public final class Mail {
     public static void send(Message message) {
         message.validate();
         long started = System.nanoTime();
-        try {
-            sender.send(message);
-            Metrics.counter("jweb.mail.sent").increment();
-        } catch (MailException e) {
-            Metrics.counter("jweb.mail.failed").increment();
-            throw e;
+        try (Trace.Span span = Trace.span("jweb.mail.send")) {
+            span.tag("mail.recipients", message.to().size() + message.cc().size() + message.bcc().size());
+            try {
+                sender.send(message);
+                Metrics.counter("jweb.mail.sent").increment();
+            } catch (MailException e) {
+                span.error(e);
+                Metrics.counter("jweb.mail.failed").increment();
+                throw e;
+            }
         } finally {
             Metrics.timer("jweb.mail.send").record((System.nanoTime() - started) / 1_000_000);
         }

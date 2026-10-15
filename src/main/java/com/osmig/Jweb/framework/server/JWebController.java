@@ -134,7 +134,9 @@ public class JWebController {
             // and a guard's answer still gets them
             Object result = middlewareStack.execute(request, () -> {
                 Object guarded = guards.check(request);
-                return guarded != null ? guarded : match.get().handle(request);
+                if (guarded != null) return guarded;
+                return jweb.Trace.in("jweb.route", routeTags(method, match.get().route().getPath()),
+                    () -> match.get().handle(request));
             });
 
             // SSE emitters stream through Spring MVC directly
@@ -164,6 +166,14 @@ public class JWebController {
     }
 
     /** Clears per-request thread-locals (DI context, portals, locale, CSP nonce, request) after a render. */
+    /** The low-cardinality tags of a route span: the method and the pattern, never the concrete path. */
+    private static java.util.Map<String, String> routeTags(String method, String pattern) {
+        java.util.Map<String, String> tags = new java.util.LinkedHashMap<>(2);
+        tags.put("http.method", method == null ? "" : method.toUpperCase());
+        tags.put("route", pattern == null ? "" : pattern);
+        return tags;
+    }
+
     private void clearThreadLocals() {
         jweb.Context.clear();
         com.osmig.Jweb.framework.portal.Portal.clear();
@@ -599,7 +609,9 @@ public class JWebController {
             Template[] pageHolder = new Template[1];
             Object result = middlewareStack.execute(request, () -> {
                 Object guarded = guards.check(request);
-                return guarded != null ? guarded : renderPage(route, request, pageHolder);
+                if (guarded != null) return guarded;
+                return jweb.Trace.in("jweb.route", routeTags("GET", route.path()),
+                    () -> renderPage(route, request, pageHolder));
             });
 
             // Middleware may short-circuit (auth redirect, rate limit, ...)

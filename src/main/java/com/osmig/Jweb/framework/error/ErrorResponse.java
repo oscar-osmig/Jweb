@@ -37,6 +37,7 @@ public class ErrorResponse {
     private final String code;
     private final String timestamp;
     private final String path;
+    private final String requestId;
     private final Map<String, List<String>> errors;
 
     private ErrorResponse(Builder builder) {
@@ -45,7 +46,19 @@ public class ErrorResponse {
         this.code = builder.code;
         this.timestamp = builder.timestamp != null ? builder.timestamp : Instant.now().toString();
         this.path = builder.path;
+        this.requestId = builder.requestId != null ? builder.requestId : currentRequestId();
         this.errors = builder.errors;
+    }
+
+    /** The id of the request in flight, when there is one — what to quote in a bug report. */
+    static String currentRequestId() {
+        jweb.Request current = com.osmig.Jweb.framework.server.CurrentRequest.get();
+        if (current != null) return current.id();
+        return org.slf4j.MDC.get("requestId");
+    }
+
+    public String getRequestId() {
+        return requestId;
     }
 
     public boolean isError() {
@@ -88,7 +101,13 @@ public class ErrorResponse {
         private String code;
         private String timestamp;
         private String path;
+        private String requestId;
         private Map<String, List<String>> errors;
+
+        public Builder requestId(String requestId) {
+            this.requestId = requestId;
+            return this;
+        }
 
         public Builder status(int status) {
             this.status = status;

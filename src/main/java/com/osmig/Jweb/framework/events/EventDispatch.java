@@ -73,10 +73,19 @@ public final class EventDispatch {
         Object lock = context != null ? context : new Object();
         synchronized (lock) {
             jweb.three.ThreePatchQueue.open();
-            try {
-                boolean executed = contextId != null
-                        ? EventRegistry.execute(contextId, handlerId, event)
-                        : EventRegistry.execute(handlerId, event);
+            String mdcBefore = org.slf4j.MDC.get(MDC_CONTEXT);
+            if (contextId != null) org.slf4j.MDC.put(MDC_CONTEXT, contextId);
+            try (jweb.Trace.Span span = jweb.Trace.span("jweb.event", "event", event.type() == null ? "" : event.type())) {
+                span.tag("handler", handlerId).tag("context", contextId);
+                boolean executed;
+                try {
+                    executed = contextId != null
+                            ? EventRegistry.execute(contextId, handlerId, event)
+                            : EventRegistry.execute(handlerId, event);
+                } catch (RuntimeException | Error e) {
+                    span.error(e);
+                    throw e;
+                }
                 if (!executed) {
                     Log.warn("Dropping event for handler {} — not registered in context {}", handlerId, contextId);
                     out.add(new ErrorResponse("Handler not found: " + handlerId));
@@ -94,9 +103,13 @@ public final class EventDispatch {
             } finally {
                 StateManager.clearContext();
                 jweb.three.ThreePatchQueue.close();
+                if (mdcBefore == null) org.slf4j.MDC.remove(MDC_CONTEXT); else org.slf4j.MDC.put(MDC_CONTEXT, mdcBefore);
             }
         }
     }
+
+    /** The MDC key the page's context id is kept under while its event or push runs. */
+    public static final String MDC_CONTEXT = "contextId";
 
     /**
      * Runs a change in a page's context from outside any browser event — a
@@ -111,6 +124,8 @@ public final class EventDispatch {
             StateManager.StateContext previous = StateManager.getContext();
             StateManager.setContext(context);
             jweb.three.ThreePatchQueue.open();
+            String mdcBefore = org.slf4j.MDC.get(MDC_CONTEXT);
+            org.slf4j.MDC.put(MDC_CONTEXT, context.getSessionId());
             try {
                 change.run();
                 threePatches(out);
@@ -123,6 +138,7 @@ public final class EventDispatch {
                 } else {
                     StateManager.clearContext();
                 }
+                if (mdcBefore == null) org.slf4j.MDC.remove(MDC_CONTEXT); else org.slf4j.MDC.put(MDC_CONTEXT, mdcBefore);
             }
         }
     }

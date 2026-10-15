@@ -44,6 +44,7 @@ JWeb is built on these core principles:
 - **Background work** — Durable `Jobs.enqueue` (stored, retried with backoff, dead-lettered; shared by every instance on the SQL store), virtual-thread `Jobs.run`, cron `Scheduler`, `Suspense` for async rendering, TTL `Cache`
 - **Mail** — `Mail.to(...).subject(...).html(div(...)).send()` with the HTML DSL as the body; the framework speaks SMTP itself (STARTTLS, AUTH), an outbox for development and tests, `.later()` through the durable queue
 - **File storage** — `Storage.upload("avatars", file)` and `Storage.url(key)`: a directory in development, any S3-compatible bucket in production (the framework signs its own requests), served with ETags and ranges, signed URLs that expire
+- **Observability** — a request id on every response, every log line and every error page (`req.id()`); `jweb.Trace` spans around routes, SQL, jobs, PubSub, mail, Fetch and browser events, bridged into Micrometer Observation and OpenTelemetry when the app has them
 - **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding, accessibility auditor, `Middlewares.recommended()` secure baseline
 
 ---
@@ -296,12 +297,12 @@ keep working unchanged. New code should use the `jweb.*` forms; in most files
 | [Design Tooling](./readme/design-tooling.md) | impeccable setup, and how to run its detector against JWeb's rendered HTML |
 
 Additional internal reference docs ship with the framework source at
-`src/main/java/com/osmig/Jweb/framework/docs/` (18 topic files) and are copied into the jar
+`src/main/java/com/osmig/Jweb/framework/docs/` (19 topic files) and are copied into the jar
 under `framework-src/`.
 
 ### For AI assistants: `/docs/tell`
 
-`GET /docs/tell` returns this entire documentation set — the guides above plus all 18
+`GET /docs/tell` returns this entire documentation set — the guides above plus all 19
 reference topics — as one markdown document, version-stamped and ordered so the DSL rules
 and the 2.x breaking changes come first. Point an assistant at it before asking it to write
 JWeb code.

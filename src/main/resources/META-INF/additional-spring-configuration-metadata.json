@@ -323,6 +323,24 @@
       "name": "jweb.storage.s3.public-url",
       "type": "java.lang.String",
       "description": "A public bucket or a CDN in front of it: Storage.url(key) becomes <public-url>/<key> instead of a presigned URL"
+    },
+    {
+      "name": "jweb.observability.request-id",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "The filter that gives every request an id: req.id(), X-Request-ID in and out, the MDC requestId"
+    },
+    {
+      "name": "jweb.observability.log-correlation",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Set logging.pattern.correlation so every log line of a request shows [requestId traceId]; set the pattern yourself to override"
+    },
+    {
+      "name": "jweb.observability.tracing",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Bind jweb.Trace to the app's ObservationRegistry when it has one (the actuator): framework spans become Micrometer observations and, with micrometer-tracing, spans in the trace"
     }
   ]
 }

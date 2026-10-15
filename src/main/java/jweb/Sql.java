@@ -346,19 +346,34 @@ public final class Sql {
         }
 
         <T> T withConnection(String sql, ConnectionCall<T> call) {
-            Connection open = transactionConnection.get();
-            if (open != null) {
+            try (Trace.Span span = Trace.span("jweb.sql", "db.operation", operationOf(sql))) {
+                span.tag("db.statement", sql.length() > 500 ? sql.substring(0, 500) + "…" : sql);
                 try {
-                    return call.apply(open);
+                    Connection open = transactionConnection.get();
+                    if (open != null) {
+                        return call.apply(open);
+                    }
+                    try (Connection connection = dataSource.getConnection()) {
+                        return call.apply(connection);
+                    }
                 } catch (SQLException e) {
-                    throw new SqlException(e.getMessage(), sql, e);
+                    SqlException failed = new SqlException(e.getMessage(), sql, e);
+                    span.error(failed);
+                    throw failed;
+                } catch (RuntimeException e) {
+                    span.error(e);
+                    throw e;
                 }
             }
-            try (Connection connection = dataSource.getConnection()) {
-                return call.apply(connection);
-            } catch (SQLException e) {
-                throw new SqlException(e.getMessage(), sql, e);
-            }
+        }
+
+        /** The statement's first word, lower case: select, insert, update, create… */
+        static String operationOf(String sql) {
+            if (sql == null) return "";
+            String s = sql.stripLeading();
+            int end = 0;
+            while (end < s.length() && Character.isLetter(s.charAt(end))) end++;
+            return s.substring(0, Math.min(end, 16)).toLowerCase(java.util.Locale.ROOT);
         }
 
         @FunctionalInterface

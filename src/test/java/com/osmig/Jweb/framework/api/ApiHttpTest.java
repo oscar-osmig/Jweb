@@ -120,6 +120,29 @@ class ApiHttpTest {
         assertTrue(body.contains("No clicks yet."), "live region initial render");
     }
 
+    /** Every response carries a request id — a REST controller's, a page's, an error's — and a caller's id is kept. */
+    @Test
+    void everyResponseCarriesARequestId() throws Exception {
+        HttpResponse<String> rest = get("/api/v1/example/42");
+        String id = rest.headers().firstValue("X-Request-ID").orElseThrow();
+        assertTrue(id.matches("[0-9a-f]{20}"), id);
+
+        HttpResponse<String> page = get("/");
+        assertTrue(page.headers().firstValue("X-Request-ID").orElseThrow().matches("[0-9a-f]{20}"));
+        assertNotEquals(id, page.headers().firstValue("X-Request-ID").orElseThrow());
+
+        HttpResponse<String> kept = get("/api/v1/example/42", "X-Request-ID", "edge-0042");
+        assertEquals("edge-0042", kept.headers().firstValue("X-Request-ID").orElse(""));
+
+        HttpResponse<String> error = get("/api/v1/example/search", "X-Request-ID", "edge-0043", "Accept", "application/json");
+        assertEquals(400, error.statusCode(), error.body());
+        assertEquals("edge-0043", error.headers().firstValue("X-Request-ID").orElse(""));
+
+        HttpResponse<String> missing = get("/no/such/page", "X-Request-ID", "edge-0044");
+        assertEquals(404, missing.statusCode());
+        assertEquals("edge-0044", missing.headers().firstValue("X-Request-ID").orElse(""));
+    }
+
     /** The storage route mounted by the framework, through Spring MVC: type, ETag, 304, byte ranges. */
     @Test
     void storedFilesAreServedAtTheStoragePath() throws Exception {

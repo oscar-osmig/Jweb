@@ -245,9 +245,24 @@ public class Fetch {
      * @throws FetchException if the request fails
      */
     public FetchResult send() {
+        try (jweb.Trace.Span span = jweb.Trace.span("jweb.fetch", "http.method", method)) {
+            URI uri = URI.create(url);
+            span.tag("http.url", uri.getRawQuery() == null ? url : url.substring(0, url.indexOf('?')));
+            try {
+                FetchResult result = exchange(uri);
+                span.tag("http.status", result.status());
+                return result;
+            } catch (RuntimeException e) {
+                span.error(e);
+                throw e;
+            }
+        }
+    }
+
+    private FetchResult exchange(URI uri) {
         try {
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(uri)
                 .timeout(timeout);
 
             // Add headers

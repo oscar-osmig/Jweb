@@ -21,6 +21,54 @@ public class Request {
         this.servletRequest = servletRequest;
     }
 
+    // === Identity ===
+
+    /** The request attribute the id lives in. */
+    public static final String ID_ATTRIBUTE = "requestId";
+
+    /** The header a caller sends its own id in, and the response carries back. */
+    public static final String ID_HEADER = "X-Request-ID";
+
+    /**
+     * This request's id: what the caller sent in {@code X-Request-ID}, or one
+     * made here, the same for the whole request. It is in every log line of
+     * the request, on the response, on the error page — the one thing to
+     * quote when something went wrong.
+     */
+    public String id() {
+        Object existing = servletRequest.getAttribute(ID_ATTRIBUTE);
+        if (existing instanceof String s && !s.isEmpty()) return s;
+        String id = idFromHeader(servletRequest.getHeader(ID_HEADER));
+        if (id == null) id = newId();
+        servletRequest.setAttribute(ID_ATTRIBUTE, id);
+        return id;
+    }
+
+    /** A caller's id when it is sane (printable, at most 128 characters); else null. */
+    public static String idFromHeader(String header) {
+        if (header == null) return null;
+        String id = header.trim();
+        if (id.isEmpty() || id.length() > 128) return null;
+        for (int i = 0; i < id.length(); i++) {
+            char c = id.charAt(i);
+            if (c <= 0x20 || c >= 0x7f) return null;
+        }
+        return id;
+    }
+
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+
+    /** A fresh id: 20 hex characters. */
+    public static String newId() {
+        byte[] bytes = new byte[10];
+        RANDOM.nextBytes(bytes);
+        StringBuilder sb = new StringBuilder(20);
+        for (byte b : bytes) {
+            sb.append(Character.forDigit((b >> 4) & 0xf, 16)).append(Character.forDigit(b & 0xf, 16));
+        }
+        return sb.toString();
+    }
+
     // === Response Headers ===
 
     /**

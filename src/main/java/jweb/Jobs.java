@@ -348,14 +348,20 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
         Handler handler = HANDLERS.get(job.name());
         int attempt = job.attempts() + 1;
         long started = System.nanoTime();
-        try {
-            if (handler == null) {
-                throw new IllegalStateException("No handler registered for job '" + job.name() + "'");
+        try (Trace.Span span = Trace.span("jweb.job", "job", job.name())) {
+            span.tag("job.id", job.id()).tag("job.attempt", attempt);
+            try {
+                if (handler == null) {
+                    throw new IllegalStateException("No handler registered for job '" + job.name() + "'");
+                }
+                Object payload = handler.type() == null || job.payload() == null ? null : Json.parse(job.payload(), handler.type());
+                handler.run().accept(payload);
+                store.update(job.with(Status.DONE, attempt, job.runAt(), Instant.now(), job.lockedBy(), null));
+                Metrics.counter("jweb.jobs.done").increment();
+            } catch (Throwable e) {
+                span.error(e);
+                throw e;
             }
-            Object payload = handler.type() == null || job.payload() == null ? null : Json.parse(job.payload(), handler.type());
-            handler.run().accept(payload);
-            store.update(job.with(Status.DONE, attempt, job.runAt(), Instant.now(), job.lockedBy(), null));
-            Metrics.counter("jweb.jobs.done").increment();
         } catch (Throwable e) {
             String error = e.getClass().getSimpleName() + ": " + e.getMessage();
             if (attempt < job.maxAttempts()) {

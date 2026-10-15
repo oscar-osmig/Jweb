@@ -84,12 +84,17 @@ app.use(Middlewares.timing());
 
 ### Request ID
 
-Adds unique request ID:
+Every request already has an id — the framework's filter gives it one before any route runs,
+echoes it in `X-Request-ID` and keeps it in the logging context; `req.id()` reads it. This
+middleware repeats that for a stack run without the filter (a test, an embedded router):
 
 ```java
 app.use(Middlewares.requestId());
-// Adds: X-Request-ID: uuid
+// Adds: X-Request-ID: <the request's id>
 ```
+
+`Middlewares.logging()` writes one line per request — `GET /orders/9 200 12ms` — with the id
+in front like every other line of the request.
 
 ### Cache Control
 

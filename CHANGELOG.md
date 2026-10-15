@@ -11,6 +11,21 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **Request ids, traces.** Every request has an id before anything sees it (a servlet filter:
+  the caller's `X-Request-ID` when sane, a fresh one otherwise), `req.id()` reads it, the
+  response carries it back, the error page and the JSON error quote it, and every log line
+  written during the request shows it — Spring Boot's `logging.pattern.correlation` is set
+  by the framework (an `EnvironmentPostProcessor`, before logging starts) to
+  `[requestId traceId] `, which prints nothing outside a request; a browser event or PubSub
+  push keeps the page's `contextId` in the MDC instead. `Middlewares.logging()` is now one
+  line per request with the status. `jweb.Trace`: spans with tags and errors, free without
+  a sink; the framework opens `jweb.route` (the pattern), `jweb.sql` (`db.operation`,
+  `db.statement`), `jweb.job`, `jweb.pubsub.deliver`, `jweb.mail.send`, `jweb.fetch` and
+  `jweb.event`; `Trace.span(...)`/`Trace.in(...)` for the app's own. `ObservationSink`
+  turns them into Micrometer observations when the app has an `ObservationRegistry` (the
+  actuator) — timers per name, and spans in a real trace with `micrometer-tracing` and an
+  exporter. Any `Trace.Sink` bean replaces it; `jweb.observability.*` turns each piece off.
+  New reference topic `ref-observability`.
 - **File storage.** `jweb.Storage`: `Storage.upload("avatars", file)` stores an upload under a
   generated key (`avatars/<32 hex>.png`), `put`/`get`/`bytes`/`open`/`list`/`delete` work on
   any key, `Storage.url(key)` is where a browser fetches it and `Storage.url(key, ttl)` a link

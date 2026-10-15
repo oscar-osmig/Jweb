@@ -37,6 +37,9 @@ class NoLongImportsTest {
         "src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports", List.of(
             new Allowed("com.osmig.Jweb.framework.JWebAutoConfiguration",
                 "Spring's auto-configuration registry needs the real class name, not an alias")),
+        "src/main/resources/META-INF/spring.factories", List.of(
+            new Allowed("com.osmig.Jweb.framework.config.JWebEnvironmentPostProcessor",
+                "Spring Boot's EnvironmentPostProcessor registry needs the real class name, not an alias")),
         "readme/configuration.md", List.of(
             new Allowed("com.osmig.Jweb.framework.cli.JWebCli",
                 "a JVM main-class invocation on a shell command line, not a Java import")),

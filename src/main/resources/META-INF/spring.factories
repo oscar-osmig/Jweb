@@ -1,0 +1,4 @@
+# Runs before logging starts: the console pattern that prints the request id
+# on every line of a request (see JWebEnvironmentPostProcessor).
+org.springframework.boot.env.EnvironmentPostProcessor=\
+com.osmig.Jweb.framework.config.JWebEnvironmentPostProcessor

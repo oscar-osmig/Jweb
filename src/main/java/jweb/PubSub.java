@@ -206,18 +206,24 @@ public final class PubSub {
     private static void deliver(String topic, String json) {
         Set<Sub> subs = BY_TOPIC.get(topic);
         if (subs == null || subs.isEmpty()) return;
-        for (Sub sub : subs) {
-            if (!sub.active) continue;
-            try {
-                if (sub.contextId == null) {
-                    sub.accept(json);
-                } else {
-                    deliverToPage(sub, json);
+        try (Trace.Span span = Trace.span("jweb.pubsub.deliver", "topic", topic)) {
+            int delivered = 0;
+            for (Sub sub : subs) {
+                if (!sub.active) continue;
+                try {
+                    if (sub.contextId == null) {
+                        sub.accept(json);
+                    } else {
+                        deliverToPage(sub, json);
+                    }
+                    DELIVERED.incrementAndGet();
+                    delivered++;
+                } catch (RuntimeException e) {
+                    span.error(e);
+                    Log.warn("PubSub handler for '{}' failed: {}", topic, e.getMessage());
                 }
-                DELIVERED.incrementAndGet();
-            } catch (RuntimeException e) {
-                Log.warn("PubSub handler for '{}' failed: {}", topic, e.getMessage());
             }
+            span.tag("subscribers", delivered);
         }
     }
 

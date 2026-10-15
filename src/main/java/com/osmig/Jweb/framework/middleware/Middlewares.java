@@ -68,19 +68,26 @@ public class Middlewares {
             String method = req.method();
             String path = req.path();
 
-            Log.info("--> {} {}", method, path);
+            Log.debug("--> {} {}", method, path);
 
             try {
                 Object result = chain.next();
                 long duration = System.currentTimeMillis() - start;
-                Log.info("<-- {} {} ({}ms)", method, path, duration);
+                Log.info("{} {} {} {}ms", method, path, statusOf(result), duration);
                 return result;
             } catch (Exception e) {
                 long duration = System.currentTimeMillis() - start;
-                Log.error("<-- {} {} ERROR ({}ms): {}", method, path, duration, e.getMessage());
+                int status = e instanceof jweb.JWebException je ? je.getStatusCode() : 500;
+                Log.error("{} {} {} {}ms: {}", method, path, status, duration, e.getMessage());
                 throw e;
             }
         };
+    }
+
+    /** The status a handler result will answer with, as far as the stack can tell. */
+    static int statusOf(Object result) {
+        if (result instanceof org.springframework.http.ResponseEntity<?> entity) return entity.getStatusCode().value();
+        return 200;
     }
 
     /**
@@ -100,11 +107,12 @@ public class Middlewares {
             try {
                 Object result = chain.next();
                 long duration = System.currentTimeMillis() - start;
-                logger.accept("<-- " + method + " " + path + " (" + duration + "ms)");
+                logger.accept("<-- " + method + " " + path + " " + statusOf(result) + " (" + duration + "ms)");
                 return result;
             } catch (Exception e) {
                 long duration = System.currentTimeMillis() - start;
-                logger.accept("<-- " + method + " " + path + " ERROR (" + duration + "ms)");
+                int status = e instanceof jweb.JWebException je ? je.getStatusCode() : 500;
+                logger.accept("<-- " + method + " " + path + " " + status + " ERROR (" + duration + "ms)");
                 throw e;
             }
         };
@@ -329,16 +337,18 @@ public class Middlewares {
      */
     public static Middleware requestId() {
         return (req, chain) -> {
-            String requestId = req.header("X-Request-ID");
-            if (requestId == null) {
-                requestId = java.util.UUID.randomUUID().toString();
+            // The framework's filter gave the request its id before any
+            // route saw it; this keeps the header and the logging context
+            // right for an app that runs the stack without the filter
+            String requestId = req.id();
+            req.responseHeader(jweb.Request.ID_HEADER, requestId);
+            String before = org.slf4j.MDC.get("requestId");
+            org.slf4j.MDC.put("requestId", requestId);
+            try {
+                return chain.next();
+            } finally {
+                if (before == null) org.slf4j.MDC.remove("requestId"); else org.slf4j.MDC.put("requestId", before);
             }
-
-            // Store in request attribute for access in handlers
-            req.raw().setAttribute("requestId", requestId);
-            req.responseHeader("X-Request-ID", requestId);
-
-            return chain.next();
         };
     }
 

@@ -81,6 +81,7 @@ public final class DocsTell {
         new Topic("ref-jobs", "Reference: background jobs, durable jobs", "framework-src/docs/jobs.md"),
         new Topic("ref-mail", "Reference: mail", "framework-src/docs/mail.md"),
         new Topic("ref-i18n", "Reference: i18n", "framework-src/docs/i18n.md"),
+        new Topic("ref-observability", "Reference: observability — request ids, logs, metrics, traces", "framework-src/docs/observability.md"),
         new Topic("ref-testing", "Reference: testing", "framework-src/docs/testing.md")
     );
 

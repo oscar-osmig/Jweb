@@ -474,6 +474,38 @@ Metrics.setupEndpoint(app);      // GET /metrics — JSON, or Prometheus with Ac
 
 Metrics middleware sees page-route and 404 traffic too (everything runs through the stack).
 
+**Request ids.** Every request has one before anything sees it — the caller's `X-Request-ID`
+when it sends one, a fresh one otherwise. `req.id()` reads it; the response carries it back;
+every log line written during the request shows it (`[7f3a9c21b4d8e05f6a12]`, Spring Boot's
+`logging.pattern.correlation` set by the framework — the trace id joins it when tracing is on);
+the error page and the JSON error quote it, so a visitor's "it broke" and the log line are the
+same id. `Middlewares.logging()` is the access log: `GET /orders/9 200 12ms`. For JSON logs,
+Spring Boot's `logging.structured.format.console: ecs` — the id is a field.
+
+**Traces.** `jweb.Trace` opens a span around every route and page render (`jweb.route`,
+tagged with the pattern), every SQL statement (`jweb.sql`), every job (`jweb.job`), every
+PubSub delivery, every `Mail.send`, every `Fetch` and every browser event (`jweb.event`), and
+an app opens its own:
+
+```java
+import jweb.Trace;
+
+record Order(long id) {}
+Order order = new Order(9);
+
+try (Trace.Span span = Trace.span("order.price", "kind", "retail")) {   // start tags: low cardinality
+    span.tag("order.id", order.id());                                     // later tags: high cardinality
+}
+Order priced = Trace.in("order.price", () -> order);
+```
+
+Without a sink a span costs nothing. With the actuator the app has an `ObservationRegistry`
+and every span becomes a Micrometer `Observation`: a timer per name, and with
+`micrometer-tracing` plus an exporter (`micrometer-tracing-bridge-otel` and
+`opentelemetry-exporter-otlp`) a span in a real trace, under the HTTP request's, with the
+trace id in every log line. The reference topic `ref-observability` has the dependencies and
+the full tag table.
+
 **Micrometer.** Everything `Metrics` records is mirrored into a Micrometer `MeterRegistry`
 when the application has one, so it reaches Prometheus, Datadog, OTLP or whatever the
 registry exports to — the same names, every counter increment and timer sample, every gauge.

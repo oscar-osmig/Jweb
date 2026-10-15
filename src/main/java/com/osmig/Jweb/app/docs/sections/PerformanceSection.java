@@ -61,7 +61,29 @@ public final class PerformanceSection {
             codeBlock("""
                     app.use(Middlewares.recommended());"""),
             docTip("Headers are applied to Element, String and ResponseEntity responses "
-                   + "alike, including page routes and 404s.")
+                   + "alike, including page routes and 404s."),
+
+            docSubtitle("Request IDs, Logs and Traces"),
+            para("Every request has an id before anything sees it: the caller's X-Request-ID or a fresh one. "
+                 + "The response carries it back, every log line of the request shows it, the error page quotes it. "
+                 + "jweb.Trace opens a span around every route, SQL statement, job, PubSub delivery, mail, Fetch and "
+                 + "browser event; add the actuator and they become Micrometer observations, add micrometer-tracing "
+                 + "and they are spans in the request's trace."),
+            codeBlock("""
+import jweb.Trace;
+import jweb.Middlewares;
+
+record Order(long id) {}
+Order order = new Order(9);
+
+String id = req.id();                         // the same id on the response, in the logs, on the error page
+app.use(Middlewares.logging());               // GET /orders/9 200 12ms
+
+try (Trace.Span span = Trace.span("order.price", "kind", "retail")) {   // tags at the start: low cardinality
+    span.tag("order.id", order.id());                                     // tags later: high cardinality
+}
+Order priced = Trace.in("order.price", () -> order);"""),
+            docTip("logging.structured.format.console: ecs makes the logs JSON; the request id is a field.")
         );
     }
 }
