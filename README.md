@@ -45,7 +45,7 @@ JWeb is built on these core principles:
 - **Mail** — `Mail.to(...).subject(...).html(div(...)).send()` with the HTML DSL as the body; the framework speaks SMTP itself (STARTTLS, AUTH), an outbox for development and tests, `.later()` through the durable queue
 - **File storage** — `Storage.upload("avatars", file)` and `Storage.url(key)`: a directory in development, any S3-compatible bucket in production (the framework signs its own requests), served with ETags and ranges, signed URLs that expire
 - **Observability** — a request id on every response, every log line and every error page (`req.id()`); `jweb.Trace` spans around routes, SQL, jobs, PubSub, mail, Fetch and browser events, bridged into Micrometer Observation and OpenTelemetry when the app has them
-- **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`), CLI scaffolding (`jweb new` with a database, `jweb generate resource` for a record, its migration, pages and routes), accessibility auditor, `Middlewares.recommended()` secure baseline
+- **Developer Experience** — Hot reload dev server, testing utilities (`JWebTest`, `MockRequest`, `TestClient`, and `Browser` — a headless Chrome the framework drives itself, no WebDriver), CLI scaffolding (`jweb new` with a database, `jweb generate resource` for a record, its migration, pages and routes), accessibility auditor, `Middlewares.recommended()` secure baseline
 
 ---
 

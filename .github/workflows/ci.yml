@@ -46,11 +46,13 @@ jobs:
           cache: maven
 
       # Node is on the runner, so the generated-JavaScript syntax tests run
-      # instead of being skipped (they use `node --check`).
+      # instead of being skipped (they use `node --check`); Chrome is too, so
+      # BrowserTest drives the demo app in a real headless browser here.
       - name: Toolchain
         run: |
           java -version
           node --version
+          google-chrome --version || chromium-browser --version || echo "no Chrome: BrowserTest is skipped"
 
       # `verify` = compile, test, package the library jar (with the demo app
       # excluded) and attach the sources jar — the same artifact JitPack ships.

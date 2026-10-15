@@ -1486,6 +1486,37 @@ a `MockRequest` as the second argument when `beforeRender` or `Csrf.token()` nee
 
 ---
 
+### In a real browser
+
+`RenderedPage` runs the event loop without a browser. `jweb.Browser` runs the page in one:
+a headless Chrome the framework finds and drives over its own DevTools protocol — no
+WebDriver, no Playwright, nothing to add. The runtime's script, the WebSocket, the DOM
+patches, the CSS, a real mouse click and real keystrokes, exactly as a visitor gets them.
+
+```java
+import jweb.Browser;
+
+int port = 8085;
+try (Browser browser = Browser.launch();
+     Browser.Page page = browser.open("http://localhost:" + port + "/todos")) {
+    page.waitFor("#new-todo");                        // every wait polls, five seconds by default
+    page.type("#new-todo", "Write tests");            // real key input: the input events fire
+    page.click("#add");                               // a real mouse event at the element's centre
+    page.waitForText("ul", "Write tests");            // the patch arrived over the socket
+    page.press("Enter");  page.fill("#new-todo", "");  page.submit("form");
+    String html = page.html();  String text = page.text("#count");  boolean there = page.exists("#done");
+    page.eval("document.title");                      // any expression, as JSON
+    page.errors();                                    // console errors and uncaught exceptions — assert it is empty
+    page.screenshot(java.nio.file.Path.of("target/todos.png"));
+}
+```
+
+Gate the test on `Browser.available()` — `@EnabledIf("jweb.Browser#available")` — and it
+runs wherever a Chrome or Chromium is found (`JWEB_CHROME`, the usual install locations,
+the `PATH`; GitHub's runners have one) and is skipped elsewhere. Boot the app with
+`@SpringBootTest(webEnvironment = RANDOM_PORT)` and open `http://localhost:` + the port.
+The sample app's `BrowserTest` clicks through the streaming demo this way.
+
 ## AI Integration (`framework/ai`)
 
 Chat completions, conversations, tools, and agent loops — **zero extra dependencies**.

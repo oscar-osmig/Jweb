@@ -11,6 +11,16 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **A real browser for a test.** `jweb.Browser` launches a headless Chrome and drives it over
+  the DevTools protocol itself — no WebDriver, no Playwright, nothing to add: `Browser.launch()`,
+  `browser.open(url)`, `click`/`type`/`fill`/`press`/`submit` as real input events,
+  `waitFor`/`waitForText`/`waitForHtml`/`waitUntil` polling up to five seconds, `html`/`text`/
+  `value`/`exists`/`count`/`eval`, the console and its errors, a screenshot. `Browser.available()`
+  is whether a Chrome can be found (`JWEB_CHROME`, the usual locations, the `PATH`), so a suite
+  gates on it with `@EnabledIf("jweb.Browser#available")` and runs it where there is one —
+  GitHub's runners included. The sample app's `BrowserTest` clicks through the streaming demo:
+  the runtime's script, the socket, a server handler, a bound state, a live region and a
+  client-side action, in Chrome.
 - **An admin, and scaffolding on SQL.** `Admin.mount(app, "/admin", todos, users)
   .guard(Auth.requireRole("admin"))`: a page per `Sql.table` that lists, searches and pages
   its rows, a form to add or edit one (the record is the form, its `Form.*` annotations the

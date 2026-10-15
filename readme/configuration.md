@@ -108,6 +108,8 @@ jweb:
 | `AI_MODEL` | Model name for the AI module | gpt-4o-mini |
 | `MARKITDOWN_CMD` | Path to the markitdown CLI | .tools/markitdown/bin/markitdown |
 | `SESSION_COOKIE_SECURE` | Mark the session cookie `Secure` (set true behind HTTPS) | false |
+| `JWEB_CHROME` | The Chrome or Chromium `jweb.Browser` launches for browser tests (also `CHROME_PATH`, `CHROME_BIN`); unset, the usual install locations and the `PATH` are searched | — |
+| `JWEB_TEST_REDIS_URL` | A real Redis for the `RedisPubSub` and `RedisCache` round-trip tests; unset, they are skipped and the protocol is covered by the in-process stand-ins | — |
 
 `.env` files are supported via the `spring-dotenv` dependency.
 

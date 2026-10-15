@@ -337,3 +337,32 @@ class RoutesIntegrationTest {
     }
 }
 ```
+
+## In a Real Browser
+
+`jweb.Browser` launches a headless Chrome and drives it over the DevTools protocol — no
+WebDriver or Playwright to add. Gate the test on `Browser.available()`; it runs where a
+Chrome is found (`JWEB_CHROME`, the install locations, the `PATH`) and is skipped elsewhere.
+
+```java
+import jweb.Browser;
+
+int port = 8085;
+try (Browser browser = Browser.launch();
+     Browser.Page page = browser.open("http://localhost:" + port + "/todos")) {
+    page.waitFor("#new-todo");
+    page.type("#new-todo", "Write tests");
+    page.click("#add");
+    page.waitForText("ul", "Write tests");
+    List<String> errors = page.errors();              // console errors and uncaught exceptions
+    page.screenshot(java.nio.file.Path.of("target/todos.png"));
+}
+```
+
+| Call | What it does |
+|---|---|
+| `open(url)`, `navigate`, `reload` | A tab at the URL, waited for its load event |
+| `click(sel)`, `type(sel, text)`, `fill(sel, text)`, `press(key)`, `submit(sel)` | Real input events |
+| `waitFor(sel)`, `waitForText(sel, text)`, `waitForHtml(text)`, `waitUntil(js)` | Poll up to five seconds (a `Duration` overload for longer) |
+| `html()`, `text(sel)`, `value(sel)`, `exists(sel)`, `count(sel)`, `eval(js)` | Read the page as the browser has it |
+| `console()`, `errors()`, `screenshot(path)`, `cookie(name, value)` | The console so far, a PNG, a cookie on the origin |
