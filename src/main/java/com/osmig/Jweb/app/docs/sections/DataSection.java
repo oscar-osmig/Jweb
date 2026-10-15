@@ -180,7 +180,49 @@ Schema.collection("users")
     .timestamps()
     .register();"""),
 
-            docTip("Schemas add createdAt/updatedAt automatically when timestamps() is called.")
+            docTip("Schemas add createdAt/updatedAt automatically when timestamps() is called."),
+
+            docSubtitle("File Storage (Storage)"),
+            para("Where the app keeps the files its users give it: a directory in development, any S3-compatible " +
+                 "bucket in production (Amazon, Cloudflare R2, MinIO, Backblaze, Spaces, GCS) — the same calls, and the " +
+                 "framework signs the bucket's requests itself. The app serves the local store at /files with ETags, " +
+                 "Cache-Control and byte ranges; signed URLs expire."),
+            codeBlock("""
+import jweb.Storage;
+import jweb.FileUpload;
+import jweb.UploadedFile;
+import static jweb.El.*;
+
+String avatarKey = "avatars/3f2a9c.png";
+byte[] csv = "a,b\\n".getBytes();
+
+// an upload under a generated key: avatars/<32 hex>.png — keep the key on the user
+UploadedFile file = FileUpload.getFile(req, "avatar");
+Storage.Stored avatar = Storage.upload("avatars", file);
+
+// the URL a browser fetches it from
+Element picture = img(src(Storage.url(avatarKey)), alt("Avatar"));
+
+// any bytes, any key
+Storage.put("exports/7.csv", csv, "text/csv");
+Optional<byte[]> bytes = Storage.bytes("exports/7.csv");
+List<Storage.Stored> exports = Storage.list("exports/");
+Storage.delete("exports/7.csv");
+
+// a private document: a link that stops working after ten minutes
+Element link = a(href(Storage.url("invoices/7.pdf", Duration.ofMinutes(10))), "Download");"""),
+            codeBlock("yaml", """
+jweb:
+  storage:
+    dir: storage          # the local store (default)
+    access: public        # or signed: every URL expires and is signed under jweb.auth.secret
+    s3:
+      bucket: ${S3_BUCKET:}          # set → the bucket
+      region: us-east-1
+      endpoint:                      # blank = Amazon; an R2 / MinIO address otherwise
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}"""),
+            docTip("The storage route is a route like any other: app.guard(\"/files/private/*\", Auth.requireAuth()).")
         );
     }
 }

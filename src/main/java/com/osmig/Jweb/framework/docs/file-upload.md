@@ -133,6 +133,10 @@ Path savedOriginal = file.saveWithOriginalName(Path.of("uploads"));
 Path savedNamed = file.saveTo(Path.of("uploads"), "custom-name.pdf");
 ```
 
+`saveTo` writes to this machine's disk. For a file the app keeps — and serves, and must find
+again from another instance — hand the upload to `jweb.Storage` instead
+(`Storage.upload("avatars", file)`, then `Storage.url(key)`); see the storage reference.
+
 ## Validation
 
 ```java

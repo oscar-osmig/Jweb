@@ -251,6 +251,78 @@
       "type": "java.lang.Boolean",
       "defaultValue": false,
       "description": "Mark the remember-me cookie Secure (behind HTTPS)"
+    },
+    {
+      "name": "jweb.storage.dir",
+      "type": "java.lang.String",
+      "defaultValue": "storage",
+      "description": "Directory of the local jweb.Storage store; ignored once jweb.storage.s3.bucket is set"
+    },
+    {
+      "name": "jweb.storage.path",
+      "type": "java.lang.String",
+      "defaultValue": "/files",
+      "description": "URL prefix the app serves stored files at; Storage.url(key) is path/key for app-served stores"
+    },
+    {
+      "name": "jweb.storage.access",
+      "type": "java.lang.String",
+      "defaultValue": "public",
+      "description": "public, or signed: every Storage.url carries an expiry and a signature under jweb.auth.secret and the route serves nothing without one"
+    },
+    {
+      "name": "jweb.storage.url-ttl",
+      "type": "java.time.Duration",
+      "defaultValue": "1h",
+      "description": "How long a signed or presigned Storage.url(key) lives"
+    },
+    {
+      "name": "jweb.storage.cache-control",
+      "type": "java.lang.String",
+      "defaultValue": "private, max-age=3600",
+      "description": "The Cache-Control header the storage route sends; blank for none"
+    },
+    {
+      "name": "jweb.storage.serve",
+      "type": "java.lang.Boolean",
+      "defaultValue": true,
+      "description": "Mount GET <jweb.storage.path>/* at startup; false to mount Storage.serve() yourself"
+    },
+    {
+      "name": "jweb.storage.s3.bucket",
+      "type": "java.lang.String",
+      "description": "Set to use an S3-compatible bucket as the store (Amazon S3, Cloudflare R2, MinIO, Backblaze B2, DigitalOcean Spaces, GCS with HMAC keys)"
+    },
+    {
+      "name": "jweb.storage.s3.region",
+      "type": "java.lang.String",
+      "defaultValue": "us-east-1",
+      "description": "Signing region (auto on Cloudflare R2)"
+    },
+    {
+      "name": "jweb.storage.s3.endpoint",
+      "type": "java.lang.String",
+      "description": "Service URL; blank for Amazon's virtual-hosted address of the region, otherwise e.g. https://<account>.r2.cloudflarestorage.com or http://minio:9000"
+    },
+    {
+      "name": "jweb.storage.s3.access-key",
+      "type": "java.lang.String",
+      "description": "Access key id"
+    },
+    {
+      "name": "jweb.storage.s3.secret-key",
+      "type": "java.lang.String",
+      "description": "Secret access key"
+    },
+    {
+      "name": "jweb.storage.s3.path-style",
+      "type": "java.lang.Boolean",
+      "description": "Address objects as endpoint/bucket/key instead of bucket.host/key; default true with a custom endpoint, false on Amazon"
+    },
+    {
+      "name": "jweb.storage.s3.public-url",
+      "type": "java.lang.String",
+      "description": "A public bucket or a CDN in front of it: Storage.url(key) becomes <public-url>/<key> instead of a presigned URL"
     }
   ]
 }

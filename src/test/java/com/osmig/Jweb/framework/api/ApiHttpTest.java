@@ -119,4 +119,34 @@ class ApiHttpTest {
         assertTrue(body.contains(">0</span>"), "bind rendered the initial value");
         assertTrue(body.contains("No clicks yet."), "live region initial render");
     }
+
+    /** The storage route mounted by the framework, through Spring MVC: type, ETag, 304, byte ranges. */
+    @Test
+    void storedFilesAreServedAtTheStoragePath() throws Exception {
+        jweb.Storage.Store before = jweb.Storage.store();
+        try {
+            jweb.Storage.store(new jweb.Storage.Memory());
+            jweb.Storage.put("docs/hello world.txt", "hello, world".getBytes(), "text/plain");
+
+            HttpResponse<String> ok = get("/files/docs/hello%20world.txt");
+            assertEquals(200, ok.statusCode(), ok.body());
+            assertEquals("hello, world", ok.body());
+            assertTrue(ok.headers().firstValue("Content-Type").orElse("").startsWith("text/plain"), ok.headers().map().toString());
+            String etag = ok.headers().firstValue("ETag").orElseThrow();
+            assertTrue(etag.startsWith("\""), etag);
+            assertEquals("private, max-age=3600", ok.headers().firstValue("Cache-Control").orElse(""));
+
+            HttpResponse<String> same = get("/files/docs/hello%20world.txt", "If-None-Match", etag);
+            assertEquals(304, same.statusCode());
+
+            HttpResponse<String> part = get("/files/docs/hello%20world.txt", "Range", "bytes=0-4");
+            assertEquals(206, part.statusCode(), part.body());
+            assertEquals("hello", part.body());
+            assertEquals("bytes 0-4/12", part.headers().firstValue("Content-Range").orElse(""));
+
+            assertEquals(404, get("/files/docs/nope.txt").statusCode());
+        } finally {
+            jweb.Storage.store(before);
+        }
+    }
 }

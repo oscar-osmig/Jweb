@@ -40,6 +40,13 @@ public final class ResponseWriter {
                 response.getOutputStream().write(bytes);
                 return;
             }
+            if (body instanceof org.springframework.core.io.Resource resource) {
+                if (contentType == null) response.setContentType("application/octet-stream");
+                try (var in = resource.getInputStream()) {
+                    in.transferTo(response.getOutputStream());
+                }
+                return;
+            }
             String text = bodyText(body, contentType != null ? null : response);
             response.getWriter().write(text);
             return;

@@ -142,7 +142,13 @@ jweb:
 | `jweb.mail.smtp.host` / `port` | *(blank = outbox)* / `587` | SMTP server; blank keeps the outbox, which logs messages instead of sending |
 | `jweb.mail.smtp.username` / `password` | — | AUTH PLAIN or LOGIN when a username is set |
 | `jweb.mail.smtp.tls` | `starttls` | `starttls`, `implicit` (465), or `none` |
-| `jweb.auth.secret` | *(blank = generated per start, with a warning)* | HMAC secret for `Auth.token` and the remember-me cookie; 32+ random characters, the same on every instance |
+| `jweb.storage.dir` | `storage` | The local store's directory (`Storage.Local`); ignored once a bucket is set |
+| `jweb.storage.path` | `/files` | Where the app serves stored files; `Storage.url(key)` is `path/key` |
+| `jweb.storage.access` | `public` | `signed`: every `Storage.url` carries an expiry and a signature under `jweb.auth.secret`, and the route serves nothing without one |
+| `jweb.storage.url-ttl` / `cache-control` | `1h` / `private, max-age=3600` | How long a signed URL lives; the `Cache-Control` the route sends |
+| `jweb.storage.serve` | `true` | Mount `GET <path>/*` at startup; false to mount `Storage.serve()` yourself |
+| `jweb.storage.s3.bucket` | — | Set → `Storage.S3`; with `region`, `endpoint` (blank = Amazon; R2, MinIO, B2, Spaces, GCS otherwise), `access-key`, `secret-key`, `path-style`, `public-url` |
+| `jweb.auth.secret` | *(blank = generated per start, with a warning)* | HMAC secret for `Auth.token`, the remember-me cookie and signed `Storage` URLs; 32+ random characters, the same on every instance |
 | `jweb.auth.remember.secure` | `false` | Mark the remember-me cookie `Secure` (set true behind HTTPS) |
 | `jweb.ai.enabled` | `false` | Enable the built-in AI module (`AI.ask/chat/agent`) |
 | `jweb.ai.base-url` / `api-key` / `model` | OpenAI defaults | Which OpenAI-compatible endpoint and model to use |
@@ -301,6 +307,7 @@ app/
 |---------|---------|---------|
 | Internationalization | `i18n/` | `Messages.load(lang, map)`, `I18n.t(key, args)`, `I18n.middleware()` — see [Backend](./backend.md#internationalization) |
 | File Uploads | `upload/` | `FileUpload.getFile(req, name)`, `validate(...)`, `UploadedFile.saveTo(dir)` |
+| File Storage | `storage/` | `Storage.upload(folder, file)`, `put/get/bytes/open/list/delete`, `Storage.url(key[, ttl])`; `Local`, `S3`, `Memory` — see [Backend](./backend.md#file-storage-jwebstorage) |
 | Background Jobs | `async/` | `Jobs.run/submit/track`, `Scheduler.cron(...)`, `Suspense` — see [State & Realtime](./state-and-realtime.md) |
 | Health Checks | `health/` | `Health.register(name, check)`, `Health.setupEndpoints(app)` → `/health[/live|/ready]` |
 | Metrics | `metrics/` | `Metrics.counter/gauge/timer`, `Metrics.middleware()`, `/metrics` (JSON or Prometheus) |

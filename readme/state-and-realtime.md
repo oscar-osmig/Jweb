@@ -357,7 +357,7 @@ What is per-instance, what is shared, and what to do about each:
 | `Mail` | The instance's SMTP connection | Nothing to share; `later()` goes through the durable queue |
 | `Cache`, `RateLimit` | In memory, per instance | A limit of 100/min is 100/min *per instance*; put a shared limiter at the edge when that matters |
 | `Migrations` | The database | Instances starting together take turns on a lock row |
-| Uploaded files | The instance's disk | Store them somewhere shared |
+| `Storage` (uploaded files) | The instance's `jweb.storage.dir` | Set `jweb.storage.s3.bucket`: every instance reads and writes the one bucket, and `Storage.url` points at it |
 
 ## Session
 

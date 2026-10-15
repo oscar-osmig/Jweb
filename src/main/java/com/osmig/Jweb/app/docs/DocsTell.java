@@ -75,6 +75,7 @@ public final class DocsTell {
         new Topic("ref-validation", "Reference: validation", "framework-src/docs/validation.md"),
         new Topic("ref-security", "Reference: security", "framework-src/docs/security.md"),
         new Topic("ref-file-upload", "Reference: file upload", "framework-src/docs/file-upload.md"),
+        new Topic("ref-storage", "Reference: file storage — local, S3-compatible, served and signed URLs", "framework-src/docs/storage.md"),
         new Topic("ref-sql", "Reference: SQL and migrations", "framework-src/docs/sql.md"),
         new Topic("ref-sse", "Reference: server-sent events", "framework-src/docs/sse.md"),
         new Topic("ref-jobs", "Reference: background jobs, durable jobs", "framework-src/docs/jobs.md"),

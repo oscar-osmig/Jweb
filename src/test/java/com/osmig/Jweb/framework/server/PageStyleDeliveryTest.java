@@ -58,9 +58,9 @@ class PageStyleDeliveryTest {
             div(style().hover(style().color(blue))))));
 
         var withCss = JWebController.withPageStyles(page, context);
-        assertTrue(withCss.getBody().contains("<style"), withCss.getBody());
-        assertTrue(withCss.getBody().indexOf("<style") < withCss.getBody().indexOf("</head>"),
-            withCss.getBody());
+        String body = (String) withCss.getBody();
+        assertTrue(body.contains("<style"), body);
+        assertTrue(body.indexOf("<style") < body.indexOf("</head>"), body);
         assertEquals(page.getStatusCode(), withCss.getStatusCode());
     }
 

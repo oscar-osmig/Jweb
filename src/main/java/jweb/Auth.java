@@ -194,12 +194,21 @@ public class Auth extends com.osmig.Jweb.framework.security.Auth {
     }
 
     private static String sign(String body, String fingerprint) {
+        return hmac(body, fingerprint);
+    }
+
+    /**
+     * HMAC-SHA256 of {@code body} and {@code context} under the app secret,
+     * base64url without padding — the one signature the framework's own
+     * signed artifacts share ({@link Storage} URLs sign with it too).
+     */
+    static String hmac(String body, String context) {
         try {
             Mac mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(key(), "HmacSHA256"));
             mac.update(body.getBytes(StandardCharsets.UTF_8));
             mac.update((byte) 0);
-            mac.update(fingerprint.getBytes(StandardCharsets.UTF_8));
+            mac.update(context.getBytes(StandardCharsets.UTF_8));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(mac.doFinal());
         } catch (java.security.GeneralSecurityException e) {
             throw new IllegalStateException(e);

@@ -687,6 +687,9 @@ public class JWebCli {
             *.log
             logs/
 
+            # jweb.Storage's local store (jweb.storage.dir)
+            storage/
+
             # Maven
             pom.xml.tag
             pom.xml.releaseBackup

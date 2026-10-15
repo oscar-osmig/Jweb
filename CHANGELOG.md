@@ -11,6 +11,21 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **File storage.** `jweb.Storage`: `Storage.upload("avatars", file)` stores an upload under a
+  generated key (`avatars/<32 hex>.png`), `put`/`get`/`bytes`/`open`/`list`/`delete` work on
+  any key, `Storage.url(key)` is where a browser fetches it and `Storage.url(key, ttl)` a link
+  that expires. `Storage.Local` (the default, `jweb.storage.dir`) keeps files in a directory
+  and the framework serves them at `jweb.storage.path` (`/files`) with the content type, an
+  ETag and 304s, `Cache-Control` and byte ranges — a route like any other, so guards apply;
+  `jweb.storage.access: signed` signs every URL under `jweb.auth.secret` and the route refuses
+  the rest. `Storage.S3` is any bucket that speaks the S3 API (Amazon, Cloudflare R2, MinIO,
+  Backblaze B2, DigitalOcean Spaces, GCS with HMAC keys): the framework signs its own requests
+  (Signature Version 4, matched against Amazon's published vectors in the suite) over the
+  JDK's HTTP client, hands out presigned URLs (`uploadUrl` for a direct browser upload) or
+  plain ones under `public-url`; selected by `jweb.storage.s3.bucket`. `Storage.Memory` for
+  tests; any `Storage.Store` bean replaces the store. A `ResponseEntity` with a `Resource` or
+  `byte[]` body now passes through the controller untouched (it used to be cast to a String
+  body when a render had collected CSS).
 - **The auth flows.** The user model stays the app's; `jweb.Auth` gains the mechanics every
   flow needs, stateless or on a store the instances share. `Auth.token(purpose, subject,
   ttl, fingerprint)` / `Auth.verify(...)`: HMAC-SHA256 tokens for password reset (bound to

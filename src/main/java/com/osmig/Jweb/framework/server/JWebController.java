@@ -173,7 +173,7 @@ public class JWebController {
     }
 
     /** Adds middleware-queued headers to the response (existing headers win). */
-    private ResponseEntity<String> applyQueuedHeaders(ResponseEntity<String> response, Request request) {
+    private ResponseEntity<?> applyQueuedHeaders(ResponseEntity<?> response, Request request) {
         var queued = request.responseHeaders();
         if (queued.isEmpty()) {
             return response;
@@ -188,7 +188,7 @@ public class JWebController {
         return new ResponseEntity<>(response.getBody(), headers, response.getStatusCode());
     }
 
-    private ResponseEntity<String> processResult(Object result, StateManager.StateContext context, Request request) {
+    private ResponseEntity<?> processResult(Object result, StateManager.StateContext context, Request request) {
         if (result == null) {
             return ResponseEntity.ok().body("");
         }
@@ -214,9 +214,7 @@ public class JWebController {
         // directly — except that an HTML body still needs the CSS this render
         // collected, which nothing else on this path would deliver.
         if (result instanceof ResponseEntity<?> responseEntity) {
-            @SuppressWarnings("unchecked")
-            ResponseEntity<String> typed = (ResponseEntity<String>) responseEntity;
-            return withPageStyles(typed, context);
+            return withPageStyles(responseEntity, context);
         }
 
         // Handle RawContent with proper content type
@@ -356,14 +354,16 @@ public class JWebController {
      * {@code Response.html(new Layout(...))} and anything else that hands back
      * a {@link ResponseEntity} instead of an {@link Element}.
      */
-    static ResponseEntity<String> withPageStyles(ResponseEntity<String> response,
-                                                 StateManager.StateContext context) {
-        if (context == null || response.getBody() == null) return response;
+    static ResponseEntity<?> withPageStyles(ResponseEntity<?> response,
+                                            StateManager.StateContext context) {
+        // A byte[] or Resource body (a stored file, a download) is not markup
+        // to inject into, whatever its content type says
+        if (context == null || !(response.getBody() instanceof String html)) return response;
         MediaType type = response.getHeaders().getContentType();
         if (type != null && !MediaType.TEXT_HTML.isCompatibleWith(type)) return response;
         String styleTag = com.osmig.Jweb.framework.styles.PageStyles.drainStyleTag(context);
         if (styleTag.isEmpty()) return response;
-        return new ResponseEntity<>(injectPageStyles(response.getBody(), styleTag),
+        return new ResponseEntity<>(injectPageStyles(html, styleTag),
             response.getHeaders(), response.getStatusCode());
     }
 
@@ -586,7 +586,7 @@ public class JWebController {
 
     // ==================== Page Route Matching ====================
 
-    private ResponseEntity<String> handlePageRoute(PageRoute.Match match, HttpServletRequest servletRequest) {
+    private ResponseEntity<?> handlePageRoute(PageRoute.Match match, HttpServletRequest servletRequest) {
         PageRoute route = match.route();
         StateManager.StateContext context = StateManager.createContext();
         Request request = new Request(servletRequest);

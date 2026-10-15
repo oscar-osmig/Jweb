@@ -1115,6 +1115,95 @@ Form.Bound<Attachment> bound = Form.bind(Attachment.class, req);
 if (bound.ok()) bound.value().document().saveTo(Path.of("uploads"));
 ```
 
+`saveTo` writes to this machine's disk. For files the app keeps — and must find again from
+another instance — hand the upload to `Storage`, below.
+
+---
+
+## File storage (`jweb.Storage`)
+
+Where the app keeps the files its users give it: a key, some bytes, a content type. A
+directory in development, a bucket in production, the same calls — and the app serves the
+files itself at `/files/<key>` until a bucket takes over.
+
+```java
+import jweb.Storage;
+import jweb.FileUpload;
+import jweb.UploadedFile;
+import static jweb.El.*;
+
+record User(String id, String avatarKey) {}
+User user = new User("42", "avatars/3f2a9c.png");
+byte[] csv = "a,b\n".getBytes();
+String exportId = "7";
+
+// An upload, stored under a generated key in a folder: avatars/<32 hex>.png
+UploadedFile file = FileUpload.getFile(req, "avatar");
+Storage.Stored avatar = Storage.upload("avatars", file);
+String keep = avatar.key();                                 // store this on the user
+
+// Shown on a page: the URL the browser fetches it from
+Element picture = img(src(Storage.url(user.avatarKey())), alt("Avatar"));
+
+// Any bytes under any key; read them back; list a folder; delete
+Storage.put("exports/" + exportId + ".csv", csv, "text/csv");
+Optional<byte[]> bytes = Storage.bytes("exports/" + exportId + ".csv");
+Optional<Storage.Stored> info = Storage.get("exports/" + exportId + ".csv");   // size, type, modified, etag
+List<Storage.Stored> exports = Storage.list("exports/");
+Storage.delete("exports/" + exportId + ".csv");
+
+// A private document: a link that stops working after ten minutes
+Element link = a(href(Storage.url("invoices/" + exportId + ".pdf", Duration.ofMinutes(10))), "Download");
+
+// A route of your own, when the URL should be yours: the same response the built-in route sends
+app.get("/invoices/:id", r -> Storage.download(r, "invoices/" + r.param("id") + ".pdf", "invoice-" + r.param("id") + ".pdf"));
+```
+
+`Storage.put(key, upload)` stores an upload under an exact key; `Storage.open(key)` streams a
+large file instead of reading it whole; `Storage.key("avatars", "me.PNG")` is the generated
+key `upload` uses (`avatars/<32 hex>.png` — the extension kept, the original name yours to
+record). Keys are `/`-separated paths; `..`, backslashes and control characters are refused.
+
+**The stores.** `Storage.Local` (the default, `jweb.storage.dir`, `storage/` by default) keeps
+each key as a file under the directory; the type follows the key's extension, so keep one.
+`Storage.S3` is a bucket that speaks the S3 API — Amazon S3, Cloudflare R2, MinIO, Backblaze
+B2, DigitalOcean Spaces, Google Cloud Storage with HMAC keys — with requests signed by the
+framework itself (Signature Version 4, checked against Amazon's published vectors in the
+suite) over the JDK's HTTP client: nothing to add. `Storage.Memory` is for tests. Any
+`Storage.Store` bean replaces the lot.
+
+```yaml
+jweb:
+  storage:
+    dir: storage                 # the local store's directory (ignored once a bucket is set)
+    path: /files                 # where the app serves them
+    access: public               # or signed: every URL carries an expiry and a signature
+    s3:
+      bucket: ${S3_BUCKET:}      # set → the S3 store
+      region: us-east-1
+      endpoint:                  # blank = Amazon; https://<account>.r2.cloudflarestorage.com, http://minio:9000 …
+      access-key: ${S3_ACCESS_KEY:}
+      secret-key: ${S3_SECRET_KEY:}
+      public-url:                # a public bucket or a CDN: Storage.url(key) becomes <public-url>/<key>
+```
+
+**Serving.** For the local store the framework mounts `GET /files/*` at startup
+(`jweb.storage.serve: false` to mount it yourself with `Storage.serve()`): the content type,
+an ETag and a 304 when the browser has it, `Last-Modified`, `Cache-Control`
+(`jweb.storage.cache-control`, an hour private by default) and byte ranges for video. It is a
+route like any other — guard it: `app.guard("/files/private/*", Auth.requireAuth())`. With
+`jweb.storage.access: signed`, `Storage.url(key)` signs every URL under `jweb.auth.secret`
+(valid for `jweb.storage.url-ttl`, an hour) and the route serves nothing without a valid
+signature — the private-bucket behaviour, on disk. For S3 `Storage.url(key)` is a presigned
+URL for the same hour, or a plain one under `public-url`; `Storage.url(key, ttl)` presigns
+for exactly that long (a week at most, Amazon's cap); `Storage.uploadUrl(key, type, ttl)` is
+a presigned `PUT` for a browser that uploads straight to the bucket.
+
+**What it is not.** No image transforms (`/jweb/img` does those for files it can reach by
+URL), no multipart uploads to S3 (one `PUT` per file — fine up to the five gigabytes S3
+allows), no metadata beyond the content type. The S3 store reads a file fully before sending
+it, so an upload is held in memory once.
+
 ---
 
 ## Document → Markdown Conversion (markitdown)
