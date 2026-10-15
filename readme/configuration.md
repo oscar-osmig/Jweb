@@ -134,6 +134,9 @@ jweb:
 | `jweb.sql.migrations` | `classpath:db/migration` | Where the `V*__*.sql` migration files are |
 | `jweb.pubsub.redis.url` | *(blank = in-memory, this instance only)* | Redis for `jweb.PubSub` across instances: `redis://[user[:password]@]host[:port]`, `rediss://` for TLS |
 | `jweb.pubsub.redis.prefix` | `jweb:` | The Redis channel prefix a topic gets |
+| `jweb.redis.url` | — | One Redis for both: the default for `jweb.pubsub.redis.url` and `jweb.cache.redis.url` |
+| `jweb.cache.redis.url` | *(blank = memory)* | `Cache.shared`, `Cache.lock`/`once` and `RateLimit` count in this Redis across every instance; the framework speaks the protocol itself |
+| `jweb.cache.redis.prefix` / `connections` | `jweb:cache:` / `4` | Every key starts with the prefix; how many connections to keep open at most |
 | `jweb.jobs.enabled` | `true` | Run the durable-jobs worker on this instance (an instance can still enqueue with it off) |
 | `jweb.jobs.store` | `auto` | `auto` = the `jweb_jobs` table when `Sql` is connected, else memory; `memory` forces in-memory |
 | `jweb.jobs.poll` / `concurrency` | `1s` / `8` | How often the worker looks for due jobs, and how many run at once |
@@ -321,7 +324,7 @@ app/
 | WebSockets | `websocket/` | auto-registered at `/jweb` |
 | View Transitions | `transition/` | `Transition.when(show).enter(...)`, `attrs().transition()` |
 | Portals | `portal/` | `Portal.to(name, el)` / `Portal.outlet(name)` |
-| Caching | `cache/` | `Cache.create(ttl)`, `getOrSet`, `Cache.named(...)` |
+| Caching | `cache/` | `Cache.create(ttl)`, `getOrSet`, `Cache.named(...)` in memory; `Cache.shared(name, Type.class)`, `Cache.once`, `Cache.lock` across instances (Redis under `jweb.cache.redis.url`) |
 | Error Handling | `error/` | `JWebException`, `ErrorHandler.errorHandling()` middleware |
 | HTTP Client | `http/` | `Fetch.get(url).bearer(t).send()` → `FetchResult` |
 | Hydration | `hydration/` | `HydrationData`, `VNodeSerializer` (see State & Realtime) |

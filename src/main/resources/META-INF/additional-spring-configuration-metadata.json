@@ -341,6 +341,28 @@
       "type": "java.lang.Boolean",
       "defaultValue": true,
       "description": "Bind jweb.Trace to the app's ObservationRegistry when it has one (the actuator): framework spans become Micrometer observations and, with micrometer-tracing, spans in the trace"
+    },
+    {
+      "name": "jweb.redis.url",
+      "type": "java.lang.String",
+      "description": "One Redis for both the shared cache and PubSub: the default for jweb.cache.redis.url and jweb.pubsub.redis.url (redis://[user[:password]@]host[:port], rediss:// for TLS)"
+    },
+    {
+      "name": "jweb.cache.redis.url",
+      "type": "java.lang.String",
+      "description": "Redis for Cache.shared, Cache.lock/once and RateLimit across instances; blank keeps this instance's memory"
+    },
+    {
+      "name": "jweb.cache.redis.prefix",
+      "type": "java.lang.String",
+      "defaultValue": "jweb:cache:",
+      "description": "Every shared-cache key starts with it"
+    },
+    {
+      "name": "jweb.cache.redis.connections",
+      "type": "java.lang.Integer",
+      "defaultValue": 4,
+      "description": "How many Redis connections the shared cache keeps open at most"
     }
   ]
 }

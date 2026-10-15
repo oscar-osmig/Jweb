@@ -11,6 +11,22 @@ and docs work is committed to `main` without one.
 
 Work on `main` since 3.0.2. Not tagged.
 
+- **A shared cache, locks, and rate limits across the fleet.** `Cache.shared(name, Type.class)`
+  is a typed cache every instance sees — values as JSON, `get`/`getOrSet`/`set` with a time to
+  live, `delete`, `increment`, `clear` — on `jweb.RedisCache` when `jweb.cache.redis.url` (or
+  `jweb.redis.url`, which now serves PubSub too) is set, and on this instance's memory
+  otherwise with the same semantics. `Cache.lock(name, ttl)` and `Cache.once(name, ttl, work)`
+  are the lock the instances share: the scheduled job five instances would run five times runs
+  on the one that takes it. `RateLimit` counts in the shared store on its own once one is
+  configured, so a limit is per fleet, not per instance (`.shared(false)`, `.name(...)`). A
+  store that cannot be reached is a miss, a no-op, "not acquired", or a request let through —
+  logged, never a 500. `RedisCache` speaks the protocol itself over a few pooled connections
+  (`GET`, `SET PX NX`, `DEL`, `INCRBY`+`PEXPIRE`, `SCAN`), retrying once on a dropped
+  connection; the RESP client it shares with `RedisPubSub` is `jweb.Redis`. Tested against an
+  in-process stand-in with expiry and, in CI, a real Redis. The multi-instance table says what
+  `spring-session-jdbc` adds for sessions. Fixed on the way: the first touch of the in-memory
+  `Cache` class threw `ExceptionInInitializerError` (its cleanup scheduler was declared after
+  the global instance that schedules on it).
 - **Request ids, traces.** Every request has an id before anything sees it (a servlet filter:
   the caller's `X-Request-ID` when sane, a fresh one otherwise), `req.id()` reads it, the
   response carries it back, the error page and the JSON error quote it, and every log line

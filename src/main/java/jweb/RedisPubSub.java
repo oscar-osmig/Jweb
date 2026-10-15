@@ -2,18 +2,8 @@ package jweb;
 
 import com.osmig.Jweb.framework.util.Log;
 
-import javax.net.ssl.SSLSocketFactory;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -38,11 +28,7 @@ import java.util.function.BiConsumer;
  */
 public final class RedisPubSub implements PubSub.Backend {
 
-    private final String host;
-    private final int port;
-    private final boolean tls;
-    private final String username;
-    private final String password;
+    private final Redis.Endpoint endpoint;
     private final String prefix;
 
     private volatile BiConsumer<String, String> receiver;
@@ -52,7 +38,7 @@ public final class RedisPubSub implements PubSub.Backend {
     private volatile Socket readerSocket;
 
     private final Object publishLock = new Object();
-    private Connection publisher;
+    private Redis.Connection publisher;
 
     /** A backend for the URL, with channels prefixed {@code jweb:}. */
     public RedisPubSub(String url) {
@@ -60,27 +46,7 @@ public final class RedisPubSub implements PubSub.Backend {
     }
 
     public RedisPubSub(String url, String prefix) {
-        URI uri = URI.create(url.trim());
-        String scheme = uri.getScheme() == null ? "redis" : uri.getScheme().toLowerCase();
-        if (!scheme.equals("redis") && !scheme.equals("rediss")) {
-            throw new IllegalArgumentException("Redis URL must start with redis:// or rediss://, got " + url);
-        }
-        this.tls = scheme.equals("rediss");
-        this.host = uri.getHost() == null ? "localhost" : uri.getHost();
-        this.port = uri.getPort() < 0 ? 6379 : uri.getPort();
-        String user = null, pass = null;
-        if (uri.getUserInfo() != null) {
-            String info = uri.getUserInfo();
-            int colon = info.indexOf(':');
-            if (colon < 0) {
-                pass = info;
-            } else {
-                user = colon == 0 ? null : info.substring(0, colon);
-                pass = info.substring(colon + 1);
-            }
-        }
-        this.username = user;
-        this.password = pass == null || pass.isEmpty() ? null : pass;
+        this.endpoint = Redis.Endpoint.parse(url);
         this.prefix = prefix == null ? "" : prefix;
     }
 
@@ -89,11 +55,11 @@ public final class RedisPubSub implements PubSub.Backend {
     }
 
     public String host() {
-        return host;
+        return endpoint.host();
     }
 
     public int port() {
-        return port;
+        return endpoint.port();
     }
 
     public String prefix() {
@@ -145,7 +111,7 @@ public final class RedisPubSub implements PubSub.Backend {
             for (int attempt = 1; ; attempt++) {
                 try {
                     if (publisher == null) {
-                        publisher = connect();
+                        publisher = endpoint.connect();
                     }
                     publisher.command("PUBLISH", channel, json);
                     publisher.readReply();   // the number of receivers; not interesting
@@ -156,7 +122,7 @@ public final class RedisPubSub implements PubSub.Backend {
                         publisher = null;
                     }
                     if (attempt >= 2) {
-                        throw new PubSub.PublishException("Redis at " + host + ":" + port + " is unreachable: " + e.getMessage(), e);
+                        throw new PubSub.PublishException("Redis at " + endpoint + " is unreachable: " + e.getMessage(), e);
                     }
                 }
             }
@@ -168,9 +134,9 @@ public final class RedisPubSub implements PubSub.Backend {
     private void readLoop() {
         long backoff = 200;
         while (running) {
-            Connection connection = null;
+            Redis.Connection connection = null;
             try {
-                connection = connect();
+                connection = endpoint.connect();
                 readerSocket = connection.socket;
                 connection.command("PSUBSCRIBE", prefix + "*");
                 Object ack = connection.readReply();   // [psubscribe, pattern, count]
@@ -179,7 +145,7 @@ public final class RedisPubSub implements PubSub.Backend {
                 }
                 subscribed = true;
                 backoff = 200;
-                Log.info("PubSub: subscribed to Redis {}:{} channels {}*", host, port, prefix);
+                Log.info("PubSub: subscribed to Redis {} channels {}*", endpoint, prefix);
                 while (running) {
                     Object message = connection.readReply();
                     if (message instanceof List<?> parts && parts.size() == 4 && "pmessage".equals(parts.get(0))) {
@@ -211,117 +177,8 @@ public final class RedisPubSub implements PubSub.Backend {
         }
     }
 
-    // ==================== one connection, speaking RESP ====================
-
-    private Connection connect() throws IOException {
-        Socket socket = tls ? SSLSocketFactory.getDefault().createSocket() : new Socket();
-        socket.connect(new InetSocketAddress(host, port), 5_000);
-        socket.setKeepAlive(true);
-        socket.setTcpNoDelay(true);
-        Connection connection = new Connection(socket);
-        try {
-            if (password != null) {
-                if (username != null) {
-                    connection.command("AUTH", username, password);
-                } else {
-                    connection.command("AUTH", password);
-                }
-                connection.readReply();   // +OK, or -ERR which throws
-            }
-            connection.command("PING");
-            Object pong = connection.readReply();
-            if (!"PONG".equals(pong)) {
-                throw new IOException("Unexpected PING reply: " + pong);
-            }
-            return connection;
-        } catch (IOException e) {
-            connection.close();
-            throw e;
-        }
-    }
-
-    static final class Connection {
-
-        final Socket socket;
-        private final InputStream in;
-        private final OutputStream out;
-
-        Connection(Socket socket) throws IOException {
-            this.socket = socket;
-            this.in = new BufferedInputStream(socket.getInputStream());
-            this.out = new BufferedOutputStream(socket.getOutputStream());
-        }
-
-        void command(String... args) throws IOException {
-            out.write(('*' + Integer.toString(args.length) + "\r\n").getBytes(StandardCharsets.US_ASCII));
-            for (String arg : args) {
-                byte[] bytes = arg.getBytes(StandardCharsets.UTF_8);
-                out.write(('$' + Integer.toString(bytes.length) + "\r\n").getBytes(StandardCharsets.US_ASCII));
-                out.write(bytes);
-                out.write('\r');
-                out.write('\n');
-            }
-            out.flush();
-        }
-
-        /** A reply: String (simple or bulk), Long, List (array), or null; an error reply throws. */
-        Object readReply() throws IOException {
-            int type = in.read();
-            if (type < 0) throw new EOFException("Redis closed the connection");
-            String line = readLine();
-            switch (type) {
-                case '+':
-                    return line;
-                case '-':
-                    throw new IOException("Redis error: " + line);
-                case ':':
-                    return Long.parseLong(line);
-                case '$': {
-                    int length = Integer.parseInt(line);
-                    if (length < 0) return null;
-                    byte[] bytes = in.readNBytes(length);
-                    if (bytes.length < length) throw new EOFException("Redis closed the connection mid-reply");
-                    readLine();   // the trailing CRLF
-                    return new String(bytes, StandardCharsets.UTF_8);
-                }
-                case '*': {
-                    int count = Integer.parseInt(line);
-                    if (count < 0) return null;
-                    List<Object> items = new ArrayList<>(count);
-                    for (int i = 0; i < count; i++) items.add(readReply());
-                    return items;
-                }
-                default:
-                    throw new IOException("Unexpected Redis reply type '" + (char) type + "'");
-            }
-        }
-
-        private String readLine() throws IOException {
-            StringBuilder sb = new StringBuilder();
-            while (true) {
-                int c = in.read();
-                if (c < 0) throw new EOFException("Redis closed the connection");
-                if (c == '\r') {
-                    int next = in.read();
-                    if (next == '\n' || next < 0) return sb.toString();
-                    sb.append((char) c).append((char) next);
-                } else {
-                    sb.append((char) c);
-                }
-            }
-        }
-
-        void close() {
-            try {
-                socket.close();
-            } catch (IOException ignored) {
-                // closing anyway
-            }
-        }
-    }
-
     @Override
     public String toString() {
-        return "RedisPubSub(" + host + ":" + port + ", " + prefix + "*)";
+        return "RedisPubSub(" + endpoint + ", " + prefix + "*)";
     }
 }

@@ -321,3 +321,41 @@ instance through Redis with no client library: set `jweb.pubsub.redis.url`
 (`redis://[user[:password]@]host[:port]`, `rediss://` for TLS; `jweb.pubsub.redis.prefix`,
 default `jweb:`). A `PubSub.Backend` bean replaces both. In a test, `RenderedPage.awaitPush()`
 returns what a publish sent the page.
+
+## Shared Cache and Locks
+
+`Cache.create`/`Cache.named` live in this instance's memory. `Cache.shared(name, Type.class)`
+is what every instance sees — a Redis when `jweb.cache.redis.url` (or `jweb.redis.url`) is
+set, spoken by the framework itself; memory otherwise, same semantics.
+
+```java
+import jweb.Cache;
+
+record Price(String sku, long cents) {}
+static Price lookup(String sku) { return new Price(sku, 100); }
+static void sendDigest() {}
+
+Cache.Shared<Price> prices = Cache.shared("prices", Price.class, Duration.ofMinutes(10));
+Price p = prices.getOrSet("sku-9", () -> lookup("sku-9"));
+prices.set("sku-9", p);  prices.get("sku-9");  prices.delete("sku-9");  prices.clear();
+Cache.shared("counts", Long.class).increment("signups", 1, Duration.ofDays(1));
+
+boolean ranHere = Cache.once("digest", Duration.ofMinutes(5), () -> sendDigest());   // one instance per five minutes
+try (Cache.Lock lock = Cache.lock("import", Duration.ofMinutes(1)).orElseThrow()) {   // held until closed or expired
+    // ...
+}
+```
+
+Values travel as JSON (a record, a bean, a String, a Number). A store that cannot be reached
+is a miss, a no-op, or "not acquired" — logged, never a 500. `RateLimit` counts in the shared
+store on its own once one is configured (`.shared(false)` keeps a limiter local).
+
+```yaml
+jweb:
+  redis:
+    url: ${REDIS_URL:}          # cache and PubSub together; or jweb.cache.redis.url / jweb.pubsub.redis.url apart
+  cache:
+    redis:
+      prefix: "jweb:cache:"
+      connections: 4
+```

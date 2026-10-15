@@ -350,12 +350,13 @@ What is per-instance, what is shared, and what to do about each:
 |-------|-------|------------------------|
 | Render contexts (live regions, server handlers, `useState`) | In memory on the instance that rendered the page, five idle minutes | **Sticky sessions** for `/jweb` and the pages that use server events. A socket that lands elsewhere is answered `known:false` and the page shows its expired notice. This is the LiveView / Blazor Server model, by design: the context holds lambdas, not data. |
 | `PubSub` | In memory by default | Set `jweb.pubsub.redis.url` (or a `PubSub.Backend` bean): a publish on one instance reaches the pages on all |
-| HTTP session (`Session`, `Auth.login`, flash, the OAuth2 state) | The servlet session, in memory | Add **Spring Session** with a store (Redis, JDBC) and `jweb.Session` works unchanged — it wraps the servlet session |
+| HTTP session (`Session`, `Auth.login`, flash, the OAuth2 state) | The servlet session, in memory | Add **Spring Session** and `jweb.Session` works unchanged — it wraps the servlet session. `spring-session-jdbc` keeps sessions in the database `Sql` already uses (its schema ships in the jar: `spring.session.jdbc.initialize-schema: always`); `spring-session-data-redis` needs Lettuce |
 | OAuth2 login state and PKCE verifier | The session | Shared with it; the callback can land on any instance |
 | Durable `Jobs.enqueue` | The `jweb_jobs` table when `Sql` is connected | Shared: every instance's worker claims from the one queue, one job runs once |
-| `Jobs.run`, `Scheduler` | The instance that scheduled them | Each instance runs its own schedule; make scheduled work idempotent, or elect one instance |
+| `Jobs.run`, `Scheduler` | The instance that scheduled them | Each instance runs its own schedule: wrap the work in `Cache.once("name", ttl, …)` and the instance that takes the lock runs it, the rest skip |
 | `Mail` | The instance's SMTP connection | Nothing to share; `later()` goes through the durable queue |
-| `Cache`, `RateLimit` | In memory, per instance | A limit of 100/min is 100/min *per instance*; put a shared limiter at the edge when that matters |
+| `Cache.create`/`named` | In memory, per instance | Use `Cache.shared(name, Type.class)` for what every instance must see: Redis under `jweb.cache.redis.url`, with locks (`Cache.lock`, `Cache.once`) |
+| `RateLimit` | In memory, per instance | Counts in the shared store on its own once `jweb.cache.redis.url` is set: 100/min is 100/min across the fleet |
 | `Migrations` | The database | Instances starting together take turns on a lock row |
 | `Storage` (uploaded files) | The instance's `jweb.storage.dir` | Set `jweb.storage.s3.bucket`: every instance reads and writes the one bucket, and `Storage.url` points at it |
 
@@ -742,3 +743,38 @@ users.ttl("42"); users.stats();                           // CacheStats(total, a
 
 Background cleanup runs every minute. Size-capped caches evict the nearest-expiry entry (not
 LRU).
+
+### Shared across instances (`Cache.shared`, `Cache.once`, `Cache.lock`)
+
+The caches above live in this instance's memory. The shared side is what every instance
+sees — a Redis when `jweb.cache.redis.url` (or `jweb.redis.url`, for cache and PubSub
+together) is set, spoken by the framework itself; this instance's memory otherwise, with the
+same semantics, so code and tests do not change:
+
+```java
+import jweb.Cache;
+
+record Price(String sku, long cents) {}
+static Price lookup(String sku) { return new Price(sku, 100); }
+static void sendDigest() {}
+
+Cache.Shared<Price> prices = Cache.shared("prices", Price.class, Duration.ofMinutes(10));   // values travel as JSON
+Price p = prices.getOrSet("sku-9", () -> lookup("sku-9"));
+prices.set("sku-9", p, Duration.ofHours(1));
+Optional<Price> cached = prices.get("sku-9");
+prices.delete("sku-9");
+prices.clear();                                                                          // every entry of this cache, everywhere
+Cache.shared("counts", Long.class).increment("signups", 1, Duration.ofDays(1));
+
+// Work only one instance should do
+boolean ranHere = Cache.once("digest", Duration.ofMinutes(5), () -> sendDigest());      // whoever gets the lock runs; "once per 5 minutes"
+try (Cache.Lock lock = Cache.lock("import", Duration.ofMinutes(1)).orElseThrow()) {    // held until closed, or until a dead holder's minute is up
+    // ...
+}
+```
+
+A store that cannot be reached is a miss for `get`, a no-op for `set`, "not acquired" for a
+lock, and `RateLimit` lets the request through — logged once every thirty seconds, never a
+500. `RateLimit` counts in the shared store on its own when one is configured (`.shared(false)`
+keeps a limiter local, `.name("contact")` names it when the path, limit and window do not),
+so `RateLimit.perMinute(100)` is a hundred per minute across the fleet.

@@ -100,8 +100,31 @@ public class RateLimit {
         private String pathPattern = null;
         private RateLimitHandler onLimitExceeded = null;
         private boolean includeHeaders = true;
+        private String name = null;
+        private Boolean shared = null;
 
         RateLimitBuilder() {}
+
+        /**
+         * The limiter's name in the shared store, when it counts across
+         * instances; by default derived from the path, the limit and the
+         * window, which is the same on every instance.
+         */
+        public RateLimitBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        /**
+         * Whether to count in the shared cache ({@code Cache.backend()}) so a
+         * limit of 100/min is 100/min across every instance. The default:
+         * yes when a shared store is configured ({@code jweb.cache.redis.url}),
+         * this instance's memory otherwise.
+         */
+        public RateLimitBuilder shared(boolean shared) {
+            this.shared = shared;
+            return this;
+        }
 
         /**
          * Sets maximum requests allowed in the window.
@@ -209,6 +232,8 @@ public class RateLimit {
             String pattern = pathPattern;
             RateLimitHandler limitHandler = onLimitExceeded;
             boolean headers = includeHeaders;
+            String limiterName = name != null ? name : (pattern == null ? "all" : pattern) + "|" + max + "|" + windowMs;
+            Boolean useShared = shared;
 
             // Cleanup task - remove expired entries periodically
             scheduleCleanup(limits, windowMs);
@@ -226,23 +251,41 @@ public class RateLimit {
 
                 String clientKey = keyFn.apply(req);
                 long now = System.currentTimeMillis();
+                boolean acrossInstances = useShared != null ? useShared : Cache.distributed();
 
-                RateLimitEntry entry = limits.compute(clientKey, (k, existing) -> {
-                    if (existing == null || now - existing.windowStart > windowMs) {
-                        return new RateLimitEntry(now, new AtomicLong(1));
+                long count;
+                long windowStart;
+                if (acrossInstances) {
+                    // Fixed windows the instances agree on, counted in the shared store;
+                    // a store that cannot be reached lets the request through
+                    windowStart = now - now % windowMs;
+                    String key = "ratelimit:" + limiterName + ":" + clientKey + ":" + windowStart;
+                    try {
+                        count = Cache.backend().increment(key, 1, Duration.ofMillis(windowMs * 2));
+                    } catch (Cache.BackendException e) {
+                        Cache.warn("count the rate limit " + limiterName, e);
+                        return chain.next();
                     }
-                    existing.count.incrementAndGet();
-                    return existing;
-                });
+                } else {
+                    RateLimitEntry entry = limits.compute(clientKey, (k, existing) -> {
+                        if (existing == null || now - existing.windowStart > windowMs) {
+                            return new RateLimitEntry(now, new AtomicLong(1));
+                        }
+                        existing.count.incrementAndGet();
+                        return existing;
+                    });
+                    count = entry.count.get();
+                    windowStart = entry.windowStart;
+                }
 
-                long remaining = Math.max(0, max - entry.count.get());
-                long resetTime = entry.windowStart + windowMs;
+                long remaining = Math.max(0, max - count);
+                long resetTime = windowStart + windowMs;
                 long retryAfter = Math.max(0, (resetTime - now) / 1000);
 
                 RateLimitInfo info = new RateLimitInfo(max, remaining, resetTime, retryAfter);
 
                 // Check if limit exceeded
-                if (entry.count.get() > max) {
+                if (count > max) {
                     if (limitHandler != null) {
                         return limitHandler.handle(req, info);
                     }

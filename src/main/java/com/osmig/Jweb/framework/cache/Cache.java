@@ -58,6 +58,17 @@ import java.util.function.Supplier;
 public class Cache<K, V> {
 
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(5);
+
+    // Declared before GLOBAL on purpose: GLOBAL's constructor schedules its
+    // cleanup on it, and static fields initialize in declaration order — the
+    // other way round, the first touch of Cache was an ExceptionInInitializerError
+    private static final ScheduledExecutorService CLEANUP_SCHEDULER =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "Cache-Cleanup");
+                t.setDaemon(true);
+                return t;
+            });
+
     private static final Cache<String, Object> GLOBAL = new Cache<>(DEFAULT_TTL);
     private static final Map<String, Cache<?, ?>> NAMED_CACHES = new ConcurrentHashMap<>();
 
@@ -355,14 +366,6 @@ public class Cache<K, V> {
             store.remove(oldestKey);
         }
     }
-
-    // Shared scheduler for all cache instances - non-blocking
-    private static final ScheduledExecutorService CLEANUP_SCHEDULER =
-            Executors.newSingleThreadScheduledExecutor(r -> {
-                Thread t = new Thread(r, "Cache-Cleanup");
-                t.setDaemon(true);
-                return t;
-            });
 
     private void scheduleCleanup() {
         if (cleanupScheduled) return;

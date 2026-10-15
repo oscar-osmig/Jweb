@@ -20,7 +20,7 @@ import org.springframework.core.annotation.Order;
 @Configuration
 public class PubSubConfiguration {
 
-    @Value("${jweb.pubsub.redis.url:}")
+    @Value("${jweb.pubsub.redis.url:${jweb.redis.url:}}")
     private String redisUrl;
 
     @Value("${jweb.pubsub.redis.prefix:jweb:}")
