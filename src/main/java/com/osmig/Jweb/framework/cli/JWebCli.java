@@ -45,6 +45,16 @@ public class JWebCli {
     private static final String VERSION = frameworkVersion();
     private static String basePackage = "com.example";
     private static Path projectRoot = Paths.get(".");
+    /** {@code --force}: overwrite files that already exist instead of refusing. */
+    private static boolean force = false;
+
+    private static final java.util.Set<String> JAVA_KEYWORDS = java.util.Set.of(
+        "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
+        "default", "do", "double", "else", "enum", "extends", "final", "finally", "float", "for", "goto", "if",
+        "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "package", "private",
+        "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
+        "throw", "throws", "transient", "try", "void", "volatile", "while", "true", "false", "null", "var", "record",
+        "yield", "sealed", "permits", "non-sealed");
 
     /**
      * The version of the jar this runs from: {@code build-info.properties} (a
@@ -91,11 +101,12 @@ public class JWebCli {
                 case "help", "-h", "--help" -> printHelp();
                 case "version", "-v", "--version" -> System.out.println("JWeb CLI v" + VERSION);
                 default -> {
-                    System.err.println("Unknown command: " + command);
                     printHelp();
+                    throw new IllegalArgumentException("Unknown command: " + command);
                 }
             }
         } catch (Exception e) {
+            // a usage mistake or a refused write is a failed command: scripts must see a non-zero exit
             System.err.println("Error: " + e.getMessage());
             System.exit(1);
         }
@@ -164,8 +175,7 @@ public class JWebCli {
 
     private static void createProject(String[] args) throws IOException {
         if (args.length < 2) {
-            System.err.println("Usage: jweb new <project-name> [--package=com.example]");
-            return;
+            throw new IllegalArgumentException("Usage: jweb new <project-name> [--package=com.example]");
         }
 
         // The argument may be a name or a path; the project is named after its last segment
@@ -179,10 +189,15 @@ public class JWebCli {
                 packageName = args[i].substring(10);
             }
         }
+        for (String segment : packageName.split("\\.", -1)) {
+            if (!segment.matches("[a-z_][a-z0-9_]*") || JAVA_KEYWORDS.contains(segment)) {
+                throw new IllegalArgumentException("'" + packageName + "' is not a Java package name: pick a name starting with a"
+                    + " letter, or pass --package=com.example.myapp");
+            }
+        }
 
         if (Files.exists(projectDir)) {
-            System.err.println("Directory already exists: " + projectDir);
-            return;
+            throw new IllegalArgumentException("Directory already exists: " + projectDir);
         }
 
         System.out.println("Creating JWeb project: " + projectName);
@@ -225,15 +240,20 @@ public class JWebCli {
     // ==================== Code Generation ====================
 
     private static void generate(String[] args) throws IOException {
-        if (args.length < 3) {
-            System.err.println("Usage: jweb generate <type> <name> [fields...]");
-            System.err.println("Types: page, component, layout, form, resource, api");
-            return;
+        // --force may sit anywhere after the command
+        List<String> rest = new ArrayList<>();
+        for (int i = 1; i < args.length; i++) {
+            if (args[i].equals("--force") || args[i].equals("-f")) force = true; else rest.add(args[i]);
+        }
+        if (rest.size() < 2) {
+            throw new IllegalArgumentException("Usage: jweb generate <type> <name> [fields...] [--force]\n"
+                + "Types: page, component, layout, form, resource, api");
         }
 
-        String type = args[1].toLowerCase();
-        String name = args[2];
-        String[] fields = Arrays.copyOfRange(args, 3, args.length);
+        String type = rest.get(0).toLowerCase();
+        String name = requireIdentifier("name", rest.get(1));
+        String[] fields = rest.subList(2, rest.size()).toArray(String[]::new);
+        checkFields(fields);
 
         // Try to detect package from current directory
         detectProject();
@@ -245,7 +265,31 @@ public class JWebCli {
             case "form", "f" -> generateForm(name, fields);
             case "resource", "r", "crud" -> generateResource(name, fields);
             case "api" -> generateApi(name, fields);
-            default -> System.err.println("Unknown type: " + type);
+            default -> throw new IllegalArgumentException("Unknown type: " + type + " (page, component, layout, form, resource, api)");
+        }
+    }
+
+    /** A name that will be a Java identifier once it is capitalized — anything else writes code that cannot compile. */
+    static String requireIdentifier(String what, String value) {
+        if (value == null || !value.matches("[A-Za-z][A-Za-z0-9]*") || JAVA_KEYWORDS.contains(value)) {
+            throw new IllegalArgumentException("'" + value + "' cannot be a " + what + ": use letters and digits, starting"
+                + " with a letter (OrderItem, not order-item or 2things)");
+        }
+        return value;
+    }
+
+    /** Field specs ({@code name:type!}) with names that compile, are not the generated {@code id}, and are not repeated. */
+    static void checkFields(String[] specs) {
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (String spec : specs) {
+            String name = spec.indexOf(':') >= 0 ? spec.substring(0, spec.indexOf(':')) : spec;
+            requireIdentifier("field name", name);
+            if (name.equalsIgnoreCase("id")) {
+                throw new IllegalArgumentException("The id field is generated (Long id, the row's key); leave it out of the field list");
+            }
+            if (!seen.add(name.toLowerCase())) {
+                throw new IllegalArgumentException("Field '" + name + "' is listed twice");
+            }
         }
     }
 
@@ -298,20 +342,27 @@ public class JWebCli {
         String entityName = capitalize(name);
         String table = Templates.tableName(entityName);
 
-        writeFile(resolvePath("models", entityName + ".java"), Templates.record(basePackage, entityName, fields));
-        System.out.println("\u2713 Created record: " + entityName + " (the row and the form)");
-
+        Path record = resolvePath("models", entityName + ".java");
+        Path listPage = resolvePath("pages", entityName + "ListPage.java");
+        Path formPage = resolvePath("pages", entityName + "FormPage.java");
+        Path routes = resolvePath("routes", entityName + "Routes.java");
         Path migrations = projectRoot.resolve("src/main/resources/db/migration");
         Files.createDirectories(migrations);
         Path migration = migrations.resolve("V" + nextMigrationVersion(migrations) + "__create_" + table + ".sql");
+        // every target checked before any is written, so a refusal leaves no half-generated resource
+        for (Path target : List.of(record, listPage, formPage, routes)) refuseToOverwrite(target);
+
+        writeFile(record, Templates.record(basePackage, entityName, fields));
+        System.out.println("\u2713 Created record: " + entityName + " (the row and the form)");
+
         writeFile(migration, Templates.migration(entityName, fields));
         System.out.println("\u2713 Created migration: " + projectRoot.relativize(migration));
 
-        writeFile(resolvePath("pages", entityName + "ListPage.java"), Templates.resourceListPage(basePackage, entityName, fields));
+        writeFile(listPage, Templates.resourceListPage(basePackage, entityName, fields));
         System.out.println("\u2713 Created list page: " + entityName + "ListPage");
-        writeFile(resolvePath("pages", entityName + "FormPage.java"), Templates.resourceFormPage(basePackage, entityName));
+        writeFile(formPage, Templates.resourceFormPage(basePackage, entityName));
         System.out.println("\u2713 Created form page: " + entityName + "FormPage");
-        writeFile(resolvePath("routes", entityName + "Routes.java"), Templates.resourceRoutes(basePackage, entityName));
+        writeFile(routes, Templates.resourceRoutes(basePackage, entityName));
         System.out.println("\u2713 Created routes: " + entityName + "Routes (/" + table + ", /" + table + "/new, /" + table + "/:id)");
 
         System.out.println("\nThe migration runs at the next start (jweb.Migrations, over spring.datasource.url).");
@@ -326,7 +377,13 @@ public class JWebCli {
             try (var files = Files.list(migrations)) {
                 for (Path file : (Iterable<Path>) files::iterator) {
                     var m = java.util.regex.Pattern.compile("^V(\\d+)__.*\\.sql$").matcher(file.getFileName().toString());
-                    if (m.matches()) highest = Math.max(highest, Integer.parseInt(m.group(1)));
+                    if (!m.matches()) continue;
+                    try {
+                        long version = Long.parseLong(m.group(1));
+                        if (version < Integer.MAX_VALUE) highest = Math.max(highest, (int) version);
+                    } catch (NumberFormatException tooLong) {
+                        // a timestamp-style version (V20240101120000__) is not a sequence to continue
+                    }
                 }
             }
         }
@@ -347,27 +404,62 @@ public class JWebCli {
 
     // ==================== Utilities ====================
 
+    /**
+     * Finds the project this runs in: the nearest {@code pom.xml} up from the
+     * working directory is the root, and the package is the one the
+     * application class declares — the one {@code jweb new} wrote, whatever
+     * the artifactId or a {@code --package} said. The pom's own groupId and
+     * artifactId (after the {@code <parent>}, whose groupId is Spring Boot's)
+     * are the fallback.
+     */
     private static void detectProject() {
-        // Try to find pom.xml and extract package
-        Path pom = projectRoot.resolve("pom.xml");
-        if (Files.exists(pom)) {
-            try {
-                String content = Files.readString(pom);
-                int start = content.indexOf("<groupId>") + 9;
-                int end = content.indexOf("</groupId>", start);
-                if (start > 8 && end > start) {
-                    String groupId = content.substring(start, end).trim();
-                    int artStart = content.indexOf("<artifactId>") + 12;
-                    int artEnd = content.indexOf("</artifactId>", artStart);
-                    if (artStart > 11 && artEnd > artStart) {
-                        String artifactId = content.substring(artStart, artEnd).trim();
-                        basePackage = groupId + "." + artifactId.replaceAll("[^a-zA-Z0-9]", "");
-                    }
-                }
-            } catch (IOException e) {
-                // Use default
-            }
+        Path dir = Paths.get("").toAbsolutePath();
+        while (dir != null && !Files.exists(dir.resolve("pom.xml"))) dir = dir.getParent();
+        if (dir == null) return;   // not in a project: write under ./ with the default package
+        projectRoot = dir;
+
+        String declared = applicationPackage(dir.resolve("src/main/java"));
+        if (declared != null) {
+            basePackage = declared;
+            return;
         }
+        try {
+            String content = Files.readString(dir.resolve("pom.xml"));
+            int parentEnd = content.indexOf("</parent>");
+            String own = parentEnd < 0 ? content : content.substring(parentEnd);
+            String groupId = tag(own, "groupId");
+            String artifactId = tag(own, "artifactId");
+            if (groupId != null && artifactId != null) {
+                basePackage = groupId + "." + artifactId.toLowerCase().replaceAll("[^a-z0-9]", "");
+            }
+        } catch (IOException e) {
+            // Use default
+        }
+    }
+
+    /** The package of the class annotated {@code @JWebApplication} or {@code @SpringBootApplication}, or null. */
+    static String applicationPackage(Path sourceRoot) {
+        if (!Files.isDirectory(sourceRoot)) return null;
+        try (var files = Files.walk(sourceRoot)) {
+            for (Path file : (Iterable<Path>) files::iterator) {
+                if (!file.toString().endsWith(".java")) continue;
+                String source = Files.readString(file);
+                if (!source.contains("@JWebApplication") && !source.contains("@SpringBootApplication")) continue;
+                var m = java.util.regex.Pattern.compile("(?m)^\\s*package\\s+([\\w.]+)\\s*;").matcher(source);
+                if (m.find()) return m.group(1);
+            }
+        } catch (IOException | java.io.UncheckedIOException e) {
+            // fall back to the pom
+        }
+        return null;
+    }
+
+    private static String tag(String xml, String name) {
+        int start = xml.indexOf("<" + name + ">");
+        if (start < 0) return null;
+        start += name.length() + 2;
+        int end = xml.indexOf("</" + name + ">", start);
+        return end < 0 ? null : xml.substring(start, end).trim();
     }
 
     private static Path resolvePath(String subpackage, String fileName) throws IOException {
@@ -378,8 +470,16 @@ public class JWebCli {
     }
 
     private static void writeFile(Path path, String content) throws IOException {
+        refuseToOverwrite(path);
         Files.createDirectories(path.getParent());
         Files.writeString(path, content);
+    }
+
+    /** A generated file never silently replaces one that is there — the user's edits are in it — unless {@code --force} says so. */
+    private static void refuseToOverwrite(Path path) {
+        if (!force && Files.exists(path)) {
+            throw new IllegalStateException(path + " already exists; pass --force to overwrite it");
+        }
     }
 
     private static String capitalize(String s) {
@@ -394,7 +494,8 @@ public class JWebCli {
 
             Commands:
               new <name>              Create a new JWeb project
-              generate <type> <name>  Generate code (page, component, layout, form, resource, api)
+              generate <type> <name>  Generate code (page, component, layout, form, resource, api);
+                                      --force overwrites files that already exist
               build                   Package for production (jar + Dockerfile/.dockerignore)
               help                    Show this help message
               version                 Show version
@@ -524,6 +625,7 @@ public class JWebCli {
             import jweb.Middlewares;
             import %s.layouts.MainLayout;
             import %s.pages.HomePage;
+            import org.springframework.core.annotation.Order;
             import org.springframework.stereotype.Component;
 
             /**
@@ -531,8 +633,13 @@ public class JWebCli {
              * get the layout, the title hooks and the client runtime for free;
              * app.get / app.post are for handlers that answer with a fragment,
              * JSON or a redirect.
+             *
+             * @Order(0) runs this before the routes `jweb generate resource` adds
+             * (unordered beans configure after ordered ones, by name), so the layout
+             * set here is the one their pages get.
              */
             @Component
+            @Order(0)
             public class Routes implements JWebRoutes {
 
                 @Override

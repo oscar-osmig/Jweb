@@ -85,11 +85,11 @@ public final class Plural {
         return Category.OTHER;
     };
 
-    /** Romanian: one (1), few (0, or 2–19 by the last two digits), other. */
+    /** Romanian: one (1), few (0, or any other number whose last two digits are 1–19: 2, 19, 101, 219), other. */
     public static final Rule ROMANIAN = n -> {
         if (n == 1) return Category.ONE;
         long mod100 = n % 100;
-        if (n == 0 || (mod100 >= 2 && mod100 <= 19)) return Category.FEW;
+        if (n == 0 || (mod100 >= 1 && mod100 <= 19)) return Category.FEW;
         return Category.OTHER;
     };
 

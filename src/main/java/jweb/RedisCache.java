@@ -153,6 +153,10 @@ public final class RedisCache implements Cache.Backend {
                     broken = false;
                     throw new Cache.BackendException(e.getMessage(), e);
                 }
+            } catch (RuntimeException e) {
+                // whatever went wrong mid-exchange, the connection may hold half a reply: never pool it
+                broken = true;
+                throw e;
             } finally {
                 if (connection != null) {
                     if (broken || stopped) connection.close(); else if (!pool.offer(connection)) connection.close();

@@ -193,11 +193,17 @@ public final class DocsSearch {
     // ==================== text helpers ====================
 
     /** Lower-cased words of the query, punctuation dropped: {@code "Three.patch"} is {@code three}, {@code patch}. */
+    /** How much of a query is searched: the rest is ignored, so a pasted page cannot cost a scan per word. */
+    static final int MAX_QUERY_CHARS = 200;
+    static final int MAX_TERMS = 8;
+
     static List<String> terms(String query) {
         if (query == null) return List.of();
+        if (query.length() > MAX_QUERY_CHARS) query = query.substring(0, MAX_QUERY_CHARS);
         List<String> terms = new ArrayList<>();
         for (String raw : query.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}_]+")) {
             if (!raw.isEmpty() && !terms.contains(raw)) terms.add(raw);
+            if (terms.size() == MAX_TERMS) break;
         }
         return terms;
     }

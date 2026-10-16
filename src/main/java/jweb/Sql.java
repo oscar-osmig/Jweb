@@ -189,9 +189,14 @@ public final class Sql {
         return database().transaction(block);
     }
 
-    /** CRUD on one table through a record: see {@link Table}. */
+    /**
+     * CRUD on one table through a record: see {@link Table}. The table binds
+     * to the default database on first use, not here, so it can be a field
+     * of a page or sit in {@code Routes.configure} before the datasource is
+     * connected.
+     */
     public static <T> Table<T> table(String name, Class<T> type) {
-        return database().table(name, type);
+        return new Table<>(null, name, type);
     }
 
     // ==================== Database ====================
@@ -661,9 +666,16 @@ public final class Sql {
             return count;
         }
 
-        /** The generated key (the first generated column), or {@code null}. */
+        /**
+         * The generated key, or {@code null}: the column called {@code id} when
+         * the driver returned several (PostgreSQL hands back the whole row), else
+         * the first.
+         */
         public Object key() {
             if (keys == null || keys.columns().isEmpty()) return null;
+            for (String column : keys.columns()) {
+                if (normalize(column).equals("id")) return keys.get(column);
+            }
             return keys.get(keys.columns().get(0));
         }
 
@@ -710,7 +722,8 @@ public final class Sql {
      */
     public static final class Table<T> {
 
-        private final Database db;
+        /** The database this table was made on; null means "the default, whenever it is first used". */
+        private final Database bound;
         private final String name;
         private final Records<T> records;
         private final String idColumn;
@@ -721,7 +734,7 @@ public final class Sql {
             if (!type.isRecord()) {
                 throw new SqlException("Sql.table needs a record type; " + type.getName() + " is not one", null);
             }
-            this.db = db;
+            this.bound = db;
             this.name = name;
             this.records = Records.of(type);
             int id = -1;
@@ -738,6 +751,10 @@ public final class Sql {
 
         public String name() {
             return name;
+        }
+
+        private Database db() {
+            return bound != null ? bound : Sql.database();
         }
 
         /** The record type the rows map to. */
@@ -764,8 +781,22 @@ public final class Sql {
 
         /** One page of rows by id: page 1 is the first {@code size}. */
         public List<T> page(int page, int size) {
-            int offset = Math.max(0, page - 1) * Math.max(1, size);
-            return db.query(selectAll + " order by " + requireId() + " limit ? offset ?", Math.max(1, size), offset).list(records.type);
+            return db().query(selectAll + " order by " + requireId() + " limit ? offset ?", Math.max(1, size), offset(page, size)).list(records.type);
+        }
+
+        /** The offset of a page, in a long so a huge page number cannot overflow into a negative one. */
+        private static long offset(int page, int size) {
+            return (long) Math.max(0, page - 1) * Math.max(1, size);
+        }
+
+        /** The text as a LIKE pattern matching it literally: {@code %}, {@code _} and the escape itself escaped with {@code !}. */
+        static String likeContains(String text) {
+            StringBuilder out = new StringBuilder("%");
+            for (char c : text.toCharArray()) {
+                if (c == '!' || c == '%' || c == '_') out.append('!');
+                out.append(c);
+            }
+            return out.append('%').toString();
         }
 
         /**
@@ -783,12 +814,12 @@ public final class Sql {
             Object[] params = new Object[textColumns.size() + 2];
             for (int i = 0; i < textColumns.size(); i++) {
                 if (i > 0) where.append(" or ");
-                where.append("lower(").append(textColumns.get(i)).append(") like ?");
-                params[i] = "%" + text.trim().toLowerCase(java.util.Locale.ROOT) + "%";
+                where.append("lower(").append(textColumns.get(i)).append(") like ? escape '!'");
+                params[i] = likeContains(text.trim().toLowerCase(java.util.Locale.ROOT));
             }
             params[textColumns.size()] = Math.max(1, size);
-            params[textColumns.size() + 1] = Math.max(0, page - 1) * Math.max(1, size);
-            return db.query(selectAll + " where " + where + " order by " + requireId() + " limit ? offset ?", params).list(records.type);
+            params[textColumns.size() + 1] = offset(page, size);
+            return db().query(selectAll + " where " + where + " order by " + requireId() + " limit ? offset ?", params).list(records.type);
         }
 
         /** Inserts the record; the returned copy carries the generated id when the record's was null. */
@@ -804,7 +835,7 @@ public final class Sql {
             }
             String sql = "insert into " + name + " (" + String.join(", ", columns) + ") values ("
                 + String.join(", ", Collections.nCopies(columns.size(), "?")) + ")";
-            Insert result = db.insert(sql, params.toArray());
+            Insert result = db().insert(sql, params.toArray());
             if (generateId) {
                 Class<?> idType = records.components[idIndex].getType();
                 Object key = result.key(idColumn, idType);
@@ -818,7 +849,7 @@ public final class Sql {
 
         /** The row with this id, if any. */
         public Optional<T> find(Object id) {
-            return db.query(selectAll + " where " + requireId() + " = ?", id).first(records.type);
+            return db().query(selectAll + " where " + requireId() + " = ?", id).first(records.type);
         }
 
         /** The row with this id; fails when there is none. */
@@ -828,26 +859,26 @@ public final class Sql {
 
         /** Every row. */
         public List<T> all() {
-            return db.query(selectAll).list(records.type);
+            return db().query(selectAll).list(records.type);
         }
 
         /** The rows matching the clause — everything after {@code where}, ordering included. */
         public List<T> where(String clause, Object... params) {
-            return db.query(selectAll + " where " + clause, params).list(records.type);
+            return db().query(selectAll + " where " + clause, params).list(records.type);
         }
 
         /** The first row matching the clause. */
         public Optional<T> first(String clause, Object... params) {
-            return db.query(selectAll + " where " + clause, params).first(records.type);
+            return db().query(selectAll + " where " + clause, params).first(records.type);
         }
 
         public long count() {
-            Long n = db.query("select count(*) from " + name).scalar(Long.class);
+            Long n = db().query("select count(*) from " + name).scalar(Long.class);
             return n == null ? 0 : n;
         }
 
         public long count(String clause, Object... params) {
-            Long n = db.query("select count(*) from " + name + " where " + clause, params).scalar(Long.class);
+            Long n = db().query("select count(*) from " + name + " where " + clause, params).scalar(Long.class);
             return n == null ? 0 : n;
         }
 
@@ -866,7 +897,7 @@ public final class Sql {
                 params.add(values[i]);
             }
             params.add(values[idIndex]);
-            return db.update("update " + name + " set " + String.join(", ", sets) + " where " + idColumn + " = ?",
+            return db().update("update " + name + " set " + String.join(", ", sets) + " where " + idColumn + " = ?",
                 params.toArray());
         }
 
@@ -884,12 +915,12 @@ public final class Sql {
 
         /** Deletes the row with this id; whether there was one. */
         public boolean delete(Object id) {
-            return db.update("delete from " + name + " where " + requireId() + " = ?", id) > 0;
+            return db().update("delete from " + name + " where " + requireId() + " = ?", id) > 0;
         }
 
         /** Deletes the rows matching the clause; how many. */
         public int deleteWhere(String clause, Object... params) {
-            return db.update("delete from " + name + " where " + clause, params);
+            return db().update("delete from " + name + " where " + clause, params);
         }
 
         private String requireId() {
@@ -1175,6 +1206,7 @@ public final class Sql {
                     case OffsetDateTime o -> o.toLocalDateTime();
                     case ZonedDateTime z -> z.toLocalDateTime();
                     case LocalDate d -> d.atStartOfDay();
+                    case Number n -> LocalDateTime.ofInstant(Instant.ofEpochMilli(n.longValue()), ZoneId.systemDefault());   // SQLite stores timestamps as epoch millis
                     case String s -> LocalDateTime.parse(s.trim().replace(' ', 'T'));
                     default -> null;
                 };
@@ -1186,6 +1218,7 @@ public final class Sql {
                     case LocalDateTime ldt -> ldt.toLocalDate();
                     case Instant i -> LocalDate.ofInstant(i, ZoneId.systemDefault());
                     case OffsetDateTime o -> o.toLocalDate();
+                    case Number n -> LocalDate.ofInstant(Instant.ofEpochMilli(n.longValue()), ZoneId.systemDefault());
                     case String s -> LocalDate.parse(s.trim());
                     default -> null;
                 };

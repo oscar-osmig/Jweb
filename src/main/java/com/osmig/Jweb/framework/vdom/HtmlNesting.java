@@ -39,11 +39,23 @@ public final class HtmlNesting {
         "table", "caption", "colgroup", "thead", "tbody", "tfoot", "tr", "td", "th", "ul",
         "legend", "option", "optgroup", "summary");
 
-    /** Parents whose content model is phrasing content only. */
+    /** Parents whose content model is phrasing content only ({@code <legend>} also takes headings; {@code <dt>} takes flow content). */
     private static final Set<String> PHRASING_PARENTS = Set.of(
         "p", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "span", "em", "strong", "b", "i", "small",
         "code", "kbd", "samp", "var", "label", "abbr", "cite", "q", "sub", "sup", "mark", "time",
-        "dfn", "s", "u", "bdi", "bdo", "data", "output", "button", "legend", "dt");
+        "dfn", "s", "u", "bdi", "bdo", "data", "output", "button", "legend");
+
+    private static final Set<String> HEADINGS = Set.of("h1", "h2", "h3", "h4", "h5", "h6");
+
+    /** What a {@code <dt>} may not hold: sectioning and heading content, header and footer. */
+    private static final Set<String> NOT_IN_DT = Set.of(
+        "article", "aside", "nav", "section", "header", "footer", "hgroup", "h1", "h2", "h3", "h4", "h5", "h6");
+
+    /** SVG elements: a {@code <title>} inside any of them is the accessible name, not the document title. */
+    private static final Set<String> SVG_PARENTS = Set.of(   // lower case; compared against parent.toLowerCase()
+        "svg", "g", "defs", "symbol", "use", "path", "circle", "ellipse", "rect", "line", "polyline", "polygon",
+        "text", "tspan", "image", "marker", "pattern", "mask", "clippath", "lineargradient", "radialgradient",
+        "foreignobject", "switch");
 
     /** Parents whose element children must come from a fixed set (script/template/slot always allowed). */
     private static final Map<String, Set<String>> STRUCTURE = Map.ofEntries(
@@ -89,7 +101,7 @@ public final class HtmlNesting {
         if (child.indexOf('-') >= 0 || ALWAYS_ALLOWED.contains(child)) return null;   // custom elements, script, template
 
         if ("title".equals(child)) {
-            return "head".equals(parent) || "svg".equals(parent) ? null
+            return "head".equals(parent) || SVG_PARENTS.contains(parent.toLowerCase(java.util.Locale.ROOT)) ? null
                 : "<title> belongs in <head> (or inside <svg>) — for a tooltip use attrs().title(\"...\")";
         }
         Set<String> allowed = STRUCTURE.get(parent);
@@ -97,12 +109,18 @@ public final class HtmlNesting {
             return allowed.contains(child) ? null
                 : "<" + parent + "> accepts only " + list(allowed) + " children; the browser moves the <" + child + "> out of it";
         }
-        if (PHRASING_PARENTS.contains(parent) && FLOW_ONLY.contains(child)) {
+        if (PHRASING_PARENTS.contains(parent) && FLOW_ONLY.contains(child)
+                && !("legend".equals(parent) && HEADINGS.contains(child))) {
             return "<" + parent + "> holds phrasing content only (text, span, a, em, code…); the browser closes it before the <"
                 + child + "> and the DOM will not match the tree";
         }
-        if (("a".equals(parent) || "button".equals(parent) || "label".equals(parent)) && INTERACTIVE.contains(child)
-                && !("label".equals(parent) && !"label".equals(child) && !"a".equals(child) && !"button".equals(child))) {
+        if ("dt".equals(parent) && NOT_IN_DT.contains(child)) {
+            return "<dt> takes flow content but no headings, sections, header or footer";
+        }
+        // a label may hold a link ("I agree to the <a>terms</a>"); what it must not hold is another label
+        // or a second labelable control such as a button
+        if (("a".equals(parent) || "button".equals(parent)) && INTERACTIVE.contains(child)
+                || "label".equals(parent) && ("label".equals(child) || "button".equals(child))) {
             return "<" + parent + "> must not contain interactive content (<" + child + ">); the browser splits them apart";
         }
         if ("form".equals(parent) && "form".equals(child)) {

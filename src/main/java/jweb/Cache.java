@@ -298,9 +298,21 @@ public class Cache<K, V> extends com.osmig.Jweb.framework.cache.Cache<K, V> {
         }
 
         private final Map<String, Entry> entries = new ConcurrentHashMap<>();
+        private final java.util.concurrent.atomic.AtomicInteger writes = new java.util.concurrent.atomic.AtomicInteger();
 
         private static long until(Duration ttl) {
             return ttl == null ? 0 : Instant.now().plus(ttl).toEpochMilli();
+        }
+
+        /**
+         * Expiry is otherwise lazy — checked only when a key is read again — so
+         * a key written once and never read (a per-window rate-limit counter, a
+         * per-session value) would live forever. Every so many writes, sweep.
+         */
+        private void sweepEvery(int writesBetweenSweeps) {
+            if (writes.incrementAndGet() % writesBetweenSweeps != 0) return;
+            long now = System.currentTimeMillis();
+            entries.values().removeIf(e -> e.expired(now));
         }
 
         @Override
@@ -317,6 +329,7 @@ public class Cache<K, V> extends com.osmig.Jweb.framework.cache.Cache<K, V> {
         @Override
         public void set(String key, String value, Duration ttl) {
             entries.put(key, new Entry(value, until(ttl)));
+            sweepEvery(1024);
         }
 
         @Override
@@ -324,6 +337,7 @@ public class Cache<K, V> extends com.osmig.Jweb.framework.cache.Cache<K, V> {
             long now = System.currentTimeMillis();
             Entry fresh = new Entry(value, until(ttl));
             Entry result = entries.compute(key, (k, existing) -> existing == null || existing.expired(now) ? fresh : existing);
+            sweepEvery(1024);
             return result == fresh;
         }
 
@@ -339,6 +353,7 @@ public class Cache<K, V> extends com.osmig.Jweb.framework.cache.Cache<K, V> {
                 if (existing == null || existing.expired(now)) return new Entry(Long.toString(delta), until(ttl));
                 return new Entry(Long.toString(Long.parseLong(existing.value()) + delta), existing.expiresAt());
             });
+            sweepEvery(1024);
             return Long.parseLong(result.value());
         }
 

@@ -435,6 +435,11 @@ public final class Migrations {
                 return;
             } catch (SQLException taken) {
                 if (!connection.getAutoCommit()) connection.rollback();
+                // only a duplicate key means another instance holds the lock (SQLState class 23, integrity
+                // violation); anything else — a dropped connection, a missing grant — is a real error, and
+                // waiting a minute to blame a lock nobody holds would hide it
+                String state = taken.getSQLState();
+                if (state == null || !state.startsWith("23")) throw taken;
                 // held by another instance: stale ones are stolen, live ones waited for
                 try (PreparedStatement stale = connection.prepareStatement(
                     "delete from " + TABLE + " where version = ? and applied_at < ?")) {

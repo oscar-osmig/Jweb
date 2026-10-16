@@ -276,6 +276,28 @@ public class DevServer {
         return emitter;
     }
 
+    /**
+     * Ends every open hot-reload stream. A browser that is already gone (a
+     * closed tab, a killed headless Chrome) still counts as an in-flight
+     * request to Tomcat until someone writes to it, so without this a
+     * graceful shutdown waits the whole phase timeout for nobody.
+     */
+    @org.springframework.context.event.EventListener(org.springframework.context.event.ContextClosedEvent.class)
+    public void onShutdown() {
+        closeEmitters();
+    }
+
+    static void closeEmitters() {
+        for (SseEmitter emitter : emitters) {
+            try {
+                emitter.complete();
+            } catch (Exception ignored) {
+                // the client may be long gone
+            }
+        }
+        emitters.clear();
+    }
+
     private static void notifyClients() {
         String data = "{\"version\":" + version.get() + "}";
         // Use iterator to safely remove while iterating

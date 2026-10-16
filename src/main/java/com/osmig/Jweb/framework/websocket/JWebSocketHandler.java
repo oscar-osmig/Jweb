@@ -121,9 +121,20 @@ public class JWebSocketHandler extends TextWebSocketHandler {
         // tests): run the handler in its context, collect scene patches, the
         // changed states and the re-rendered live regions, then the ack —
         // or one error. This handler only puts the answer on the socket.
-        for (Object message : EventDispatch.dispatch(contextId, handlerId, event)) {
-            sendMessage(session, message);
+        // Computed AND sent under the context's lock (the same one dispatch
+        // takes, reentrant), so a PubSub push for the page cannot render a
+        // newer version in between and have this older one land after it.
+        synchronized (contextLock(contextId)) {
+            for (Object message : EventDispatch.dispatch(contextId, handlerId, event)) {
+                sendMessage(session, message);
+            }
         }
+    }
+
+    /** The page's context when this server holds it, else a throwaway: what a render-and-send is serialized on. */
+    private static Object contextLock(String contextId) {
+        StateManager.StateContext context = contextId == null ? null : StateManager.findContext(contextId);
+        return context != null ? context : new Object();
     }
 
     /**
@@ -138,7 +149,8 @@ public class JWebSocketHandler extends TextWebSocketHandler {
                 for (Object message : messages) {
                     try {
                         sendMessage(session, message);
-                    } catch (IOException e) {
+                    } catch (IOException | RuntimeException e) {
+                        // a closed or closing socket must not take the publisher's thread down with it
                         Log.warn("Push to context {} failed: {}", contextId, e.getMessage());
                     }
                 }
@@ -169,8 +181,10 @@ public class JWebSocketHandler extends TextWebSocketHandler {
      * and DOM patches) back to the session.
      */
     private void handleSetStateMessage(WebSocketSession session, SetStateMessage msg) throws IOException {
-        for (Object message : EventDispatch.setState(msg.getContextId(), msg.getStateId(), msg.getValue())) {
-            sendMessage(session, message);
+        synchronized (contextLock(msg.getContextId())) {
+            for (Object message : EventDispatch.setState(msg.getContextId(), msg.getStateId(), msg.getValue())) {
+                sendMessage(session, message);
+            }
         }
     }
 
@@ -197,7 +211,7 @@ public class JWebSocketHandler extends TextWebSocketHandler {
     public void sendMessage(WebSocketSession session, Object message) throws IOException {
         if (session.isOpen()) {
             String json = Json.stringify(message);
-            session.sendMessage(new TextMessage(json));
+            send(session, json);
         }
     }
 
@@ -206,7 +220,19 @@ public class JWebSocketHandler extends TextWebSocketHandler {
      */
     public void sendRawMessage(WebSocketSession session, String json) throws IOException {
         if (session.isOpen()) {
-            session.sendMessage(new TextMessage(json));
+            send(session, json);
+        }
+    }
+
+    /**
+     * One writer at a time per socket: the container thread answering a click
+     * and the PubSub thread pushing a change may both have something for the
+     * same page, and Tomcat throws (and drops the connection) on a second
+     * concurrent write.
+     */
+    private static void send(WebSocketSession session, String json) throws IOException {
+        synchronized (session) {
+            if (session.isOpen()) session.sendMessage(new TextMessage(json));
         }
     }
 

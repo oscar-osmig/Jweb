@@ -122,14 +122,16 @@ public final class Browser implements AutoCloseable {
 
     /** Launches the Chrome at the path, headless, with a throwaway profile. */
     public static Browser launch(Path chrome) {
+        Path profile = null;
+        Process process = null;
         try {
-            Path profile = Files.createTempDirectory("jweb-browser-");
+            profile = Files.createTempDirectory("jweb-browser-");
             List<String> command = new ArrayList<>(List.of(chrome.toString(),
                 "--headless=new", "--disable-gpu", "--no-sandbox", "--disable-dev-shm-usage",
                 "--no-first-run", "--no-default-browser-check", "--disable-extensions",
                 "--remote-debugging-port=0", "--user-data-dir=" + profile,
                 "--window-size=1280,900", "about:blank"));
-            Process process = new ProcessBuilder(command)
+            process = new ProcessBuilder(command)
                 .redirectErrorStream(true)
                 .redirectOutput(profile.resolve("chrome.log").toFile())
                 .start();
@@ -137,7 +139,12 @@ public final class Browser implements AutoCloseable {
             Cdp cdp = Cdp.connect(endpoint);
             Log.debug("Browser: Chrome {} at {}", process.pid(), endpoint);
             return new Browser(process, profile, cdp);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
+            // whatever failed — no port, no socket — the Chrome that may be running is ours to kill,
+            // or it outlives the test run; the profile goes with it
+            if (process != null) process.destroyForcibly();
+            if (profile != null) deleteQuietly(profile);
+            if (e instanceof RuntimeException r && !(e instanceof IllegalStateException)) throw r;
             throw new IllegalStateException("Could not launch Chrome at " + chrome + ": " + e.getMessage(), e);
         }
     }
@@ -210,7 +217,10 @@ public final class Browser implements AutoCloseable {
         try {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
+            // every caller is a wait loop: with the flag merely re-set, each later sleep would return at
+            // once and the loop would spin until its deadline — stop the wait instead
             Thread.currentThread().interrupt();
+            throw new IllegalStateException("Interrupted while waiting on the browser", e);
         }
     }
 
@@ -370,7 +380,11 @@ public final class Browser implements AutoCloseable {
         }
 
         public Page waitForText(String selector, String text, Duration timeout) {
-            poll(() -> exists(selector) && text(selector).contains(text), timeout, "\"" + text + "\" in " + selector);
+            // one round trip, so a patch that replaces the element between "is it there" and "what does it
+            // say" cannot turn into a failure — in the page, a missing element is simply "not yet"
+            String probe = "(function(){var e=document.querySelector(" + Json.stringify(selector) + ");"
+                + "return !!e&&(e.textContent||'').indexOf(" + Json.stringify(text) + ")>=0;})()";
+            poll(() -> eval(probe).asBoolean(), timeout, "\"" + text + "\" in " + selector);
             return this;
         }
 
@@ -388,10 +402,19 @@ public final class Browser implements AutoCloseable {
 
         private void poll(Supplier<Boolean> condition, Duration timeout, String what) {
             long deadline = System.currentTimeMillis() + timeout.toMillis();
+            Throwable lastFailure = null;
             while (true) {
-                if (condition.get()) return;
+                try {
+                    if (condition.get()) return;
+                    lastFailure = null;
+                } catch (AssertionError | IllegalStateException transientState) {
+                    // the page is mid-change (an element swapped out between two evaluations, a navigation
+                    // destroying the execution context): not yet, rather than a failure — unless it lasts
+                    lastFailure = transientState;
+                }
                 if (System.currentTimeMillis() > deadline) {
                     throw new AssertionError("Timed out after " + timeout.toMillis() + " ms waiting for " + what
+                        + (lastFailure == null ? "" : "\nlast attempt: " + lastFailure.getMessage())
                         + (console.isEmpty() ? "" : "\nconsole: " + String.join("\n", console)));
                 }
                 sleep(50);

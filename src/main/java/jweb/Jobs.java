@@ -223,6 +223,17 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
         void update(Job job);
 
         /**
+         * Writes a run's outcome, but only while {@code worker} still holds the
+         * job: one released as stale (its worker looked dead) and claimed again
+         * keeps the new worker's row, and the late result is dropped. Whether
+         * the write landed. Stores that cannot check this just {@link #update}.
+         */
+        default boolean finish(Job job, String worker) {
+            update(job);
+            return true;
+        }
+
+        /**
          * The next due job, moved to {@code RUNNING} for this worker in one
          * atomic step — two workers never claim the same one.
          */
@@ -309,10 +320,11 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
                 if (released > 0) Log.warn("Released {} job(s) whose worker stopped answering", released);
                 store.purgeDone(now.minus(keepDone));
             }
-            while (slots.tryAcquire()) {
+            Semaphore permits = slots;   // the one acquired from is the one released to, even if configure() swaps it meanwhile
+            while (permits.tryAcquire()) {
                 Optional<Job> claimed = store.claim(WORKER, now);
                 if (claimed.isEmpty()) {
-                    slots.release();
+                    permits.release();
                     break;
                 }
                 Job job = claimed.get();
@@ -320,11 +332,12 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
                     try {
                         run(job);
                     } finally {
-                        slots.release();
+                        permits.release();
                     }
                 });
             }
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
+            // anything escaping here would silently cancel every future tick of the scheduled poller
             Log.error("jweb.Jobs poll failed: {}", e.getMessage(), e);
         }
     }
@@ -356,7 +369,7 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
                 }
                 Object payload = handler.type() == null || job.payload() == null ? null : Json.parse(job.payload(), handler.type());
                 handler.run().accept(payload);
-                store.update(job.with(Status.DONE, attempt, job.runAt(), Instant.now(), job.lockedBy(), null));
+                finish(job.with(Status.DONE, attempt, job.runAt(), Instant.now(), job.lockedBy(), null), job.lockedBy());
                 Metrics.counter("jweb.jobs.done").increment();
             } catch (Throwable e) {
                 span.error(e);
@@ -367,12 +380,12 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
             if (attempt < job.maxAttempts()) {
                 long seconds = Math.min(3600, 1L << Math.min(attempt, 12));
                 Instant next = Instant.now().plusSeconds(seconds);
-                store.update(job.with(Status.PENDING, attempt, next, null, null, error));
+                finish(job.with(Status.PENDING, attempt, next, null, null, error), job.lockedBy());
                 Log.warn("Job '{}' ({}) failed on attempt {}/{}: {} — retrying in {}s",
                     job.name(), job.id(), attempt, job.maxAttempts(), error, seconds);
                 Metrics.counter("jweb.jobs.retried").increment();
             } else {
-                store.update(job.with(Status.FAILED, attempt, job.runAt(), Instant.now(), job.lockedBy(), error));
+                finish(job.with(Status.FAILED, attempt, job.runAt(), Instant.now(), job.lockedBy(), error), job.lockedBy());
                 Log.error("Job '{}' ({}) failed for good after {} attempt(s): {}", job.name(), job.id(), attempt, error);
                 Metrics.counter("jweb.jobs.failed").increment();
             }
@@ -380,6 +393,16 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
             Metrics.timer("jweb.jobs.run").record((System.nanoTime() - started) / 1_000_000);
         }
     }
+
+    private static void finish(Job outcome, String worker) {
+        if (!store.finish(outcome, worker)) {
+            Log.warn("Job '{}' ({}) finished after its lock had been released to another worker (it ran past jweb.jobs.timeout);"
+                + " this run's outcome is discarded", outcome.name(), outcome.id());
+        }
+    }
+
+    /** What a released job's row says about why it is pending again. */
+    static final String RELEASED = "Released: its worker stopped answering (crashed or killed mid-run)";
 
     // ==================== the in-memory store ====================
 
@@ -409,6 +432,17 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
         @Override
         public void update(Job job) {
             jobs.put(job.id(), job);
+        }
+
+        @Override
+        public boolean finish(Job job, String worker) {
+            boolean[] landed = {false};
+            jobs.computeIfPresent(job.id(), (id, current) -> {
+                if (current.status() != Status.RUNNING || !worker.equals(current.lockedBy())) return current;
+                landed[0] = true;
+                return job;
+            });
+            return landed[0];
         }
 
         @Override
@@ -449,7 +483,11 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
             int n = 0;
             for (Job j : new ArrayList<>(jobs.values())) {
                 if (j.status() == Status.RUNNING && j.lockedAt() != null && j.lockedAt().isBefore(lockedBefore)) {
-                    jobs.put(j.id(), j.with(Status.PENDING, j.attempts(), Instant.now(), null, null, j.error()));
+                    // the run that never reported back counts as an attempt: a job that takes its worker down
+                    // with it every time is dead-lettered like any other, instead of running forever
+                    int attempts = j.attempts() + 1;
+                    Status next = attempts >= j.maxAttempts() ? Status.FAILED : Status.PENDING;
+                    jobs.put(j.id(), j.with(next, attempts, Instant.now(), null, null, RELEASED));
                     n++;
                 }
             }
@@ -506,11 +544,27 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
             }
         }
 
+        /**
+         * Instants go into the {@code timestamp} columns as UTC wall time and
+         * come back the same way. Binding an Instant would go through the JVM's
+         * zone (and read back through it), which shifts an hour during a DST
+         * change and disagrees between instances in different zones — enough to
+         * release a live job as stale or run a delayed one early.
+         */
+        private static java.time.LocalDateTime utc(Instant at) {
+            return at == null ? null : java.time.LocalDateTime.ofInstant(at, java.time.ZoneOffset.UTC);
+        }
+
+        private static Instant instant(Sql.Row row, String column) {
+            java.time.LocalDateTime at = row.getLocalDateTime(column);
+            return at == null ? null : at.toInstant(java.time.ZoneOffset.UTC);
+        }
+
         @Override
         public Job add(Job job) {
             db.update("insert into " + TABLE + " (" + COLUMNS + ") values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 job.id(), job.name(), job.payload(), job.status().name(), job.attempts(), job.maxAttempts(),
-                job.runAt(), job.createdAt(), job.lockedAt(), job.lockedBy(), job.error(), job.key());
+                utc(job.runAt()), utc(job.createdAt()), utc(job.lockedAt()), job.lockedBy(), job.error(), job.key());
             return job;
         }
 
@@ -528,18 +582,26 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
         @Override
         public void update(Job job) {
             db.update("update " + TABLE + " set status = ?, attempts = ?, run_at = ?, locked_at = ?, locked_by = ?, error = ? where id = ?",
-                job.status().name(), job.attempts(), job.runAt(), job.lockedAt(), job.lockedBy(), job.error(), job.id());
+                job.status().name(), job.attempts(), utc(job.runAt()), utc(job.lockedAt()), job.lockedBy(), job.error(), job.id());
+        }
+
+        @Override
+        public boolean finish(Job job, String worker) {
+            return db.update("update " + TABLE + " set status = ?, attempts = ?, run_at = ?, locked_at = ?, locked_by = ?, error = ?"
+                    + " where id = ? and status = 'RUNNING' and locked_by = ?",
+                job.status().name(), job.attempts(), utc(job.runAt()), utc(job.lockedAt()), job.lockedBy(), job.error(),
+                job.id(), worker) == 1;
         }
 
         @Override
         public Optional<Job> claim(String worker, Instant now) {
             List<Job> candidates = db.query("select " + COLUMNS + " from " + TABLE
-                    + " where status = 'PENDING' and run_at <= ? order by run_at, created_at", now)
+                    + " where status = 'PENDING' and run_at <= ? order by run_at, created_at", utc(now))
                 .limit(10)
                 .list(SqlStore::read);
             for (Job candidate : candidates) {
                 int won = db.update("update " + TABLE + " set status = 'RUNNING', locked_at = ?, locked_by = ? "
-                    + "where id = ? and status = 'PENDING'", now, worker, candidate.id());
+                    + "where id = ? and status = 'PENDING'", utc(now), worker, candidate.id());
                 if (won == 1) {
                     return Optional.of(candidate.with(Status.RUNNING, candidate.attempts(), candidate.runAt(), now, worker, candidate.error()));
                 }
@@ -570,19 +632,23 @@ public class Jobs extends com.osmig.Jweb.framework.async.Jobs {
 
         @Override
         public int releaseStale(Instant lockedBefore) {
-            return db.update("update " + TABLE + " set status = 'PENDING', locked_at = null, locked_by = null, run_at = ? "
-                + "where status = 'RUNNING' and locked_at < ?", Instant.now(), lockedBefore);
+            // the run that never reported back counts as an attempt (see Memory.releaseStale); status is set
+            // before attempts because MySQL evaluates assignments left to right
+            return db.update("update " + TABLE
+                + " set status = case when attempts + 1 >= max_attempts then 'FAILED' else 'PENDING' end,"
+                + " attempts = attempts + 1, run_at = ?, locked_at = null, locked_by = null, error = ?"
+                + " where status = 'RUNNING' and locked_at < ?", utc(Instant.now()), RELEASED, utc(lockedBefore));
         }
 
         @Override
         public int purgeDone(Instant before) {
-            return db.update("delete from " + TABLE + " where status = 'DONE' and locked_at < ?", before);
+            return db.update("delete from " + TABLE + " where status = 'DONE' and locked_at < ?", utc(before));
         }
 
         private static Job read(Sql.Row row) {
             return new Job(row.getString("id"), row.getString("name"), row.getString("payload"),
                 Status.valueOf(row.getString("status")), row.getInt("attempts"), row.getInt("max_attempts"),
-                row.getInstant("run_at"), row.getInstant("created_at"), row.getInstant("locked_at"),
+                instant(row, "run_at"), instant(row, "created_at"), instant(row, "locked_at"),
                 row.getString("locked_by"), row.getString("error"), row.getString("job_key"));
         }
     }

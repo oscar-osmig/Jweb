@@ -107,8 +107,10 @@ public final class RenderedPage implements AutoCloseable {
 
     // ==================== reading ====================
 
+    // Readers are synchronized like absorb(): a PubSub push lands on another thread.
+
     /** The page as a browser would show it now: the render with every patch applied. */
-    public String html() {
+    public synchronized String html() {
         return rebuild(tree, regions).toHtml();
     }
 
@@ -116,13 +118,13 @@ public final class RenderedPage implements AutoCloseable {
      * The current HTML of one live region (or any patched element) by its
      * {@code data-live} / {@code id}, or {@code null} if no patch has targeted it.
      */
-    public String region(String id) {
+    public synchronized String region(String id) {
         return regions.get(id);
     }
 
     /** Every state value the server has pushed so far, by state id. */
-    public Map<String, Object> states() {
-        return Collections.unmodifiableMap(states);
+    public synchronized Map<String, Object> states() {
+        return Collections.unmodifiableMap(new LinkedHashMap<>(states));
     }
 
     /**
@@ -191,9 +193,33 @@ public final class RenderedPage implements AutoCloseable {
         return submit(id.name(), formData);
     }
 
-    /** Fires {@code keydown} with the key ({@code "Enter"}, {@code "Escape"}, …). */
+    /** Fires {@code keydown} with the key ({@code "Enter"}, {@code "Escape"}, …) and the keyCode a browser sends with it. */
     public Result keydown(String id, String key) {
-        return fire("keydown", id, e -> e.key(key));
+        return fire("keydown", id, e -> e.key(key).keyCode(keyCodeOf(key)));
+    }
+
+    /** The legacy {@code keyCode} of a key name, as browsers still report it; -1 when there is no fixed one. */
+    static int keyCodeOf(String key) {
+        if (key == null) return -1;
+        switch (key) {
+            case "Enter": return 13;
+            case "Escape": return 27;
+            case "Tab": return 9;
+            case "Backspace": return 8;
+            case "Delete": return 46;
+            case " ": case "Space": return 32;
+            case "ArrowLeft": return 37;
+            case "ArrowUp": return 38;
+            case "ArrowRight": return 39;
+            case "ArrowDown": return 40;
+            case "Home": return 36;
+            case "End": return 35;
+            case "PageUp": return 33;
+            case "PageDown": return 34;
+            default:
+                return key.length() == 1 && Character.isLetterOrDigit(key.charAt(0))
+                    ? Character.toUpperCase(key.charAt(0)) : -1;
+        }
     }
 
     public Result keydown(Id id, String key) {
@@ -217,14 +243,14 @@ public final class RenderedPage implements AutoCloseable {
      * @throws IllegalStateException    when the element has no server handler for that event type
      */
     public Result fire(String eventType, String id, Consumer<EventData> event) {
-        VElement element = find(tree, id);
-        if (element == null) {
+        Map<String, String> attributes = attributesOf(id);
+        if (attributes == null) {
             throw new IllegalArgumentException("No element with id \"" + id + "\" in the rendered page");
         }
-        String handlerId = element.getAttributes().get("data-jweb-on" + eventType);
+        String handlerId = attributes.get("data-jweb-on" + eventType);
         if (handlerId == null) {
             List<String> handlers = new ArrayList<>();
-            for (String name : element.getAttributes().keySet()) {
+            for (String name : attributes.keySet()) {
                 if (name.startsWith("data-jweb-on")) handlers.add(name.substring("data-jweb-on".length()));
             }
             throw new IllegalStateException("Element \"" + id + "\" has no server handler for \"" + eventType + "\""
@@ -366,6 +392,46 @@ public final class RenderedPage implements AutoCloseable {
     }
 
     // ==================== tree helpers ====================
+
+    /**
+     * The attributes of the element with this id as the page shows it NOW: a
+     * re-rendered live region replaces its first render, so an element it
+     * added is found, one it removed is not, and a handler it re-minted is
+     * the current one — what a browser would be clicking.
+     */
+    private synchronized Map<String, String> attributesOf(String id) {
+        VElement element = find(rebuild(tree, regions), id);
+        if (element != null) return element.getAttributes();
+        // inside a patched region, whose latest content is HTML text: read the tag out of it
+        for (String html : regions.values()) {
+            Map<String, String> attributes = tagAttributes(html, id);
+            if (attributes != null) return attributes;
+        }
+        return null;
+    }
+
+    private static final java.util.regex.Pattern TAG = java.util.regex.Pattern.compile("<[a-zA-Z][^>]*>");
+    private static final java.util.regex.Pattern ATTRIBUTE =
+        java.util.regex.Pattern.compile("([a-zA-Z_:][-a-zA-Z0-9_:.]*)\\s*=\\s*\"([^\"]*)\"");
+
+    /** The attributes of the first tag in the HTML whose id is this one, or null. */
+    static Map<String, String> tagAttributes(String html, String id) {
+        java.util.regex.Matcher tag = TAG.matcher(html);
+        while (tag.find()) {
+            String open = tag.group();
+            if (!open.contains("id=\"")) continue;
+            Map<String, String> attributes = new LinkedHashMap<>();
+            java.util.regex.Matcher attribute = ATTRIBUTE.matcher(open);
+            while (attribute.find()) attributes.put(attribute.group(1), unescape(attribute.group(2)));
+            if (id.equals(attributes.get("id"))) return attributes;
+        }
+        return null;
+    }
+
+    private static String unescape(String value) {
+        if (value.indexOf('&') < 0) return value;
+        return value.replace("&quot;", "\"").replace("&#39;", "'").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+    }
 
     private static VElement find(VNode node, String id) {
         if (node instanceof VElement element) {

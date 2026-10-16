@@ -122,6 +122,7 @@ public final class JWebRuntime {
             data:null,
             connected:false,
             reconnectAttempts:0,
+            gaveUp:false,
             maxReconnectAttempts:__RECONNECT_ATTEMPTS__,
             reconnectDelay:1000,
             expiredAction:'__EXPIRED_ACTION__',
@@ -228,7 +229,15 @@ public final class JWebRuntime {
                             if(!live){rest.push(u);return;}
                             var tpl=document.createElement('template');
                             tpl.innerHTML=u.html;
+                            // A patch may lead with the <style> its re-render introduced: that goes to
+                            // the head, and the element proper is what the region morphs into — morphing
+                            // into the <style> would replace the region with it.
                             var next=tpl.content.firstElementChild;
+                            while(next&&(next.tagName==='STYLE'||next.tagName==='LINK')){
+                                var after=next.nextElementSibling;
+                                document.head.appendChild(next);
+                                next=after;
+                            }
                             var node=next?self.morphNode(live,next):null;
                             if(!next)live.outerHTML=u.html;
                             apply(node||document,null);
@@ -524,34 +533,43 @@ public final class JWebRuntime {
             },
 
             connect:function(){
+                // One socket at a time: 'online' and 'visibilitychange' can both fire while a
+                // connect is still pending, and a second socket would race the first (its
+                // onclose would then report the live one as lost).
+                if(this.ws&&(this.ws.readyState===0||this.ws.readyState===1))return;
                 var protocol=window.location.protocol==='https:'?'wss:':'ws:';
                 var wsUrl=protocol+'//'+window.location.host+'/jweb';
                 try{
-                    this.ws=new WebSocket(wsUrl);
+                    var ws=new WebSocket(wsUrl);
+                    this.ws=ws;
                     var self=this;
-                    this.ws.onopen=function(){
+                    ws.onopen=function(){
+                        if(self.ws!==ws)return;
                         console.log('[JWeb] WebSocket connected');
                         self.connected=true;
                         self.reconnectAttempts=0;
+                        self.gaveUp=false;
                         if(self.data&&self.data.contextId){
-                            self.ws.send(JSON.stringify({type:'init',contextId:self.data.contextId}));
+                            ws.send(JSON.stringify({type:'init',contextId:self.data.contextId}));
                         }
                         // The page may have gone on without us: deliver what
                         // was fired while reconnecting (the server's context
                         // outlives a dropped socket) and take the notice down
                         if(!self.expired)self.hideNotice();
                         var queued=self.pending;self.pending=[];
-                        queued.forEach(function(d){self.ws.send(JSON.stringify(d));});
+                        queued.forEach(function(d){ws.send(JSON.stringify(d));});
                     };
-                    this.ws.onmessage=function(event){
+                    ws.onmessage=function(event){
+                        if(self.ws!==ws)return;
                         self.handleMessage(JSON.parse(event.data));
                     };
-                    this.ws.onclose=function(){
+                    ws.onclose=function(){
+                        if(self.ws!==ws)return;   // a socket already replaced says nothing about the live one
                         console.log('[JWeb] WebSocket disconnected');
                         self.connected=false;
                         self.scheduleReconnect();
                     };
-                    this.ws.onerror=function(error){
+                    ws.onerror=function(error){
                         console.error('[JWeb] WebSocket error:',error);
                     };
                 }catch(e){
@@ -571,6 +589,7 @@ public final class JWebRuntime {
                     this.reconnectTimer=setTimeout(function(){self.reconnectTimer=null;self.connect();},delay);
                 }else{
                     console.warn('[JWeb] Gave up reconnecting after '+this.maxReconnectAttempts+' attempts');
+                    this.gaveUp=true;
                     this.notice('lost');
                 }
             },
@@ -584,6 +603,7 @@ public final class JWebRuntime {
                     if(self.connected||self.expired)return;
                     if(self.reconnectTimer){clearTimeout(self.reconnectTimer);self.reconnectTimer=null;}
                     self.reconnectAttempts=0;
+                    self.gaveUp=false;
                     self.connect();
                 };
                 window.addEventListener('online',retry);
@@ -788,7 +808,9 @@ public final class JWebRuntime {
                 if(!this.connected){
                     // Hold the event for the reconnect (the server's context
                     // outlives the socket); past the give-up, say so instead
-                    if(this.reconnectAttempts>=this.maxReconnectAttempts&&!this.reconnectTimer){this.notice('lost');return;}
+                    // gaveUp, not a count: with reconnect-attempts=0 the count is "past the limit" before
+                    // the first socket has even opened, and the first click of the page would be dropped
+                    if(this.gaveUp&&!this.reconnectTimer){this.notice('lost');return;}
                     if(this.pending.length<20)this.pending.push(eventData);
                     return;
                 }

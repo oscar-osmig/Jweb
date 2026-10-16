@@ -57,7 +57,10 @@ class JWebRuntimeConnectionTest {
     void eventsFiredWhileReconnectingAreHeldNotDropped() {
         String script = JWebRuntime.getScript();
         assertTrue(script.contains("if(this.pending.length<20)this.pending.push(eventData);"), "bounded queue");
-        assertTrue(script.contains("queued.forEach(function(d){self.ws.send(JSON.stringify(d));});"), "flushed on open");
+        assertTrue(script.contains("queued.forEach(function(d){ws.send(JSON.stringify(d));});"), "flushed on open, on the socket that opened");
+        assertTrue(script.contains("if(this.ws&&(this.ws.readyState===0||this.ws.readyState===1))return;"), "one socket at a time");
+        assertTrue(script.contains("if(this.gaveUp&&!this.reconnectTimer){this.notice('lost');return;}"),
+            "dropped only after giving up — not before the first socket has opened");
         assertFalse(script.contains("console.warn('[JWeb] Not connected');"), "the old silent drop is gone");
     }
 

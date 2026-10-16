@@ -357,9 +357,14 @@ public class Auth extends com.osmig.Jweb.framework.security.Auth {
             if (cached != null && now - cached[1] < CACHE_MS) return cached[0];
             Long stored = db.query("select version from " + TABLE + " where user_id = ?", userId).scalar(Long.class);
             long version = stored == null ? 0L : stored;
+            // the ids come from cookies before their signature is checked, so a forged stream of them
+            // must not grow the cache without bound
+            if (cache.size() >= MAX_CACHED) cache.clear();
             cache.put(userId, new long[]{version, now});
             return version;
         }
+
+        private static final int MAX_CACHED = 10_000;
 
         @Override
         public long bump(String userId) {

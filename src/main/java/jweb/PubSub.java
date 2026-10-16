@@ -240,9 +240,13 @@ public final class PubSub {
             sub.close();   // the page is gone; the reaper's listener may not have run yet
             return;
         }
-        List<Object> messages = EventDispatch.push(context, () -> sub.accept(json));
-        if (!messages.isEmpty()) {
-            ContextSockets.send(sub.contextId, messages);
+        // rendered and sent under the page's lock, so a browser event handled in between cannot
+        // put a newer version of a region on the wire before this older one
+        synchronized (context) {
+            List<Object> messages = EventDispatch.push(context, () -> sub.accept(json));
+            if (!messages.isEmpty()) {
+                ContextSockets.send(sub.contextId, messages);
+            }
         }
     }
 

@@ -136,7 +136,7 @@ public final class RedisPubSub implements PubSub.Backend {
         while (running) {
             Redis.Connection connection = null;
             try {
-                connection = endpoint.connect();
+                connection = endpoint.connect(0);   // a subscriber waits as long as it takes for the next message
                 readerSocket = connection.socket;
                 connection.command("PSUBSCRIBE", prefix + "*");
                 Object ack = connection.readReply();   // [psubscribe, pattern, count]
@@ -156,7 +156,9 @@ public final class RedisPubSub implements PubSub.Backend {
                         if (r != null) r.accept(topic, payload);
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
+                // a RuntimeException here (a receiver that threw, a reply that made no sense) must not
+                // end the thread with running still true — nothing would ever resubscribe
                 subscribed = false;
                 if (running) {
                     Log.warn("PubSub: Redis subscription lost ({}); reconnecting in {} ms", e.getMessage(), backoff);

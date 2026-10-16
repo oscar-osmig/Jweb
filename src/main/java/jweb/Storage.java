@@ -249,14 +249,31 @@ public final class Storage {
         }
     }
 
-    /** Stores an upload under the exact key, with the type the browser sent. */
+    /**
+     * Stores an upload under the exact key. The type is the one the key's
+     * extension implies when the framework knows it, else the browser's when
+     * it is a well-formed media type, else {@code application/octet-stream} —
+     * a {@code Content-Type} header is the uploader's claim, not a fact.
+     */
     public static Stored put(String key, UploadedFile upload) {
         Objects.requireNonNull(upload, "upload");
         try (InputStream in = upload.getInputStream()) {
-            return put(key, in, upload.getSize(), upload.getContentType());
+            return put(key, in, upload.getSize(), uploadType(key, upload.getContentType()));
         } catch (IOException e) {
             throw new StorageException("Could not read the upload " + upload.getFilename(), e);
         }
+    }
+
+    static String uploadType(String key, String browserType) {
+        String known = TYPES.get(extension(key));
+        if (known != null) return known;
+        if (browserType != null) {
+            String t = browserType.trim();
+            int semicolon = t.indexOf(';');
+            if (semicolon > 0) t = t.substring(0, semicolon).trim();
+            if (t.matches("[A-Za-z0-9!#$&^_.+-]+/[A-Za-z0-9!#$&^_.+-]+")) return t.toLowerCase(Locale.ROOT);
+        }
+        return contentType(key);
     }
 
     /**
@@ -427,28 +444,72 @@ public final class Storage {
         Blob blob = opened.get();
         Stored info = blob.info();
         String etag = info.etag() == null ? null : quote(info.etag());
-        if (etag != null && req != null) {
-            String match = req.header("If-None-Match");
-            if (match != null && (match.equals("*") || match.contains(etag))) {
-                blob.close();
-                ResponseEntity.BodyBuilder notModified = ResponseEntity.status(304).eTag(etag);
-                if (cacheControl != null) notModified.header("Cache-Control", cacheControl);
-                return notModified.build();
-            }
+        if (req != null && notModified(req, etag, info.modified())) {
+            // decided here, not left to Spring MVC: its own 304 would never touch (or close) the body
+            blob.close();
+            ResponseEntity.BodyBuilder notModified = ResponseEntity.status(304);
+            if (etag != null) notModified.eTag(etag);
+            if (cacheControl != null) notModified.header("Cache-Control", cacheControl);
+            return notModified.build();
         }
+        String type = info.contentType() == null || info.contentType().isBlank() ? "application/octet-stream" : info.contentType();
         ResponseEntity.BodyBuilder builder = ResponseEntity.ok()
-            .header("Content-Type", info.contentType())
-            .header("Accept-Ranges", "bytes");
+            .header("Content-Type", type)
+            .header("Accept-Ranges", "bytes")
+            .header("X-Content-Type-Options", "nosniff");
+        if (isActive(type)) {
+            // stored HTML, SVG, XML or script is the uploader's: shown, but in an opaque origin with no
+            // scripts, so a file somebody uploaded cannot run with this site's cookies
+            builder.header("Content-Security-Policy", "sandbox");
+        }
         if (etag != null) builder.eTag(etag);
         if (info.modified() != null) builder.lastModified(info.modified());
         if (cacheControl != null) builder.header("Cache-Control", cacheControl);
         if (attachment != null) {
-            builder.header("Content-Disposition", "attachment; filename=\"" + attachment.replace("\"", "") + "\"; filename*=UTF-8''" + encodePath(attachment));
+            builder.header("Content-Disposition", "attachment; filename=\"" + asciiFilename(attachment)
+                + "\"; filename*=UTF-8''" + java.net.URLEncoder.encode(attachment, StandardCharsets.UTF_8).replace("+", "%20"));
         }
-        return builder.body(resource(blob));
+        return builder.body(resource(k, blob));
     }
 
-    private static Resource resource(Blob blob) {
+    /** Whether the request's validators say the client already has this version (RFC 9110 §13.2.2 precedence). */
+    private static boolean notModified(Request req, String etag, Instant modified) {
+        String match = req.header("If-None-Match");
+        if (match != null) {
+            return etag != null && (match.trim().equals("*") || match.contains(etag));
+        }
+        String since = req.header("If-Modified-Since");
+        if (since == null || modified == null) return false;
+        try {
+            Instant at = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.parse(since.trim()));
+            return modified.getEpochSecond() <= at.getEpochSecond();
+        } catch (RuntimeException badDate) {
+            return false;
+        }
+    }
+
+    /** Types a browser would execute or let script: served sandboxed. */
+    static boolean isActive(String contentType) {
+        String t = contentType.toLowerCase(Locale.ROOT);
+        int semicolon = t.indexOf(';');
+        if (semicolon > 0) t = t.substring(0, semicolon).trim();
+        return t.equals("text/html") || t.equals("application/xhtml+xml") || t.equals("image/svg+xml")
+            || t.equals("text/xml") || t.equals("application/xml") || t.endsWith("+xml")
+            || t.equals("text/javascript") || t.equals("application/javascript") || t.equals("application/x-javascript")
+            || t.equals("text/ecmascript") || t.equals("application/ecmascript");
+    }
+
+    /** The quoted-string form of a filename: no quotes, no backslashes, no control characters, so the header stays one header. */
+    static String asciiFilename(String name) {
+        StringBuilder out = new StringBuilder(name.length());
+        for (char c : name.toCharArray()) {
+            if (c == '"' || c == '\\' || c < 0x20 || c == 0x7f) continue;
+            out.append(c < 0x80 ? c : '_');
+        }
+        return out.toString();
+    }
+
+    private static Resource resource(String key, Blob blob) {
         if (blob.in() instanceof ByteArrayInputStream && blob.info().size() <= Integer.MAX_VALUE) {
             return new ByteArrayResource(blob.bytes());
         }
@@ -456,14 +517,22 @@ public final class Storage {
             blob.close();
             return new FileSystemResource(fs.file());
         }
-        return new BlobResource(blob);
+        return new BlobResource(key, blob);
     }
 
-    /** A stream of known length as a Spring resource, so ranges and lengths work. */
+    /**
+     * A stream of known length as a Spring resource, so ranges and lengths
+     * work. Spring may ask for the stream more than once — once per region of
+     * a multi-range request — and expects a fresh one each time, so the first
+     * call hands out the stream already open and later calls open the key again.
+     */
     private static final class BlobResource extends AbstractResource {
+        private final String key;
         private final Blob blob;
+        private boolean handedOut;
 
-        BlobResource(Blob blob) {
+        BlobResource(String key, Blob blob) {
+            this.key = key;
             this.blob = blob;
         }
 
@@ -473,8 +542,14 @@ public final class Storage {
         }
 
         @Override
-        public InputStream getInputStream() {
-            return blob.in();
+        public synchronized InputStream getInputStream() throws IOException {
+            if (!handedOut) {
+                handedOut = true;
+                return blob.in();
+            }
+            Optional<Blob> again = open(key);
+            if (again.isEmpty()) throw new java.io.FileNotFoundException("stored file " + key + " is gone");
+            return again.get().in();
         }
 
         @Override
@@ -490,7 +565,7 @@ public final class Storage {
 
         @Override
         public boolean isOpen() {
-            return true;
+            return false;   // the stream can be obtained again: see getInputStream
         }
 
         @Override
@@ -835,7 +910,11 @@ public final class Storage {
                 this.base = URI.create(uri.getScheme() + "://" + this.bucket + "." + uri.getAuthority() + (uri.getRawPath() == null ? "" : uri.getRawPath()));
             }
             URI b = this.base;
-            this.host = b.getHost() + (b.getPort() == -1 ? "" : ":" + b.getPort());
+            // the signed host must be the Host header the JDK client sends, and it leaves out the scheme's default port
+            boolean defaultPort = b.getPort() == -1
+                || ("https".equalsIgnoreCase(b.getScheme()) && b.getPort() == 443)
+                || ("http".equalsIgnoreCase(b.getScheme()) && b.getPort() == 80);
+            this.host = b.getHost() + (defaultPort ? "" : ":" + b.getPort());
         }
 
         /** A public bucket or a CDN in front of it: {@link Storage#url(String)} becomes {@code base/key}. */

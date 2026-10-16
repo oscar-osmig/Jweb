@@ -422,10 +422,20 @@ public final class Mail {
 
             Session() throws IOException {
                 Socket plain = new Socket();
-                plain.connect(new InetSocketAddress(host, port), timeoutMs);
-                plain.setSoTimeout(timeoutMs);
-                socket = tls == Tls.IMPLICIT ? upgrade(plain) : plain;
-                open();
+                try {
+                    plain.connect(new InetSocketAddress(host, port), timeoutMs);
+                    plain.setSoTimeout(timeoutMs);
+                    socket = tls == Tls.IMPLICIT ? upgrade(plain) : plain;
+                    open();
+                } catch (IOException | RuntimeException e) {
+                    // a failed handshake leaves a connected socket nobody holds: close it here
+                    try {
+                        plain.close();
+                    } catch (IOException ignored) {
+                        // closing anyway
+                    }
+                    throw e;
+                }
             }
 
             private void open() throws IOException {
@@ -437,6 +447,11 @@ public final class Mail {
                 SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
                 SSLSocket ssl = (SSLSocket) factory.createSocket(plain, host, port, true);
                 ssl.setUseClientMode(true);
+                // check the certificate is for this host — the JDK accepts any trusted certificate otherwise,
+                // and the password goes over this connection next
+                javax.net.ssl.SSLParameters parameters = ssl.getSSLParameters();
+                parameters.setEndpointIdentificationAlgorithm("HTTPS");
+                ssl.setSSLParameters(parameters);
                 ssl.startHandshake();
                 return ssl;
             }
@@ -516,7 +531,10 @@ public final class Mail {
                 while (true) {
                     String line = in.readLine();
                     if (line == null) throw new IOException("the server closed the connection" + (step == null ? "" : " at " + step));
-                    if (line.length() < 3) throw new IOException("malformed reply: " + line);
+                    if (line.length() < 3 || !Character.isDigit(line.charAt(0)) || !Character.isDigit(line.charAt(1))
+                            || !Character.isDigit(line.charAt(2))) {
+                        throw new IOException("malformed reply: " + line);
+                    }
                     int got = Integer.parseInt(line.substring(0, 3));
                     boolean last = line.length() == 3 || line.charAt(3) != '-';
                     if (got != code) {
@@ -640,12 +658,28 @@ public final class Mail {
 
     // ==================== helpers ====================
 
-    /** {@code "Ada <ada@example.com>"} → {@code ada@example.com}. */
+    /**
+     * {@code "Ada <ada@example.com>"} → {@code ada@example.com}. The result goes
+     * into {@code MAIL FROM:<…>} and {@code RCPT TO:<…>} as is, so it must be
+     * one address: a line break, a space or an angle bracket in it would let
+     * whoever typed the recipient end the command and write SMTP of their own.
+     */
     static String address(String mailbox) {
+        if (mailbox == null) throw new MailException("An address is required");
         int open = mailbox.indexOf('<');
         int close = mailbox.indexOf('>');
-        if (open >= 0 && close > open) return mailbox.substring(open + 1, close).trim();
-        return mailbox.trim();
+        String address = open >= 0 && close > open ? mailbox.substring(open + 1, close).trim() : mailbox.trim();
+        int at = address.indexOf('@');
+        if (at <= 0 || at == address.length() - 1) {
+            throw new MailException("'" + mailbox + "' is not an email address");
+        }
+        for (int i = 0; i < address.length(); i++) {
+            char c = address.charAt(i);
+            if (c <= ' ' || c == '<' || c == '>' || c == '"' || c == 0x7f) {
+                throw new MailException("'" + mailbox + "' is not an email address");
+            }
+        }
+        return address;
     }
 
     /** SMTP: a line starting with a dot gets another, so the lone dot still ends the message. */

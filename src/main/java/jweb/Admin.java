@@ -85,7 +85,7 @@ public final class Admin {
 
     private void register() {
         app.pages(path, req -> new IndexPage());
-        app.pages(path + "/:table", req -> page(req, (table, t) -> new ListPage<>(t, req.query("q"), req.queryInt("page", 1))));
+        app.pages(path + "/:table", req -> page(req, (table, t) -> new ListPage<>(t, req.query("q"), Math.max(1, req.queryInt("page", 1)))));
         app.pages(path + "/:table/new", req -> page(req, (table, t) -> new EditPage<>(t, null, null)));
         app.pages(path + "/:table/:id", req -> page(req, (table, t) -> new EditPage<>(t, req.param("id"), null)));
         app.post(path + "/:table/save", req -> {
@@ -124,7 +124,7 @@ public final class Admin {
             return new EditPage<>(table, id == null || id.isBlank() ? null : id, bound);
         }
         T saved = table.save(bound.value());
-        return Response.redirect(path + "/" + table.name() + "?saved=" + table.idOf(saved));
+        return Response.redirect(path + "/" + table.name() + "?saved=" + segment(table.idOf(saved)));
     }
 
     /** The id as the record's id type wants it. */
@@ -133,10 +133,20 @@ public final class Admin {
         for (java.lang.reflect.RecordComponent component : table.type().getRecordComponents()) {
             if (component.getName().equals("id")) idType = component.getType();
         }
-        if (idType == Long.class || idType == long.class) return Long.parseLong(raw);
-        if (idType == Integer.class || idType == int.class) return Integer.parseInt(raw);
-        if (idType == java.util.UUID.class) return java.util.UUID.fromString(raw);
+        try {
+            if (idType == Long.class || idType == long.class) return Long.parseLong(raw);
+            if (idType == Integer.class || idType == int.class) return Integer.parseInt(raw);
+            if (idType == java.util.UUID.class) return java.util.UUID.fromString(raw);
+        } catch (IllegalArgumentException notAnId) {
+            // NumberFormatException included: a URL with an id of the wrong shape is a missing row, not a crash
+            throw JWebException.notFound("No " + table.name() + " with id " + raw);
+        }
         return raw;
+    }
+
+    /** An id as one path segment of a link — encoded, so a string id with {@code ?}, {@code #} or a space still addresses its row. */
+    private static String segment(Object id) {
+        return java.net.URLEncoder.encode(String.valueOf(id), java.nio.charset.StandardCharsets.UTF_8).replace("+", "%20");
     }
 
     // ==================== pages ====================
@@ -232,8 +242,8 @@ public final class Admin {
                 if (table.hasId()) {
                     Object id = table.idOf(row);
                     cells.add(td(div(ACTIONS,
-                        a(BUTTON, href(path + "/" + table.name() + "/" + id), "Edit"),
-                        form(action(path + "/" + table.name() + "/" + id + "/delete"), method("post"), style().margin(zero),
+                        a(BUTTON, href(path + "/" + table.name() + "/" + segment(id)), "Edit"),
+                        form(action(path + "/" + table.name() + "/" + segment(id) + "/delete"), method("post"), style().margin(zero),
                             Csrf.tokenField(),
                             button(BUTTON, DANGER, type("submit"), "Delete")))));
                 }

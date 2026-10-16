@@ -246,9 +246,14 @@ public class Fetch {
      */
     public FetchResult send() {
         try (jweb.Trace.Span span = jweb.Trace.span("jweb.fetch", "http.method", method)) {
-            URI uri = URI.create(url);
-            span.tag("http.url", uri.getRawQuery() == null ? url : url.substring(0, url.indexOf('?')));
             try {
+                URI uri;
+                try {
+                    uri = URI.create(url);
+                } catch (IllegalArgumentException e) {
+                    throw new FetchException("Invalid URL: " + url, e);
+                }
+                span.tag("http.url", uri.getRawQuery() == null ? url : url.substring(0, url.indexOf('?')));
                 FetchResult result = exchange(uri);
                 span.tag("http.status", result.status());
                 return result;

@@ -1,5 +1,7 @@
 package jweb;
 
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -22,8 +24,14 @@ final class Redis {
 
     private Redis() {}
 
-    /** Where a Redis is: parsed from {@code redis://[user[:password]@]host[:port]}, {@code rediss://} for TLS. */
-    record Endpoint(String host, int port, boolean tls, String username, String password) {
+    /** How long a command may wait for its reply before the connection counts as dead. */
+    static final int REPLY_TIMEOUT_MILLIS = 5_000;
+
+    /**
+     * Where a Redis is: parsed from {@code redis://[user[:password]@]host[:port][/db]},
+     * {@code rediss://} for TLS.
+     */
+    record Endpoint(String host, int port, boolean tls, String username, String password, int database) {
 
         static Endpoint parse(String url) {
             URI uri = URI.create(url.trim());
@@ -44,15 +52,51 @@ final class Redis {
                     pass = info.substring(colon + 1);
                 }
             }
-            return new Endpoint(host, port, scheme.equals("rediss"), user, pass == null || pass.isEmpty() ? null : pass);
+            int database = 0;
+            String path = uri.getPath();
+            if (path != null && path.length() > 1) {
+                try {
+                    database = Integer.parseInt(path.substring(1));
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Redis URL path must be a database number (redis://host/2), got " + url);
+                }
+                if (database < 0) throw new IllegalArgumentException("Redis database must not be negative, got " + url);
+            }
+            return new Endpoint(host, port, scheme.equals("rediss"), user, pass == null || pass.isEmpty() ? null : pass, database);
         }
 
-        /** A connected, authenticated connection that answered PING. */
+        /** A connected, authenticated connection that answered PING; replies time out after {@link #REPLY_TIMEOUT_MILLIS}. */
         Connection connect() throws IOException {
+            return connect(REPLY_TIMEOUT_MILLIS);
+        }
+
+        /**
+         * A connected, authenticated connection that answered PING, with
+         * {@code readTimeoutMillis} as its read timeout afterwards — 0 for a
+         * subscriber that legitimately waits forever for the next message.
+         */
+        Connection connect(int readTimeoutMillis) throws IOException {
             Socket socket = tls ? SSLSocketFactory.getDefault().createSocket() : new Socket();
-            socket.connect(new InetSocketAddress(host, port), 5_000);
-            socket.setKeepAlive(true);
-            socket.setTcpNoDelay(true);
+            try {
+                socket.connect(new InetSocketAddress(host, port), 5_000);
+                socket.setKeepAlive(true);
+                socket.setTcpNoDelay(true);
+                socket.setSoTimeout(REPLY_TIMEOUT_MILLIS);
+                if (socket instanceof SSLSocket ssl) {
+                    // without this the JDK accepts any CA-signed certificate for any name
+                    SSLParameters parameters = ssl.getSSLParameters();
+                    parameters.setEndpointIdentificationAlgorithm("HTTPS");
+                    ssl.setSSLParameters(parameters);
+                    ssl.startHandshake();
+                }
+            } catch (IOException | RuntimeException e) {
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                    // closing anyway
+                }
+                throw e;
+            }
             Connection connection = new Connection(socket);
             try {
                 if (password != null) {
@@ -63,13 +107,18 @@ final class Redis {
                     }
                     connection.readReply();   // +OK, or -ERR which throws
                 }
+                if (database != 0) {
+                    connection.command("SELECT", Integer.toString(database));
+                    connection.readReply();   // +OK, or -ERR which throws
+                }
                 connection.command("PING");
                 Object pong = connection.readReply();
                 if (!"PONG".equals(pong)) {
                     throw new IOException("Unexpected PING reply: " + pong);
                 }
+                socket.setSoTimeout(readTimeoutMillis);
                 return connection;
-            } catch (IOException e) {
+            } catch (IOException | RuntimeException e) {
                 connection.close();
                 throw e;
             }
@@ -123,9 +172,9 @@ final class Redis {
                 case '-':
                     throw new IOException("Redis error: " + line);
                 case ':':
-                    return Long.parseLong(line);
+                    return number(line);
                 case '$': {
-                    int length = Integer.parseInt(line);
+                    int length = (int) number(line);
                     if (length < 0) return null;
                     byte[] bytes = in.readNBytes(length);
                     if (bytes.length < length) throw new EOFException("Redis closed the connection mid-reply");
@@ -133,7 +182,7 @@ final class Redis {
                     return new String(bytes, StandardCharsets.UTF_8);
                 }
                 case '*': {
-                    int count = Integer.parseInt(line);
+                    int count = (int) number(line);
                     if (count < 0) return null;
                     List<Object> items = new ArrayList<>(count);
                     for (int i = 0; i < count; i++) items.add(readReply());
@@ -141,6 +190,15 @@ final class Redis {
                 }
                 default:
                     throw new IOException("Unexpected Redis reply type '" + (char) type + "'");
+            }
+        }
+
+        /** A RESP length or integer line; anything else means the stream is out of step and the connection is done for. */
+        private static long number(String line) throws IOException {
+            try {
+                return Long.parseLong(line);
+            } catch (NumberFormatException e) {
+                throw new IOException("Malformed Redis reply: expected a number, got '" + line + "'");
             }
         }
 

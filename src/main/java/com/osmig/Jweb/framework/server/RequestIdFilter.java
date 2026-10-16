@@ -27,7 +27,11 @@ public final class RequestIdFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String id = jweb.Request.idFromHeader(request.getHeader(jweb.Request.ID_HEADER));
+        // the filter runs again on the error dispatch (shouldNotFilterErrorDispatch is false): the id the
+        // failing request already has is the one its log lines carry, so the error page must show that one
+        String id = request.getAttribute(jweb.Request.ID_ATTRIBUTE) instanceof String existing && !existing.isEmpty()
+            ? existing
+            : jweb.Request.idFromHeader(request.getHeader(jweb.Request.ID_HEADER));
         if (id == null) id = jweb.Request.newId();
         request.setAttribute(jweb.Request.ID_ATTRIBUTE, id);
         response.setHeader(jweb.Request.ID_HEADER, id);
