@@ -58,6 +58,20 @@
 				<jweb.demo.excludes>nothing-is-excluded/**</jweb.demo.excludes>
 				<jweb.repackage.skip>false</jweb.repackage.skip>
 			</properties>
+			<dependencies>
+				<!-- The sample app keeps its messages and snippets in Mongo. The library
+				     declares the driver <optional> (below), and Spring Boot's repackage leaves
+				     optional dependencies out of the executable jar, so the demo declares it
+				     the way any app using jweb.Mongo does. optional=false must be explicit:
+				     Maven merges this with the main declaration by artifact and would keep
+				     its optional=true otherwise. The Dockerfile checks the jar for it. -->
+				<dependency>
+					<groupId>org.mongodb</groupId>
+					<artifactId>mongodb-driver-sync</artifactId>
+					<version>5.10.0</version>
+					<optional>false</optional>
+				</dependency>
+			</dependencies>
 		</profile>
 
 		<!-- ./mvnw -Pcentral deploy  →  Maven Central, via the Sonatype Central Portal.

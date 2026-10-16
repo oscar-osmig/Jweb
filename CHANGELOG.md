@@ -9,7 +9,12 @@ and docs work is committed to `main` without one.
 
 ## [Unreleased]
 
-Nothing yet.
+- **The demo image ships the MongoDB driver again.** 3.0.3 made the driver `<optional>` for
+  library consumers, and Spring Boot's repackage leaves optional dependencies out of the
+  executable jar — so jweb.build started without Mongo and `/snippets` answered 500 for a few
+  minutes. The `demo` profile now declares the driver, as any app using `jweb.Mongo` does,
+  and the Dockerfile fails the image build if the jar lacks it. Nothing changes for the
+  library.
 
 ## [3.0.3] — 2026-10-15
 

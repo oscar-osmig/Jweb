@@ -25,6 +25,14 @@ RUN for f in $(grep -o '"readme/[^"]*"' src/main/java/com/osmig/Jweb/app/docs/Do
       test -s "target/classes/$f" || { echo "ERROR: target/classes/$f missing — documentation is not in the build context"; exit 1; }; \
     done
 
+# The library declares the MongoDB driver <optional>, and Spring Boot's repackage
+# leaves optional dependencies out of the executable jar. The demo app keeps its
+# messages and snippets in Mongo, so the demo profile declares the driver itself;
+# if that declaration goes, the image starts without Mongo and /snippets is a 500
+# (3.0.3 shipped exactly that for a few minutes). Fail the build instead.
+RUN unzip -l target/*-exec.jar | grep -q 'mongodb-driver-sync' \
+      || { echo "ERROR: the demo jar has no MongoDB driver — add it to the demo profile in pom.xml"; exit 1; }
+
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
