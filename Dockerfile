@@ -30,8 +30,10 @@ RUN for f in $(grep -o '"readme/[^"]*"' src/main/java/com/osmig/Jweb/app/docs/Do
 # messages and snippets in Mongo, so the demo profile declares the driver itself;
 # if that declaration goes, the image starts without Mongo and /snippets is a 500
 # (3.0.3 shipped exactly that for a few minutes). Fail the build instead.
-RUN unzip -l target/*-exec.jar | grep -q 'mongodb-driver-sync' \
-      || { echo "ERROR: the demo jar has no MongoDB driver — add it to the demo profile in pom.xml"; exit 1; }
+RUN for lib in mongodb-driver-sync mongodb-driver-core bson; do \
+      unzip -l target/*-exec.jar | grep -q "BOOT-INF/lib/$lib-" \
+        || { echo "ERROR: the demo jar has no $lib — declare it (optional=false) in the demo profile in pom.xml"; exit 1; }; \
+    done
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-alpine

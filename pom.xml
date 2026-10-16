@@ -71,6 +71,21 @@
 					<version>5.10.0</version>
 					<optional>false</optional>
 				</dependency>
+				<!-- Its two dependencies are declared optional below as well, and Maven's
+				     nearest-wins keeps those declarations over the driver's transitive ones,
+				     so they need the same treatment or the jar has a driver that cannot link. -->
+				<dependency>
+					<groupId>org.mongodb</groupId>
+					<artifactId>mongodb-driver-core</artifactId>
+					<version>5.10.0</version>
+					<optional>false</optional>
+				</dependency>
+				<dependency>
+					<groupId>org.mongodb</groupId>
+					<artifactId>bson</artifactId>
+					<version>5.10.0</version>
+					<optional>false</optional>
+				</dependency>
 			</dependencies>
 		</profile>
 
