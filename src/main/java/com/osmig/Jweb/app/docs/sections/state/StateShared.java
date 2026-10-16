@@ -8,7 +8,7 @@ public final class StateShared {
     private StateShared() {}
 
     public static Element render() {
-        return section(
+        return since("v3.0.3", section(
             h3Title("Shared Cache and Locks"),
             para("Cache.create and Cache.named live in this instance's memory. Cache.shared(name, Type.class) is " +
                  "what every instance sees: a Redis when jweb.cache.redis.url (or jweb.redis.url, for cache and " +
@@ -35,6 +35,6 @@ try (Cache.Lock lock = Cache.lock("import", Duration.ofMinutes(1)).orElseThrow()
                  "RateLimit counts in the shared store on its own once one is configured, so perMinute(100) is a " +
                  "hundred per minute across the fleet; .shared(false) keeps a limiter local."),
             docTip("One URL for everything: jweb.redis.url serves both the shared cache and PubSub.")
-        );
+        ));
     }
 }

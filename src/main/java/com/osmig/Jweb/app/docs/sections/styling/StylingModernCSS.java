@@ -16,30 +16,37 @@ public final class StylingModernCSS {
             codeBlock("""
 import static jweb.Css.*;
 
+Cls TRIGGER = cls("trigger");
+Cls TOOLTIP = cls("tooltip");
+Cls POPUP = cls("popup");
+Cls DROPDOWN = cls("dropdown");
+Cls TIP = cls("tip");
+Cls SUB = cls("sub");
+
 // Define an anchor
-rule(".trigger").apply(anchorName("--tooltip-anchor"))
+rule(TRIGGER).apply(anchorName("--tooltip-anchor"))
 
 // Position relative to anchor using position-area
-rule(".tooltip")
+rule(TOOLTIP)
     .apply(positionAnchor("--tooltip-anchor"))
     .apply(positionArea("top"))
     .position(absolute)
 
 // Using anchor() function for fine-grained control
-rule(".popup")
+rule(POPUP)
     .top(anchor("--btn", "bottom"))
     .left(anchor("--btn", "left"))
 
 // Fallback positioning (try top, then bottom)
-rule(".dropdown")
+rule(DROPDOWN)
     .apply(positionAnchor("--menu"))
     .apply(positionTryFallbacks("flip-block", "flip-inline"))
 
 // Convenience: position above/below/left/right
-rule(".tip")
+rule(TIP)
     .apply(positionAnchor("--target"))
     .apply(positionAbove())    // shorthand for positionArea("top")
-rule(".sub")
+rule(SUB)
     .apply(positionAnchor("--target"))
     .apply(positionBelow())    // shorthand for positionArea("bottom")"""),
 
@@ -48,28 +55,34 @@ rule(".sub")
             codeBlock("""
 import static jweb.Css.*;
 
+Cls CAROUSEL = cls("carousel");
+Cls CAROUSEL_ITEM = cls("carousel-item");
+Cls PAGE_CONTAINER = cls("page-container");
+Cls PAGE_SECTION = cls("page-section");
+Cls PANEL = cls("panel");
+
 // Horizontal carousel
-rule(".carousel")
+rule(CAROUSEL)
     .apply(snapTypeX("mandatory"))    // snap on X axis
     .apply(snapPadding("0 20px"))     // padding at snap edges
     .overflowX(auto)
 
-rule(".carousel-item")
+rule(CAROUSEL_ITEM)
     .apply(snapAlignCenter())         // snap to center
     .apply(snapStopAlways())          // always stop at each item
 
 // Vertical page snap
-rule(".page-container")
+rule(PAGE_CONTAINER)
     .apply(snapTypeY("proximity"))    // snap when close
     .overflowY(scroll)
     .height(vh(100))
 
-rule(".page-section")
+rule(PAGE_SECTION)
     .apply(snapAlignStart())
     .height(vh(100))
 
 // Overscroll behavior
-rule(".panel")
+rule(PANEL)
     .apply(overscrollBehaviorY("contain"))  // prevent parent scroll"""),
 
             h3Title("Text Wrapping"),
@@ -77,58 +90,72 @@ rule(".panel")
             codeBlock("""
 import static jweb.Css.*;
 
+Cls PREVIEW = cls("preview");
+Cls NOWRAP = cls("nowrap");
+Cls LONG_URLS = cls("long-urls");
+Cls CJK = cls("cjk");
+Cls OVERFLOW = cls("overflow");
+Cls ARTICLE = cls("article");
+Cls ELLIPSIS = cls("ellipsis");
+
 // Balanced line lengths (great for headings)
-rule("h1, h2").apply(textWrapBalance())
+rule(Selector.type("h1").or(Selector.type("h2"))).apply(textWrapBalance())
 
 // Better orphan/widow handling (for body text)
-rule("p").apply(textWrapPretty())
+rule(Selector.type("p")).apply(textWrapPretty())
 
 // Truncate to N lines with ellipsis
-rule(".preview").apply(lineClamp(3))
+rule(PREVIEW).apply(lineClamp(3))
 // Shows max 3 lines, then "..."
 
 // Prevent wrapping
-rule(".nowrap").apply(textWrapNowrap())
+rule(NOWRAP).apply(textWrapNowrap())
 
 // Word breaking
-rule(".long-urls").apply(wordBreakAll())        // break anywhere
-rule(".cjk").apply(wordBreakKeepAll())          // keep CJK together
-rule(".overflow").apply(overflowWrapBreakWord()) // break on overflow
+rule(LONG_URLS).apply(wordBreakAll())        // break anywhere
+rule(CJK).apply(wordBreakKeepAll())          // keep CJK together
+rule(OVERFLOW).apply(overflowWrapBreakWord()) // break on overflow
 
 // Hyphenation
-rule(".article").apply(hyphensAuto())
+rule(ARTICLE).apply(hyphensAuto())
 
 // Text overflow
-rule(".ellipsis").apply(textOverflowEllipsis())"""),
+rule(ELLIPSIS).apply(textOverflowEllipsis())"""),
 
             h3Title("Subgrid"),
             para("Inherit parent grid tracks in nested grids."),
             codeBlock("""
 import static jweb.Css.*;
 
+Cls CARD_GRID = cls("card-grid");
+Cls CARD = cls("card");
+Cls FULL_CHILD = cls("full-child");
+Cls NAMED_CHILD = cls("named-child");
+Cls SPAN_ALL = cls("span-all");
+
 // Parent grid
-rule(".card-grid")
+rule(CARD_GRID)
     .display(grid)
     .gridTemplateColumns("repeat(3, 1fr)")
     .gap(rem(1))
 
 // Child inherits parent columns
-rule(".card")
+rule(CARD)
     .display(grid)
     .apply(subgridColumns())    // grid-template-columns: subgrid
 
 // Inherit both axes
-rule(".full-child")
+rule(FULL_CHILD)
     .display(grid)
     .apply(subgridBoth())       // columns and rows from parent
 
 // Named line references
-rule(".named-child")
+rule(NAMED_CHILD)
     .display(grid)
     .apply(subgridColumnsNamed("[start] [end]"))
 
 // Grid placement helpers
-rule(".span-all")
+rule(SPAN_ALL)
     .apply(gridColumnFull())    // grid-column: 1 / -1"""),
 
             h3Title("Masking and Clipping"),
@@ -136,70 +163,91 @@ rule(".span-all")
             codeBlock("""
 import static jweb.Css.*;
 
+Cls MASKED = cls("masked");
+Cls AVATAR = cls("avatar");
+Cls OVAL = cls("oval");
+Cls ARROW = cls("arrow");
+Cls DIAMOND = cls("diamond");
+Cls PENTAGON = cls("pentagon");
+Cls HEXAGON = cls("hexagon");
+Cls STAR = cls("star");
+Cls TRI_UP = cls("tri-up");
+Cls TRI_DOWN = cls("tri-down");
+Cls CUSTOM = cls("custom");
+
 // Mask with image
-rule(".masked").apply(maskImage("url(mask.svg)"))
+rule(MASKED).apply(maskImage("url(mask.svg)"))
                .apply(maskMode("alpha"))
 
 // Clip to circle
-rule(".avatar").apply(clipCircle("50%"))
+rule(AVATAR).apply(clipCircle("50%"))
 
 // Clip to ellipse
-rule(".oval").apply(clipEllipse("50%", "40%"))
+rule(OVAL).apply(clipEllipse("50%", "40%"))
 
 // Clip to polygon
-rule(".arrow").apply(clipPolygon(
+rule(ARROW).apply(clipPolygon(
     "50% 0%", "100% 100%", "0% 100%"))
 
 // Preset shapes
-rule(".diamond").apply(clipDiamond())
-rule(".pentagon").apply(clipPentagon())
-rule(".hexagon").apply(clipHexagon())
-rule(".star").apply(clipStar())
-rule(".tri-up").apply(clipTriangleUp())
-rule(".tri-down").apply(clipTriangleDown())
+rule(DIAMOND).apply(clipDiamond())
+rule(PENTAGON).apply(clipPentagon())
+rule(HEXAGON).apply(clipHexagon())
+rule(STAR).apply(clipStar())
+rule(TRI_UP).apply(clipTriangleUp())
+rule(TRI_DOWN).apply(clipTriangleDown())
 
 // SVG path clipping
-rule(".custom").apply(clipSvgPath("M0,0 L100,0 L50,100 Z"))"""),
+rule(CUSTOM).apply(clipSvgPath("M0,0 L100,0 L50,100 Z"))"""),
 
             h3Title("Logical Properties"),
             para("Direction-aware properties that adapt to RTL/LTR and writing modes."),
             codeBlock("""
 import static jweb.Css.*;
 
+Cls BOX = cls("box");
+Cls CENTERED = cls("centered");
+Cls INDENT = cls("indent");
+Cls CARD = cls("card");
+Cls HIGHLIGHTED = cls("highlighted");
+Cls OVERLAY = cls("overlay");
+Cls START_ALIGNED = cls("start-aligned");
+Cls END_ALIGNED = cls("end-aligned");
+
 // Sizing (replaces width/height)
-rule(".box")
+rule(BOX)
     .apply(inlineSize("300px"))       // width in LTR
     .apply(blockSize("200px"))        // height in LTR
     .apply(maxInlineSize("100%"))
 
 // Margin (replaces margin-left/right/top/bottom)
-rule(".centered")
+rule(CENTERED)
     .apply(marginInline("auto"))       // horizontal center
     .apply(marginBlock("1rem"))        // vertical margin
 
 // Start/end for asymmetric spacing
-rule(".indent")
+rule(INDENT)
     .apply(marginInlineStart("2rem"))  // left in LTR, right in RTL
     .apply(paddingInlineEnd("1rem"))
 
 // Padding
-rule(".card")
+rule(CARD)
     .apply(paddingInline("1.5rem"))    // horizontal padding
     .apply(paddingBlock("1rem"))       // vertical padding
 
 // Borders
-rule(".highlighted")
+rule(HIGHLIGHTED)
     .apply(borderInlineStart("3px solid blue"))  // left border in LTR
     .apply(borderBlock("1px solid gray"))
 
 // Inset (replaces top/right/bottom/left)
-rule(".overlay")
+rule(OVERLAY)
     .apply(insetInline("0"))           // left: 0; right: 0
     .apply(insetBlock("0"))            // top: 0; bottom: 0
 
 // Text alignment
-rule(".start-aligned").apply(textAlignStart())  // left in LTR
-rule(".end-aligned").apply(textAlignEnd())      // right in LTR"""),
+rule(START_ALIGNED).apply(textAlignStart())  // left in LTR
+rule(END_ALIGNED).apply(textAlignEnd())      // right in LTR"""),
 
             docTip("Anchor Positioning and Subgrid are newer CSS features. Check browser support on caniuse.com. " +
                    "Logical properties are well-supported and recommended for all new projects to enable RTL support.")

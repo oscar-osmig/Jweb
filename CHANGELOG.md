@@ -9,7 +9,13 @@ and docs work is committed to `main` without one.
 
 ## [Unreleased]
 
-Work on `main` since 3.0.2. Not tagged.
+Nothing yet.
+
+## [3.0.3] — 2026-10-15
+
+The backend set. Additive over 3.0.2: nothing in a 3.0.2 app changes, except that MongoDB
+users add the driver (below). Every protocol is spoken by the framework itself — Redis, SMTP,
+S3, the DevTools protocol — so the dependency list is unchanged.
 
 - **A real browser for a test.** `jweb.Browser` launches a headless Chrome and drives it over
   the DevTools protocol itself — no WebDriver, no Playwright, nothing to add: `Browser.launch()`,
@@ -219,6 +225,27 @@ Work on `main` since 3.0.2. Not tagged.
   GPG signing and the Central publishing plugin; `developers` and `developerConnection` join
   the pom metadata. The default JitPack build is unchanged. The remaining steps (namespace
   verification, portal token, GPG key) are listed in readme/publish.md.
+- **Fixed, in the review before the tag.** The hot-reload emitters are completed on shutdown
+  (a test JVM used to wait 30 seconds for them). `Redis` has a reply timeout, verifies the
+  host on `rediss://`, honours a `/db` path and drops the connection on any failure.
+  `Sql.table` binds lazily, `search` escapes `%` and `_`, and a `Number` fills a
+  `LocalDateTime`; `Migrations` rethrows lock errors that are not duplicates; `Admin` answers
+  404 on a bad id. `Storage` takes the content type from the extension, sends `nosniff`
+  always and a CSP sandbox on HTML and SVG, honours `If-None-Match`/`If-Modified-Since`, and
+  strips quotes and control characters from filenames. `Mail` rejects addresses with CR, LF
+  or spaces (SMTP injection) and verifies the host on TLS. `Jobs` lets only the worker that
+  holds a job finish it, counts a stale release as an attempt, and stores timestamps in
+  UTC. A page's event dispatch, `setState` and PubSub delivery are serialized per context,
+  socket sends per session. `Browser.launch` cleans up Chrome and the profile on failure;
+  `RenderedPage` reads elements inside patched regions; the runtime opens one socket at a
+  time and moves a live region's `<style>` to the head. `jweb generate` refuses names that
+  would not compile, spells columns the way `Sql` reads them, writes `not null` once, reads
+  the package from the application class, and gives the app's `Routes` `@Order(0)` so its
+  layout wraps the generated pages. `HtmlNesting` allows `<a>` in `<label>` and `<title>` in
+  SVG; Romanian plurals pick the right form.
+- **The docs teach the typed selectors.** The styling sections and the CSS guide write
+  `rule(CARD.hover(), …)` with `Cls`/`Id` handles and `Selector`, not `rule(".card:hover", …)`;
+  a test keeps the string form out of the samples.
 
 ## [3.0.2] — 2026-10-08
 
@@ -387,7 +414,8 @@ reactive state loop wired end to end (runtime injected, contexts survive the req
 regions patch the DOM); page routes and 404s through the middleware stack; the framework-wide
 fix pass recorded in [known-issues.md](./readme/known-issues.md).
 
-[Unreleased]: https://github.com/oscar-osmig/Jweb/compare/v3.0.2...main
+[Unreleased]: https://github.com/oscar-osmig/Jweb/compare/v3.0.3...main
+[3.0.3]: https://github.com/oscar-osmig/Jweb/compare/v3.0.2...v3.0.3
 [3.0.2]: https://github.com/oscar-osmig/Jweb/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/oscar-osmig/Jweb/compare/v2.2.3...v3.0.1
 [2.2.3]: https://github.com/oscar-osmig/Jweb/compare/v2.2.0...v2.2.3

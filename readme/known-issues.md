@@ -11,6 +11,32 @@ Legend: ✅ fixed 2026-08-09 · 🟡 remaining pitfall (by design or deferred)
 
 ---
 
+## 2026-10-15 — 3.0.3: the backend set, and its sharp edges
+
+Additive release; the list is in the [changelog](../CHANGELOG.md#303--2026-10-15). Verified in
+the review before the tag and left as they are, by design or deferred:
+
+- **`Sql.Table` writes column names unquoted.** A record component named `order`, `user` or
+  `group` becomes a bare identifier and the database rejects it (on Postgres `user` is a
+  function). Rename the component, or write that statement with `Sql.query`.
+- **`Cache.shared(...).increment` is `INCRBY` then `PEXPIRE`**, not one atomic step: a crash
+  between the two leaves a counter without a TTL. Right for a rate limit, not for a ledger.
+- **A PubSub message published between a page's render and its socket's `init` is lost.**
+  A page that must not miss one re-reads its source when the state is first shown.
+- **`Auth.Totp.verify` has no replay protection** — a code is valid for its whole window plus
+  the skew. Record the last accepted counter per user if a replay matters to you.
+- **`Mail` does not fold long headers** (RFC 5322 line length). Keep subjects and recipient
+  lists reasonable.
+- **A `Jobs` worker with no handler for a job's name still claims it** and fails it with a
+  clear error, so every instance of a fleet registers every handler.
+- **`Admin` relies on `Middlewares.csrf()`** (part of `recommended()`) for its POSTs; it does
+  not validate the token itself. Mount it behind the recommended stack.
+- **`v("name")` is still the JavaScript local in the docs sections and the Sandbox.**
+  `jweb.Var` (`local("q")`) is the handle to prefer; 4.0 makes it the only form
+  ([the plan](./roadmap-4.0.md)).
+
+---
+
 ## 2026-10-08 — the 3.0.2 pass: no raw CSS or JS strings
 
 The before → after detail is in [DSL 3.0.2](../dsl-3.0.2.md). What to know when writing code

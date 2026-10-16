@@ -9,9 +9,11 @@ public final class DataSection {
     public static Element render() {
         return section(
             docTitle("Database"),
-            para("Two opt-in data layers: SQL over any JDBC DataSource (Sql, Migrations) and MongoDB (Mongo, Doc, Schema). "
-                + "Each loads only when its driver is on the classpath."),
+            since("v3.0.3", para("Two opt-in data layers: SQL over any JDBC DataSource (Sql, Migrations) and MongoDB (Mongo, Doc, Schema). "
+                + "Each loads only when its driver is on the classpath.")),
+            before("v3.0.3", para("JWeb provides a fluent DSL for MongoDB operations with schemas, queries, updates, and deletes.")),
 
+            since("v3.0.3",
             docSubtitle("SQL: setup"),
             para("Add spring-boot-starter-jdbc and a driver, set spring.datasource.url, and the DataSource bean "
                 + "Spring Boot creates is bound to Sql at startup. Migrations under db/migration run first."),
@@ -85,7 +87,8 @@ List<Migrations.Applied> history = Migrations.applied(dataSource);"""),
 
             docSubtitle("MongoDB: connection"),
             para("Add org.mongodb:mongodb-driver-sync and set jweb.data.enabled: true to connect at startup; "
-                + "or connect by hand."),
+                + "or connect by hand.")),
+            before("v3.0.3", docSubtitle("Connection")),
             codeBlock("""
 import static jweb.Mongo.*;
 
@@ -182,6 +185,7 @@ Schema.collection("users")
 
             docTip("Schemas add createdAt/updatedAt automatically when timestamps() is called."),
 
+            since("v3.0.3",
             docSubtitle("File Storage (Storage)"),
             para("Where the app keeps the files its users give it: a directory in development, any S3-compatible " +
                  "bucket in production (Amazon, Cloudflare R2, MinIO, Backblaze, Spaces, GCS) — the same calls, and the " +
@@ -245,7 +249,7 @@ jweb new shop                                              # a project with H2 u
 jweb generate resource Product name:string! price:double inStock:boolean
 # → models/Product.java (the row and the form), V1__create_products.sql,
 #   ProductListPage, ProductFormPage, ProductRoutes (/products, /products/new, /products/:id)"""),
-            docTip("The generated code is plain code to edit; the migration runs at the next start.")
+            docTip("The generated code is plain code to edit; the migration runs at the next start."))
         );
     }
 }

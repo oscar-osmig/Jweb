@@ -115,7 +115,7 @@ solid, dashed, dotted, double_, none
 .boxSizing(contentBox)
 
 // Best practice: apply to all elements
-rule("*").boxSizing(borderBox)"""),
+rule(Selector.any()).boxSizing(borderBox)"""),
 
             h3Title("Display"),
             para("Control element rendering."),

@@ -63,6 +63,7 @@ public final class PerformanceSection {
             docTip("Headers are applied to Element, String and ResponseEntity responses "
                    + "alike, including page routes and 404s."),
 
+            since("v3.0.3",
             docSubtitle("Request IDs, Logs and Traces"),
             para("Every request has an id before anything sees it: the caller's X-Request-ID or a fresh one. "
                  + "The response carries it back, every log line of the request shows it, the error page quotes it. "
@@ -83,7 +84,7 @@ try (Trace.Span span = Trace.span("order.price", "kind", "retail")) {   // tags 
     span.tag("order.id", order.id());                                     // tags later: high cardinality
 }
 Order priced = Trace.in("order.price", () -> order);"""),
-            docTip("logging.structured.format.console: ecs makes the logs JSON; the request id is a field.")
+            docTip("logging.structured.format.console: ecs makes the logs JSON; the request id is a field."))
         );
     }
 }

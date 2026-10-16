@@ -82,8 +82,11 @@ div(cardStyle, content)"""),
             docSubtitle("CSS Rules"),
             para("Generate CSS rules for stylesheets."),
             codeBlock("""
+Cls BTN = cls("btn");
+Cls CONTAINER = cls("container");
+
 // Single rule
-String buttonCss = rule(".btn")
+String buttonCss = rule(BTN)
     .display(inlineBlock)
     .padding(px(10), px(20))
     .backgroundColor(blue)
@@ -93,11 +96,11 @@ String buttonCss = rule(".btn")
 
 // Multiple rules
 String css = styles(
-    rule("*").boxSizing(borderBox),
-    rule("body")
+    rule(Selector.any()).boxSizing(borderBox),
+    rule(Selector.type("body"))
         .margin(zero)
         .fontFamily("system-ui, -apple-system, sans-serif"),
-    rule(".container")
+    rule(CONTAINER)
         .maxWidth(px(1200))
         .margin(px(0), auto)
         .padding(px(0), rem(1))

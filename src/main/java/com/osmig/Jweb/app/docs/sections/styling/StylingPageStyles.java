@@ -19,6 +19,7 @@ public final class StylingPageStyles {
 
             codeBlock("""
 public class Card implements Template {
+    static final Cls CARD = cls("card");
 
     @Override
     public Element render() {
@@ -30,9 +31,9 @@ public class Card implements Template {
     @Override
     public Stylesheet styles() {
         return stylesheet()
-            .rule(".card", style().padding(rem(1)).borderRadius(px(12)))
-            .rule(".card:hover", style().boxShadow(zero, px(4), px(12), rgba(0, 0, 0, 0.1)))
-            .add(md().rule(".card", style().padding(rem(1.5))));
+            .rule(CARD, style().padding(rem(1)).borderRadius(px(12)))
+            .rule(CARD.hover(), style().boxShadow(zero, px(4), px(12), rgba(0, 0, 0, 0.1)))
+            .add(md().rule(CARD, style().padding(rem(1.5))));
     }
 }"""),
 
@@ -55,8 +56,8 @@ public class Layout implements Template {
     public Stylesheet styles() {
         return stylesheet()
             .add(TOKENS)
-            .rule("*, *::before, *::after", style().boxSizing(borderBox).margin(zero))
-            .rule("body", style().color(TEXT).backgroundColor(BG));
+            .rule(Selector.any().or(Selector.any().before()).or(Selector.any().after()), style().boxSizing(borderBox).margin(zero))
+            .rule(Selector.type("body"), style().color(TEXT).backgroundColor(BG));
     }
 }"""),
 

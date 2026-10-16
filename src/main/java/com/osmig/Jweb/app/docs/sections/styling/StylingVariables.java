@@ -15,7 +15,7 @@ public final class StylingVariables {
 import static jweb.Css.*;
 
 // Define variables in :root
-rule(":root")
+rule(Selector.of(":root"))
     .var("primary-color", hex("#6366f1"))
     .var("secondary-color", hex("#8b5cf6"))
     .var("text-color", hex("#1f2937"))
@@ -40,19 +40,22 @@ rule(":root")
 
             h3Title("Component Example"),
             codeBlock("""
+Cls BTN = cls("btn");
+Cls CARD = cls("card");
+
 // Button using variables
-rule(".btn")
+rule(BTN)
     .padding(var("spacing-sm"), var("spacing-md"))
     .backgroundColor(var("primary-color"))
     .color(white)
     .borderRadius(var("radius"))
     .transition(propBackground, s(0.2))
 
-rule(".btn:hover")
+rule(BTN.hover())
     .backgroundColor(var("secondary-color"))
 
 // Card using variables
-rule(".card")
+rule(CARD)
     .padding(var("spacing-lg"))
     .backgroundColor(var("bg-color"))
     .color(var("text-color"))
@@ -62,24 +65,26 @@ rule(".card")
             para("Theme.dark() does this for you — the block below is what it emits. "
                  + "Write it by hand only when the tokens are not a design system."),
             codeBlock("""
+Cls CARD = cls("card");
+
 // Light theme (default)
-rule(":root")
+rule(Selector.of(":root"))
     .var("bg-color", white)
     .var("text-color", hex("#1f2937"))
     .var("border-color", hex("#e5e7eb"))
 
 // Dark theme
-media().prefersDark().rule(":root", style()
+media().prefersDark().rule(Selector.of(":root"), style()
     .var("bg-color", hex("#1f2937"))
     .var("text-color", hex("#f9fafb"))
     .var("border-color", hex("#374151")))
 
 // Components automatically adapt
-rule("body")
+rule(Selector.type("body"))
     .backgroundColor(var("bg-color"))
     .color(var("text-color"))
 
-rule(".card")
+rule(CARD)
     .border(px(1), solid, var("border-color"))"""),
 
             h3Title("One token builder"),

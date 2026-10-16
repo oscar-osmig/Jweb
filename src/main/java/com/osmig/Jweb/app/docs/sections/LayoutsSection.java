@@ -78,8 +78,8 @@ public class Layout implements Template {
     public Stylesheet styles() {
         return stylesheet()
             .add(TOKENS)
-            .rule("*, *::before, *::after", style().boxSizing(borderBox).margin(zero))
-            .rule("body", style().color(TEXT).backgroundColor(BG));
+            .rule(Selector.any().or(Selector.any().before()).or(Selector.any().after()), style().boxSizing(borderBox).margin(zero))
+            .rule(Selector.type("body"), style().color(TEXT).backgroundColor(BG));
     }
 }"""),
 

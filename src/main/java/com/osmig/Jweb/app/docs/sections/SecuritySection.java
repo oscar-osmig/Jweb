@@ -59,6 +59,7 @@ public final class SecuritySection {
                         app.use(RateLimit.perMinute(100).byIp().build());
                         app.use("/api", RateLimit.perMinute(30).byIp().build());"""),
 
+            since("v3.0.3",
             docSubtitle("The Flows: Reset, Verify, Remember Me, Two-Factor"),
             para("The user model stays yours; Auth provides the mechanics, stateless or on a shared store. " +
                  "Set jweb.auth.secret (32+ random characters) in every environment."),
@@ -87,7 +88,7 @@ Auth.logoutEverywhere("42");
 // two-factor
 String secret = Auth.Totp.secret();
 String uri = Auth.Totp.uri("MyApp", "ada@example.com", secret);   // show as a QR code
-boolean ok = Auth.Totp.verify(secret, req.formParam("code"));"""),
+boolean ok = Auth.Totp.verify(secret, req.formParam("code"));""")),
 
             warn("Always use HTTPS in production and store secrets in environment variables.")
         );

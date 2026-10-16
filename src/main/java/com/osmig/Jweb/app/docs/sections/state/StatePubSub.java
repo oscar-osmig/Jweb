@@ -8,7 +8,7 @@ public final class StatePubSub {
     private StatePubSub() {}
 
     public static Element render() {
-        return section(
+        return since("v3.0.3", section(
             h3Title("PubSub: One Change, Every Page"),
             para("A browser event changes one page. PubSub is the other direction: publish a message to a topic, " +
                  "and every page that subscribed re-renders what the message touched — on this instance and, " +
@@ -51,6 +51,6 @@ jweb:
             docTip("Render contexts stay on the instance that rendered the page (sticky sessions for /jweb); " +
                    "PubSub is what crosses instances. The State & Realtime guide has the full table of what is " +
                    "per-instance and what is shared.")
-        );
+        ));
     }
 }

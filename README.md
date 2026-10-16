@@ -1,6 +1,6 @@
 # JWeb Framework
 
-**Version 3.0.2** | **Last Updated: 2026-10-08** | [![CI](https://github.com/oscar-osmig/Jweb/actions/workflows/ci.yml/badge.svg)](https://github.com/oscar-osmig/Jweb/actions/workflows/ci.yml) | [Changelog](./CHANGELOG.md)
+**Version 3.0.3** | **Last Updated: 2026-10-15** | [![CI](https://github.com/oscar-osmig/Jweb/actions/workflows/ci.yml/badge.svg)](https://github.com/oscar-osmig/Jweb/actions/workflows/ci.yml) | [Changelog](./CHANGELOG.md)
 
 A pure Java web framework that lets you build full-stack web applications entirely in Java. No HTML templates, no JSP, no Thymeleaf — just type-safe Java code with compile-time safety and full IDE support.
 
@@ -65,7 +65,7 @@ and the dependency:
 <dependency>
     <groupId>com.github.oscar-osmig</groupId>
     <artifactId>Jweb</artifactId>
-    <version>v3.0.2</version>
+    <version>v3.0.3</version>
 </dependency>
 ```
 
@@ -73,7 +73,7 @@ Gradle:
 
 ```groovy
 repositories { maven { url 'https://jitpack.io' } }
-dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.2' }
+dependencies { implementation 'com.github.oscar-osmig:Jweb:v3.0.3' }
 ```
 
 Then annotate your application class — the framework's beans arrive through Spring Boot
@@ -96,6 +96,17 @@ Databases are opt-in. For SQL add `spring-boot-starter-jdbc` and a driver and se
 `spring.datasource.url`; `jweb.Sql` binds to the `DataSource` and runs the migrations under
 `db/migration`. For MongoDB add `org.mongodb:mongodb-driver-sync` and set
 `jweb.data.enabled: true`. See [Backend](./readme/backend.md#database-sql-sql-migrations).
+
+### What's new in 3.0.3
+
+3.0.3 is additive — nothing in a 3.0.2 app changes. It adds the backend an application needs
+around the DSL: `Sql` and `Migrations` (MongoDB becomes opt-in: add its driver), `PubSub`
+across instances, durable `Jobs` and `Mail`, `Storage`, the `Auth` flows (reset and
+verification tokens, remember-me, log out everywhere, TOTP), `Cache.shared` with locks and
+fleet-wide rate limits, request ids and `Trace`, `Admin.mount` and `jweb generate resource`,
+`Browser` for a test in a real Chrome, `Var` handles for JavaScript locals, and a tutorial.
+Every protocol is spoken by the framework itself — Redis, SMTP, S3, DevTools — so the
+dependency list does not grow. The full list: **[CHANGELOG.md](./CHANGELOG.md#303--2026-10-15)**.
 
 ### Upgrading to 3.0.2
 

@@ -113,6 +113,27 @@ class AppDslHygieneTest {
                 + String.join("\n  ", offenders));
     }
 
+    /**
+     * The docs teach by example, so a sample that writes {@code rule(".card")} teaches the
+     * form the app itself is gated against. Every sample names its selector with a handle
+     * or a Selector.
+     */
+    @Test
+    void theDocsSamplesWriteNoStringRules() throws IOException {
+        List<String> offenders = new ArrayList<>();
+        for (Pattern p : List.of(Pattern.compile("\\.rule\\(\\s*\""),
+                                 Pattern.compile("(?<![.\\w])rule\\(\\s*\""))) {
+            for (String hit : scan(p)) {
+                String path = hit.substring(0, hit.indexOf(':'));
+                if (path.contains("docs/sections/") && !offenders.contains(hit)) offenders.add(hit);
+            }
+        }
+        assertTrue(offenders.isEmpty(),
+            "a docs sample writes a selector as a string — the typed form is a Cls/Id handle "
+                + "(Cls CARD = cls(\"card\"); rule(CARD.hover(), …)) or a Selector "
+                + "(Selector.type(\"body\"), Selector.any()):\n  " + String.join("\n  ", offenders));
+    }
+
     private static List<String> scan(Pattern pattern) throws IOException {
         Path app = Path.of("").toAbsolutePath().resolve("src/main/java/com/osmig/Jweb/app");
         assertTrue(Files.isDirectory(app), "expected the demo app at " + app);

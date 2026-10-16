@@ -30,7 +30,7 @@ style().textBoxTrim(trimBoth).textBoxEdge(capAlphabetic)
 style().textBox(trimBoth, capAlphabetic)     // the shorthand
 
 // Animate to and from auto / min-content / fit-content
-stylesheet().rule(":root", style().interpolateSize(allowKeywords))
+stylesheet().rule(Selector.of(":root"), style().interpolateSize(allowKeywords))
 
 // Anchor positioning: confine anchor names to this subtree, so a repeated
 // component resolves to its own anchor instead of the first in the document
@@ -48,6 +48,8 @@ style().borderRight(none)"""),
                 + "appear. It works on an inline style and on a stylesheet."),
 
             codeBlock("""
+Cls TOAST = cls("toast");
+
 // On an inline style
 div(style()
         .opacity(1).transition(all, ms(200), ease)
@@ -56,8 +58,8 @@ div(style()
 
 // On a stylesheet
 stylesheet()
-    .rule(".toast", style().opacity(1).transition(all, ms(200), ease))
-    .startingStyle(".toast", style().opacity(0))"""),
+    .rule(TOAST, style().opacity(1).transition(all, ms(200), ease))
+    .startingStyle(TOAST, style().opacity(0))"""),
 
             h3Title("Container style queries"),
             para("A container query can also match on a custom property, not just a "
@@ -66,9 +68,12 @@ stylesheet()
             codeBlock("""
 import static jweb.css.ContainerQuery.*;
 
+Cls TITLE = cls("title");
+Cls BADGE = cls("badge");
+
 container("card").style("variant", "featured")
-    .rule(".title", style().fontWeight(700))
-    .rule(".badge", style().display(block))
+    .rule(TITLE, style().fontWeight(700))
+    .rule(BADGE, style().display(block))
 
 // @container card style(--variant: featured) { … }"""),
 

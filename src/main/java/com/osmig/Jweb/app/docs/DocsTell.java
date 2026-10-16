@@ -294,6 +294,19 @@ public final class DocsTell {
 
             ## Do not emit 1.x or 2.x syntax
 
+            Version 3.0.3 adds the backend set, all additive: `jweb.Sql` and `jweb.Migrations`
+            (`Sql.query(...).list(User.class)`, `Sql.table("todos", Todo.class)`, `V<n>__name.sql`
+            files under `db/migration`) — prefer them to JPA or Spring Data in a JWeb app;
+            `jweb.PubSub` (`publish(topic, msg)` re-renders every subscribed page, across
+            instances with Redis); durable `jweb.Jobs` (`Jobs.handle`, `Jobs.enqueue`) and
+            `jweb.Mail` (`Mail.to(...).subject(...).html(div(...)).send()`); `jweb.Storage` for
+            uploaded files; the `jweb.Auth` flows (`Auth.token`/`verify`, `rememberCookie`,
+            `logoutEverywhere`, `Auth.Totp`); `Cache.shared`, `Cache.once`, `Cache.lock`;
+            `req.id()` and `jweb.Trace`; `Admin.mount(app, "/admin", todos)`; `jweb.Browser` for
+            a test in a real Chrome; and `jweb.Var` (`local("q")`) for a JavaScript local named
+            once — prefer it to `v("q")` for a name a script repeats. MongoDB is opt-in: the
+            driver on the classpath and `jweb.data.enabled: true`.
+
             Version 3.0.2 adds handles and typed selectors on top of 3.0.1: `cls("card")` and
             `id("x")` return `Cls`/`Id`, which are element arguments, selectors
             (`rule(CARD.hover(), ...)`) and JS targets (`delegate(LAYOUT, "click", COPY)`);

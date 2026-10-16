@@ -123,12 +123,14 @@ form(Contact.class)
                      + "Form.styles() is a ready-made stylesheet for them; drop it in the head "
                      + "once and override what you like."),
                 codeBlock("""
+Cls JWEB_SUBMIT = cls("jweb-submit");
+
 CSSValue BRAND = hex("#6366f1");
 
 head(
     style(Form.styles()),
     style(stylesheet()
-        .rule(".jweb-submit", style().backgroundColor(BRAND))
+        .rule(JWEB_SUBMIT, style().backgroundColor(BRAND))
         .build())
 )""")),
 

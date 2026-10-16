@@ -34,13 +34,16 @@ div(autoGrid(px(240), SP_4), cards)      // as many columns as fit
 div(container(px(1200)).padding(SP_8, GUTTER), content)"""),
 
             codeBlock("""
+Cls CONTAINER = cls("container");
+Cls SIDEBAR = cls("sidebar");
+
 // Basic breakpoint
 media().minWidth(px(768))
-    .rule(".container", style().maxWidth(px(720)))
+    .rule(CONTAINER, style().maxWidth(px(720)))
 
 // Combined conditions
 media().screen().minWidth(px(1024)).maxWidth(px(1280))
-    .rule(".sidebar", style().display(none))
+    .rule(SIDEBAR, style().display(none))
 
 // Common breakpoints (presets)
 xs()        // max-width: 575px
@@ -62,20 +65,22 @@ media().minWidth(px(600)).maxWidth(px(1200))"""),
             codeBlock("""
 import static jweb.Css.*;   // brings in stylesheet(), media(), style()
 
+Cls GRID = cls("grid");
+
 String css = stylesheet()
     // Base styles (mobile-first)
-    .rule(".grid", style()
+    .rule(GRID, style()
         .display(grid)
         .gridTemplateColumns(fr(1))
         .gap(rem(1)))
 
     // Tablet and up
     .add(media().minWidth(px(768))
-        .rule(".grid", style().gridTemplateColumns(fr(1), fr(1))))
+        .rule(GRID, style().gridTemplateColumns(fr(1), fr(1))))
 
     // Desktop
     .add(media().minWidth(px(1024))
-        .rule(".grid", style().gridTemplateColumns(fr(1), fr(1), fr(1))))
+        .rule(GRID, style().gridTemplateColumns(fr(1), fr(1), fr(1))))
     .build();"""),
 
             h3Title("Dark Mode"),
@@ -83,10 +88,10 @@ String css = stylesheet()
             codeBlock("style", """
 // Detect system preference
 media().prefersDark()
-    .rule(":root", style()
+    .rule(Selector.of(":root"), style()
         .var("bg-color", hex("#1a1a1a"))
         .var("text-color", hex("#f5f5f5")))
-    .rule("body", style()
+    .rule(Selector.type("body"), style()
         .backgroundColor(var("bg-color"))
         .color(var("text-color")))
 
@@ -98,47 +103,54 @@ media().prefersDark()
             codeBlock("""
 // Reduced motion (accessibility)
 media().prefersReducedMotion()
-    .rule("*", style()
+    .rule(Selector.any(), style()
         .animationDuration(ms(0))
         .transitionDuration(ms(0)))
 
 // High contrast
 media().prefersContrast("more")
-    .rule("*", style().borderWidth(px(2)))"""),
+    .rule(Selector.any(), style().borderWidth(px(2)))"""),
 
             h3Title("Orientation & Features"),
             codeBlock("""
+Cls CARD = cls("card");
+Cls LOGO = cls("logo");
+Cls NO_PRINT = cls("no-print");
+
 // Portrait/landscape
-media().portrait().rule("body", style().fontSize(rem(0.95)))
-media().landscape().rule("body", style().fontSize(rem(1)))
+media().portrait().rule(Selector.type("body"), style().fontSize(rem(0.95)))
+media().landscape().rule(Selector.type("body"), style().fontSize(rem(1)))
 
 // Hover capability
 media().hover()
-    .rule(".card:hover", style().transform(translateY(px(-4))))
+    .rule(CARD.hover(), style().transform(translateY(px(-4))))
 
 media().noHover()
-    .rule(".card", style().boxShadow("none"))  // touch devices
+    .rule(CARD, style().boxShadow("none"))  // touch devices
 
 // Retina displays
 media().retina()
-    .rule(".logo", style().backgroundImage(url("/logo@2x.png")))
+    .rule(LOGO, style().backgroundImage(url("/logo@2x.png")))
 
 // Print styles
 media().print()
-    .rule(".no-print", style().display(none))
-    .rule("body", style().fontSize(px(12)))"""),
+    .rule(NO_PRINT, style().display(none))
+    .rule(Selector.type("body"), style().fontSize(px(12)))"""),
 
             h3Title("Container Queries"),
             para("Style based on container size, not viewport."),
             codeBlock("""
+Cls CARD_CONTAINER = cls("card-container");
+Cls CARD = cls("card");
+
 // Define container
-rule(".card-container")
+rule(CARD_CONTAINER)
     .containerType(inlineSize)
     .containerName("card")
 
 // Query the container
 ContainerQuery.container("card").minWidth(px(400))
-    .rule(".card", style()
+    .rule(CARD, style()
         .display(grid)
         .gridTemplateColumns(fr(1), fr(2)))
 

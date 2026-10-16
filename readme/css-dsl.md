@@ -147,13 +147,13 @@ unsafe about it.)
 live in a stylesheet, respond to `:hover`, and participate in transitions:
 
 ```java
-rule("path.route")
+rule(Selector.type("path").cls("route"))
     .fill("none").stroke(hex("#6366f1")).strokeWidth(px(2))
     .strokeLinecap("round").strokeLinejoin("round")
     .strokeDasharray("240").strokeDashoffset("240")
     .transition("stroke-dashoffset 1.2s ease-out")
 
-rule("path.route.drawn").strokeDashoffset("0")   // add/remove the class to animate the draw-in
+rule(Selector.type("path").cls("route").cls("drawn")).strokeDashoffset("0")   // add/remove the class to animate the draw-in
 ```
 
 Also new: `font("italic bold 14px/1.5 Georgia, serif")` (the `font` shorthand), `justifySelf`,
@@ -241,6 +241,8 @@ instances of a card contribute one copy.
 
 ```java
 public class Card implements Template {
+    static final Cls CARD = cls("card");
+
     private final String title;
     private final String body;
 
@@ -252,9 +254,9 @@ public class Card implements Template {
     @Override
     public Stylesheet styles() {
         return stylesheet()
-            .rule(".card", style().padding(rem(1)).borderRadius(px(12)))
-            .rule(".card:hover", style().boxShadow(zero, px(4), px(12), rgba(0, 0, 0, 0.1)))
-            .add(md().rule(".card", style().padding(rem(1.5))));
+            .rule(CARD, style().padding(rem(1)).borderRadius(px(12)))
+            .rule(CARD.hover(), style().boxShadow(zero, px(4), px(12), rgba(0, 0, 0, 0.1)))
+            .add(md().rule(CARD, style().padding(rem(1.5))));
     }
 }
 ```
@@ -277,8 +279,8 @@ public class Layout implements Template {
     public Stylesheet styles() {
         return stylesheet()
             .add(Theme.TOKENS)
-            .rule("*, *::before, *::after", style().boxSizing(borderBox).margin(zero))
-            .rule("body", style().color(Theme.TEXT).backgroundColor(Theme.BG));
+            .rule(Selector.any().or(Selector.any().before()).or(Selector.any().after()), style().boxSizing(borderBox).margin(zero))
+            .rule(Selector.type("body"), style().color(Theme.TEXT).backgroundColor(Theme.BG));
     }
 }
 ```
@@ -403,20 +405,23 @@ Two more mechanisms, for CSS that is not attached to a component:
 ### 1. `CSS.styles(...)` — quick rule strings
 
 ```java
+Cls CONTAINER = cls("container");
+Cls BUTTON = cls("button");
+
 String css = styles(
-    rule(".container")
+    rule(CONTAINER)
         .maxWidth(px(1200))
         .margin(zero, auto)
         .padding(px(20)),
 
-    rule(".button")
+    rule(BUTTON)
         .display(inlineBlock)
         .padding(px(10), px(20))
         .backgroundColor(hex("#3b82f6"))
         .color(white)
         .borderRadius(px(4)),
 
-    rule(".button:hover")
+    rule(BUTTON.hover())
         .backgroundColor(hex("#2563eb"))
 );
 // place it: style(css)  — emits a <style> tag
@@ -430,6 +435,10 @@ String css = styles(
 ```java
 import jweb.css.Stylesheet;
 
+Cls HERO = cls("hero");
+Cls TOAST = cls("toast");
+Cls SIDEBAR = cls("sidebar");
+
 Theme TOKENS = Theme.light()
     .color("primary", hex("#4f46e5"))
     .color("text",    hex("#1e293b"))
@@ -439,13 +448,13 @@ Theme TOKENS = Theme.light()
 
 Stylesheet sheet = Stylesheet.stylesheet()
     .add(TOKENS)                                  // a Theme
-    .rule("body", style().margin(zero).fontFamily("system-ui, sans-serif"))
-    .rule(".hero", style().padding(rem(4)).textAlign(center))
-    .startingStyle(".toast", style().opacity(0))
+    .rule(Selector.type("body"), style().margin(zero).fontFamily("system-ui, sans-serif"))
+    .rule(HERO, style().padding(rem(4)).textAlign(center))
+    .startingStyle(TOAST, style().opacity(0))
     .add(keyframes("gradientShift")
         .from(style().backgroundPosition(percent(0), percent(50)))
         .to(style().backgroundPosition(percent(100), percent(50))))
-    .add(md().rule(".sidebar", style().display(block)));
+    .add(md().rule(SIDEBAR, style().display(block)));
 
 // Emit:
 sheet.build();          // formatted CSS — what styles() hands back
@@ -513,16 +522,19 @@ lightDark(white, black)           // theme-aware
 ## Media Queries (`MediaQuery`)
 
 ```java
-media().minWidth(px(768)).rule(".container", style().maxWidth(px(720))).build()
-md().rule(".sidebar", style().display(block)).build()      // presets: xs sm md lg xl xxl
+Cls CONTAINER = cls("container");
+Cls SIDEBAR = cls("sidebar");
+
+media().minWidth(px(768)).rule(CONTAINER, style().maxWidth(px(720))).build()
+md().rule(SIDEBAR, style().display(block)).build()      // presets: xs sm md lg xl xxl
 
 // mobile()/tablet()/desktop() are deprecated: they were a second breakpoint set
 // that overlapped xs()-xxl() with different pixel values.
 
 media().prefersDark()
-    .rule("body", style().backgroundColor(hex("#1a1a1a")).color(white)).build()
+    .rule(Selector.type("body"), style().backgroundColor(hex("#1a1a1a")).color(white)).build()
 media().prefersReducedMotion()
-    .rule("*", style().animationDuration(ms(0)).transitionDuration(ms(0))).build()
+    .rule(Selector.any(), style().animationDuration(ms(0)).transitionDuration(ms(0))).build()
 
 // Also: portrait()/landscape(), retina(), hover()/coarsePointer(), print(),
 // displayMode/standalone(), and()/not()/only(), condition("raw")
@@ -542,12 +554,16 @@ h1(style().fontSize(rem(1.9)).at(md(), style().fontSize(rem(2.5))), "Title")
 ```java
 import static jweb.css.ContainerQuery.*;
 
-container().minWidth(px(400)).rule(".card", style().display(flex)).build()
-container("sidebar").maxWidth(px(300)).rule(".nav", style().flexDirection(column)).build()
+Cls CARD = cls("card");
+Cls NAV = cls("nav");
+Cls TITLE = cls("title");
+
+container().minWidth(px(400)).rule(CARD, style().display(flex)).build()
+container("sidebar").maxWidth(px(300)).rule(NAV, style().flexDirection(column)).build()
 
 // Style queries — match on a custom property, not a size
 container("card").style("variant", "featured")
-    .rule(".title", style().fontWeight(700)).build()
+    .rule(TITLE, style().fontWeight(700)).build()
 // @container card style(--variant: featured) { … }
 
 container("card").minWidth(px(400)).query()   // the condition line, for style().at(…)
@@ -558,7 +574,9 @@ container("card").minWidth(px(400)).query()   // the condition line, for style()
 ```java
 import static jweb.css.Supports.*;
 
-supports("display", "grid").rule(".container", style().display(grid)).build()
+Cls CONTAINER = cls("container");
+
+supports("display", "grid").rule(CONTAINER, style().display(grid)).build()
 supportsGrid(); supportsFlexbox(); supportsCustomProperties();
 supportsBackdropFilter(); supportsContainerQueries();     // 17 named presets total
 ```
@@ -566,12 +584,14 @@ supportsBackdropFilter(); supportsContainerQueries();     // 17 named presets to
 ## Other At-Rules
 
 ```java
+Cls BTN = cls("btn");
+
 // @layer — cascade layers. All of these reach through `import static jweb.Css.*`
 CSSLayer.order("reset", "base", "components", "utilities")
-CSSLayer.layer("components", rule(".btn").padding(px(8)))
+CSSLayer.layer("components", rule(BTN).padding(px(8)))
 
 // @scope
-CSSScope.scope(".card").to(".card-footer").rule(rule("p").margin(zero))
+CSSScope.scope(".card").to(".card-footer").rule(rule(Selector.type("p")).margin(zero))
 
 // @property — typed custom properties. The per-type shortcuts are named
 // *Property (colorProperty, lengthProperty, …) so they don't collide with the
@@ -619,7 +639,8 @@ stylesheet()
 jweb.css.Selectors.cls("card").hover();                           // .card:hover
 jweb.css.Selectors.tag("li").nthChild("2n+1");
 
-// 3. A plain string, when you already know the selector — full CSS parity, no checking
+// 3. A plain string — the escape hatch for a selector no starter covers, with no checking.
+//    The handle in 1 is the form to write; the app's hygiene test bans the string.
 stylesheet().rule(".card:hover", style().color(hex("#4f46e5")));
 ```
 
@@ -777,8 +798,11 @@ style().clipPath(clipHexagon())
 Anchor positioning and `@property`:
 
 ```java
-rule(".trigger").apply(anchorName("--menu"))
-rule(".tooltip")
+Cls TRIGGER = cls("trigger");
+Cls TOOLTIP = cls("tooltip");
+
+rule(TRIGGER).apply(anchorName("--menu"))
+rule(TOOLTIP)
     .apply(positionAnchor("--menu"))
     .apply(positionArea("top"))
     .position(absolute)
@@ -793,9 +817,11 @@ lengthProperty("--gap").initialValue("1rem")
 Cascade layers, `@scope` and nesting:
 
 ```java
+Cls BTN = cls("btn");
+
 CSSLayer.order("reset", "base", "components", "utilities")
-CSSLayer.layer("components", rule(".btn").padding(px(8)))
-CSSScope.scope(".card").rule("h2", style().fontSize(rem(1.5)))
+CSSLayer.layer("components", rule(BTN).padding(px(8)))
+CSSScope.scope(".card").rule(Selector.type("h2"), style().fontSize(rem(1.5)))
 
 // nest(...) — it was CSSNested.rule(...), which collided with Css.rule(...)
 nest(".card")
@@ -831,12 +857,14 @@ style().borderRight(none)                          // one-value border sides (al
 At-rules and selectors:
 
 ```java
+Cls TOAST = jweb.El.cls("toast");   // qualified: the Selectors import below makes a bare cls ambiguous
+
 // @starting-style — the values a transition animates FROM on first render
 div(style().opacity(1).transition(all, ms(200), ease)
            .startingStyle(style().opacity(0)), "I fade in")
 
-stylesheet().rule(".toast", style().opacity(1).transition(all, ms(200), ease))
-            .startingStyle(".toast", style().opacity(0))
+stylesheet().rule(TOAST, style().opacity(1).transition(all, ms(200), ease))
+            .startingStyle(TOAST, style().opacity(0))
 
 // :popover-open / :open
 import jweb.css.Selectors;
@@ -870,8 +898,10 @@ button(attrs().transition().fade().done(), "Hover me")
 ```java
 import static jweb.Css.*;    // nest() lives on the facade like everything else
 
+Cls CARD = cls("card");
+
 nest(".card")
-    .style(rule(".card").padding(px(20)))     // base declarations via a StyleBuilder
+    .style(rule(CARD).padding(px(20)))     // base declarations via a StyleBuilder
     .nest("&:hover").prop("box-shadow", "0 2px 8px rgba(0,0,0,0.1)").parent()
     .nest("& .title").prop("font-size", "1.5rem").root()
     .build();

@@ -35,7 +35,7 @@ Or by hand. The dependency comes from JitPack (`vX.Y.Z` is a tag from the
 <dependency>
   <groupId>com.github.oscar-osmig</groupId>
   <artifactId>Jweb</artifactId>
-  <version>v3.0.2</version>
+  <version>v3.0.3</version>
 </dependency>
 ```
 
